@@ -38,7 +38,7 @@
 #'   centered=c("Murder","Illiteracy"), summary=TRUE)
 #'
 
-sim_slopes <- function(formula, data, pred, modx, modxvals = NULL, centered, weights = NULL, robust=FALSE, robust.type="HC3", summary=FALSE) {
+sim_slopes <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, robust=FALSE, robust.type="HC3", summary=FALSE) {
 
   d <- data
 

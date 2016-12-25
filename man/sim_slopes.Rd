@@ -4,7 +4,7 @@
 \alias{sim_slopes}
 \title{Perform a simple slopes analysis.}
 \usage{
-sim_slopes(formula, data, pred, modx, modxvals = NULL, centered,
+sim_slopes(formula, data, pred, modx, modxvals = NULL, centered = NULL,
   weights = NULL, robust = FALSE, robust.type = "HC3", summary = FALSE)
 }
 \arguments{
