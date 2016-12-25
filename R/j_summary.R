@@ -44,7 +44,7 @@
 j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3", digits=5) {
 
   sum <- summary(lm)
-  if (class(lm) == "lm") {
+  if (class(lm)[1] == "lm") {
     bsum <- broom::glance(lm)
   }
 
@@ -109,15 +109,15 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
   if (vifs==T) {
     library("car")
     if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
-      vifs <- rep(NA, 1)
+      tvifs <- rep(NA, 1)
     } else {
-      vifs <- rep(NA, length(ivs))
-      vifs[-1] <- unname(vif(lm))
+      tvifs <- rep(NA, length(ivs))
+      tvifs[-1] <- unname(vif(lm))
     }
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE & typeof(lm) != "svyglm") {
+  if (robust == TRUE & typeof(lm)[1] != "svyglm") {
 
     if (!requireNamespace("sandwich", quietly = TRUE)) {
       stop("When robust is set to TRUE, you need to have the \'sandwich\' package for robust standard errors.
@@ -161,7 +161,7 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     }
   }
 
-  if (stdbeta==F & vifs==F) {
+  if (stdbeta==F && vifs==F) {
     mat <- matrix(nrow=length(ivs), ncol=5)
     rownames(mat) <- ivs
     colnames(mat) <- c("Est.", "S.E.", "t val.", "p", "")
@@ -173,7 +173,7 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     t <- as.table(mat)
   }
 
-  if (stdbeta==T & vifs==T) {
+  if (stdbeta==T && vifs==T) {
     mat <- matrix(nrow=length(ivs), ncol=7)
     rownames(mat) <- ivs
     colnames(mat) <- c("Est.", "S.E.", "Std. Beta.", "t val.", "p", "", "VIF")
@@ -183,11 +183,11 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     mat[,4] <- round(ts, digits=digits)
     mat[,5] <- round(pvals, digits=digits)
     mat[,6] <- digitstars
-    mat[,7] <- round(vifs, digits=digits)
+    mat[,7] <- round(tvifs, digits=digits)
     t <- as.table(mat)
   }
 
-  if (stdbeta==F & vifs==T) {
+  if (stdbeta==F && vifs==T) {
     mat <- matrix(nrow=length(ivs), ncol=6)
     rownames(mat) <- ivs
     colnames(mat) <- c("Est.", "S.E.", "t val.", "p", "", "VIF")
@@ -196,11 +196,11 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     mat[,3] <- round(ts, digits=digits)
     mat[,4] <- round(pvals, digits=digits)
     mat[,5] <- digitstars
-    mat[,6] <- round(vifs, digits=digits)
+    mat[,6] <- round(tvifs, digits=digits)
     t <- as.table(mat)
   }
 
-  if (stdbeta==T & vifs==F) {
+  if (stdbeta==T && vifs==F) {
     mat <- matrix(nrow=length(ivs), ncol=6)
     rownames(mat) <- ivs
     colnames(mat) <- c("Est.", "S.E.", "Std. Beta", "t val.", "p", "")
@@ -213,16 +213,26 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     t <- as.table(mat)
   }
 
-  cat("Model Info", "\n", "Sample Size: ", n, "\n", "Dependent Variable: ", names(lm$model[1]), "\n", "Number of Predictors: ", (lm$rank-1), "\n", "\n", sep="")
+  cat("Model Info", "\n", "Sample Size: ", n, "\n", "Dependent Variable: ", names(lm$model[1]), "\n", "Number of Predictors: ", (lm$rank-1), "\n", sep="")
+  if (class(lm)[1]=="svyglm") {
+    cat("\n", "Analysis of complex survey design", "\n", sep="")
+    if (as.character(lm$family[1])=="gaussian" && as.character(lm$family[2])=="identity") {
+      cat("Survey-weighted linear regression", "\n", "\n", sep="")
+    } else {
+      cat("Error Distribution: ", as.character(lm$family[1]), "\n", "Link function: ", as.character(lm$family[2]), "\n", "\n", sep="")
+    }
+  } else {
+    cat("\n")
+  }
 
-  if (class(lm)=="lm") {
+  if (class(lm)[1]=="lm") {
     cat("Model Fit: ", "\n", "F(", fnum, ",", fden, ") = ", round(fstat, digits=digits), ", p = ", round(bsum$p.value, digits=digits), "\n", "R-squared = ", round(rsq, digits=digits), "\n", "Adj. R-squared = ", round(arsq, digits=digits), "\n", "\n", sep="")
     if (robust==F) {
-      cat("Standard errors: OLS")
+      cat("Standard errors: OLS", "\n")
     }
   }
 
-  if (class(lm)=="glm"){
+  if (class(lm)[1]=="glm" || (class(lm)[2]=="glm" && !is.na(class(lm)[2]))) {
     cat("Model Fit: ", "\n", "Pseudo R-squared = ", round(rsq, digits=digits), "\n", "\n", sep="")
   }
 
@@ -232,4 +242,4 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
 
   print(t)
 
-}
+    }
