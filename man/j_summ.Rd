@@ -8,21 +8,23 @@ j_summ(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
   robust.type = "HC3", digits = 5)
 }
 \arguments{
-\item{lm}{A \code{lm} object.}
+\item{lm}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
 
-\item{stdbeta}{If \code{TRUE}, adds a column to output with standardized regression coefficients.
-Default is \code{FALSE}.}
+\item{stdbeta}{If \code{TRUE}, adds a column to output with standardized regression
+coefficients. Default is \code{FALSE}.}
 
-\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation factors (VIF).
-Default is \code{FALSE}.}
+\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation factors
+(VIF). Default is \code{FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard errors instead of
-conventional SEs. These are also known as Huber-White standard errors. Default is \code{FALSE}.
-This requires the \code{sandwich} and \code{lmtest} packages to compute the standard errors.}
+\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard errors
+instead of conventional SEs. These are also known as Huber-White standard errors.
+Default is \code{FALSE}.
+This requires the \code{sandwich} and \code{lmtest} packages to compute the
+ standard errors.}
 
-\item{robust.type}{Only used if \code{robust=TRUE}. Specificies the type of robust standard
-errors to be used by \code{sandwich}. By default, set to \code{"HC3"}. See details for more on
-options.}
+\item{robust.type}{Only used if \code{robust=TRUE}. Specificies the type of
+robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
+. See details for more on options.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to report in
 the output. Default is 5.}
@@ -53,7 +55,10 @@ Regardless of options selected, this function will print the following items to 
 fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
 
 # Print the output with standardized coefficients and 2 digits past the decimal
-j_summ(fit, stdbeta=T, digits=2)
+j_summ(fit, stdbeta=TRUE, digits=2)
 
+}
+\author{
+Jacob Long <\email{long.1377@osu.edu}>
 }
 

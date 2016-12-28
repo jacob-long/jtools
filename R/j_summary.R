@@ -3,17 +3,19 @@
 #' \code{j_summ()} prints output for a regression model in a fashion similar to
 #' \code{summary()}, but formatted differently with more options.
 #'
-#' @param lm A \code{lm} object.
-#' @param stdbeta If \code{TRUE}, adds a column to output with standardized regression coefficients.
+#' @param lm A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.
+#' @param stdbeta If \code{TRUE}, adds a column to output with standardized regression
+#'   coefficients. Default is \code{FALSE}.
+#' @param vifs If \code{TRUE}, adds a column to output with variance inflation factors
+#'   (VIF). Default is \code{FALSE}.
+#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors
+#'   instead of conventional SEs. These are also known as Huber-White standard errors.
 #'   Default is \code{FALSE}.
-#' @param vifs If \code{TRUE}, adds a column to output with variance inflation factors (VIF).
-#'   Default is \code{FALSE}.
-#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors instead of
-#'   conventional SEs. These are also known as Huber-White standard errors. Default is \code{FALSE}.
-#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the standard errors.
-#' @param robust.type Only used if \code{robust=TRUE}. Specificies the type of robust standard
-#'   errors to be used by \code{sandwich}. By default, set to \code{"HC3"}. See details for more on
-#'   options.
+#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
+#'    standard errors.
+#' @param robust.type Only used if \code{robust=TRUE}. Specificies the type of
+#'   robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
+#'   . See details for more on options.
 #' @param digits An integer specifying the number of digits past the decimal to report in
 #'   the output. Default is 5.
 #'
@@ -33,13 +35,17 @@
 #'  that choice may be better if the goal is to replicate Stata's output. Any option that
 #'  is understood by \code{vcovHC} will be accepted.
 #'
+#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#'
 #' @examples
 #' # Create lm object
 #' fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
 #'
 #' # Print the output with standardized coefficients and 2 digits past the decimal
-#' j_summ(fit, stdbeta=T, digits=2)
+#' j_summ(fit, stdbeta=TRUE, digits=2)
 #'
+#' @importFrom stats coef coefficients lm predict sd
+#' @export j_summ
 
 j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3", digits=5) {
 
@@ -107,12 +113,11 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
 
   # VIFs
   if (vifs==T) {
-    library("car")
     if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(vif(lm))
+      tvifs[-1] <- unname(car::vif(lm))
     }
   }
 

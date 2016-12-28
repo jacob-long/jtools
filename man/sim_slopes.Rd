@@ -2,15 +2,16 @@
 % Please edit documentation in R/simple_slopes.R
 \name{sim_slopes}
 \alias{sim_slopes}
-\title{Perform a simple slopes analysis.}
+\title{Perform a simple slopes analysis}
 \usage{
 sim_slopes(formula, data, pred, modx, modxvals = NULL, centered = NULL,
-  weights = NULL, robust = FALSE, robust.type = "HC3", summary = FALSE)
+  weights = NULL, robust = FALSE, robust.type = "HC3", digits = 3)
 }
 \arguments{
 \item{formula}{A regression formula, like would be provided to \code{lm()}, in
-quotation marks. This should not include the interaction term. Alternately, give
-an \code{lm} object and the formula will be extracted. Interaction terms will be ignored.}
+quotation marks. This does not need to include the interaction term. Alternately,
+give an \code{lm} object and the formula will be extracted. Interaction terms
+with non-focal predictors will be ignored and entered as separate terms.}
 
 \item{data}{A data frame.}
 
@@ -18,12 +19,15 @@ an \code{lm} object and the formula will be extracted. Interaction terms will be
 
 \item{modx}{The moderator variable involved in the interaction in quotes.}
 
-\item{modxvals}{For which two values of the moderator should simple slopes analysis
+\item{modxvals}{For which values of the moderator should simple slopes analysis
 be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
 1 standard deviation from the mean values are used. This would not be appropriate
-in the case of a binary moderator, however, as well as in some other use cases.}
+in the case of a binary moderator, however, as well as in some other use cases.
+There is no specific limit on the number of variables provided.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.}
+\item{centered}{A vector of quoted variable names that are to be mean-centered. If
+\code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
+the user-specified predictors are centered.}
 
 \item{weights}{If weights are being used, provide the variable name where they are stored.}
 
@@ -32,19 +36,46 @@ in the case of a binary moderator, however, as well as in some other use cases.}
 \item{robust.type}{Type of heteroskedasticity-robust standard errors to use if \code{robust=TRUE}.
 See details of \code{\link{j_summ}} for more on options.}
 
-\item{summary}{If \code{TRUE}, prints a model summary using \code{\link{j_summ}}
-for the non-mean-adjusted model.}
+\item{digits}{How many significant digits after the decimal point should the output
+contain?}
 }
 \description{
 \code{sim_slopes()} conducts a simple slopes analysis for the purposes of understanding
 interaction effects in linear regression.
 }
+\details{
+This allows the user to perform a simple slopes analysis for the purpose
+  of probing interaction effects in a linear regression. Only two-way interactions
+  are supported.
+
+  The function can accept either a character object specifying the formula to be
+  tested or a \code{lm} object instead, from which the formula will be extracted. All
+  interactions will be stripped from the formula, leaving only the specified
+  interaction. The function refits the model, so other features of your fitted
+  model will be ignored (like the standard errors).
+}
 \examples{
 # Using a fitted model as formula input
 fit <- lm(Income ~ `HS Grad` + Murder + Illiteracy,
   data=as.data.frame(state.x77))
-sim_slopes(formula=fit, pred="Murder", modx="Illiteracy",
-  centered=c("Murder","Illiteracy"), summary=TRUE)
+sim_slopes(formula=fit, data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
 
+# Writing out formula
+sim_slopes(formula="Income ~ `HS Grad` + Murder + Illiteracy",
+  data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
+
+}
+\seealso{
+\code{\link{interact_plot}} accepts similar syntax and will plot the
+  results with \code{\link[ggplot2]{ggplot}}.
+
+  \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of differences
+  and provides Johnson-Neyman intervals.
+
+  \code{\link[pequod]{simpleSlope}} performs a similar analysis and can analyze
+  a second moderator.
+}
+\author{
+Jacob Long <\email{long.1377@osu.edu}>
 }
 

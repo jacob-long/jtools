@@ -1,18 +1,21 @@
-Package: JTools
+Package: jtools
 Type: Package
-Title: Some of my personal functions
-Version: 0.1.0
+Title: Some functions for better understanding regressions and interactions
+Version: 0.2.0
 Authors@R: person("Jacob", "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
-Description: This is just a collection of tools that the author (Jacob) has written for his own purposes over
-  the course of his research. These are mainly geared towards presenting results in ways that serve my needs more
-  efficiently than any of R's built-in features or that exist in any package I'm aware of.
+Description: This is just a collection of tools that the author (Jacob) has written
+  for the purpose of more efficiently understanding and sharing the results of 
+  (primarily) regression analyses.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
-  broom
+  stats,
+  broom,
+  ggplot2
 Suggests:
   lmtest,
-  sandwich
+  sandwich,
+  car
 RoxygenNote: 5.0.1.9000
