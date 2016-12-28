@@ -7,7 +7,7 @@ Authors@R: person("Jacob", "Long", email = "long.1377@osu.edu",
 Description: This is just a collection of tools that the author (Jacob) has written
   for the purpose of more efficiently understanding and sharing the results of 
   (primarily) regression analyses.
-License: GPL-3
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
