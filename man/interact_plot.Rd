@@ -8,7 +8,7 @@ interact_plot(formula, data, pred, modx, modxvals = NULL, centered = NULL,
   weights = NULL, interval = FALSE, int.type = c("confidence",
   "prediction"), int.width = 0.975, x.label = NULL, y.label = NULL,
   mod.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "qual")
+  color.class = "Set2")
 }
 \arguments{
 \item{formula}{A regression formula, like would be provided to \code{lm()}, in
@@ -101,7 +101,7 @@ interact_plot(formula = "Income ~ HSGrad + Murder + Illiteracy", data=states,
 
 # Using interval feature
 fit <- lm(accel ~ mag*dist, data=attenu)
-interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = T,
+interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
   int.type = "confidence", int.width = .8)
 
 }

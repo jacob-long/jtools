@@ -96,13 +96,13 @@
 #'
 #' # Using interval feature
 #' fit <- lm(accel ~ mag*dist, data=attenu)
-#' interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = T,
+#' interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
 #'
-#' @importFrom stats coef coefficients lm predict sd
+#' @importFrom stats coef coefficients lm predict sd qqnorm
 #' @export interact_plot
 
-interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, interval = FALSE, int.type = c("confidence","prediction"), int.width = .975, x.label = NULL, y.label = NULL, mod.labels = NULL, main.title = NULL, legend.main = NULL, color.class="qual") {
+interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, interval = FALSE, int.type = c("confidence","prediction"), int.width = .975, x.label = NULL, y.label = NULL, mod.labels = NULL, main.title = NULL, legend.main = NULL, color.class="Set2") {
 
   # Duplicating the dataframe so it can be manipulated as needed
   d <- as.data.frame(data)
@@ -253,11 +253,11 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
 
   # Plot intervals if requested
   if (interval==TRUE) {
-    p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=ymin, ymax=ymax, alpha=.05), show.legend = FALSE)
+    p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=pm[,"ymin"], ymax=pm[,"ymax"], alpha=.05), show.legend = FALSE)
   }
 
   p <- p + ggplot2::theme_bw() + ggplot2::labs(x = x.label, y = y.label)
-  p <- p + ggplot2::scale_color_discrete(name=modx)
+  p <- p + ggplot2::scale_colour_brewer(name=modx, palette=color.class)
 
   if (!is.null(main.title)){
     p <- p + ggplot2::ggtitle(main.title)
