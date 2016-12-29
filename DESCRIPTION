@@ -10,8 +10,7 @@ Description: This is just a collection of tools that the author (Jacob) has writ
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports:
-  stats,
+Depends:
   broom,
   ggplot2
 Suggests:
