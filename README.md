@@ -1,5 +1,5 @@
 
-# jtools [![Travis-CI Build Status](https://travis-ci.org/jacob-long/JTools.svg?branch=master)](https://travis-ci.org/jacob-long/JTools)
+# jtools [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools)
 
 This package consists of a series of functions created by the author (Jacob) to automate otherwise tedious research tasks. At this juncture, the unifying theme is the more efficient presentation of regression analyses, including those with interactions.
 
