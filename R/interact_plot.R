@@ -17,12 +17,25 @@
 #'
 #' @param modxvals For which two values of the moderator should simple slopes analysis
 #'   be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
-#'   1 standard deviation from the mean values are used. This would not be appropriate
-#'   in the case of a binary moderator, however, as well as in some other use cases.
+#'   1 standard deviation from the mean values are used for continuous moderators.
+#'   If the moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
+#'    of the factor is included.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered.
+#'   If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
+#'   then no others are centered.
 #'
 #' @param weights If weights are being used, provide the variable name where they are stored.
+#'
+#' @param interval Logical. If \code{TRUE}, plots confidence/prediction intervals
+#'   the line using \code{\link[ggplot2]{geom_ribbon}}.
+#'
+#' @param int.type Type of interval to plot. Options are "confidence" or "prediction".
+#'   Default is confidence interval.
+#'
+#' @param int.width How large should the interval be, relative to the standard error?
+#'   The default, .975, corresponds to roughly 1.96 standard errors and a .05 alpha
+#'   level for values outside the range.
 #'
 #' @param x.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
@@ -73,18 +86,23 @@
 #' states <- as.data.frame(state.x77)
 #' states$HSGrad <- states$`HS Grad`
 #' fit <- lm(Income ~ HSGrad + Murder + Illiteracy,
-#'   data=states)
-#' interact_plot(formula=fit, data=states, pred="Murder",
-#'   modx="Illiteracy")
+#'   data = states)
+#' interact_plot(formula = fit, data = states, pred = "Murder",
+#'   modx = "Illiteracy")
 #'
 #' # Writing out formula
-#' interact_plot(formula="Income ~ HSGrad + Murder + Illiteracy", data=states,
-#'   pred="Murder", modx="Illiteracy")
+#' interact_plot(formula = "Income ~ HSGrad + Murder + Illiteracy", data=states,
+#'   pred = "Murder", modx = "Illiteracy")
+#'
+#' # Using interval feature
+#' fit <- lm(accel ~ mag*dist, data=attenu)
+#' interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = T,
+#'   int.type = "confidence", int.width = .8)
 #'
 #' @importFrom stats coef coefficients lm predict sd
 #' @export interact_plot
 
-interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, x.label = NULL, y.label = NULL, mod.labels = NULL, main.title = NULL, legend.main = NULL, color.class="qual") {
+interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, interval = FALSE, int.type = c("confidence","prediction"), int.width = .975, x.label = NULL, y.label = NULL, mod.labels = NULL, main.title = NULL, legend.main = NULL, color.class="qual") {
 
   # Duplicating the dataframe so it can be manipulated as needed
   d <- as.data.frame(data)
@@ -136,7 +154,7 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   } else { # Center all non-focal
     # Scaling the non-focal variables to make the slopes more interpretable (0 = mean)
     for (j in 1:ncol(d)) {
-      if ((names(d)[j] %in% c(pred, resp, modx))==FALSE) {
+      if ((names(d)[j] %in% c(pred, resp, modx))==FALSE && is.numeric(d[,j])) {
         d[,j] <- as.vector(scale(d[,j]))
       }
     }
@@ -145,13 +163,15 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   # Fixes a data type error with predict() later
   d <- as.data.frame(d)
 
-  # Default to +/- 1 SD
-  if (is.null(modxvals)) {
+  # Default to +/- 1 SD unless modx is factor
+  if (is.null(modxvals) && !is.factor(d[,modx])) {
     modsd <- sd(d[,modx])
     modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
     modxvalssd <- round(modxvalssd,3)
     names(modxvalssd) <- c("+1 SD", "-1 SD")
     modxvals2 <- modxvalssd
+  } else if (is.null(modxvals) && is.factor(d[,modx])){
+    modxvals2 <- levels(d[,modx])
   } else { # Use user-supplied values otherwise
     modxvals2 <- modxvals
   }
@@ -169,9 +189,9 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   }
 
   # Creating matrix for use in predict()
-  pm <- matrix(rep(0, 100*(nc)*length(modxvals2)), ncol=(nc))
+  pm <- matrix(rep(0, 100*(nc+2)*length(modxvals2)), ncol=(nc+2))
   # Naming columns
-  colnames(pm) <- c(colnames(d))
+  colnames(pm) <- c(colnames(d),"ymax","ymin")
   # Convert to dataframe
   pm <- as.data.frame(pm)
   # Add values of moderator to df
@@ -191,7 +211,15 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   }
 
   # Create predicted values based on specified levels of the moderator, focal predictor
-  pm[,resp] <- predict(model, pm)
+  predicted <- as.data.frame(predict(model, pm, se.fit=T, interval=int.type[1]))
+  pm[,resp] <- predicted[,1] # this is the actual values
+
+  ## Convert the confidence percentile to a number of S.E. to multiply by
+  ses <- qnorm(int.width, 0, 1)
+
+  # See minimum and maximum values for plotting intervals
+  pm[,"ymax"] <- pm[,resp] + (predicted[,3]-pm[,resp])*ses
+  pm[,"ymin"] <- pm[,resp] - (predicted[,3]-pm[,resp])*ses
 
   # For plotting, it's good to have moderator as factor...
   # but not until after predict() is used
@@ -211,7 +239,7 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   }
 
   if (is.null(mod.labels)) {
-    if (!is.null(modxvalssd)){
+    if (exists("modxvalssd")){
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "+1 SD"))
     }
   }
@@ -222,6 +250,12 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
 
   p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx]))
   p <- p + ggplot2::geom_path()
+
+  # Plot intervals if requested
+  if (interval==TRUE) {
+    p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=ymin, ymax=ymax, alpha=.05), show.legend = FALSE)
+  }
+
   p <- p + ggplot2::theme_bw() + ggplot2::labs(x = x.label, y = y.label)
   p <- p + ggplot2::scale_color_discrete(name=modx)
 

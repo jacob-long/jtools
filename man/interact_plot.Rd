@@ -5,8 +5,10 @@
 \title{Plot interaction effects in regression models}
 \usage{
 interact_plot(formula, data, pred, modx, modxvals = NULL, centered = NULL,
-  weights = NULL, x.label = NULL, y.label = NULL, mod.labels = NULL,
-  main.title = NULL, legend.main = NULL, color.class = "qual")
+  weights = NULL, interval = FALSE, int.type = c("confidence",
+  "prediction"), int.width = 0.975, x.label = NULL, y.label = NULL,
+  mod.labels = NULL, main.title = NULL, legend.main = NULL,
+  color.class = "qual")
 }
 \arguments{
 \item{formula}{A regression formula, like would be provided to \code{lm()}, in
@@ -22,12 +24,25 @@ will be ignored.}
 
 \item{modxvals}{For which two values of the moderator should simple slopes analysis
 be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
-1 standard deviation from the mean values are used. This would not be appropriate
-in the case of a binary moderator, however, as well as in some other use cases.}
+1 standard deviation from the mean values are used for continuous moderators.
+If the moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
+ of the factor is included.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.}
+\item{centered}{A vector of quoted variable names that are to be mean-centered.
+If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
+then no others are centered.}
 
 \item{weights}{If weights are being used, provide the variable name where they are stored.}
+
+\item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
+the line using \code{\link[ggplot2]{geom_ribbon}}.}
+
+\item{int.type}{Type of interval to plot. Options are "confidence" or "prediction".
+Default is confidence interval.}
+
+\item{int.width}{How large should the interval be, relative to the standard error?
+The default, .975, corresponds to roughly 1.96 standard errors and a .05 alpha
+level for values outside the range.}
 
 \item{x.label}{A character object specifying the desired x-axis label. If \code{NULL},
 the variable name is used.}
@@ -76,13 +91,18 @@ This function provides a means for plotting conditional effects for the
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 fit <- lm(Income ~ HSGrad + Murder + Illiteracy,
-  data=states)
-interact_plot(formula=fit, data=states, pred="Murder",
-  modx="Illiteracy")
+  data = states)
+interact_plot(formula = fit, data = states, pred = "Murder",
+  modx = "Illiteracy")
 
 # Writing out formula
-interact_plot(formula="Income ~ HSGrad + Murder + Illiteracy", data=states,
-  pred="Murder", modx="Illiteracy")
+interact_plot(formula = "Income ~ HSGrad + Murder + Illiteracy", data=states,
+  pred = "Murder", modx = "Illiteracy")
+
+# Using interval feature
+fit <- lm(accel ~ mag*dist, data=attenu)
+interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = T,
+  int.type = "confidence", int.width = .8)
 
 }
 \seealso{
