@@ -3,7 +3,6 @@
 export(interact_plot)
 export(j_summ)
 export(sim_slopes)
-export(theme_apa)
 importFrom(stats,coef)
 importFrom(stats,coefficients)
 importFrom(stats,lm)
