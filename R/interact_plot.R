@@ -99,7 +99,7 @@
 #' interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
 #'
-#' @importFrom stats coef coefficients lm predict sd qqnorm
+#' @importFrom stats coef coefficients lm predict sd qnorm
 #' @export interact_plot
 
 interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, interval = FALSE, int.type = c("confidence","prediction"), int.width = .975, x.label = NULL, y.label = NULL, mod.labels = NULL, main.title = NULL, legend.main = NULL, color.class="Set2") {
