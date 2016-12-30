@@ -166,56 +166,28 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     }
   }
 
-  if (stdbeta==F && vifs==F) {
-    mat <- matrix(nrow=length(ivs), ncol=5)
-    rownames(mat) <- ivs
-    colnames(mat) <- c("Est.", "S.E.", "t val.", "p", "")
-    mat[,1] <- round(ucoefs, digits=digits)
-    mat[,2] <- round(ses, digits=digits)
-    mat[,3] <- round(ts, digits=digits)
-    mat[,4] <- round(pvals, digits=digits)
-    mat[,5] <- digitstars
-    t <- as.table(mat)
+  if (stdbeta==T) {
+    params <- list(ucoefs, ses, betas, ts, pvals, digitstars)
+    namevec <- c("Est.", "S.E.", "Std. Beta", "t val.", "p", "")
+  } else {
+    params <- list(ucoefs, ses, ts, pvals, digitstars)
+    namevec <- c("Est.", "S.E.", "t val.", "p", "")
+  }
+  if (vifs==T) {
+    params <- list(params, tvifs)
+    namevec <- c(namevec, "VIF")
   }
 
-  if (stdbeta==T && vifs==T) {
-    mat <- matrix(nrow=length(ivs), ncol=7)
-    rownames(mat) <- ivs
-    colnames(mat) <- c("Est.", "S.E.", "Std. Beta.", "t val.", "p", "", "VIF")
-    mat[,1] <- round(ucoefs, digits=digits)
-    mat[,2] <- round(ses, digits=digits)
-    mat[,3] <- round(betas, digits=digits)
-    mat[,4] <- round(ts, digits=digits)
-    mat[,5] <- round(pvals, digits=digits)
-    mat[,6] <- digitstars
-    mat[,7] <- round(tvifs, digits=digits)
-    t <- as.table(mat)
-  }
+  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  rownames(mat) <- ivs
+  colnames(mat) <- namevec
 
-  if (stdbeta==F && vifs==T) {
-    mat <- matrix(nrow=length(ivs), ncol=6)
-    rownames(mat) <- ivs
-    colnames(mat) <- c("Est.", "S.E.", "t val.", "p", "", "VIF")
-    mat[,1] <- round(ucoefs, digits=digits)
-    mat[,2] <- round(ses, digits=digits)
-    mat[,3] <- round(ts, digits=digits)
-    mat[,4] <- round(pvals, digits=digits)
-    mat[,5] <- digitstars
-    mat[,6] <- round(tvifs, digits=digits)
-    t <- as.table(mat)
-  }
-
-  if (stdbeta==T && vifs==F) {
-    mat <- matrix(nrow=length(ivs), ncol=6)
-    rownames(mat) <- ivs
-    colnames(mat) <- c("Est.", "S.E.", "Std. Beta", "t val.", "p", "")
-    mat[,1] <- round(ucoefs, digits=digits)
-    mat[,2] <- round(ses, digits=digits)
-    mat[,3] <- round(betas, digits=digits)
-    mat[,4] <- round(ts, digits=digits)
-    mat[,5] <- round(pvals, digits=digits)
-    mat[,6] <- digitstars
-    t <- as.table(mat)
+  for (i in 1:length(params)) {
+    if (is.numeric(params[[i]])) {
+      mat[,i] <- round(params[[i]], digits=digits)
+    } else {
+      mat[,i] <- params[[i]]
+    }
   }
 
   cat("Model Info", "\n", "Sample Size: ", n, "\n", "Dependent Variable: ", names(lm$model[1]), "\n", "Number of Predictors: ", (lm$rank-1), "\n", sep="")
@@ -245,6 +217,6 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     cat("Standard errors: Robust, type = ", robust.type, "\n", sep="")
   }
 
-  print(t)
+  return(as.table(mat))
 
     }
