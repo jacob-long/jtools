@@ -81,6 +81,16 @@
 #'   \code{\link{sim_slopes}} performs a simple slopes analysis with a similar
 #'   argument syntax to this function.
 #'
+#' @references
+#'
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
+#'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
+#'  Research}, \emph{40}(3), 373-400.
+#'
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
+#' regression/correlation analyses for the behavioral sciences} (3rd ed.).
+#' Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+#'
 #' @examples
 #' # Using a fitted model as formula input
 #' states <- as.data.frame(state.x77)

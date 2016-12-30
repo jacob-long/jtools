@@ -105,6 +105,15 @@ interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
   int.type = "confidence", int.width = .8)
 
 }
+\references{
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
+ regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
+ Research}, \emph{40}(3), 373-400.
+
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
+regression/correlation analyses for the behavioral sciences} (3rd ed.).
+Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+}
 \seealso{
 \code{\link[rockchalk]{plotSlopes}} performs a similar function, but
   but with the base graphics package--this function is meant, in part, to simulate

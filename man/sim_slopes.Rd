@@ -65,6 +65,15 @@ sim_slopes(formula="Income ~ `HS Grad` + Murder + Illiteracy",
   data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
 
 }
+\references{
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
+ regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
+ Research}, \emph{40}(3), 373-400.
+
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
+regression/correlation analyses for the behavioral sciences} (3rd ed.).
+Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+}
 \seealso{
 \code{\link{interact_plot}} accepts similar syntax and will plot the
   results with \code{\link[ggplot2]{ggplot}}.
