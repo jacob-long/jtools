@@ -16,5 +16,6 @@ Imports:
 Suggests:
   lmtest,
   sandwich,
-  car
+  car,
+  testthat
 RoxygenNote: 5.0.1.9000
