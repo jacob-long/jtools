@@ -1,7 +1,7 @@
 Package: jtools
 Type: Package
 Title: Interpreting and Presenting Regressions and Interactions
-Version: 0.2.2
+Version: 0.2.3
 Authors@R: person("Jacob", "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
 Description: This is just a collection of tools that the author (Jacob) has written
@@ -16,6 +16,5 @@ Imports:
 Suggests:
   lmtest,
   sandwich,
-  car,
-  testthat
+  car
 RoxygenNote: 5.0.1.9000
