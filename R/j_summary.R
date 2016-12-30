@@ -98,9 +98,9 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
   # Standardized betas
   if (stdbeta==T) {
     b <- rep(NA, length(ivs))
-    b[2:as.numeric(length(ivs))] <- coef(lm)[-1]
+    b[(1+df.int):as.numeric(length(ivs))] <- coef(lm)[(1+df.int):length(ivs)]
     sx <- rep(NA, length(ivs))
-    sx[2:as.numeric(length(ivs))] <- sapply(lm$model[-1], sd)
+    sx[(1+df.int):as.numeric(length(ivs))] <- sapply(lm$model[(1+df.int):length(ivs)], sd)
     sy <- sapply(lm$model[1], sd)
     betas <- rep(NA, length(ivs))
     betas <- (b * sx) / sy
@@ -174,7 +174,7 @@ j_summ <- function(lm, stdbeta=FALSE, vifs=FALSE, robust=FALSE, robust.type="HC3
     namevec <- c("Est.", "S.E.", "t val.", "p", "")
   }
   if (vifs==T) {
-    params <- list(params, tvifs)
+    params[length(params)+1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
   }
 
