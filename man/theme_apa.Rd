@@ -67,7 +67,8 @@ This function applies a theme to \code{ggplot2} figures with a style
 }
 \examples{
 # Create plot with ggplot2
-plot <- ggplot2::ggplot(mpg, aes(cty, hwy)) +
+library(ggplot2)
+plot <- ggplot(mpg, aes(cty, hwy)) +
   geom_jitter()
 
 # Add APA theme with defaults

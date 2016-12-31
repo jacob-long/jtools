@@ -70,7 +70,8 @@
 #'
 #' @examples
 #' # Create plot with ggplot2
-#' plot <- ggplot2::ggplot(mpg, aes(cty, hwy)) +
+#' library(ggplot2)
+#' plot <- ggplot(mpg, aes(cty, hwy)) +
 #'   geom_jitter()
 #'
 #' # Add APA theme with defaults
