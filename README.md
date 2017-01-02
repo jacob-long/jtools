@@ -1,4 +1,5 @@
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a6147d8fe07f4daaa07c0553d10fdbd7)](https://www.codacy.com/app/jlongrc/jtools?utm_source=github.com&utm_medium=referral&utm_content=jacob-long/jtools&utm_campaign=badger)
 # jtools [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![Packagist](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 
 This package consists of a series of functions created by the author (Jacob) to automate otherwise tedious research tasks. At this juncture, the unifying theme is the more efficient presentation of regression analyses, including those with interactions.
