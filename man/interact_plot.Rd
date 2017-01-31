@@ -10,15 +10,20 @@ interact_plot(model, pred, modx, modxvals = NULL, interval = FALSE,
   main.title = NULL, legend.main = NULL, color.class = "Set2")
 }
 \arguments{
-\item{pred}{The predictor variable involved in the interaction in quotes.}
+\item{model}{A regression model of type \code{lm}, \code{glm}, or
+\code{\link[survey]{svyglm}}. It should contain the interaction of interest.}
 
-\item{modx}{The moderator variable involved in the interaction in quotes.}
+\item{pred}{The name of the predictor variable involved in the interaction in
+quotations.}
 
-\item{modxvals}{For which two values of the moderator should simple slopes analysis
-be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
-1 standard deviation from the mean values are used for continuous moderators.
-If the moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
- of the factor is included.}
+\item{modx}{The name of the moderator variable involved in the interaction in
+quotations.}
+
+\item{modxvals}{For which values of the moderator should lines be plotted?
+Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
+deviation from the mean values are used for continuous moderators. If the
+moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
+of the factor is included.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
 the line using \code{\link[ggplot2]{geom_ribbon}}.}
@@ -28,7 +33,8 @@ Default is confidence interval.}
 
 \item{centered}{A vector of quoted variable names that are to be mean-centered.
 If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
-then no others are centered.}
+then no others are centered. Alternately, "all" will center focal variables
+as well.}
 
 \item{int.width}{How large should the interval be, relative to the standard error?
 The default, .975, corresponds to roughly 1.96 standard errors and a .05 alpha
@@ -52,15 +58,6 @@ plot. If \code{NULL}, no main title is used.}
 above the legend. If \code{NULL}, the name of the moderating variable is used.}
 
 \item{color.class}{No options available for this in-development feature.}
-
-\item{formula}{A regression formula, like would be provided to \code{lm()}, in
-quotation marks. This does not need to include the interaction term. Alternately,
-give an \code{lm} object and the formula will be extracted. Interaction terms
-will be ignored.}
-
-\item{data}{A data frame.}
-
-\item{weights}{If weights are being used, provide the variable name where they are stored.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated like
@@ -79,33 +76,23 @@ This function provides a means for plotting conditional effects for the
   The function is designed for two-way interactions. For additional terms, the
   \code{\link[effects]{effects}} package may be better suited to the task.
 
-  The function can accept either a character object specifying the formula to be
-  tested or a \code{lm} object instead, from which the formula will be extracted. All
-  interactions will be stripped from the formula, leaving only the specified
-  interaction. The function refits the model, so other features of your fitted
-  model will be ignored (like the standard errors).
+  This function has not been extensively tested with non-linear models and may
+  display unusual behavior and/or errors when used with them.
 }
 \examples{
-# Using a fitted model as formula input
+# Using a fitted lm model
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
-fit <- lm(Income ~ HSGrad + Murder + Illiteracy,
+fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
   data = states)
-interact_plot(formula = fit, data = states, pred = "Murder",
+interact_plot(model = fit, pred = "Murder",
   modx = "Illiteracy")
-
-# Writing out formula
-interact_plot(formula = "Income ~ HSGrad + Murder + Illiteracy", data=states,
-  pred = "Murder", modx = "Illiteracy")
 
 # Using interval feature
 fit <- lm(accel ~ mag*dist, data=attenu)
-interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
+interact_plot(fit, pred = "mag", modx = "dist", interval = TRUE,
   int.type = "confidence", int.width = .8)
 
-# Using glm object as input
-dat <- read.csv("http://www.ats.ucla.edu/stat/data/binary.csv")
-mylogit <- glm(admit ~ gre + gpa + rank, data = dat, family = "binomial")
 
 }
 \references{
