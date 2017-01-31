@@ -52,6 +52,13 @@
 #'  definitive decision. Note that the use of robust standard errors can account
 #'   for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
 #'
+#'  The second piece of information provided by setting \code{model.check} to \code{TRUE}
+#'  is the number of high leverage observations. There are no hard and fast rules
+#'  for determining high leverage either, but in this case it is based on Cook's
+#'  Distance. All Cook's Distance values greater than (4/N) are included in the
+#'  count. Again, this is not a recommendation to locate and remove such observations,
+#'  but rather to look more closely with graphical and other methods.
+#'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @examples

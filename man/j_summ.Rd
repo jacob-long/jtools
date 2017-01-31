@@ -44,7 +44,7 @@ and print number of high-leverage observations. See details for more info.}
 \code{summary()}, but formatted differently with more options.
 }
 \details{
-Regardless of options selected, this function will print the following items to the console:
+By default, this function will print the following items to the console:
 \itemize{
   \item The sample size
   \item The name of the outcome variable
@@ -66,10 +66,17 @@ Regardless of options selected, this function will print the following items to 
  hypothesis test for which the alternative hypothesis is heteroskedastic errors.
  The test becomes much more likely to be statistically significant as the sample
  size increases; however, the homoskedasticity assumption becomes less important
- to inference as sample size increases. Take the result of the test as a cue to
- check graphical checks rather than a definitive decision. Note that the use of
- robust standard errors can account for heteroskedasticity, though some oppose
- this approach (see King & Roberts, 2015).
+ to inference as sample size increases (Lumley, Dieher, Emerson, & Lu, 2002).
+ Take the result of the test as a cue to check graphical checks rather than a
+ definitive decision. Note that the use of robust standard errors can account
+  for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
+
+ The second piece of information provided by setting \code{model.check} to \code{TRUE}
+ is the number of high leverage observations. There are no hard and fast rules
+ for determining high leverage either, but in this case it is based on Cook's
+ Distance. All Cook's Distance values greater than (4/N) are included in the
+ count. Again, this is not a recommendation to locate and remove such observations,
+ but rather to look more closely with graphical and other methods.
 }
 \examples{
 # Create lm object
@@ -83,12 +90,12 @@ j_summ(fit, stdbeta=TRUE, digits=2)
 \references{
 King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
  problems they do not fix, and what to do about it. \emph{Political Analysis},
-  \emph{23}(2), 159–179. https://doi.org/10.1093/pan/mpu015
+  \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
 
 Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
 Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
  Public Health}, \emph{23}, 151–169.
- https://doi.org/10.1146/annurev.publhealth.23.100901.140546
+ \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
