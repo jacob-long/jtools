@@ -4,20 +4,12 @@
 \alias{interact_plot}
 \title{Plot interaction effects in regression models}
 \usage{
-interact_plot(formula, data, pred, modx, modxvals = NULL, centered = NULL,
-  weights = NULL, interval = FALSE, int.type = c("confidence",
-  "prediction"), int.width = 0.975, x.label = NULL, y.label = NULL,
-  mod.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "Set2")
+interact_plot(model, pred, modx, modxvals = NULL, interval = FALSE,
+  int.type = c("confidence", "prediction"), centered = NULL,
+  int.width = 0.975, x.label = NULL, y.label = NULL, mod.labels = NULL,
+  main.title = NULL, legend.main = NULL, color.class = "Set2")
 }
 \arguments{
-\item{formula}{A regression formula, like would be provided to \code{lm()}, in
-quotation marks. This does not need to include the interaction term. Alternately,
-give an \code{lm} object and the formula will be extracted. Interaction terms
-will be ignored.}
-
-\item{data}{A data frame.}
-
 \item{pred}{The predictor variable involved in the interaction in quotes.}
 
 \item{modx}{The moderator variable involved in the interaction in quotes.}
@@ -28,17 +20,15 @@ be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
 If the moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
  of the factor is included.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.
-If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
-then no others are centered.}
-
-\item{weights}{If weights are being used, provide the variable name where they are stored.}
-
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
 the line using \code{\link[ggplot2]{geom_ribbon}}.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or "prediction".
 Default is confidence interval.}
+
+\item{centered}{A vector of quoted variable names that are to be mean-centered.
+If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
+then no others are centered.}
 
 \item{int.width}{How large should the interval be, relative to the standard error?
 The default, .975, corresponds to roughly 1.96 standard errors and a .05 alpha
@@ -62,6 +52,15 @@ plot. If \code{NULL}, no main title is used.}
 above the legend. If \code{NULL}, the name of the moderating variable is used.}
 
 \item{color.class}{No options available for this in-development feature.}
+
+\item{formula}{A regression formula, like would be provided to \code{lm()}, in
+quotation marks. This does not need to include the interaction term. Alternately,
+give an \code{lm} object and the formula will be extracted. Interaction terms
+will be ignored.}
+
+\item{data}{A data frame.}
+
+\item{weights}{If weights are being used, provide the variable name where they are stored.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated like
@@ -103,6 +102,10 @@ interact_plot(formula = "Income ~ HSGrad + Murder + Illiteracy", data=states,
 fit <- lm(accel ~ mag*dist, data=attenu)
 interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
   int.type = "confidence", int.width = .8)
+
+# Using glm object as input
+dat <- read.csv("http://www.ats.ucla.edu/stat/data/binary.csv")
+mylogit <- glm(admit ~ gre + gpa + rank, data = dat, family = "binomial")
 
 }
 \references{

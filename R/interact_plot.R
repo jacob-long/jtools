@@ -4,28 +4,25 @@
 #' variable to explore interactions. The plotting is done with \code{ggplot2} rather than
 #' base graphics, which some similar functions use.
 #'
-#' @param formula A regression formula, like would be provided to \code{lm()}, in
-#'   quotation marks. This does not need to include the interaction term. Alternately,
-#'   give an \code{lm} object and the formula will be extracted. Interaction terms
-#'   will be ignored.
+#' @param model A regression model of type \code{lm}, \code{glm}, or
+#' \code{\link[survey]{svyglm}}. It should contain the interaction of interest.
 #'
-#' @param data A data frame.
+#' @param pred The name of the predictor variable involved in the interaction in
+#'  quotations.
 #'
-#' @param pred The predictor variable involved in the interaction in quotes.
+#' @param modx The name of the moderator variable involved in the interaction in
+#'  quotations.
 #'
-#' @param modx The moderator variable involved in the interaction in quotes.
-#'
-#' @param modxvals For which two values of the moderator should simple slopes analysis
-#'   be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
-#'   1 standard deviation from the mean values are used for continuous moderators.
-#'   If the moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
-#'    of the factor is included.
+#' @param modxvals For which values of the moderator should lines be plotted?
+#'   Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
+#'   deviation from the mean values are used for continuous moderators. If the
+#'   moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
+#'   of the factor is included.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered.
 #'   If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
-#'   then no others are centered.
-#'
-#' @param weights If weights are being used, provide the variable name where they are stored.
+#'   then no others are centered. Alternately, "all" will center focal variables
+#'   as well.
 #'
 #' @param interval Logical. If \code{TRUE}, plots confidence/prediction intervals
 #'   the line using \code{\link[ggplot2]{geom_ribbon}}.
@@ -63,11 +60,8 @@
 #'   The function is designed for two-way interactions. For additional terms, the
 #'   \code{\link[effects]{effects}} package may be better suited to the task.
 #'
-#'   The function can accept either a character object specifying the formula to be
-#'   tested or a \code{lm} object instead, from which the formula will be extracted. All
-#'   interactions will be stripped from the formula, leaving only the specified
-#'   interaction. The function refits the model, so other features of your fitted
-#'   model will be ignored (like the standard errors).
+#'   This function has not been extensively tested with non-linear models and may
+#'   display unusual behavior and/or errors when used with them.
 #'
 #' @return The functions returns a \code{ggplot} object, which can be treated like
 #'   a user-created plot and expanded upon as such.
@@ -92,73 +86,50 @@
 #' Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 #'
 #' @examples
-#' # Using a fitted model as formula input
+#' # Using a fitted lm model
 #' states <- as.data.frame(state.x77)
 #' states$HSGrad <- states$`HS Grad`
-#' fit <- lm(Income ~ HSGrad + Murder + Illiteracy,
+#' fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
 #'   data = states)
-#' interact_plot(formula = fit, data = states, pred = "Murder",
+#' interact_plot(model = fit, pred = "Murder",
 #'   modx = "Illiteracy")
-#'
-#' # Writing out formula
-#' interact_plot(formula = "Income ~ HSGrad + Murder + Illiteracy", data=states,
-#'   pred = "Murder", modx = "Illiteracy")
 #'
 #' # Using interval feature
 #' fit <- lm(accel ~ mag*dist, data=attenu)
-#' interact_plot(fit, data = attenu, pred = "mag", modx = "dist", interval = TRUE,
+#' interact_plot(fit, pred = "mag", modx = "dist", interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
+#'
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm
 #' @export interact_plot
 
-interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=NULL, weights = NULL, interval = FALSE, int.type = c("confidence","prediction"), int.width = .975, x.label = NULL, y.label = NULL, mod.labels = NULL, main.title = NULL, legend.main = NULL, color.class="Set2") {
+interact_plot <- function(model, pred, modx, modxvals = NULL, interval = FALSE,
+                          int.type = c("confidence","prediction"), centered = NULL,
+                          int.width = .975, x.label = NULL, y.label = NULL,
+                          mod.labels = NULL, main.title = NULL, legend.main = NULL,
+                          color.class="Set2") {
 
   # Duplicating the dataframe so it can be manipulated as needed
-  d <- as.data.frame(data)
+  d <- as.data.frame(model$model)
 
   # For setting dimensions correctly later
-  nc <- ncol(data)
-
-  # Handling user-supplied weights
-  if (!is.null(weights)) {
-    weight <- d[,weights]
-  }
+  nc <- ncol(d)
 
   # Get the formula from lm object if given
-  if (class(formula)=="lm") {
-    formula <- formula(formula)
-    formula <- paste(formula[2],formula[1],formula[3])
-  }
-
-  # Remove interactions if found
-  if (grepl("\\*", formula)) {
-    # By swapping the asterisk for a plus sign, preserves all the predictors
-    formula <- gsub("\\*", "\\+", as.character(formula))
-    # Later on the formula syntax will be borked if I add a plus sign
-    addplus <- FALSE
-  } else {
-    # Since there isn't a hanging plus sign, one needs to be added later
-    addplus <- TRUE
-  }
-
-  # Remove moderator from formula
-  if (grepl(modx, formula)) {
-    formula <- gsub(modx, "", as.character(formula))
-  }
-
-  # Remove predictor from formula for sake of consistency, will add back later
-  if (grepl(pred, formula)) {
-    formula <- gsub(pred, "", as.character(formula))
-  }
+  formula <- formula(model)
+  formula <- paste(formula[2],formula[1],formula[3])
 
   # Pulling the name of the response variable for labeling
   resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
   resp <- trimws(resp)
 
   # Handling user-requested centered vars
-  if (!is.null(centered)){
+  if (!is.null(centered) && centered != "all") {
     for (var in centered) {
+      d[,var] <- d[,var] - mean(d[,var])
+    }
+  } else if (!is.null(centered) && centered == "all") {
+    for (var in 1:nc) {
       d[,var] <- d[,var] - mean(d[,var])
     }
   } else { # Center all non-focal
@@ -209,17 +180,6 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   # Add values of focal predictor to df
   pm[,pred] <- xpreds
 
-  # Making sure formula has both focal variables and an interaction thereof
-  form <- paste(formula, "+", modx, "*", pred, sep="")
-
-  # Creating model, adding weights if needed
-  if (is.null(weights)) {
-    model <- lm(form, data=d)
-
-  } else {
-    model <- lm(form, data=d, weights=weight)
-  }
-
   # Create predicted values based on specified levels of the moderator, focal predictor
   predicted <- as.data.frame(predict(model, pm, se.fit=T, interval=int.type[1]))
   pm[,resp] <- predicted[,1] # this is the actual values
@@ -228,8 +188,13 @@ interact_plot <- function(formula, data, pred, modx, modxvals = NULL, centered=N
   ses <- qnorm(int.width, 0, 1)
 
   # See minimum and maximum values for plotting intervals
-  pm[,"ymax"] <- pm[,resp] + (predicted[,3]-pm[,resp])*ses
-  pm[,"ymin"] <- pm[,resp] - (predicted[,3]-pm[,resp])*ses
+  if (class(model)[1] == "lm" || class(model)[1] == "glm") {
+    pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
+    pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
+  } else if (class(model)[1]=="svyglm") {
+    pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
+    pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+  }
 
   # For plotting, it's good to have moderator as factor...
   # but not until after predict() is used
