@@ -80,9 +80,8 @@
 #'  Public Health}, \emph{23}, 151–169.
 #'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 #'
-#' @importFrom stats coef coefficients lm predict sd
-#' @export j_summ
-#' @export print.j_summ
+#' @importFrom stats coef coefficients lm predict sd cooks.distance
+#' @export
 
 j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
                    robust.type = "HC3", digits = 3, model.info = TRUE,
