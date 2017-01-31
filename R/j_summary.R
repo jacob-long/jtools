@@ -18,6 +18,12 @@
 #'   . See details for more on options.
 #' @param digits An integer specifying the number of digits past the decimal to report in
 #'   the output. Default is 5.
+#' @param model.info Toggles printing of basic information on sample size, name of
+#'   DV, and number of predictors.
+#' @param model.fit Toggles printing of R-squared, Adjusted R-squared, Pseudo-R-squared,
+#'  and AIC (when applicable).
+#' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
+#'  and print number of high-leverage observations. See details for more info.
 #'
 #' @details Regardless of options selected, this function will print the following items to the console:
 #' \itemize{
@@ -106,6 +112,11 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
   ## Final calculations
   rsq <- mss/(mss+rss)
   arsq <- 1 - (1 - rsq) * ((n-df.int)/lm$df.residual)
+
+  # AIC for GLMs
+  if (class(lm)[1] != "lm") {
+    j$aic <- lm$aic
+  }
 
   # List of names of predictors
   ivs <- names(coefficients(lm))
@@ -213,7 +224,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
   }
 
   j$model.check <- model.check
-  if (model.check == TRUE && linear == TRUE) {
+  if (model.check == TRUE && linear == TRUE && class(lm)[1] == "lm") {
     if (!requireNamespace("car", quietly = TRUE)) {
       stop("When model.check is set to TRUE, you need to have the \'car\' package
            for model checking functionality. Please install it or set model.check
@@ -331,7 +342,7 @@ print.j_summ <- function(x) {
   }
 
   if (x$model.fit==T) {
-    if (x$lmClass[1]=="lm" || x$linear == TRUE) {
+    if (x$lmClass[1]=="lm") {
       cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
           round(x$fstat, digits=x$digits), ", p = ", round(x$modpval, digits=x$digits),
           "\n", "R-squared = ", round(x$rsq, digits=x$digits), "\n",
@@ -339,13 +350,13 @@ print.j_summ <- function(x) {
           round(x$arsq, digits=x$digits), "\n", "\n", sep="")
     }
 
-    if (x$lmClass[1]=="glm" || x$lmClass[2]=="glm") {
+    if (x$lmClass[1] != "lm") {
       cat("MODEL FIT: ", "\n", "Pseudo R-squared = ", round(x$rsq, digits=x$digits),
-          "\n", "\n", sep="")
+          "\n", "AIC = ", x$aic, "\n\n", sep="")
     }
   }
 
-  if (x$model.check) {
+  if (x$model.check == TRUE && x$lmClass[1] == "lm") {
     if (x$homoskedp < .05) {
       homoskedtf <- paste("Assumption violated (p = ",
                           round(x$homoskedp,digits=x$digits), ")", sep="")
