@@ -25,7 +25,7 @@
 #' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
 #'  and print number of high-leverage observations. See details for more info.
 #'
-#' @details Regardless of options selected, this function will print the following items to the console:
+#' @details By default, this function will print the following items to the console:
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
@@ -41,6 +41,17 @@
 #'  that choice may be better if the goal is to replicate Stata's output. Any option that
 #'  is understood by \code{vcovHC} will be accepted.
 #'
+#'  There are two pieces of information given for \code{model.check}, provided that
+#'  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
+#'  \code{\link[car]{ncvTest}}, which requires the \code{car} package. This is a
+#'  hypothesis test for which the alternative hypothesis is heteroskedastic errors.
+#'  The test becomes much more likely to be statistically significant as the sample
+#'  size increases; however, the homoskedasticity assumption becomes less important
+#'  to inference as sample size increases (Lumley, Dieher, Emerson, & Lu, 2002).
+#'  Take the result of the test as a cue to check graphical checks rather than a
+#'  definitive decision. Note that the use of robust standard errors can account
+#'   for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
+#'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @examples
@@ -50,6 +61,17 @@
 #' # Print the output with standardized coefficients and 2 digits past the decimal
 #' j_summ(fit, stdbeta=TRUE, digits=2)
 #'
+#'
+#' @references
+#'
+#' King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
+#'  problems they do not fix, and what to do about it. \emph{Political Analysis},
+#'   \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
+#'
+#' Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
+#' Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
+#'  Public Health}, \emph{23}, 151–169.
+#'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 #'
 #' @importFrom stats coef coefficients lm predict sd
 #' @export j_summ

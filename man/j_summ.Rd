@@ -5,7 +5,8 @@
 \title{Regression summaries with options}
 \usage{
 j_summ(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
-  robust.type = "HC3", digits = 5)
+  robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
+  model.check = FALSE)
 }
 \arguments{
 \item{lm}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
@@ -28,6 +29,15 @@ robust standard errors to be used by \code{sandwich}. By default, set to \code{"
 
 \item{digits}{An integer specifying the number of digits past the decimal to report in
 the output. Default is 5.}
+
+\item{model.info}{Toggles printing of basic information on sample size, name of
+DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of R-squared, Adjusted R-squared, Pseudo-R-squared,
+and AIC (when applicable).}
+
+\item{model.check}{Toggles whether to perform Breusch-Pagan test for heteroskedasticity
+and print number of high-leverage observations. See details for more info.}
 }
 \description{
 \code{j_summ()} prints output for a regression model in a fashion similar to
@@ -49,6 +59,17 @@ Regardless of options selected, this function will print the following items to 
  \code{sandwich}, the default is set to \code{"HC3"}. Stata's default is \code{"HC1"}, so
  that choice may be better if the goal is to replicate Stata's output. Any option that
  is understood by \code{vcovHC} will be accepted.
+
+ There are two pieces of information given for \code{model.check}, provided that
+ the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
+ \code{\link[car]{ncvTest}}, which requires the \code{car} package. This is a
+ hypothesis test for which the alternative hypothesis is heteroskedastic errors.
+ The test becomes much more likely to be statistically significant as the sample
+ size increases; however, the homoskedasticity assumption becomes less important
+ to inference as sample size increases. Take the result of the test as a cue to
+ check graphical checks rather than a definitive decision. Note that the use of
+ robust standard errors can account for heteroskedasticity, though some oppose
+ this approach (see King & Roberts, 2015).
 }
 \examples{
 # Create lm object
@@ -57,6 +78,17 @@ fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77
 # Print the output with standardized coefficients and 2 digits past the decimal
 j_summ(fit, stdbeta=TRUE, digits=2)
 
+
+}
+\references{
+King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
+ problems they do not fix, and what to do about it. \emph{Political Analysis},
+  \emph{23}(2), 159–179. https://doi.org/10.1093/pan/mpu015
+
+Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
+Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
+ Public Health}, \emph{23}, 151–169.
+ https://doi.org/10.1146/annurev.publhealth.23.100901.140546
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
