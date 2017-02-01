@@ -67,7 +67,7 @@
 #'
 #' @note This function was designed in part on the procedure recommended by Thomas
 #'   Lumley, the author of the survey package, on
-#'   \href[http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088]{Stack Overflow}. However, he has not reviewed or endorsed this implementation.
+#'   \href{http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has not reviewed or endorsed this implementation.
 #'   All defects are attributed to the author.
 #'
 #' @examples
@@ -100,7 +100,7 @@ svycor <- function(formula, design, na.rm = FALSE, sig.stats = FALSE, bootn = 10
     mf <- model.frame(formula, model.frame(design),na.action=na.pass)
 
     # Extract the weights for use with wtd.cor
-    wts <- weights(design, "analysis")
+    wts <- weights(design, "sampling")
 
   } else if (sig.stats == TRUE) {
     stop("To get significance tests, provide the argument as a formula (e.g.,
