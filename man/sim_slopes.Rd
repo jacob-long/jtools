@@ -4,16 +4,12 @@
 \alias{sim_slopes}
 \title{Perform a simple slopes analysis}
 \usage{
-sim_slopes(formula, data, pred, modx, modxvals = NULL, centered = NULL,
-  weights = NULL, robust = FALSE, robust.type = "HC3", digits = 3)
+sim_slopes(model, pred, modx, modxvals = NULL, centered = NULL,
+  robust = FALSE, robust.type = "HC3", digits = 3)
 }
 \arguments{
-\item{formula}{A regression formula, like would be provided to \code{lm()}, in
-quotation marks. This does not need to include the interaction term. Alternately,
-give an \code{lm} object and the formula will be extracted. Interaction terms
-with non-focal predictors will be ignored and entered as separate terms.}
-
-\item{data}{A data frame.}
+\item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
+It should contain the interaction of interest.}
 
 \item{pred}{The predictor variable involved in the interaction in quotes.}
 
@@ -27,9 +23,8 @@ There is no specific limit on the number of variables provided.}
 
 \item{centered}{A vector of quoted variable names that are to be mean-centered. If
 \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
-the user-specified predictors are centered.}
-
-\item{weights}{If weights are being used, provide the variable name where they are stored.}
+the user-specified predictors are centered. User can also use "none" or "all"
+arguments.}
 
 \item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust standard errors.}
 
@@ -48,21 +43,17 @@ This allows the user to perform a simple slopes analysis for the purpose
   of probing interaction effects in a linear regression. Only two-way interactions
   are supported.
 
-  The function can accept either a character object specifying the formula to be
-  tested or a \code{lm} object instead, from which the formula will be extracted. All
-  interactions will be stripped from the formula, leaving only the specified
-  interaction. The function refits the model, so other features of your fitted
-  model will be ignored (like the standard errors).
+  The function accepts a \code{lm} object and uses it to recompute models with
+  the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
+   objects are also accepted, though users should be cautioned against using
+  simple slopes analysis with non-linear models.
 }
 \examples{
 # Using a fitted model as formula input
-fit <- lm(Income ~ `HS Grad` + Murder + Illiteracy,
+fit <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
   data=as.data.frame(state.x77))
-sim_slopes(formula=fit, data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
+sim_slopes(model=fit, pred="Murder", modx="Illiteracy")
 
-# Writing out formula
-sim_slopes(formula="Income ~ `HS Grad` + Murder + Illiteracy",
-  data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
 
 }
 \references{

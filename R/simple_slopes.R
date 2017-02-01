@@ -3,12 +3,8 @@
 #' \code{sim_slopes()} conducts a simple slopes analysis for the purposes of understanding
 #' interaction effects in linear regression.
 #'
-#' @param formula A regression formula, like would be provided to \code{lm()}, in
-#'   quotation marks. This does not need to include the interaction term. Alternately,
-#'   give an \code{lm} object and the formula will be extracted. Interaction terms
-#'   with non-focal predictors will be ignored and entered as separate terms.
-#'
-#' @param data A data frame.
+#' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
+#'    It should contain the interaction of interest.
 #'
 #' @param pred The predictor variable involved in the interaction in quotes.
 #'
@@ -22,9 +18,8 @@
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered. If
 #'   \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
-#'   the user-specified predictors are centered.
-#'
-#' @param weights If weights are being used, provide the variable name where they are stored.
+#'   the user-specified predictors are centered. User can also use "none" or "all"
+#'   arguments.
 #'
 #' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust standard errors.
 #'
@@ -38,11 +33,10 @@
 #'   of probing interaction effects in a linear regression. Only two-way interactions
 #'   are supported.
 #'
-#'   The function can accept either a character object specifying the formula to be
-#'   tested or a \code{lm} object instead, from which the formula will be extracted. All
-#'   interactions will be stripped from the formula, leaving only the specified
-#'   interaction. The function refits the model, so other features of your fitted
-#'   model will be ignored (like the standard errors).
+#'   The function accepts a \code{lm} object and uses it to recompute models with
+#'   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
+#'    objects are also accepted, though users should be cautioned against using
+#'   simple slopes analysis with non-linear models.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -67,62 +61,53 @@
 #'
 #' @examples
 #' # Using a fitted model as formula input
-#' fit <- lm(Income ~ `HS Grad` + Murder + Illiteracy,
+#' fit <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
 #'   data=as.data.frame(state.x77))
-#' sim_slopes(formula=fit, data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
+#' sim_slopes(model=fit, pred="Murder", modx="Illiteracy")
 #'
-#' # Writing out formula
-#' sim_slopes(formula="Income ~ `HS Grad` + Murder + Illiteracy",
-#'   data=as.data.frame(state.x77), pred="Murder", modx="Illiteracy")
 #'
-#' @importFrom stats coef coefficients lm predict sd
-#' @export sim_slopes
+#' @importFrom stats coef coefficients lm predict sd update
+#' @export
 
-sim_slopes <- function(formula, data, pred, modx, modxvals = NULL, centered = NULL, weights = NULL, robust=FALSE, robust.type="HC3", digits = 3) {
+sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
+                       robust=FALSE, robust.type="HC3", digits = 3) {
+
+  # Create object to return
+  ss <- NULL
 
   # Check arguments
   if (!is.numeric(digits)) { # digits
     stop("The digits argument must be an integer.")
   }
+  ss$digits <- digits
 
   if (!is.null(modxvals) && !is.vector(modxvals)) {
-    stop("The modxvals argument must be a vector of at least length 2 if it used.")
+    stop("The modxvals argument must be a vector of at least length 2 if it is used.")
   }
 
-  d <- as.data.frame(data)
-
-  if (!is.null(weights)) {
-    weight <- d[,weights]
-  }
-
-  # Get the formula from lm object if given
-  if (class(formula)=="lm") {
-    formula <- formula(formula)
-    formula <- paste(formula[2],formula[1],formula[3])
-  }
-
-  # Remove interactions if found
-  if (grepl("\\*", formula)) {
-    # By swapping the asterisk for a plus sign, preserves all the predictors
-    formula <- gsub("\\*", "\\+", as.character(formula))
-  }
-  # Remove moderator from formula
-  if (grepl(modx, formula)) {
-    formula <- gsub(modx, "", as.character(formula))
-  }
-
-  # Removing the focal predictor
-  if (grepl(pred, formula)) {
-    formula <- gsub(pred, "", as.character(formula))
-  }
+  # Save data from model object
+  d <- as.data.frame(model$model)
 
   # Pulling the name of the response variable for labeling
+  formula <- formula(model)
+  formula <- paste(formula[2],formula[1],formula[3])
+
   resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
   resp <- trimws(resp)
 
+  ss$resp <- resp
+  ss$modx <- modx
+  ss$pred <- pred
+
   # Handling user-requested centered vars
-  if (!is.null(centered)){
+  if (!is.null(centered) && (centered != "all" || centered != "none")){
     for (var in centered) {
+      d[,var] <- d[,var] - mean(d[,var])
+    }
+  } else if (!is.null(centered) && centered == "none") {
+
+  } else if (!is.null(centered) && centered == "all") {
+    for (var in names(d)) {
       d[,var] <- d[,var] - mean(d[,var])
     }
   } else { # Center all non-focal
@@ -134,82 +119,117 @@ sim_slopes <- function(formula, data, pred, modx, modxvals = NULL, centered = NU
     }
   }
 
-  # Default to +/- 1 SD
-  if (is.null(modxvals)) {
-    modsd <- sd(d[,modx]) # the SD
-
-    # Store the values
+  # Default to +/- 1 SD unless modx is factor
+  if (is.null(modxvals) && !is.factor(d[,modx])) {
+    modsd <- sd(d[,modx])
     modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
-
+    modxvalssd <- modxvalssd
     names(modxvalssd) <- c("+1 SD", "-1 SD")
     modxvals2 <- modxvalssd
-
-  } else { #otherwise use given values
+  } else if (is.null(modxvals) && is.factor(d[,modx])){
+    modxvals2 <- levels(d[,modx])
+  } else { # Use user-supplied values otherwise
     modxvals2 <- modxvals
   }
+
+  # Need to make a matrix filled with NAs to store values from looped model-making
+  holdvals <- rep(NA, length(modxvals2)*4)
+  retmat <- matrix(holdvals, nrow=length(modxvals2))
+
+  # Create another matrix to hold intercepts (no left-hand column needed)
+  retmati <- retmat
+
+  # Value labels
+  colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+  colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+
+  # Make empty list to put actual models into
+  mods <- as.list(rep(NA, length(modxvals2)))
 
   # Looping so any amount of moderator values can be used
   for (i in 1:length(modxvals2)) {
 
-    # The moderator value-adjusted variable
-    d$modp <- d[,modx] - modxvals2[i]
+    # Creating extra "copy" of model frame to change for model update
+    dt <- d
 
-    # The lm() formula
-    formulap <- paste(formula, " + modp*", pred, sep="")
+    # The moderator value-adjusted variable
+    dt[,modx] <- dt[,modx] - modxvals2[i]
 
     # Creating the model
-    if (is.null(weights)) {
-      modelp <- lm(formulap, data=d)
-    } else {
-      modelp <- lm(formulap, data=d, weights=weight)
-    }
+    newmod <- update(model, data=dt)
 
     # Getting SEs, robust or otherwise
     if (robust==TRUE) {
 
-      # Hold things up if required packages not installed
-      if (!requireNamespace("sandwich", quietly = TRUE)) {
-        stop("When robust is set to TRUE, you need to have the \'sandwich\' package for robust standard errors.
-           Please install it or set robust to FALSE.",
-           call. = FALSE)
-      }
+      # Use j_summ to get the coefficients
+      sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type)
+      summat <- sum$coeftable
 
-      # Hold things up if required packages not installed
-      if (!requireNamespace("lmtest", quietly = TRUE)) {
-        stop("When robust is set to TRUE, you need to have the \'lmtest\' package for robust standard errors.
-           Please install it or set robust to FALSE.",
-           call. = FALSE)
-      }
+      slopep <- summat[pred,c("Est.","S.E.","p")]
+      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
 
-      slopep <- lmtest::coeftest(modelp, vcov=sandwich::vcovHC(modelp, type=robust.type))[pred,]
-      intp <- lmtest::coeftest(modelp, vcov=sandwich::vcovHC(modelp, type=robust.type))["(Intercept)",]
+      retmat[i,1] <- modxvals2[i]
+      retmat[i,2:4] <- slopep[]
+
+      retmati[i,1] <- modxvals2[i]
+      retmati[i,2:4] <- intp[]
 
     } else {
 
-      slopep <- coef(summary(modelp))[pred,]
-      intp <- coef(summary(modelp))["(Intercept)",]
+      sum <- jtools::j_summ(newmod)
+      summat <- sum$coeftable
+
+      slopep <- summat[pred,c("Est.","S.E.","p")]
+      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
+
+      retmat[i,1] <- modxvals2[i]
+      retmat[i,2:4] <- slopep[]
+
+      retmati[i,1] <- modxvals2[i]
+      retmati[i,2:4] <- intp[]
 
     }
 
-    # Use the labels for the automatic +/- 1 SD
-    if (is.null(modxvals)) {
+    mods[[i]] <- newmod
 
-      cat("Slope of ", pred, " when ", modx, " = ", round(modxvalssd[i],digits), " (", names(modxvalssd)[i], ")", ": \n", sep="")
-      print(round(slopep, digits))
+  }
+
+    ss$slopes <- retmat
+    ss$ints <- retmati
+    ss$modxvals <- modxvals2
+
+    ss$robust <- robust
+
+    ss$mods <- mods
+
+    class(ss) <- "sim_slopes"
+    return(ss)
+
+  }
+
+print.sim_slopes <- function(ss) {
+
+  for (i in 1:length(ss$modxvals)) {
+
+    # Use the labels for the automatic +/- 1 SD
+    if (is.null(ss$modxvals) && !is.factor(ss$mods[[1]]$model[,ss$modx])) {
+
+      cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), " (", names(ss$modxvalssd)[i], ")", ": \n", sep="")
+      print(round(ss$slopes[i,], ss$digits))
 
       # Print conditional intercept
-      cat("Conditional intercept"," when ", modx, " = ", round(modxvalssd[i],digits), " (", names(modxvalssd)[i], ")", ": \n", sep="")
-      print(round(intp, digits))
+      cat("Conditional intercept"," when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")", ": \n", sep="")
+      print(round(ss$ints[i,], ss$digits))
       cat("\n")
 
     } else { # otherwise don't use labels
 
-      cat("Slope of ", pred, " when ", modx, " = ", round(modxvals[i],digits), ": \n", sep="")
-      print(round(slopep,digits))
+      cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), ": \n", sep="")
+      print(round(ss$slopes[i,],ss$digits))
 
       # Print conditional intercept
-      cat("Conditional intercept", " when ", modx, " = ", round(modxvals[i],digits), ": \n", sep="")
-      print(round(intp, digits))
+      cat("Conditional intercept", " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), ": \n", sep="")
+      print(round(ss$ints[i,], ss$digits))
       cat("\n")
 
     }
