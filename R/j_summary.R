@@ -64,11 +64,11 @@
 #'
 #' \describe{
 #'
-#'  \item{coeftable} The outputted table of variables and coefficients
-#'  \item{rsq} The R-squared value, if applicable
-#'  \item{arsq} The adjusted R-squared value, if applicable
-#'  \item{n} The number of observations used
-#'  \item{npreds} The number of predictors used in the model
+#'  \item{coeftable}{The outputted table of variables and coefficients}
+#'  \item{rsq}{The R-squared value, if applicable}
+#'  \item{arsq}{The adjusted R-squared value, if applicable}
+#'  \item{n}{The number of observations used}
+#'  \item{npreds}{The number of predictors used in the model}
 #'
 #' }
 #'
@@ -258,7 +258,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
 
   for (i in 1:length(params)) {
     if (is.numeric(params[[i]])) {
-      mat[,i] <- round(params[[i]], digits=digits)
+      mat[,i] <- params[[i]]
     } else {
       mat[,i] <- params[[i]]
     }

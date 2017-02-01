@@ -45,11 +45,11 @@ If saved, users can access most of the items that are returned in the
 
 \describe{
 
- \item{coeftable} The outputted table of variables and coefficients
- \item{rsq} The R-squared value, if applicable
- \item{arsq} The adjusted R-squared value, if applicable
- \item{n} The number of observations used
- \item{npreds} The number of predictors used in the model
+ \item{coeftable}{The outputted table of variables and coefficients}
+ \item{rsq}{The R-squared value, if applicable}
+ \item{arsq}{The adjusted R-squared value, if applicable}
+ \item{n}{The number of observations used}
+ \item{npreds}{The number of predictors used in the model}
 
 }
 }
