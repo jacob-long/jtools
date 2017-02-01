@@ -39,6 +39,20 @@ and AIC (when applicable).}
 \item{model.check}{Toggles whether to perform Breusch-Pagan test for heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
 }
+\value{
+If saved, users can access most of the items that are returned in the
+  output (and without rounding).
+
+\describe{
+
+ \item{coeftable} The outputted table of variables and coefficients
+ \item{rsq} The R-squared value, if applicable
+ \item{arsq} The adjusted R-squared value, if applicable
+ \item{n} The number of observations used
+ \item{npreds} The number of predictors used in the model
+
+}
+}
 \description{
 \code{j_summ()} prints output for a regression model in a fashion similar to
 \code{summary()}, but formatted differently with more options.
