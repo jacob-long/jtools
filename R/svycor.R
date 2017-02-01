@@ -41,13 +41,13 @@
 #'   correlations into t-values. The method provided here is defensible, but if
 #'   reporting in scientific publications the method should be spelled out.
 #'
-#' @value
+#' @return
 #'
 #'  If significance tests are not requested, there is one returned value:
 #'
 #' \describe{
 #'
-#'  \item{cors} The correlation matrix (without rounding)
+#'  \item{cors}{The correlation matrix (without rounding)}
 #'
 #'  }
 #'
@@ -55,9 +55,9 @@
 #'
 #' \describe{
 #'
-#'  \item{p.values} A matrix of p values
-#'  \item{t.values} A matrix of t values
-#'  \item{std.err} A matrix of standard errors
+#'  \item{p.values}{A matrix of p values}
+#'  \item{t.values}{A matrix of t values}
+#'  \item{std.err}{A matrix of standard errors}
 #'
 #' }
 #'
@@ -83,7 +83,7 @@
 #'  out <- svycor(~api00+api99+dnum, design = dstrat)
 #'  out$cors
 #'
-#'
+#' @importFrom stats cov2cor model.frame na.pass weights
 #' @export
 #'
 

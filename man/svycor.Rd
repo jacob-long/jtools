@@ -31,6 +31,25 @@ total number of observations (FALSE)?}
 
 \item{...}{Additional arguments passed to \code{\link[survey]{svyvar}}.}
 }
+\value{
+If significance tests are not requested, there is one returned value:
+
+\describe{
+
+ \item{cors}{The correlation matrix (without rounding)}
+
+ }
+
+ If significance tests are requested, the following are also returned:
+
+\describe{
+
+ \item{p.values}{A matrix of p values}
+ \item{t.values}{A matrix of t values}
+ \item{std.err}{A matrix of standard errors}
+
+}
+}
 \description{
 \code{svycor} extends the \code{survey} package by calculating correlations
 with syntax similar to the original package, which for reasons unknown lacks
@@ -68,7 +87,6 @@ This function was designed in part on the procedure recommended by Thomas
  # Save the results, extract correlation matrix
  out <- svycor(~api00+api99+dnum, design = dstrat)
  out$cors
-
 
 }
 \seealso{
