@@ -18,8 +18,10 @@ It should contain the interaction of interest.}
 \item{modxvals}{For which values of the moderator should simple slopes analysis
 be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
 the customary +/- 1 standard deviation from the mean as well as the mean itself.
-For factor variables, each level will be used by default. There is no specific
- limit on the number of variables provided.}
+There is no specific limit on the number of variables provided. Factor variables
+are not particularly suited to simple slopes analysis, but you could have a
+numeric moderator with values of 0 and 1 and give \code{c(0,1)} to compare the
+slopes at the different conditions.}
 
 \item{centered}{A vector of quoted variable names that are to be mean-centered. If
 \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only

@@ -13,8 +13,10 @@
 #' @param modxvals For which values of the moderator should simple slopes analysis
 #'   be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
 #'   the customary +/- 1 standard deviation from the mean as well as the mean itself.
-#'   For factor variables, each level will be used by default. There is no specific
-#'    limit on the number of variables provided.
+#'   There is no specific limit on the number of variables provided. Factor variables
+#'   are not particularly suited to simple slopes analysis, but you could have a
+#'   numeric moderator with values of 0 and 1 and give \code{c(0,1)} to compare the
+#'   slopes at the different conditions.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered. If
 #'   \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
@@ -104,6 +106,10 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   # Save data from model object
   d <- as.data.frame(model$model)
 
+  if (is.factor(d[,modx])){
+    stop("Factor variables are not supported. You can try using a binary numeric variable and set modxvals = c(0,1), however.")
+  }
+
   # Pulling the name of the response variable for labeling
   formula <- formula(model)
   formula <- paste(formula[2],formula[1],formula[3])
@@ -143,10 +149,9 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
     modxvals2 <- modxvalssd
     ss$def <- TRUE
-  } else if (is.null(modxvals) && is.factor(d[,modx])){
-    modxvals2 <- levels(d[,modx])
   } else { # Use user-supplied values otherwise
     modxvals2 <- modxvals
+    ss$def <- FALSE
   }
 
   # Need to make a matrix filled with NAs to store values from looped model-making
