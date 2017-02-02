@@ -45,21 +45,21 @@
 #'
 #'  If significance tests are not requested, there is one returned value:
 #'
-#' \describe{
+#'
 #'
 #'  \item{cors}{The correlation matrix (without rounding)}
 #'
-#'  }
+#'
 #'
 #'  If significance tests are requested, the following are also returned:
 #'
-#' \describe{
+#'
 #'
 #'  \item{p.values}{A matrix of p values}
 #'  \item{t.values}{A matrix of t values}
 #'  \item{std.err}{A matrix of standard errors}
 #'
-#' }
+#'
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -79,18 +79,20 @@
 #'
 #'  # Print correlation matrix
 #'  svycor(~api00+api99+dnum, design = dstrat)
+#'
 #'  # Save the results, extract correlation matrix
 #'  out <- svycor(~api00+api99+dnum, design = dstrat)
 #'  out$cors
 #'
 #' @importFrom stats cov2cor model.frame na.pass weights
-#' @export
+#' @export svycor
+#' @export print.svycor
 #'
 
 
 
 
-svycor <- function(formula, design, na.rm = FALSE, sig.stats = FALSE, bootn = 1000,
+svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE, bootn = 1000,
                    mean1 = TRUE, ... ) {
 
   # If sig.stats == T, Need to get the data in a data.frame-esque format to pass to wtd.cor
@@ -123,6 +125,8 @@ svycor <- function(formula, design, na.rm = FALSE, sig.stats = FALSE, bootn = 10
   c$cors <- corv
   # Passing sig.stats to print function
   c$sig.stats <- sig.stats
+  # Passing digits to print function
+  c$digits <- digits
 
   class(c) <- c("svycor", "matrix")
   if (sig.stats == FALSE) {
@@ -147,12 +151,12 @@ print.svycor <- function(c) {
   if (c$sig.stats == FALSE) {
 
     # Print the table without so many digits
-    print(as.table(round(c$cors, 2)))
+    print(as.table(round(c$cors, c$digits)))
 
   } else {
 
     # Save rounded table
-    cm <- round(c$cors,2)
+    cm <- round(c$cors, c$digits)
 
     # Going to put significance stars (*) next to p < .05 coefs
     star <- function(x) {
@@ -177,28 +181,5 @@ print.svycor <- function(c) {
   }
 
 }
-
-# vec <- c("api00","api99","dnum")
-# combn(vec, 2)
-#
-# mf <- model.frame(~api00+api99+dnum, model.frame(dstrat))
-# mf[,c("api00","api99")]
-# !complete.cases
-#
-# library(survey)
-# data(api)
-#
-# dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-# v <- svyvar(~api00+api99, dstrat)
-#
-# as.matrix(v)
-# cov2cor(as.matrix(v))
-#
-# vv <- attr(v, "var")
-#
-# ii <- which(diag(sqrt(length(v)))>0)
-# m <- cbind(v[ii], sqrt(diag(vv))[ii])
-#
-# colnames(m) <- c(attr(v, "statistic"), "SE")
 
 

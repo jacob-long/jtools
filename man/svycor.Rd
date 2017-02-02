@@ -4,8 +4,8 @@
 \alias{svycor}
 \title{Calculate Pearson correlations with complex survey data}
 \usage{
-svycor(formula, design, na.rm = FALSE, sig.stats = FALSE, bootn = 1000,
-  mean1 = TRUE, ...)
+svycor(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
+  bootn = 1000, mean1 = TRUE, ...)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the terms to correlate.}
@@ -34,21 +34,19 @@ total number of observations (FALSE)?}
 \value{
 If significance tests are not requested, there is one returned value:
 
-\describe{
+
 
  \item{cors}{The correlation matrix (without rounding)}
 
- }
+
 
  If significance tests are requested, the following are also returned:
 
-\describe{
+
 
  \item{p.values}{A matrix of p values}
  \item{t.values}{A matrix of t values}
  \item{std.err}{A matrix of standard errors}
-
-}
 }
 \description{
 \code{svycor} extends the \code{survey} package by calculating correlations
@@ -84,6 +82,7 @@ This function was designed in part on the procedure recommended by Thomas
 
  # Print correlation matrix
  svycor(~api00+api99+dnum, design = dstrat)
+
  # Save the results, extract correlation matrix
  out <- svycor(~api00+api99+dnum, design = dstrat)
  out$cors
@@ -95,4 +94,3 @@ This function was designed in part on the procedure recommended by Thomas
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-
