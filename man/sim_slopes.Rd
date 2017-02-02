@@ -5,7 +5,7 @@
 \title{Perform a simple slopes analysis}
 \usage{
 sim_slopes(model, pred, modx, modxvals = NULL, centered = NULL,
-  robust = FALSE, robust.type = "HC3", digits = 3)
+  robust = FALSE, robust.type = "HC3", cond.int = FALSE, digits = 3)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
@@ -16,10 +16,10 @@ It should contain the interaction of interest.}
 \item{modx}{The moderator variable involved in the interaction in quotes.}
 
 \item{modxvals}{For which values of the moderator should simple slopes analysis
-be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
-1 standard deviation from the mean values are used. This would not be appropriate
-in the case of a binary moderator, however, as well as in some other use cases.
-There is no specific limit on the number of variables provided.}
+be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
+the customary +/- 1 standard deviation from the mean as well as the mean itself.
+For factor variables, each level will be used by default. There is no specific
+ limit on the number of variables provided.}
 
 \item{centered}{A vector of quoted variable names that are to be mean-centered. If
 \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
@@ -31,8 +31,19 @@ arguments.}
 \item{robust.type}{Type of heteroskedasticity-robust standard errors to use if \code{robust=TRUE}.
 See details of \code{\link{j_summ}} for more on options.}
 
+\item{cond.int}{Should conditional intercepts be printed in addition to the slopes?
+Default is \code{FALSE}.}
+
 \item{digits}{How many significant digits after the decimal point should the output
 contain?}
+}
+\value{
+\item{slopes} A table of coefficients for the focal predictor at each value of
+ the moderator
+ \item{ints} A table of coefficents for the intercept at each value of the moderator
+ \item{modxvals} The values of the moderator used in the analysis
+ \item{mods} A list containing each regression model created to estimate the conditional
+ coefficients.
 }
 \description{
 \code{sim_slopes()} conducts a simple slopes analysis for the purposes of understanding
@@ -50,9 +61,9 @@ This allows the user to perform a simple slopes analysis for the purpose
 }
 \examples{
 # Using a fitted model as formula input
-fit <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
+fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
   data=as.data.frame(state.x77))
-sim_slopes(model=fit, pred="Murder", modx="Illiteracy")
+sim_slopes(model=fiti, pred="Murder", modx="Illiteracy")
 
 
 }
@@ -78,4 +89,3 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-

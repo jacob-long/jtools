@@ -11,10 +11,10 @@
 #' @param modx The moderator variable involved in the interaction in quotes.
 #'
 #' @param modxvals For which values of the moderator should simple slopes analysis
-#'   be performed? Default is \code{NULL}. If \code{NULL}, then the customary +/-
-#'   1 standard deviation from the mean values are used. This would not be appropriate
-#'   in the case of a binary moderator, however, as well as in some other use cases.
-#'   There is no specific limit on the number of variables provided.
+#'   be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
+#'   the customary +/- 1 standard deviation from the mean as well as the mean itself.
+#'   For factor variables, each level will be used by default. There is no specific
+#'    limit on the number of variables provided.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered. If
 #'   \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
@@ -25,6 +25,9 @@
 #'
 #' @param robust.type Type of heteroskedasticity-robust standard errors to use if \code{robust=TRUE}.
 #'   See details of \code{\link{j_summ}} for more on options.
+#'
+#' @param cond.int Should conditional intercepts be printed in addition to the slopes?
+#'   Default is \code{FALSE}.
 #'
 #' @param digits How many significant digits after the decimal point should the output
 #'   contain?
@@ -37,6 +40,15 @@
 #'   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
 #'    objects are also accepted, though users should be cautioned against using
 #'   simple slopes analysis with non-linear models.
+#'
+#' @return
+#'
+#'  \item{slopes} A table of coefficients for the focal predictor at each value of
+#'  the moderator
+#'  \item{ints} A table of coefficents for the intercept at each value of the moderator
+#'  \item{modxvals} The values of the moderator used in the analysis
+#'  \item{mods} A list containing each regression model created to estimate the conditional
+#'  coefficients.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -61,16 +73,20 @@
 #'
 #' @examples
 #' # Using a fitted model as formula input
-#' fit <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
+#' fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
 #'   data=as.data.frame(state.x77))
-#' sim_slopes(model=fit, pred="Murder", modx="Illiteracy")
+#' sim_slopes(model=fiti, pred="Murder", modx="Illiteracy")
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd update
-#' @export
+#' @export sim_slopes
+#' @export print.sim_slopes
+#'
+#'
 
 sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
-                       robust=FALSE, robust.type="HC3", digits = 3) {
+                       robust=FALSE, robust.type="HC3", cond.int = FALSE,
+                       digits = 3) {
 
   # Create object to return
   ss <- NULL
@@ -122,10 +138,11 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx])) {
     modsd <- sd(d[,modx])
-    modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
+    modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
     modxvalssd <- modxvalssd
-    names(modxvalssd) <- c("+1 SD", "-1 SD")
+    names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
     modxvals2 <- modxvalssd
+    ss$def <- TRUE
   } else if (is.null(modxvals) && is.factor(d[,modx])){
     modxvals2 <- levels(d[,modx])
   } else { # Use user-supplied values otherwise
@@ -199,6 +216,7 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     ss$modxvals <- modxvals2
 
     ss$robust <- robust
+    ss$cond.int <- cond.int
 
     ss$mods <- mods
 
@@ -212,25 +230,35 @@ print.sim_slopes <- function(ss) {
   for (i in 1:length(ss$modxvals)) {
 
     # Use the labels for the automatic +/- 1 SD
-    if (is.null(ss$modxvals) && !is.factor(ss$mods[[1]]$model[,ss$modx])) {
+    if (ss$def == TRUE) {
 
-      cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), " (", names(ss$modxvalssd)[i], ")", ": \n", sep="")
+      cat("Slope of ", ss$pred, " when ", ss$modx, " = ",
+          round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")",
+          ": \n", sep="")
       print(round(ss$slopes[i,], ss$digits))
 
       # Print conditional intercept
-      cat("Conditional intercept"," when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")", ": \n", sep="")
-      print(round(ss$ints[i,], ss$digits))
-      cat("\n")
+      if (ss$cond.int == TRUE) {
+        cat("Conditional intercept"," when ", ss$modx, " = ",
+            round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")",
+            ": \n", sep="")
+        print(round(ss$ints[i,], ss$digits))
+        cat("\n")
+      } else {cat("\n")}
 
     } else { # otherwise don't use labels
 
-      cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), ": \n", sep="")
+      cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits),
+          ": \n", sep="")
       print(round(ss$slopes[i,],ss$digits))
 
       # Print conditional intercept
-      cat("Conditional intercept", " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits), ": \n", sep="")
-      print(round(ss$ints[i,], ss$digits))
-      cat("\n")
+      if (ss$cond.int == TRUE) {
+        cat("Conditional intercept", " when ", ss$modx, " = ",
+            round(ss$modxvals[i],ss$digits), ": \n", sep="")
+        print(round(ss$ints[i,], ss$digits))
+        cat("\n")
+      } else {cat("\n")}
 
     }
   }
