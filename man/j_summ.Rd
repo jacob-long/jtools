@@ -43,15 +43,13 @@ and print number of high-leverage observations. See details for more info.}
 If saved, users can access most of the items that are returned in the
   output (and without rounding).
 
-\describe{
+
 
  \item{coeftable}{The outputted table of variables and coefficients}
  \item{rsq}{The R-squared value, if applicable}
  \item{arsq}{The adjusted R-squared value, if applicable}
  \item{n}{The number of observations used}
  \item{npreds}{The number of predictors used in the model}
-
-}
 }
 \description{
 \code{j_summ()} prints output for a regression model in a fashion similar to
@@ -80,7 +78,7 @@ By default, this function will print the following items to the console:
  hypothesis test for which the alternative hypothesis is heteroskedastic errors.
  The test becomes much more likely to be statistically significant as the sample
  size increases; however, the homoskedasticity assumption becomes less important
- to inference as sample size increases (Lumley, Dieher, Emerson, & Lu, 2002).
+ to inference as sample size increases (Lumley, Diehr, Emerson, & Lu, 2002).
  Take the result of the test as a cue to check graphical checks rather than a
  definitive decision. Note that the use of robust standard errors can account
   for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
@@ -114,4 +112,3 @@ Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-

@@ -47,7 +47,7 @@
 #'  hypothesis test for which the alternative hypothesis is heteroskedastic errors.
 #'  The test becomes much more likely to be statistically significant as the sample
 #'  size increases; however, the homoskedasticity assumption becomes less important
-#'  to inference as sample size increases (Lumley, Dieher, Emerson, & Lu, 2002).
+#'  to inference as sample size increases (Lumley, Diehr, Emerson, & Lu, 2002).
 #'  Take the result of the test as a cue to check graphical checks rather than a
 #'  definitive decision. Note that the use of robust standard errors can account
 #'   for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
@@ -62,7 +62,7 @@
 #' @return If saved, users can access most of the items that are returned in the
 #'   output (and without rounding).
 #'
-#' \describe{
+#'
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
 #'  \item{rsq}{The R-squared value, if applicable}
@@ -70,7 +70,7 @@
 #'  \item{n}{The number of observations used}
 #'  \item{npreds}{The number of predictors used in the model}
 #'
-#' }
+#'
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -93,8 +93,13 @@
 #'  Public Health}, \emph{23}, 151–169.
 #'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 #'
+#'
+#'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance
-#' @export
+#' @export j_summ
+#' @export print.j_summ
+#'
+#'
 
 j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
                    robust.type = "HC3", digits = 3, model.info = TRUE,
@@ -325,7 +330,7 @@ print.j_summ <- function(x) {
   # Saving number of coefficients in output table
   height <- dim(x$coeftable)[1]
   # Saving table to separate object
-  ctable <- x$coeftable
+  ctable <- round(x$coeftable, x$digits)
 
   # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
   if (x$vifs) {
@@ -411,7 +416,9 @@ print.j_summ <- function(x) {
   }
 
   if (x$linear==T) {
-    if (x$robust==F) {
+    if (x$lmClass[1] == "svyglm") {
+      cat("Robust\n")
+    } else if (x$robust==F) {
       cat("Standard errors: OLS", "\n")
     } else if (x$robust==T) {
       cat("Standard errors: Robust, type = ", x$robust.type, "\n", sep="")
@@ -420,4 +427,9 @@ print.j_summ <- function(x) {
 
   print(as.table(ctable))
 
-    }
+}
+
+knit_print.j_summ <- function(x, ...) {
+  print(x)
+}
+
