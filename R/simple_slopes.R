@@ -235,14 +235,14 @@ print.sim_slopes <- function(ss) {
       cat("Slope of ", ss$pred, " when ", ss$modx, " = ",
           round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")",
           ": \n", sep="")
-      print(round(ss$slopes[i,], ss$digits))
+      print(round(ss$slopes[i,2:4], ss$digits))
 
       # Print conditional intercept
       if (ss$cond.int == TRUE) {
         cat("Conditional intercept"," when ", ss$modx, " = ",
             round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")",
             ": \n", sep="")
-        print(round(ss$ints[i,], ss$digits))
+        print(round(ss$ints[i,2:4], ss$digits))
         cat("\n")
       } else {cat("\n")}
 
@@ -250,13 +250,13 @@ print.sim_slopes <- function(ss) {
 
       cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits),
           ": \n", sep="")
-      print(round(ss$slopes[i,],ss$digits))
+      print(round(ss$slopes[i,2:4],ss$digits))
 
       # Print conditional intercept
       if (ss$cond.int == TRUE) {
         cat("Conditional intercept", " when ", ss$modx, " = ",
             round(ss$modxvals[i],ss$digits), ": \n", sep="")
-        print(round(ss$ints[i,], ss$digits))
+        print(round(ss$ints[i,2:4], ss$digits))
         cat("\n")
       } else {cat("\n")}
 
