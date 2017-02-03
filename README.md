@@ -1,7 +1,11 @@
 
-# jtools [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) [![Packagist](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
+# jtools [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools) [![Packagist](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
 
-This package consists of a series of functions created by the author (Jacob) to automate otherwise tedious research tasks. At this juncture, the unifying theme is the more efficient presentation of regression analyses, including those with interactions.
+This package consists of a series of functions created by the author (Jacob) to 
+automate otherwise tedious research tasks. At this juncture, the unifying theme 
+is the more efficient presentation of regression analyses, including those with 
+interactions. Support for the `survey` package's `svyglm` objects is a common theme
+throughout.
 
 ## Installation
 
@@ -25,8 +29,10 @@ Here's a brief synopsis of the current functions in the package:
 * `sim_slopes()`: An interface for simple slopes analysis for 2-way interactions. User can specify values of the moderator to test or use the default +/- 1 SD values.
 * `interact_plot()`: Plots two-way interactions using `ggplot2` using a similar interface to the aforementioned `sim_slopes()` function. Users can customize the appearance with familiar `ggplot2` commands.
 * `theme_apa()` will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications.
+* `svycor()`: Calculate correlations with complex survey designs from the `survey` package.
 
-Details on the arguments can be accessed via the R documentation (`?functionname`).
+Details on the arguments can be accessed via the R documentation (`?functionname`). 
+There are now vignettes documenting just about everything you can do as well.
 
 ## Contributing
 
