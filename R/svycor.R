@@ -146,7 +146,7 @@ svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE
 
 #' @export
 
-print.svycor <- function(c) {
+print.svycor <- function(c, ...) {
 
   if (c$sig.stats == FALSE) {
 

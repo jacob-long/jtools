@@ -235,7 +235,7 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
 #' @export
 
-print.sim_slopes <- function(ss) {
+print.sim_slopes <- function(ss, ...) {
 
   for (i in 1:length(ss$modxvals)) {
 

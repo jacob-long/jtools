@@ -324,7 +324,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
 
 #' @export
 
-print.j_summ <- function(x) {
+print.j_summ <- function(x, ...) {
 
   # Saving number of columns in output table
   width <- dim(x$coeftable)[2]
