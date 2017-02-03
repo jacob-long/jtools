@@ -79,7 +79,7 @@ This function plots two-way interactions using `ggplot2` with a similar interfac
 interact_plot(fit, pred="wt", modx = "hp", interval = T, int.width = .95)
 ```
 
-![](README-unnamed-chunk-4-1.png)
+![](README-interact_plot_continuous-1.png)
 
 The function also supports categorical moderators and plotting observed data points alongside best-fitting lines.
 
@@ -88,7 +88,7 @@ fitiris <- lm(Petal.Length ~ Petal.Width*Species, data = iris)
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
 ```
 
-![](README-unnamed-chunk-5-1.png)
+![](README-interact_plot_factor-1.png)
 
 #### `svycor()`
 
@@ -119,7 +119,7 @@ p <- ggplot(mpg, aes(displ, hwy)) + geom_point(aes(colour = factor(cyl)), positi
 p
 ```
 
-![](README-unnamed-chunk-7-1.png)
+![](README-theme_apa_pre_ex-1.png)
 
 And then use `theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
 
@@ -127,7 +127,7 @@ And then use `theme_apa()` to tune it to APA specification. Note the `legend.pos
 p + theme_apa(legend.pos = "topright")
 ```
 
-![](README-unnamed-chunk-8-1.png)
+![](README-theme_apa_ex-1.png)
 
 You may need to make further changes to please your publisher. For instance, if color graphics are not an option, you may want to use point shapes (notice the `aes(shape = )`) as an additional way to signal variation along the factor.
 
@@ -138,7 +138,7 @@ p <- ggplot(mpg, aes(displ, hwy)) + geom_point(aes(shape = factor(cyl),
 p + theme_apa(legend.pos = "topright") 
 ```
 
-![](README-unnamed-chunk-9-1.png)
+![](README-theme_apa_shape_ex-1.png)
 
 Details on the arguments can be accessed via the R documentation (`?functionname`). There are now vignettes documenting just about everything you can do as well.
 
