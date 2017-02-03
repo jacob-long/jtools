@@ -96,8 +96,7 @@
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance
-#' @export j_summ
-#' @export print.j_summ
+#' @export
 #'
 #'
 
@@ -323,6 +322,8 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
 #  PRINT METHOD                                                       #
 #######################################################################
 
+#' @export
+
 print.j_summ <- function(x) {
 
   # Saving number of columns in output table
@@ -427,9 +428,5 @@ print.j_summ <- function(x) {
 
   print(as.table(ctable))
 
-}
-
-knit_print.j_summ <- function(x, ...) {
-  print(x)
 }
 
