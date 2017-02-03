@@ -235,38 +235,38 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
 #' @export
 
-print.sim_slopes <- function(ss, ...) {
+print.sim_slopes <- function(x, ...) {
 
-  for (i in 1:length(ss$modxvals)) {
+  for (i in 1:length(x$modxvals)) {
 
     # Use the labels for the automatic +/- 1 SD
-    if (ss$def == TRUE) {
+    if (x$def == TRUE) {
 
-      cat("Slope of ", ss$pred, " when ", ss$modx, " = ",
-          round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")",
+      cat("Slope of ", x$pred, " when ", x$modx, " = ",
+          round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
           ": \n", sep="")
-      print(round(ss$slopes[i,2:4], ss$digits))
+      print(round(x$slopes[i,2:4], x$digits))
 
       # Print conditional intercept
-      if (ss$cond.int == TRUE) {
-        cat("Conditional intercept"," when ", ss$modx, " = ",
-            round(ss$modxvals[i],ss$digits), " (", names(ss$modxvals)[i], ")",
+      if (x$cond.int == TRUE) {
+        cat("Conditional intercept"," when ", x$modx, " = ",
+            round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
             ": \n", sep="")
-        print(round(ss$ints[i,2:4], ss$digits))
+        print(round(x$ints[i,2:4], x$digits))
         cat("\n")
       } else {cat("\n")}
 
     } else { # otherwise don't use labels
 
-      cat("Slope of ", ss$pred, " when ", ss$modx, " = ", round(ss$modxvals[i],ss$digits),
+      cat("Slope of ", x$pred, " when ", x$modx, " = ", round(x$modxvals[i],x$digits),
           ": \n", sep="")
-      print(round(ss$slopes[i,2:4],ss$digits))
+      print(round(x$slopes[i,2:4],x$digits))
 
       # Print conditional intercept
-      if (ss$cond.int == TRUE) {
-        cat("Conditional intercept", " when ", ss$modx, " = ",
-            round(ss$modxvals[i],ss$digits), ": \n", sep="")
-        print(round(ss$ints[i,2:4], ss$digits))
+      if (x$cond.int == TRUE) {
+        cat("Conditional intercept", " when ", x$modx, " = ",
+            round(x$modxvals[i],x$digits), ": \n", sep="")
+        print(round(x$ints[i,2:4], x$digits))
         cat("\n")
       } else {cat("\n")}
 

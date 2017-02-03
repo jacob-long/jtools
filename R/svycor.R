@@ -146,17 +146,17 @@ svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE
 
 #' @export
 
-print.svycor <- function(c, ...) {
+print.svycor <- function(x, ...) {
 
-  if (c$sig.stats == FALSE) {
+  if (x$sig.stats == FALSE) {
 
     # Print the table without so many digits
-    print(as.table(round(c$cors, c$digits)))
+    print(as.table(round(x$cors, x$digits)))
 
   } else {
 
     # Save rounded table
-    cm <- round(c$cors, c$digits)
+    cm <- round(x$cors, x$digits)
 
     # Going to put significance stars (*) next to p < .05 coefs
     star <- function(x) {
@@ -168,7 +168,7 @@ print.svycor <- function(c, ...) {
     }
 
     # Create a matrix of significance stars
-    pm <- c$p.values
+    pm <- x$p.values
     pm[] <- suppressWarnings(star(pm[]))
     # Taking asterisks out of self-correlations
     diag(pm)[] <- ""
