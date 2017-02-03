@@ -4,10 +4,11 @@
 \alias{interact_plot}
 \title{Plot interaction effects in regression models}
 \usage{
-interact_plot(model, pred, modx, modxvals = NULL, interval = FALSE,
-  int.type = c("confidence", "prediction"), centered = NULL,
-  int.width = 0.975, x.label = NULL, y.label = NULL, mod.labels = NULL,
-  main.title = NULL, legend.main = NULL, color.class = "Set2")
+interact_plot(model, pred, modx, modxvals = NULL, centered = NULL,
+  plot.points = FALSE, interval = FALSE, int.type = c("confidence",
+  "prediction"), int.width = 0.95, x.label = NULL, y.label = NULL,
+  mod.labels = NULL, main.title = NULL, legend.main = NULL,
+  color.class = "Set2")
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -23,7 +24,17 @@ quotations.}
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 deviation from the mean values are used for continuous moderators. If the
 moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
-of the factor is included.}
+of the factor is included. If \code{"mean-plus-minus"}, plots a line when
+moderator is at mean in addition to the default +/- standard deviation.}
+
+\item{centered}{A vector of quoted variable names that are to be mean-centered.
+If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
+then no others are centered. Alternately, "all" will center focal variables
+as well.}
+
+\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
+scatterpolot on top of the interaction lines. If moderator is a factor, the dots
+will be the same color as their parent factor.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
 the line using \code{\link[ggplot2]{geom_ribbon}}.}
@@ -31,14 +42,10 @@ the line using \code{\link[ggplot2]{geom_ribbon}}.}
 \item{int.type}{Type of interval to plot. Options are "confidence" or "prediction".
 Default is confidence interval.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.
-If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
-then no others are centered. Alternately, "all" will center focal variables
-as well.}
-
 \item{int.width}{How large should the interval be, relative to the standard error?
-The default, .975, corresponds to roughly 1.96 standard errors and a .05 alpha
-level for values outside the range.}
+The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
+level for values outside the range. In other words, for a confidence interval,
+.95 is analagous to a 95\% confidence interval.}
 
 \item{x.label}{A character object specifying the desired x-axis label. If \code{NULL},
 the variable name is used.}
@@ -48,7 +55,7 @@ the variable name is used.}
 
 \item{mod.labels}{A character vector of labels for each level of the moderator values,
 provided in the same order as the \code{modxvals} argument. If \code{NULL},
-the valeus themselves are used as labels unless \code{modxvals} is also \code{NULL}.
+the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
 In that case, "+1 SD" and "-1 SD" are used.}
 
 \item{main.title}{A character object that will be used as an overall title for the
@@ -115,4 +122,3 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-

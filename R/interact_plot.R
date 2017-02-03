@@ -17,12 +17,17 @@
 #'   Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 #'   deviation from the mean values are used for continuous moderators. If the
 #'   moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
-#'   of the factor is included.
+#'   of the factor is included. If \code{"mean-plus-minus"}, plots a line when
+#'   moderator is at mean in addition to the default +/- standard deviation.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered.
 #'   If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
 #'   then no others are centered. Alternately, "all" will center focal variables
 #'   as well.
+#'
+#' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
+#'   scatterpolot on top of the interaction lines. If moderator is a factor, the dots
+#'   will be the same color as their parent factor.
 #'
 #' @param interval Logical. If \code{TRUE}, plots confidence/prediction intervals
 #'   the line using \code{\link[ggplot2]{geom_ribbon}}.
@@ -31,8 +36,9 @@
 #'   Default is confidence interval.
 #'
 #' @param int.width How large should the interval be, relative to the standard error?
-#'   The default, .975, corresponds to roughly 1.96 standard errors and a .05 alpha
-#'   level for values outside the range.
+#'   The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
+#'   level for values outside the range. In other words, for a confidence interval,
+#'   .95 is analagous to a 95\% confidence interval.
 #'
 #' @param x.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
@@ -42,7 +48,7 @@
 #'
 #' @param mod.labels A character vector of labels for each level of the moderator values,
 #'   provided in the same order as the \code{modxvals} argument. If \code{NULL},
-#'   the valeus themselves are used as labels unless \code{modxvals} is also \code{NULL}.
+#'   the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
 #'   In that case, "+1 SD" and "-1 SD" are used.
 #'
 #' @param main.title A character object that will be used as an overall title for the
@@ -103,11 +109,11 @@
 #' @importFrom stats coef coefficients lm predict sd qnorm
 #' @export interact_plot
 
-interact_plot <- function(model, pred, modx, modxvals = NULL, interval = FALSE,
-                          int.type = c("confidence","prediction"), centered = NULL,
-                          int.width = .975, x.label = NULL, y.label = NULL,
-                          mod.labels = NULL, main.title = NULL, legend.main = NULL,
-                          color.class="Set2") {
+interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
+                          plot.points = FALSE, interval = FALSE,
+                          int.type = c("confidence","prediction"), int.width = .95,
+                          x.label = NULL, y.label = NULL, mod.labels = NULL,
+                          main.title = NULL, legend.main = NULL, color.class="Set2") {
 
   # Duplicating the dataframe so it can be manipulated as needed
   d <- as.data.frame(model$model)
@@ -148,8 +154,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, interval = FALSE,
   if (is.null(modxvals) && !is.factor(d[,modx])) {
     modsd <- sd(d[,modx])
     modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
-    modxvalssd <- round(modxvalssd,3)
     names(modxvalssd) <- c("+1 SD", "-1 SD")
+    modxvals2 <- modxvalssd
+  } else if (class(modxvals) == "character" && modxvals == "mean-plus-minus") {
+    modsd <- sd(d[,modx])
+    modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
+    names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
     modxvals2 <- modxvalssd
   } else if (is.null(modxvals) && is.factor(d[,modx])){
     modxvals2 <- levels(d[,modx])
@@ -185,7 +195,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, interval = FALSE,
   pm[,resp] <- predicted[,1] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
-  ses <- qnorm(int.width, 0, 1)
+  intw <- 1 - ((1 - int.width)/2)
+  ses <- qnorm(intw, 0, 1)
 
   # See minimum and maximum values for plotting intervals
   if (class(model)[1] == "lm" || class(model)[1] == "glm") {
@@ -214,10 +225,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, interval = FALSE,
   }
 
   if (is.null(mod.labels)) {
-    if (exists("modxvalssd")){
+    if (exists("modxvalssd") && length(modxvalssd)==2){
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "+1 SD"))
+    } else if (exists("modxvalssd") && length(modxvalssd)==3){
+      pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "Mean", "+1 SD"))
     }
-  }
+  } else if (length(mod.labels)==length(modxvals2)) {
+    pm[,modx] <- factor(pm[,modx], labels=mod.labels)
+  } else {warning("mod.labels argument was not the same length as modxvals. Ignoring...")}
 
   if (is.null(legend.main)){
     legend.main <- modx
@@ -228,11 +243,23 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, interval = FALSE,
 
   # Plot intervals if requested
   if (interval==TRUE) {
-    p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=pm[,"ymin"], ymax=pm[,"ymax"], alpha=.05), show.legend = FALSE)
+    p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=pm[,"ymin"],
+                                                        ymax=pm[,"ymax"],
+                                                        alpha=.05),
+                                  show.legend = FALSE)
   }
 
-  p <- p + ggplot2::theme_bw() + ggplot2::labs(x = x.label, y = y.label)
-  p <- p + ggplot2::scale_colour_brewer(name=modx, palette=color.class)
+  if (plot.points==TRUE && is.factor(d[,modx])) {
+    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp],
+                                              colour=d[,modx]), position = "jitter")
+  } else if (plot.points == TRUE && !is.factor(d[,modx])) {
+    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp]),
+                                 inherit.aes = F, position = "jitter")
+  }
+
+  p <- p + ggplot2::theme_bw()
+  p <- p + ggplot2::labs(x = x.label, y = y.label)
+  p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette=color.class)
 
   if (!is.null(main.title)){
     p <- p + ggplot2::ggtitle(main.title)
