@@ -45,12 +45,12 @@
 #'
 #' @return
 #'
-#'  \item{slopes} A table of coefficients for the focal predictor at each value of
-#'  the moderator
-#'  \item{ints} A table of coefficents for the intercept at each value of the moderator
-#'  \item{modxvals} The values of the moderator used in the analysis
-#'  \item{mods} A list containing each regression model created to estimate the conditional
-#'  coefficients.
+#'  \item{slopes}{A table of coefficients for the focal predictor at each value of
+#'  the moderator}
+#'  \item{ints}{A table of coefficents for the intercept at each value of the moderator}
+#'  \item{modxvals}{The values of the moderator used in the analysis}
+#'  \item{mods}{A list containing each regression model created to estimate the conditional
+#'  coefficients.}
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -81,9 +81,7 @@
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd update
-#' @export sim_slopes
-#' @export print.sim_slopes
-#'
+#' @export
 #'
 
 sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
@@ -145,7 +143,6 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   if (is.null(modxvals) && !is.factor(d[,modx])) {
     modsd <- sd(d[,modx])
     modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
-    modxvalssd <- modxvalssd
     names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
     modxvals2 <- modxvalssd
     ss$def <- TRUE
@@ -229,6 +226,14 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     return(ss)
 
   }
+
+
+
+#######################################################################
+#  PRINT METHOD                                                       #
+#######################################################################
+
+#' @export
 
 print.sim_slopes <- function(ss) {
 

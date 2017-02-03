@@ -40,12 +40,12 @@ Default is \code{FALSE}.}
 contain?}
 }
 \value{
-\item{slopes} A table of coefficients for the focal predictor at each value of
- the moderator
- \item{ints} A table of coefficents for the intercept at each value of the moderator
- \item{modxvals} The values of the moderator used in the analysis
- \item{mods} A list containing each regression model created to estimate the conditional
- coefficients.
+\item{slopes}{A table of coefficients for the focal predictor at each value of
+ the moderator}
+ \item{ints}{A table of coefficents for the intercept at each value of the moderator}
+ \item{modxvals}{The values of the moderator used in the analysis}
+ \item{mods}{A list containing each regression model created to estimate the conditional
+ coefficients.}
 }
 \description{
 \code{sim_slopes()} conducts a simple slopes analysis for the purposes of understanding

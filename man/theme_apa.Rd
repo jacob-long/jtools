@@ -91,4 +91,3 @@ Nicol, A.A.M. & Pexman, P.M. (2010). \emph{Displaying your findings: A practical
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-
