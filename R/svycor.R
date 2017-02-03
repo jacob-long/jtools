@@ -10,6 +10,8 @@
 #'
 #' @param na.rm Logical. Should cases with missing values be dropped?
 #'
+#' @param digits How many digits past the decimal should be printed?
+#'
 #' @param sig.stats Logical. Perform non-parametric bootstrapping (using \code{\link[weights]{wtd.cor}}
 #'   to generate standard errors and associated t- and p-values. See details for
 #'   some considerations when doing null hypothesis testing with complex survey
@@ -45,21 +47,13 @@
 #'
 #'  If significance tests are not requested, there is one returned value:
 #'
-#'
-#'
 #'  \item{cors}{The correlation matrix (without rounding)}
 #'
-#'
-#'
 #'  If significance tests are requested, the following are also returned:
-#'
-#'
-#'
+
 #'  \item{p.values}{A matrix of p values}
 #'  \item{t.values}{A matrix of t values}
 #'  \item{std.err}{A matrix of standard errors}
-#'
-#'
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -85,8 +79,7 @@
 #'  out$cors
 #'
 #' @importFrom stats cov2cor model.frame na.pass weights
-#' @export svycor
-#' @export print.svycor
+#' @export
 #'
 
 
@@ -145,6 +138,13 @@ svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE
   }
 
 }
+
+
+#######################################################################
+#  PRINT METHOD                                                       #
+#######################################################################
+
+#' @export
 
 print.svycor <- function(c) {
 

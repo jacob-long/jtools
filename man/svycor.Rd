@@ -14,6 +14,8 @@ svycor(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
 
 \item{na.rm}{Logical. Should cases with missing values be dropped?}
 
+\item{digits}{How many digits past the decimal should be printed?}
+
 \item{sig.stats}{Logical. Perform non-parametric bootstrapping (using \code{\link[weights]{wtd.cor}}
 to generate standard errors and associated t- and p-values. See details for
 some considerations when doing null hypothesis testing with complex survey
@@ -34,16 +36,9 @@ total number of observations (FALSE)?}
 \value{
 If significance tests are not requested, there is one returned value:
 
-
-
  \item{cors}{The correlation matrix (without rounding)}
 
-
-
  If significance tests are requested, the following are also returned:
-
-
-
  \item{p.values}{A matrix of p values}
  \item{t.values}{A matrix of t values}
  \item{std.err}{A matrix of standard errors}
