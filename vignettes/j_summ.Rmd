@@ -1,0 +1,149 @@
+---
+title: "`j_summ()` --- An alternative to `summary()` for regression models"
+author: "Jacob Long"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{j_summ() — An alternative to summary() for regression models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(message=F, warning=F)
+library(jtools)
+```
+
+## 
+
+When sharing analyses with colleagues unfamiliar with R, I found that the output
+ generally was not clear to them. Even worse, if I wanted to give them information 
+that is not included in the output like VIFs, robust standard errors, or standardized
+coefficients. After creating output tables "by hand" on multiple occasions, I thought
+it best to pack things into a reusable function.
+
+With no user-specified arguments except a fitted model, the output of `j_summ()` looks
+like this:
+
+```{r}
+# Fit model
+fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
+j_summ(fit)
+```
+
+Like any output, this one is somewhat opinionated—some information is shown that perhaps 
+not everyone would be interested in, some may be missing. That, of course, was the motivation
+behind the creation of the function; the author was no fan of `summary()` and its 
+lack of configurability. 
+
+## Adding and removing written output
+
+Much of the output with `j_summ()` can be removed while there are several other pieces
+of information under the hood that users can ask for. 
+
+To remove the written output at the beginning, set `model.info = FALSE` and/or 
+`model.fit = FALSE`.
+
+```{r}
+j_summ(fit, model.info = FALSE, model.fit = FALSE)
+```
+
+Another, related bit of information available before the coefficient table relates
+to model assumptions (for OLS linear regression). When `model.check = TRUE`, `j_summ()`
+will report (with the help fo the `car` package) two quantities related to linear regression assumptions:
+
+* The result of the Breusch-Pagan test for heteroskedasticity. A low *p* value indicates
+the presence of heteroskedasticity.
+* A count of high-leverage observations using Cook's Distance. The threshold for 
+what is considered high is equal to $4/N$, where $N$ is the sample size.
+
+In both cases, you shouldn't treat the results as proof of meaningful problems (or
+a lack of meaningful problems), but instead as a heuristic for more probing with 
+graphical analyses.
+
+```{r}
+j_summ(fit, model.check = TRUE)
+```
+
+## Report robust standard errors
+
+One of the problems that originally motivated the creation of this function was the
+desire to efficiently report robust standard errors—while it is easy enough for an
+experienced R user to calculate robust standard errors, there are not many simple ways
+to include the results in a regression table as is common with the likes of Stata, SPSS,
+etc.
+
+Robust standard errors require the user to have both `lmtest` and `sandwich` packages
+installed. They do not need to be loaded.
+
+There are multiple types of robust standard errors that you may use, ranging from 
+"HC0" to "HC5". Per the recommendation of the authors of the `sandwich` package, the
+default is "HC3". Stata's default is "HC1", so you may want to use that if your goal
+is to replicate Stata analyses.
+
+```{r}
+j_summ(fit, robust = TRUE, robust.type = "HC3")
+```
+
+Robust standard errors will not be calculated for non-linear models (from `glm`) and `svyglm`
+models. In the case of `svyglm`, the standard errors that package calculates are already
+robust to heteroskedasticity, so a `robust = TRUE` parameter will be ignored.
+
+## Other options
+
+### Choose how many digits past the decimal to round to
+
+With the `digits =` argument, you can decide how precise you want the outputted 
+numbers to be. It is often inappropriate or distracting to report quantities with
+many digits past the decimal due to the inability to measure them so precisely or 
+interpret them in applied settings. In other cases, it may be necessary to use more
+digits due to the way measures are calculated.
+
+The default argument is `digits = 3`. 
+
+```{r}
+j_summ(fit, digits=5)
+```
+```{r}
+j_summ(fit, digits=1)
+```
+
+Note that the return object has non-rounded values if you wish to use them later.
+
+```{r}
+j <- j_summ(fit, digits = 3)
+
+j$coeftable
+```
+
+### Calculate and report variance inflation factors (VIF)
+
+When multicollinearity is a concern, it can be useful to have VIFs reported alongside
+each variable. This can be particularly helpful for model comparison and checking for
+the impact of newly-added variables. To get VIFs reported in the output table, just
+set `vifs = TRUE`.
+
+Note that the `car` package is needed to calculate VIFs.
+
+```{r}
+j_summ(fit, vifs = TRUE)
+```
+
+There are many standards researchers apply for deciding whether a VIF is too large.
+In some domains, a VIF over 2 is worthy of suspicion. Others set the bar higher, at 
+5 or 10. Ultimately, the main thing to consider is that small effects are more likely
+to be "drowned out" by higher VIFs.
+
+### Standardized beta coefficients
+
+Some prefer to use standardized coefficients in order to avoid dismissing an effect
+as "small" when it is just the units of measure that are small. Standardized betas
+are added to the table when `stdbeta = TRUE`.
+
+```{r}
+j_summ(fit, stdbeta = TRUE)
+```
+
+You will get a warning if you ask for standardized betas for a non-linear model and
+the argument will be ignored.
+

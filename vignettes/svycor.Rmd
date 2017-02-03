@@ -1,0 +1,135 @@
+---
+title: "Calculate correlations and correlation tables with complex survey data"
+author: "Jacob Long"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Calculate correlations and correlation tables with complex survey data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(message=F, warning=F)
+library(jtools)
+```
+
+The `survey` package is one of R's best tools for those working in the social sciences. 
+For many, it saves you from needing to use commercial software for research that uses
+survey data. However, it lacks one function that many academic researchers often 
+need to report in publications: correlations. The `svycor` function in `jtools` helps to fill that gap. 
+
+A note, however, is necessary. The initial motivation to add this feature comes from a [response to a question](http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088) about
+calculating correlations with the `survey` package written by Thomas Lumley, the `survey`
+package author. All that is good about this function should be attributed to Dr. Lumley;
+all that is wrong with it should be attributed to me (Jacob).
+
+With that said, let's look at an example. First, we need to get a `survey.design` 
+object. This one is built into the `survey` package.
+
+```{r}
+library(survey)
+data(api)
+dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat, fpc=~fpc)
+```
+
+## Basic use
+
+The necessary arguments are no different than when using `svyvar`. Specify, using 
+an equation, which variables (and from which design) to include. It doesn't matter
+which side of the equation the variables are on.
+
+```{r}
+svycor(~api00 + api99, design = dstrat)
+```
+
+You can specify with the `digits =` argument how many digits past the decimal point
+should be printed.
+
+```{r}
+svycor(~api00 + api99, design = dstrat, digits = 4)
+```
+
+Any other arguments that you would normally pass to `svyvar` will be used as well,
+though in some cases it may not affect the output.
+
+## Statistical significance tests
+
+One thing that `survey` won't do for you is give you *p* values for the null hypothesis
+that $r = 0$. While at first blush finding the *p* value might seem like a simple 
+procedure. However, complex surveys will almost always violate the important distribution
+assumptions that go along with simple hypothesis tests of the correlation coefficient.
+There is not a clear consensus on the appropriate way to conduct hypothesis tests in 
+this context, due in part to the fact that most analyses of complex surveys occurs in
+the context of multiple regression.
+
+If `sig.stats = TRUE`, then `svycor` will use the `wtd.cor` function from the `weights`
+package to conduct hypothesis tests. The *p* values are derived from a bootstrap 
+procedure in which the weights define sampling probability. The `bootn =` argument
+is given to `wtd.cor` to define the number of simulations to run. This can significantly
+increase the running time for large samples and/or large numbers of simulations. The 
+`mean1` argument tells `wtd.cor` whether it treat your sample size as the number of
+observations in the survey design (the number of rows in the data frame) or the 
+sum of the weights. Usually, the former is desired, so the default value of `mean1` is 
+`TRUE`.
+
+```{r}
+svycor(~api00 + api99, design = dstrat, digits = 4, sig.stats = TRUE, bootn = 2000, mean1 = TRUE)
+```
+
+When using `sig.stats = TRUE`, the correlation parameter estimates come from the 
+bootstrap procedure rather than the rather simpler method based on the survey-weighted
+covariance matrix when `sig.stats = FALSE`.
+
+By saving the output of the function, you can extract non-rounded coefficients, *p* 
+values, and standard errors.
+
+```{r}
+c <- svycor(~api00 + api99, design = dstrat, digits = 4, sig.stats = TRUE, bootn = 2000, mean1 = TRUE)
+
+c$cors
+
+c$p.values
+
+c$std.err
+```
+
+
+## Technical details
+
+The heavy lifting behind the scenes is done by `svyvar`, which from its output you
+may not realize also calculates covariance.
+
+```{r}
+svyvar(~api00 + api99, design = dstrat)
+```
+
+But if you save the `svyvar` object, you can see that there's more than meets the eye.
+
+```{r}
+var <- svyvar(~api00 + api99, design = dstrat)
+var <- as.matrix(var)
+var
+```
+Once we know that, it's just a matter of using R's `cov2cor` function and cleaning 
+up the output.
+
+```{r}
+cor <- cov2cor(var)
+cor
+```
+
+Now to get rid of that covariance matrix...
+
+```{r}
+cor <- cor[1:nrow(cor), 1:nrow(cor)]
+cor
+```
+
+`svycor` has its own print method, so you won't see so many digits past the decimal
+point. You can extract the un-rounded matrix, however.
+
+```{r}
+out <- svycor(~api99 + api00, design = dstrat)
+out$cors
+```

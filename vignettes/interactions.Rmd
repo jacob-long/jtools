@@ -1,0 +1,201 @@
+---
+title: "Exploring interactions in linear regression models"
+author: "Jacob Long"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Exploring interactions in linear regression models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(message=F, warning=F)
+library(jtools)
+```
+
+Understanding an interaction effect in a linear regression model is usually difficult
+when using just the basic output tables and looking at the coefficients. The `jtools` 
+package provides two functions that can help analysts probe more deeply.
+
+## Simple slopes analysis
+
+Simple slopes analysis gives researchers a way to express the interaction effect in
+terms that are easy to understand to those who know how to interpret direct effects in
+regression models. This method is designed for **continuous variable by continuous 
+variable** interactions.
+
+In simple slopes analysis, researchers are interested in the *conditional* slope of
+the focal predictor; that is, what is the slope of the predictor when the moderator
+is held at some particular value? The regression output we get when including the 
+interaction term tells us what the slope is when the moderator is held at zero, which 
+is often not a practically/theoretically meaningful value. To better understand the
+nature of the interaction, simple slopes analysis allows the researcher to specify 
+meaningful values at which to hold the moderator value.
+
+While the computation behind doing so isn't exactly rocket science, it is inconvenient 
+and prone to error. The `sim_slopes()` function from `jtools` accepts a regression model
+(with an interaction term) as an input and automates the simple slopes procedure. The 
+function will, by default, do the following:
+
+* Mean-center all non-focal predictors (so that setting them to zero means setting 
+them to their mean)
+* For continuous moderators, it will choose the mean as well as the mean plus/minus 
+1 standard deviation as values at which to find the slope of the focal predictor.
+* For categorical/binary moderators, it will find the slope of the focal predictor 
+at each level of the moderator.
+
+In its most basic use case, `sim_slopes` needs three arguments: a linear model (with 
+support for `svyglm` models), the name of the focal predictor in quotations as the
+argument for `pred =`, and the name of the moderator in quotations as the argument
+for `modx =`. Let's go through an example.
+
+First, we use example data from `state.x77` that is built into R. Let's look at 
+the interaction model output with `j_summ()` as a starting point.
+
+```{r}
+fiti <- lm(Income ~ Illiteracy*Murder, data = as.data.frame(state.x77))
+j_summ(fiti)
+```
+So we see a significant main effect of `Murder` on `Income` in the presence of a 
+significant interaction between `Murder` and `Illiteracy`. The positive estimate 
+for `Illiteracy` does not differ significantly from zero.
+
+Now let's do the most basic simple slopes analysis:
+
+```{r}
+sim_slopes(fiti, pred = "Illiteracy", modx = "Murder")
+```
+
+So what we see in this example is that when the value of `Murder` is high, the
+slope of `Illiteracy` is negative and significantly different from zero. The value
+for `Illiteracy` when `Murder` is high is in the opposite direction from its coefficient
+estimate for the first version of the model fit with `lm()` but this result makes 
+sense considering the interaction coefficient was negative; it means that as one 
+of the variables goes up, the other goes down. Now we know the effect of `Illiteracy` 
+only exists when `Murder` is high.
+
+You may also choose the values of the moderator yourself with the `modxvals =` argument.
+
+```{r}
+sim_slopes(fiti, pred = "Illiteracy", modx = "Murder", modxvals = c(0, 5, 10))
+```
+
+
+### Additional options
+
+#### Conditional intercepts
+
+Sometimes it is informative to know the conditional intercepts in addition to the 
+slopes. It might be interesting to you that individuals low on the moderator have a
+positive slope and individuals high on it don't, but that doesn't mean that individuals
+low on the moderator will have higher values of the dependent variable. You would only
+know that if you know the conditional intercept.
+
+You can print the conditional intercepts with the `cond.int = TRUE` argument.
+
+```{r}
+sim_slopes(fiti, pred = "Illiteracy", modx = "Murder", cond.int = TRUE)
+```
+
+This example shows you that while the slope associated with `Illiteracy` is negative
+when `Murder` is high, the conditional intercept is also high when `Murder` is high. 
+That tells you that increases in `Illiteracy` for high-`Murder` observations will 
+tend towards being equal on `Income` to observations with lower values of `Murder`.
+
+#### Robust standard errors
+
+Certain models require heteroskedasticity-robust standard errors. To be consistent 
+with the reporting of heteroskedasticity-robust standard errors offered by `j_summ()`,
+`sim_slopes()` will do the same with the use of the `robust = TRUE` option so you 
+can consistently report standard errors across models.
+
+```{r}
+sim_slopes(fiti, pred = "Illiteracy", modx = "Murder", robust = TRUE)
+```
+These data are a relatively rare case in which the robust standard errors are even 
+more efficient than typical OLS standard errors. Note that you must have `sandwich` 
+and `lmtest` packages installed to use this feature.
+
+#### Centering variables
+
+By default, all non-focal variables are mean-centered. You can additionally specify 
+that the focal predictors are centered with `centered = "all"`. You may also request
+that no variables be centered with `centered = "none"`. You may also request specific variables to 
+center by providing a vector of quoted variable names---no others will be centered 
+in that case.
+
+Note that the moderator is centered around the specified values. Factor variables 
+are ignored in the centering process.
+
+## Plotting interactions
+
+An even more versatile and sometimes more interpretable method for understanding 
+interaction effects is via plotting. `jtools` provides `interact_plot` as a relatively
+pain-free method to get good-looking plots of interactions using `ggplot2` on the 
+backend.
+
+```{r}
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder")
+```
+By default, with a continuous moderator you get two lines---1 standard deviation 
+above and below the mean. If you specify `modxvals = "mean-plus-minus"`, the mean
+of the moderator is also plotted.
+
+```{r}
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder", modxvals = "mean-plus-minus")
+```
+
+However, if your moderator is **a factor**, each level will be plotted and you should
+leave `modxvals = NULL`, the default.
+
+```{r}
+fitiris <- lm(Petal.Length ~ Petal.Width*Species, data = iris)
+interact_plot(fitiris, pred = "Petal.Width", modx = "Species")
+```
+
+### Plotting points
+
+If you want to see the individual data points plotted to better understand how the 
+fitted lines related to the observed data, you can use the `plot.points = TRUE` argument.
+
+```{r}
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder", plot.points = TRUE)
+```
+This isn't especially informative for a continuous moderator. It can be very 
+enlightening, though, for categorical moderators.
+
+```{r}
+interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
+```
+
+### Confidence bands
+
+Another way to get a sense of the precision of the estimates is by plotting 
+confidence bands. To get started, just set `interval = TRUE`. To decide how wide
+the confidence interval should be, express the percentile as a number, e.g., 
+`int.width = 0.8` corresponds to an 80% interval.
+
+```{r}
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder", interval = TRUE, int.width = 0.8)
+```
+
+### Other options
+
+There are a number of other options not mentioned, many relating to the appearance.
+
+For instance, you can manually specify the axis labels, add a main title, and so on.
+
+```{r}
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder", x.label = "Custom X Label",
+              y.label = "Custom Y Label", main.title = "Sample Plot", 
+              legend.main = "Custom Legend Title")
+```
+
+Because the function uses `ggplot2`, it can be modified and extended like any other
+`ggplot2` object. For example, using the `theme_apa()` function from `jtools`:
+
+```{r}
+interact_plot(fitiris, pred = "Petal.Width", modx = "Species") + theme_apa()
+```
+

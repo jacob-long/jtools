@@ -26,3 +26,4 @@ vignettes/*.pdf
 .Rproj.user
 # Images
 *.png
+inst/doc
