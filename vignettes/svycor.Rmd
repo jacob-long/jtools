@@ -57,11 +57,11 @@ though in some cases it may not affect the output.
 
 One thing that `survey` won't do for you is give you *p* values for the null hypothesis
 that $r = 0$. While at first blush finding the *p* value might seem like a simple 
-procedure. However, complex surveys will almost always violate the important distribution
+procedure, complex surveys will almost always violate the important distributional
 assumptions that go along with simple hypothesis tests of the correlation coefficient.
-There is not a clear consensus on the appropriate way to conduct hypothesis tests in 
-this context, due in part to the fact that most analyses of complex surveys occurs in
-the context of multiple regression.
+There is not a clear consensus on the appropriate way to conduct hypothesis tests in
+this context, due in part to the fact that most analyses of complex
+surveys occurs in the context of multiple regression rather than simple bivariate cases.
 
 If `sig.stats = TRUE`, then `svycor` will use the `wtd.cor` function from the `weights`
 package to conduct hypothesis tests. The *p* values are derived from a bootstrap 
