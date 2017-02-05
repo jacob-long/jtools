@@ -68,7 +68,7 @@ package to conduct hypothesis tests. The *p* values are derived from a bootstrap
 procedure in which the weights define sampling probability. The `bootn =` argument
 is given to `wtd.cor` to define the number of simulations to run. This can significantly
 increase the running time for large samples and/or large numbers of simulations. The 
-`mean1` argument tells `wtd.cor` whether it treat your sample size as the number of
+`mean1` argument tells `wtd.cor` whether it should treat your sample size as the number of
 observations in the survey design (the number of rows in the data frame) or the 
 sum of the weights. Usually, the former is desired, so the default value of `mean1` is 
 `TRUE`.
@@ -78,7 +78,7 @@ svycor(~api00 + api99, design = dstrat, digits = 4, sig.stats = TRUE, bootn = 20
 ```
 
 When using `sig.stats = TRUE`, the correlation parameter estimates come from the 
-bootstrap procedure rather than the rather simpler method based on the survey-weighted
+bootstrap procedure rather than the simpler method based on the survey-weighted
 covariance matrix when `sig.stats = FALSE`.
 
 By saving the output of the function, you can extract non-rounded coefficients, *p* 
