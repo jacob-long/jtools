@@ -264,6 +264,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   if (!is.null(main.title)){
     p <- p + ggplot2::ggtitle(main.title)
   }
+
   return(p)
 
+}
+
+#' @export
+
+print.interact_plot <- function(x, ...) {
+  print(x)
 }
