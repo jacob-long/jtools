@@ -1,7 +1,7 @@
 Package: jtools
 Type: Package
 Title: Interpreting and Presenting Regressions, Interactions, and Other Linear Analyses
-Version: 0.3.5
+Version: 0.3.6
 Authors@R: person("Jacob", "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
 Description: This is just a collection of tools that the author (Jacob) has written
