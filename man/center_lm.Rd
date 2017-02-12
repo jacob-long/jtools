@@ -35,6 +35,13 @@ fitw <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x7
    weights = Population)
 fitw_center <- center_lm(fitw)
 
+# With svyglm
+library(survey)
+data(api)
+dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+regmodel <- svyglm(api00~ell*meals,design=dstrat)
+regmodel_center <- center_lm(regmodel)
+
 }
 \references{
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel

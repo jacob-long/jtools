@@ -44,6 +44,13 @@
 #'    weights = Population)
 #' fitw_center <- center_lm(fitw)
 #'
+#' # With svyglm
+#' library(survey)
+#' data(api)
+#' dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' regmodel_center <- center_lm(regmodel)
+#'
 #' @importFrom stats weighted.mean
 #' @export center_lm
 #'
@@ -53,10 +60,37 @@ center_lm <- function(model) {
   d <- model.frame(model)
 
   # svyglm?
-  if (class(model)[1]=="svyglm") {survey <- TRUE} else {survey <- FALSE}
+  if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {survey <- TRUE} else {survey <- FALSE}
+
+  # things are different for these svyglm objects...
+  if (survey == TRUE) {
+
+    # Get the survey design object
+    design <- model$survey.design
+    # Get the DF from it
+    d <- design$variables
+
+    # Now we need to know the variables of interest
+    vars <- attributes(model$terms)$variables
+    vars <- as.character(vars)
+
+    # Subtract means
+    for (i in 1:ncol(d)) {
+      if (names(d)[i] %in% vars && !is.factor(d[,i])) {
+        vmean <- survey::svymean(as.formula(paste("~", names(d)[i])), design = design)
+        d[,i] <- d[,i] - vmean
+      }
+    }
+
+    # Update the values with mean-centered version
+    design$variables <- d
+
+    new <- update(model, design = design)
+  }
+
 
   # weights?
-  if ("(weights)" %in% names(d)) {
+  if (survey == FALSE && "(weights)" %in% names(d)) {
     weights <- TRUE
     wname <- sub("()", model$call["weights"], "")
     colnames(d)[which(colnames(d) == "(weights)")] <- wname
@@ -71,13 +105,7 @@ center_lm <- function(model) {
         d[,i] <- d[,i] - mean(d[,i])
       }
     }
-  } else if (survey == TRUE) {
-    for (i in 1:ncol(d)) {
-      if (!is.factor(d[,i]) && colnames(d)[i] != "(weights)") {
-        d[,i] <- d[,i] - weighted.mean(d[,i], d[,"(weights)"])
-      }
-    }
-  } else if (weights == TRUE && survey == FALSE) {
+  } else if (weights == TRUE) {
     for (i in 1:ncol(d)) {
       if (!is.factor(d[,i]) && colnames(d)[i] != wname) {
         d[,i] <- d[,i] - weighted.mean(d[,i], d[,wname])
@@ -85,7 +113,9 @@ center_lm <- function(model) {
     }
   }
 
-  new <- update(model, data = d)
-
+  if (survey == FALSE) {
+    new <- update(model, data)
+  }
   return(new)
 }
+
