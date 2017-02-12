@@ -7,13 +7,13 @@
 #' @param model A regression model of type \code{lm}, \code{glm}, or
 #' \code{\link[survey]{svyglm}}. It should contain the interaction of interest.
 #'
-#' @param pred The name (in quotation marks) of the predictor variable involved
+#' @param pred The name of the predictor variable involved
 #'  in the interaction.
 #'
-#' @param modx The name (in quotation marks) of the moderator variable involved
+#' @param modx The name of the moderator variable involved
 #'  in the interaction.
 #'
-#' @param mod2 Optional. The name (in quotation marks) of the second moderator
+#' @param mod2 Optional. The name of the second moderator
 #'  variable involved in the interaction.
 #'
 #' @param modxvals For which values of the moderator should lines be plotted?
@@ -109,12 +109,12 @@
 #' states$HSGrad <- states$`HS Grad`
 #' fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
 #'   data = states)
-#' interact_plot(model = fit, pred = "Murder",
-#'   modx = "Illiteracy")
+#' interact_plot(model = fit, pred = Murder,
+#'   modx = Illiteracy)
 #'
 #' # Using interval feature
 #' fit <- lm(accel ~ mag*dist, data=attenu)
-#' interact_plot(fit, pred = "mag", modx = "dist", interval = TRUE,
+#' interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
 #'
 #'
@@ -127,6 +127,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
                           x.label = NULL, y.label = NULL, modx.labels = NULL,
                           mod2.labels = NULL, main.title = NULL, legend.main = NULL,
                           color.class="Set2") {
+
+  # Evaluate the modx, mod2, pred args
+  pred <- deparse(substitute(pred))
+  modx <- deparse(substitute(modx))
+  # Only if mod2 exists
+  if (!is.null(mod2)) {
+    mod2 <- deparse(substitute(mod2))
+  }
 
   # Duplicating the dataframe so it can be manipulated as needed
   d <- as.data.frame(model$model)

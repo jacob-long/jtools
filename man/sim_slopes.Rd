@@ -11,9 +11,9 @@ sim_slopes(model, pred, modx, modxvals = NULL, centered = NULL,
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
 It should contain the interaction of interest.}
 
-\item{pred}{The predictor variable involved in the interaction in quotes.}
+\item{pred}{The predictor variable involved in the interaction.}
 
-\item{modx}{The moderator variable involved in the interaction in quotes.}
+\item{modx}{The moderator variable involved in the interaction.}
 
 \item{modxvals}{For which values of the moderator should simple slopes analysis
 be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
@@ -65,7 +65,7 @@ This allows the user to perform a simple slopes analysis for the purpose
 # Using a fitted model as formula input
 fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
   data=as.data.frame(state.x77))
-sim_slopes(model=fiti, pred="Murder", modx="Illiteracy")
+sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 
 
 }

@@ -6,9 +6,9 @@
 #' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
 #'    It should contain the interaction of interest.
 #'
-#' @param pred The predictor variable involved in the interaction in quotes.
+#' @param pred The predictor variable involved in the interaction.
 #'
-#' @param modx The moderator variable involved in the interaction in quotes.
+#' @param modx The moderator variable involved in the interaction.
 #'
 #' @param modxvals For which values of the moderator should simple slopes analysis
 #'   be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
@@ -77,7 +77,7 @@
 #' # Using a fitted model as formula input
 #' fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
 #'   data=as.data.frame(state.x77))
-#' sim_slopes(model=fiti, pred="Murder", modx="Illiteracy")
+#' sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd update
@@ -87,6 +87,9 @@
 sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
                        robust=FALSE, robust.type="HC3", cond.int = FALSE,
                        digits = 3) {
+
+  pred <- deparse(substitute(pred))
+  modx <- deparse(substitute(modx))
 
   # Create object to return
   ss <- NULL

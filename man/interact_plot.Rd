@@ -15,10 +15,10 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
 \code{\link[survey]{svyglm}}. It should contain the interaction of interest.}
 
-\item{pred}{The name (in quotation marks) of the predictor variable involved
+\item{pred}{The name of the predictor variable involved
 in the interaction.}
 
-\item{modx}{The name (in quotation marks) of the moderator variable involved
+\item{modx}{The name of the moderator variable involved
 in the interaction.}
 
 \item{modxvals}{For which values of the moderator should lines be plotted?
@@ -28,7 +28,7 @@ moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
 of the factor is included. If \code{"mean-plus-minus"}, plots a line when
 moderator is at mean in addition to the default +/- standard deviation.}
 
-\item{mod2}{Optional. The name (in quotation marks) of the second moderator
+\item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction.}
 
 \item{mod2vals}{For which values of the second moderator should the plot be
@@ -105,12 +105,12 @@ states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
   data = states)
-interact_plot(model = fit, pred = "Murder",
-  modx = "Illiteracy")
+interact_plot(model = fit, pred = Murder,
+  modx = Illiteracy)
 
 # Using interval feature
 fit <- lm(accel ~ mag*dist, data=attenu)
-interact_plot(fit, pred = "mag", modx = "dist", interval = TRUE,
+interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
   int.type = "confidence", int.width = .8)
 
 
