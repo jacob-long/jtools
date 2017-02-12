@@ -302,7 +302,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
     j$modpval <- bsum$p.value
   }
 
-  if (class(lm)[1] == "glm" | class(lm)[1] == "svyglm") {
+  if (class(lm)[1] == "glm" | class(lm)[1] == "svyglm" | class(lm)[1] == "svrepglm") {
     j$lmFamily <- lm$family
   }
 
@@ -368,7 +368,7 @@ print.j_summ <- function(x, ...) {
   if (x$model.info == TRUE) {
     cat("MODEL INFO", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
         x$dv, "\n", "Number of Predictors: ", (x$npreds), "\n", sep="")
-    if (x$lmClass[1]=="svyglm") {
+    if (x$lmClass[1]=="svyglm" || x$lmClass[1]=="svrepglm") {
       cat("\n", "Analysis of complex survey design", "\n", sep="")
       if (as.character(x$lmFamily[1])=="gaussian" &&
           as.character(x$lmFamily[2])=="identity") {
@@ -417,7 +417,7 @@ print.j_summ <- function(x, ...) {
   }
 
   if (x$linear==T) {
-    if (x$lmClass[1] == "svyglm") {
+    if (x$lmClass[1] == "svyglm" || x$lmClass[1] == "svrepglm") {
       cat("Robust\n")
     } else if (x$robust==F) {
       cat("Standard errors: OLS", "\n")
