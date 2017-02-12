@@ -88,6 +88,7 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
                        robust=FALSE, robust.type="HC3", cond.int = FALSE,
                        digits = 3) {
 
+  # Allows unquoted variable names
   pred <- deparse(substitute(pred))
   modx <- deparse(substitute(modx))
 
@@ -105,10 +106,24 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   }
 
   # Save data from model object
-  d <- as.data.frame(model$model)
+  d <- model.frame(model)
 
   if (is.factor(d[,modx])){
     stop("Factor variables are not supported. You can try using a binary numeric variable and set modxvals = c(0,1), however.")
+  }
+
+  # Deal with svyglm objects
+  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
+    survey <- TRUE
+
+    design <- model$survey.design
+    d <- design$variables
+
+    # Focal vars so the weights don't get centered
+    fvars <- as.character(attributes(model$terms)$variables)
+
+  } else {
+    survey <- FALSE
   }
 
   # Pulling the name of the response variable for labeling
@@ -125,30 +140,55 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   # Handling user-requested centered vars
   if (!is.null(centered) && (centered != "all" || centered != "none")){
     for (var in centered) {
-      d[,var] <- d[,var] - mean(d[,var])
+      if (survey == FALSE && !is.factor(d[,var])) {
+        d[,var] <- d[,var] - mean(d[,var])
+      } else if (!is.factor(d[,var])) {
+        d[,var] <- d[,var] - survey::svymean(as.formula(paste("~", var, sep = "")),
+                                             design = design)
+      }
     }
   } else if (!is.null(centered) && centered == "none") {
 
   } else if (!is.null(centered) && centered == "all") {
     for (var in names(d)) {
-      d[,var] <- d[,var] - mean(d[,var])
+      if (survey == FALSE && !is.factor(d[,var])) {
+        d[,var] <- d[,var] - mean(d[,var])
+      } else if (is.numeric(d[,var]) && var %in% fvars) {
+        d[,var] <- d[,var] - survey::svymean(as.formula(paste("~", var, sep = "")),
+                                             design = design)
+      }
     }
   } else { # Center all non-focal
     # Centering the non-focal variables to make the slopes more interpretable (0 = mean)
     for (j in 1:ncol(d)) {
-      if ((names(d)[j] %in% c(pred, resp, modx))==FALSE) {
+      if ((names(d)[j] %in% c(pred, resp, modx))==FALSE && is.numeric(d[,j]) &&
+          survey == FALSE) {
         d[,j] <- as.vector((d[,j] - mean(d[,j])))
+      } else if (survey == TRUE && fvars[j] %in% c(pred, resp, modx) == FALSE &&
+         names(d)[j] %in% fvars && is.numeric(d[,j])) {
+        d[,j] <- as.vector(d[,j] - survey::svymean(as.formula(paste("~", names(d)[j],
+                                                                     sep = "")),
+                                                    design = design))
       }
     }
   }
 
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx])) {
-    modsd <- sd(d[,modx])
-    modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
-    names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
-    modxvals2 <- modxvalssd
-    ss$def <- TRUE
+    if (survey == FALSE) {
+      modsd <- sd(d[,modx])
+      modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
+      names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+      modxvals2 <- modxvalssd
+      ss$def <- TRUE
+    } else if (survey == TRUE) {
+      modsd <- sqrt(survey::svyvar(as.formula(paste("~", modx, sep = "")), design = design))
+      modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
+      modxvalssd <- c(modmean+modsd, modmean, modmean-modsd)
+      names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+      modxvals2 <- modxvalssd
+      ss$def <- TRUE
+    }
   } else { # Use user-supplied values otherwise
     modxvals2 <- modxvals
     ss$def <- FALSE
@@ -171,33 +211,68 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   # Looping so any amount of moderator values can be used
   for (i in 1:length(modxvals2)) {
 
-    # Creating extra "copy" of model frame to change for model update
-    dt <- d
+    # Update works differently for svyglm objects, so needs to be done separately
+    if (survey == FALSE) {
 
-    # The moderator value-adjusted variable
-    dt[,modx] <- dt[,modx] - modxvals2[i]
+      # Creating extra "copy" of model frame to change for model update
+      dt <- d
 
-    # Creating the model
-    newmod <- update(model, data=dt)
+      # The moderator value-adjusted variable
+      dt[,modx] <- dt[,modx] - modxvals2[i]
 
-    # Getting SEs, robust or otherwise
-    if (robust==TRUE) {
+      # Creating the model
+      newmod <- update(model, data=dt)
 
-      # Use j_summ to get the coefficients
-      sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type)
-      summat <- sum$coeftable
+      # Getting SEs, robust or otherwise
+      if (robust==TRUE) {
 
-      slopep <- summat[pred,c("Est.","S.E.","p")]
-      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
+        # Use j_summ to get the coefficients
+        sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type)
+        summat <- sum$coeftable
 
-      retmat[i,1] <- modxvals2[i]
-      retmat[i,2:4] <- slopep[]
+        slopep <- summat[pred,c("Est.","S.E.","p")]
+        intp <- summat["(Intercept)",c("Est.","S.E.","p")]
 
-      retmati[i,1] <- modxvals2[i]
-      retmati[i,2:4] <- intp[]
+        retmat[i,1] <- modxvals2[i]
+        retmat[i,2:4] <- slopep[]
 
-    } else {
+        retmati[i,1] <- modxvals2[i]
+        retmati[i,2:4] <- intp[]
 
+      } else {
+
+        sum <- jtools::j_summ(newmod)
+        summat <- sum$coeftable
+
+        slopep <- summat[pred,c("Est.","S.E.","p")]
+        intp <- summat["(Intercept)",c("Est.","S.E.","p")]
+
+        retmat[i,1] <- modxvals2[i]
+        retmat[i,2:4] <- slopep[]
+
+        retmati[i,1] <- modxvals2[i]
+        retmati[i,2:4] <- intp[]
+
+      }
+
+    } else if (survey == TRUE) {
+
+      # Create new design to modify
+      designt <- design
+
+      # Create new df to modify
+      dt <- d
+
+      # Set the moderator at the given value
+      dt[,modx] <- dt[,modx] - modxvals2[i]
+
+      # Update design
+      designt$variables <- dt
+
+      # Update model
+      newmod <- update(model, design = designt)
+
+      # Get the coefs
       sum <- jtools::j_summ(newmod)
       summat <- sum$coeftable
 
