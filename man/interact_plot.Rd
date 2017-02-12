@@ -4,21 +4,22 @@
 \alias{interact_plot}
 \title{Plot interaction effects in regression models}
 \usage{
-interact_plot(model, pred, modx, modxvals = NULL, centered = NULL,
-  plot.points = FALSE, interval = FALSE, int.type = c("confidence",
-  "prediction"), int.width = 0.95, x.label = NULL, y.label = NULL,
-  mod.labels = NULL, main.title = NULL, legend.main = NULL,
+interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
+  mod2vals = NULL, centered = NULL, plot.points = FALSE,
+  interval = FALSE, int.type = c("confidence", "prediction"),
+  int.width = 0.95, x.label = NULL, y.label = NULL, modx.labels = NULL,
+  mod2.labels = NULL, main.title = NULL, legend.main = NULL,
   color.class = "Set2")
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
 \code{\link[survey]{svyglm}}. It should contain the interaction of interest.}
 
-\item{pred}{The name of the predictor variable involved in the interaction in
-quotations.}
+\item{pred}{The name (in quotation marks) of the predictor variable involved
+in the interaction.}
 
-\item{modx}{The name of the moderator variable involved in the interaction in
-quotations.}
+\item{modx}{The name (in quotation marks) of the moderator variable involved
+in the interaction.}
 
 \item{modxvals}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
@@ -26,6 +27,13 @@ deviation from the mean values are used for continuous moderators. If the
 moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
 of the factor is included. If \code{"mean-plus-minus"}, plots a line when
 moderator is at mean in addition to the default +/- standard deviation.}
+
+\item{mod2}{Optional. The name (in quotation marks) of the second moderator
+variable involved in the interaction.}
+
+\item{mod2vals}{For which values of the second moderator should the plot be
+facetted by? That is, there will be a separate plot for each level of this
+moderator. Defaults are the same as \code{modxvals}.}
 
 \item{centered}{A vector of quoted variable names that are to be mean-centered.
 If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
@@ -53,9 +61,14 @@ the variable name is used.}
 \item{y.label}{A character object specifying the desired x-axis label. If \code{NULL},
 the variable name is used.}
 
-\item{mod.labels}{A character vector of labels for each level of the moderator values,
+\item{modx.labels}{A character vector of labels for each level of the moderator values,
 provided in the same order as the \code{modxvals} argument. If \code{NULL},
 the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
+In that case, "+1 SD" and "-1 SD" are used.}
+
+\item{mod2.labels}{A character vector of labels for each level of the 2nd moderator
+values, provided in the same order as the \code{mod2vals} argument. If \code{NULL},
+the values themselves are used as labels unless \code{mod2vals} is also \code{NULL}.
 In that case, "+1 SD" and "-1 SD" are used.}
 
 \item{main.title}{A character object that will be used as an overall title for the

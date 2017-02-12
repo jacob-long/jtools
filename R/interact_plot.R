@@ -7,11 +7,14 @@
 #' @param model A regression model of type \code{lm}, \code{glm}, or
 #' \code{\link[survey]{svyglm}}. It should contain the interaction of interest.
 #'
-#' @param pred The name of the predictor variable involved in the interaction in
-#'  quotations.
+#' @param pred The name (in quotation marks) of the predictor variable involved
+#'  in the interaction.
 #'
-#' @param modx The name of the moderator variable involved in the interaction in
-#'  quotations.
+#' @param modx The name (in quotation marks) of the moderator variable involved
+#'  in the interaction.
+#'
+#' @param mod2 Optional. The name (in quotation marks) of the second moderator
+#'  variable involved in the interaction.
 #'
 #' @param modxvals For which values of the moderator should lines be plotted?
 #'   Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
@@ -19,6 +22,10 @@
 #'   moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
 #'   of the factor is included. If \code{"mean-plus-minus"}, plots a line when
 #'   moderator is at mean in addition to the default +/- standard deviation.
+#'
+#' @param mod2vals For which values of the second moderator should the plot be
+#'   facetted by? That is, there will be a separate plot for each level of this
+#'   moderator. Defaults are the same as \code{modxvals}.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered.
 #'   If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
@@ -46,9 +53,14 @@
 #' @param y.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
 #'
-#' @param mod.labels A character vector of labels for each level of the moderator values,
+#' @param modx.labels A character vector of labels for each level of the moderator values,
 #'   provided in the same order as the \code{modxvals} argument. If \code{NULL},
 #'   the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
+#'   In that case, "+1 SD" and "-1 SD" are used.
+#'
+#' @param mod2.labels A character vector of labels for each level of the 2nd moderator
+#'   values, provided in the same order as the \code{mod2vals} argument. If \code{NULL},
+#'   the values themselves are used as labels unless \code{mod2vals} is also \code{NULL}.
 #'   In that case, "+1 SD" and "-1 SD" are used.
 #'
 #' @param main.title A character object that will be used as an overall title for the
@@ -109,11 +121,12 @@
 #' @importFrom stats coef coefficients lm predict sd qnorm
 #' @export interact_plot
 
-interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
-                          plot.points = FALSE, interval = FALSE,
+interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2vals = NULL,
+                          centered = NULL, plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence","prediction"), int.width = .95,
-                          x.label = NULL, y.label = NULL, mod.labels = NULL,
-                          main.title = NULL, legend.main = NULL, color.class="Set2") {
+                          x.label = NULL, y.label = NULL, modx.labels = NULL,
+                          mod2.labels = NULL, main.title = NULL, legend.main = NULL,
+                          color.class="Set2") {
 
   # Duplicating the dataframe so it can be manipulated as needed
   d <- as.data.frame(model$model)
@@ -141,7 +154,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   } else { # Center all non-focal
     # Scaling the non-focal variables to make the slopes more interpretable (0 = mean)
     for (j in 1:ncol(d)) {
-      if ((names(d)[j] %in% c(pred, resp, modx))==FALSE && is.numeric(d[,j])) {
+      if ((names(d)[j] %in% c(pred, resp, modx, mod2))==FALSE && is.numeric(d[,j])) {
         d[,j] <- as.vector(scale(d[,j]))
       }
     }
@@ -167,6 +180,25 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     modxvals2 <- modxvals
   }
 
+  # Same process for second moderator
+  if (!is.null(mod2)) {
+    if (is.null(mod2vals) && !is.factor(d[,mod2])) {
+      mod2sd <- sd(d[,mod2])
+      mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2])-mod2sd)
+      names(mod2valssd) <- c("+1 SD", "-1 SD")
+      mod2vals2 <- mod2valssd
+    } else if (class(mod2vals) == "character" && mod2vals == "mean-plus-minus") {
+      mod2sd <- sd(d[,mod2])
+      mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
+      names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+      mod2vals2 <- mod2valssd
+    } else if (is.null(mod2vals) && is.factor(d[,mod2])){
+      mod2vals2 <- levels(d[,mod2])
+    } else { # Use user-supplied values otherwise
+      mod2vals2 <- mod2vals
+    }
+  }
+
   # Creating a set of dummy values of the focal predictor for use in predict()
   xpreds <- seq(from=range(d[,pred])[1], to=range(d[,pred])[2], length.out=100)
   xpreds <- rep(xpreds, length(modxvals2))
@@ -179,14 +211,34 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     facs <- c(facs, rep(modxvals2[i], 100))
   }
 
+  if (!is.null(mod2)) {
+    facso <- facs
+    xpredso <- xpreds
+    facs2 <- rep(mod2vals2[1], length(facs))
+    for (i in 2:length(mod2vals2)) {
+      facs2 <- c(facs2, rep(mod2vals2[i], length(facso)))
+      facs <- c(facs, facso)
+      xpreds <- c(xpreds, xpredso)
+    }
+  }
+
   # Creating matrix for use in predict()
-  pm <- matrix(rep(0, 100*(nc+2)*length(modxvals2)), ncol=(nc+2))
+  if (is.null(mod2)) {
+    pm <- matrix(rep(0, 100*(nc+2)*length(modxvals2)), ncol=(nc+2))
+  } else {
+    pm <- matrix(rep(0, (nc+2)*length(facs)), ncol=(nc+2))
+  }
+
   # Naming columns
   colnames(pm) <- c(colnames(d),"ymax","ymin")
   # Convert to dataframe
   pm <- as.data.frame(pm)
   # Add values of moderator to df
   pm[,modx] <- facs
+  if (!is.null(mod2)){ # if second moderator
+    pm[,mod2] <- facs2
+  }
+
   # Add values of focal predictor to df
   pm[,pred] <- xpreds
 
@@ -210,6 +262,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   # For plotting, it's good to have moderator as factor...
   # but not until after predict() is used
   pm[,modx] <- as.factor(pm[,modx])
+  if (!is.null(mod2)) {
+    pm[,mod2] <- as.factor(pm[,mod2])
+  }
 
   # Adding for future flexibility in color specification
   if (color.class == "qual") {
@@ -224,15 +279,28 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     y.label <- resp
   }
 
-  if (is.null(mod.labels)) {
+  if (is.null(modx.labels)) {
     if (exists("modxvalssd") && length(modxvalssd)==2){
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "+1 SD"))
     } else if (exists("modxvalssd") && length(modxvalssd)==3){
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "Mean", "+1 SD"))
     }
-  } else if (length(mod.labels)==length(modxvals2)) {
-    pm[,modx] <- factor(pm[,modx], labels=mod.labels)
-  } else {warning("mod.labels argument was not the same length as modxvals. Ignoring...")}
+  } else if (length(modx.labels)==length(modxvals2)) {
+    pm[,modx] <- factor(pm[,modx], labels=modx.labels)
+  } else {warning("modx.labels argument was not the same length as modxvals. Ignoring...")}
+
+
+  if (!is.null(mod2)) {
+    if (is.null(mod2.labels)) {
+      if (exists("mod2valssd") && length(mod2valssd)==2){
+        pm[,mod2] <- factor(pm[,mod2], labels=c("-1 SD", "+1 SD"))
+      } else if (exists("mod2valssd") && length(mod2valssd)==3){
+        pm[,mod2] <- factor(pm[,mod2], labels=c("-1 SD", "Mean", "+1 SD"))
+      }
+    } else if (length(mod2.labels)==length(mod2vals2)) {
+      pm[,mod2] <- factor(pm[,mod2], labels=mod2.labels)
+    } else {warning("mod2.labels argument was not the same length as modxvals. Ignoring...")}
+  }
 
   if (is.null(legend.main)){
     legend.main <- modx
@@ -247,6 +315,10 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, centered = NULL,
                                                         ymax=pm[,"ymax"],
                                                         alpha=.05),
                                   show.legend = FALSE)
+  }
+
+  if (!is.null(mod2)) {
+    p <- p + ggplot2::facet_grid(. ~ pm[,mod2])
   }
 
   if (plot.points==TRUE && is.factor(d[,modx])) {
