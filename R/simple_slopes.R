@@ -137,6 +137,15 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   ss$modx <- modx
   ss$pred <- pred
 
+  # weights?
+  if (survey == FALSE && "(weights)" %in% names(d)) {
+    weights <- TRUE
+    wname <- sub("()", model$call["weights"], "")
+    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+  } else {
+    weights <- FALSE
+  }
+
   # Handling user-requested centered vars
   if (!is.null(centered) && (centered != "all" || centered != "none")){
     for (var in centered) {
@@ -151,7 +160,7 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
   } else if (!is.null(centered) && centered == "all") {
     for (var in names(d)) {
-      if (survey == FALSE && !is.factor(d[,var])) {
+      if (survey == FALSE && !is.factor(d[,var]) && var != "(weights)") {
         d[,var] <- d[,var] - mean(d[,var])
       } else if (is.numeric(d[,var]) && var %in% fvars) {
         d[,var] <- d[,var] - survey::svymean(as.formula(paste("~", var, sep = "")),
@@ -161,8 +170,8 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   } else { # Center all non-focal
     # Centering the non-focal variables to make the slopes more interpretable (0 = mean)
     for (j in 1:ncol(d)) {
-      if ((names(d)[j] %in% c(pred, resp, modx))==FALSE && is.numeric(d[,j]) &&
-          survey == FALSE) {
+      if ((names(d)[j] %in% c(pred, resp, modx, "(weights)"))==FALSE &&
+          is.numeric(d[,j]) && survey == FALSE) {
         d[,j] <- as.vector((d[,j] - mean(d[,j])))
       } else if (survey == TRUE && fvars[j] %in% c(pred, resp, modx) == FALSE &&
          names(d)[j] %in% fvars && is.numeric(d[,j])) {
@@ -172,6 +181,9 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
       }
     }
   }
+
+  # Rename weights variable
+  names(d)[names(d) == "(weights)"] <- wname
 
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx])) {
