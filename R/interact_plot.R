@@ -73,6 +73,13 @@
 #'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor moderators,
 #'   "Blues" for +/- SD and user-specified \code{modxvals} values.
 #'
+#' @param line.thickness How thick should the plotted lines be? Default is 1.1;
+#'   ggplot's default is 1.
+#'
+#' @param vary.lty Should the resulting plot have different shapes for each line
+#'   in addition to colors? Defaults to \code{TRUE}.
+#'
+#'
 #' @details This function provides a means for plotting conditional effects for the
 #'   purpose of exploring interactions in the context of regression. You must have the
 #'   package \code{ggplot2} installed to benefit from these plotting functions.
@@ -128,7 +135,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
                           int.type = c("confidence","prediction"), int.width = .95,
                           x.label = NULL, y.label = NULL, modx.labels = NULL,
                           mod2.labels = NULL, main.title = NULL, legend.main = NULL,
-                          color.class="Set2") {
+                          color.class = NULL, line.thickness = 1.1, vary.lty = TRUE) {
 
   # Evaluate the modx, mod2, pred args
   pred <- deparse(substitute(pred))
@@ -332,8 +339,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     legend.main <- modx
   }
 
-  p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx]))
-  p <- p + ggplot2::geom_path()
+  if (vary.lty == TRUE) {
+    p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx],
+                                          linetype = pm[,modx]))
+  } else {
+    p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx]))
+  }
+
+  p <- p + ggplot2::geom_path(size = line.thickness)
 
   # Plot intervals if requested
   if (interval==TRUE) {
@@ -343,21 +356,28 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
                                   show.legend = FALSE)
   }
 
+  # If third mod, facet by third mod
   if (!is.null(mod2)) {
     p <- p + ggplot2::facet_grid(. ~ pm[,mod2])
   }
 
+  # For factor vars, plotting the observed points and coloring them by factor looks great
   if (plot.points==TRUE && is.factor(d[,modx])) {
     p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp],
                                               colour=d[,modx]), position = "jitter")
-  } else if (plot.points == TRUE && !is.factor(d[,modx])) {
+  } else if (plot.points == TRUE && !is.factor(d[,modx])) { # otherwise just black points
     p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp]),
                                  inherit.aes = F, position = "jitter")
   }
 
-  p <- p + ggplot2::theme_bw()
+  p <- p + ggplot2::theme_bw() # I just like it better
   p <- p + ggplot2::labs(x = x.label, y = y.label)
   p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette = color.class)
+
+  if (vary.lty == TRUE) { # Add line-specific changes
+    p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
+    p <- p + ggplot2::theme(legend.key.width = grid::unit(2, "lines"))
+  }
 
   if (!is.null(main.title)){
     p <- p + ggplot2::ggtitle(main.title)
