@@ -153,7 +153,16 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   }
 
   # Duplicating the dataframe so it can be manipulated as needed
-  d <- as.data.frame(model$model)
+  d <- model.frame(model)
+
+  # Is it a svyglm?
+  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
+    survey <- TRUE
+    # design <- model$survey.design
+    # d <- design$variables
+  } else {
+    survey <- FALSE
+  }
 
   # Setting default for colors
   if (is.factor(d[,modx])) {
@@ -298,7 +307,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   pm[,pred] <- xpreds
 
   # Create predicted values based on specified levels of the moderator, focal predictor
-  predicted <- as.data.frame(predict(model, pm, se.fit=T, interval=int.type[1]))
+  if (survey == FALSE) {
+    modelu <- update(model, data = d)
+  } else {
+    modelu <- model
+  }
+  predicted <- as.data.frame(predict(modelu, pm, se.fit=T, interval=int.type[1]))
   pm[,resp] <- predicted[,1] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
