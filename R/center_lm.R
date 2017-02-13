@@ -51,7 +51,7 @@
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' regmodel_center <- center_lm(regmodel)
 #'
-#' @importFrom stats weighted.mean
+#' @importFrom stats weighted.mean as.formula
 #' @export center_lm
 #'
 
@@ -114,7 +114,7 @@ center_lm <- function(model) {
   }
 
   if (survey == FALSE) {
-    new <- update(model, data)
+    new <- update(model, data = d)
   }
   return(new)
 }
