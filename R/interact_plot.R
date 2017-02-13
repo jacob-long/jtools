@@ -164,6 +164,16 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     survey <- FALSE
   }
 
+  # weights?
+  if (survey == FALSE && "(weights)" %in% names(d)) {
+    weights <- TRUE
+    wname <- as.character(model$call["weights"])
+    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+  } else {
+    weights <- FALSE
+    wname <- NULL
+  }
+
   # Setting default for colors
   if (is.factor(d[,modx])) {
     facmod <- TRUE
@@ -205,7 +215,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   } else { # Center all non-focal
     # Scaling the non-focal variables to make the slopes more interpretable (0 = mean)
     for (j in 1:ncol(d)) {
-      if ((names(d)[j] %in% c(pred, resp, modx, mod2))==FALSE && is.numeric(d[,j])) {
+      if ((names(d)[j] %in% c(pred, resp, modx, mod2, wname))==FALSE &&
+          is.numeric(d[,j])) {
         d[,j] <- as.vector(scale(d[,j]))
       }
     }
