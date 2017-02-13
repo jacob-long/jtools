@@ -169,7 +169,11 @@ print.svycor <- function(x, ...) {
 
     # Create a matrix of significance stars
     pm <- x$p.values
-    pm[] <- suppressWarnings(star(pm[]))
+    for (i in 1:nrow(pm)) {
+      for (j in 1:ncol(pm)) {
+        pm[i,j] <- star(pm[i,j])
+      }
+    }
     # Taking asterisks out of self-correlations
     diag(pm)[] <- ""
 
