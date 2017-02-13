@@ -126,6 +126,12 @@
 #' interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
 #'
+#' # Using second moderator
+#' fit <- lm(Income ~ HSGrad*Murder*Illiteracy,
+#'   data = states)
+#' interact_plot(model = fit, pred = Murder,
+#'   modx = Illiteracy, mod2 = HSGrad)
+#'
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm
 #' @export interact_plot
