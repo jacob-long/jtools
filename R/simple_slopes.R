@@ -89,8 +89,8 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
                        digits = 3) {
 
   # Allows unquoted variable names
-  pred <- deparse(substitute(pred))
-  modx <- deparse(substitute(modx))
+  pred <- as.character(substitute(pred))
+  modx <- as.character(substitute(modx))
 
   # Create object to return
   ss <- NULL
