@@ -203,6 +203,10 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   # Fixes a data type error with predict() later
   d <- as.data.frame(d)
 
+  ## TODO: calculate accurate mean/SD values for svyglm objects. Predictions will
+  ## be accurate, but the values of the moderator could be way off from what they
+  ## purport to be (the mean and SDs away from the mean)
+
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx])) {
     modsd <- sd(d[,modx])
@@ -251,12 +255,21 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     facs <- c(facs, rep(modxvals2[i], 100))
   }
 
+  # Takes some rejiggering to get this right with second moderator
   if (!is.null(mod2)) {
+    # facs and xpreds will be getting longer, so we need originals for later
     facso <- facs
     xpredso <- xpreds
+    # facs2 is second moderator. Here we are creating first iteration of values
     facs2 <- rep(mod2vals2[1], length(facs))
+    # Now we create the 2nd through however many levels iterations
     for (i in 2:length(mod2vals2)) {
+      # Add the next level of 2nd moderator to facs2
+      # the amount depends on the how many values were in *original* facs
       facs2 <- c(facs2, rep(mod2vals2[i], length(facso)))
+      # We are basically recreating the whole previous set of values, each
+      # with a different value of 2nd moderator. They have to be in order
+      # since we are using geom_path() later.
       facs <- c(facs, facso)
       xpreds <- c(xpreds, xpredso)
     }
@@ -306,19 +319,17 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     pm[,mod2] <- as.factor(pm[,mod2])
   }
 
-  # Adding for future flexibility in color specification
-  if (color.class == "qual") {
-    colors <- c('#66c2a5','#fc8d62','#8da0cb','#e78ac3','#a6d854')
-  }
-
+  # Saving x-axis label
   if (is.null(x.label)){
     x.label <- pred
   }
 
+  # Saving y-axis label
   if (is.null(y.label)){
     y.label <- resp
   }
 
+  # Labels for values of moderator
   if (is.null(modx.labels)) {
     if (exists("modxvalssd") && length(modxvalssd)==2){
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "+1 SD"))
@@ -342,10 +353,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     } else {warning("mod2.labels argument was not the same length as modxvals. Ignoring...")}
   }
 
+  # If no user-supplied legend title, set it to name of moderator
   if (is.null(legend.main)){
     legend.main <- modx
   }
 
+  # Defining linetype here
   if (vary.lty == TRUE) {
     p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx],
                                           linetype = pm[,modx]))
@@ -353,6 +366,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx]))
   }
 
+  # Define line thickness
   p <- p + ggplot2::geom_path(size = line.thickness)
 
   # Plot intervals if requested
@@ -383,6 +397,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
 
   if (vary.lty == TRUE) { # Add line-specific changes
     p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
+    # Need some extra width to show the linetype pattern fully
     p <- p + ggplot2::theme(legend.key.width = grid::unit(2, "lines"))
   }
 
