@@ -157,6 +157,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
 
   # Setting default for colors
   if (is.factor(d[,modx])) {
+    facmod <- TRUE
     if (is.null(color.class)) {
       color.class <- "Set2"
     }
@@ -166,6 +167,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
       modxvals <- NULL
     }
   } else {
+    facmod <- FALSE
     if (is.null(color.class)) {
       color.class <- "Blues"
     }
@@ -341,6 +343,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   } else {warning("modx.labels argument was not the same length as modxvals. Ignoring...")}
 
 
+  # Setting labels for second moderator
   if (!is.null(mod2)) {
     if (is.null(mod2.labels)) {
       if (exists("mod2valssd") && length(mod2valssd)==2){
@@ -358,12 +361,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     legend.main <- modx
   }
 
+  # Get palette from RColorBrewer myself so I can use darker values
+  colors <- RColorBrewer::brewer.pal((length(modxvals2)+1), color.class)
+  colors <- rev(colors)
+  names(colors) <- c(names(modxvals2), NA)
+
   # Defining linetype here
   if (vary.lty == TRUE) {
     p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx],
-                                          linetype = pm[,modx]))
+                                          group=pm[,modx], linetype = pm[,modx]))
   } else {
-    p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx]))
+    p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp], colour=pm[,modx],
+                                          group=pm[,modx]))
   }
 
   # Define line thickness
@@ -373,8 +382,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   if (interval==TRUE) {
     p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=pm[,"ymin"],
                                                         ymax=pm[,"ymax"],
-                                                        alpha=.05),
-                                  show.legend = FALSE)
+                                                        fill = pm[,modx],
+                                                        colour = NA),
+                                  alpha=1/5, show.legend = FALSE)
+    if (facmod == TRUE) {
+      p <- p + ggplot2::scale_fill_brewer(palette = color.class)
+    } else {
+      p <- p + ggplot2::scale_fill_manual(values = colors, breaks = names(modxvals2))
+    }
   }
 
   # If third mod, facet by third mod
@@ -384,19 +399,32 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
 
   # For factor vars, plotting the observed points and coloring them by factor looks great
   if (plot.points==TRUE && is.factor(d[,modx])) {
-    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp],
-                                              colour=d[,modx]), position = "jitter")
+    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred],y=d[,resp],
+                                                      colour=d[,modx]),
+                                 position = "jitter", inherit.aes = F, show.legend = F)
   } else if (plot.points == TRUE && !is.factor(d[,modx])) { # otherwise just black points
     p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp]),
                                  inherit.aes = F, position = "jitter")
   }
 
   p <- p + ggplot2::theme_bw() # I just like it better
-  p <- p + ggplot2::labs(x = x.label, y = y.label)
-  p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette = color.class)
+  p <- p + ggplot2::labs(x = x.label, y = y.label) # better labels for axes
 
-  if (vary.lty == TRUE) { # Add line-specific changes
-    p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
+  # Get scale colors, provide better legend title
+  if (facmod == TRUE) {
+    p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette = color.class)
+  } else {
+    p <- p + ggplot2::scale_colour_manual(name = legend.main, values = colors,
+                                          breaks = names(modxvals2))
+  }
+
+  if (vary.lty == TRUE) {# Add line-specific changes
+    if (facmod == FALSE) {
+      p <- p + ggplot2::scale_linetype_discrete(name = legend.main,
+                                                breaks = names(modxvals2))
+    } else {
+      p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
+    }
     # Need some extra width to show the linetype pattern fully
     p <- p + ggplot2::theme(legend.key.width = grid::unit(2, "lines"))
   }

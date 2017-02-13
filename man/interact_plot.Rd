@@ -9,7 +9,7 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   interval = FALSE, int.type = c("confidence", "prediction"),
   int.width = 0.95, x.label = NULL, y.label = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "Set2")
+  color.class = NULL, line.thickness = 1.1, vary.lty = TRUE)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -77,7 +77,15 @@ plot. If \code{NULL}, no main title is used.}
 \item{legend.main}{A character object that will be used as the title that appears
 above the legend. If \code{NULL}, the name of the moderating variable is used.}
 
-\item{color.class}{No options available for this in-development feature.}
+\item{color.class}{Any palette argument accepted by
+\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor moderators,
+"Blues" for +/- SD and user-specified \code{modxvals} values.}
+
+\item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
+ggplot's default is 1.}
+
+\item{vary.lty}{Should the resulting plot have different shapes for each line
+in addition to colors? Defaults to \code{TRUE}.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated like
@@ -112,6 +120,12 @@ interact_plot(model = fit, pred = Murder,
 fit <- lm(accel ~ mag*dist, data=attenu)
 interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
   int.type = "confidence", int.width = .8)
+
+# Using second moderator
+fit <- lm(Income ~ HSGrad*Murder*Illiteracy,
+  data = states)
+interact_plot(model = fit, pred = Murder,
+  modx = Illiteracy, mod2 = HSGrad)
 
 
 }
