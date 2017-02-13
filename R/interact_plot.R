@@ -144,11 +144,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
                           color.class = NULL, line.thickness = 1.1, vary.lty = TRUE) {
 
   # Evaluate the modx, mod2, pred args
-  pred <- deparse(substitute(pred))
-  modx <- deparse(substitute(modx))
-  # Only if mod2 exists
-  if (!is.null(mod2)) {
-    mod2 <- deparse(substitute(mod2))
+  pred <- as.character(substitute(pred))
+  modx <- as.character(substitute(modx))
+  mod2 <- as.character(substitute(mod2))
+  # To avoid unexpected behavior, need to un-un-parse mod2 when it is NULL
+  if (length(mod2) == 0) {
+    mod2 <- NULL
   }
 
   # Duplicating the dataframe so it can be manipulated as needed
