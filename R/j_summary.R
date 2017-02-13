@@ -427,6 +427,7 @@ print.j_summ <- function(x, ...) {
   }
 
   print(as.table(ctable))
+  cat("\n")
 
 }
 
