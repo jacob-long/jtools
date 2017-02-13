@@ -144,6 +144,7 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
     colnames(d)[which(colnames(d) == "(weights)")] <- wname
   } else {
     weights <- FALSE
+    wname <- NULL
   }
 
   # Handling user-requested centered vars
