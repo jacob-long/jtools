@@ -69,7 +69,9 @@
 #' @param legend.main A character object that will be used as the title that appears
 #'   above the legend. If \code{NULL}, the name of the moderating variable is used.
 #'
-#' @param color.class No options available for this in-development feature.
+#' @param color.class Any palette argument accepted by
+#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor moderators,
+#'   "Blues" for +/- SD and user-specified \code{modxvals} values.
 #'
 #' @details This function provides a means for plotting conditional effects for the
 #'   purpose of exploring interactions in the context of regression. You must have the
@@ -139,6 +141,22 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   # Duplicating the dataframe so it can be manipulated as needed
   d <- as.data.frame(model$model)
 
+  # Setting default for colors
+  if (is.factor(d[,modx])) {
+    if (is.null(color.class)) {
+      color.class <- "Set2"
+    }
+    # Unrelated, but good place to throw a warning
+    if (!is.null(modxvals)) {
+      warning("All levels of factor must be used. Ignoring modxvals argument...")
+      modxvals <- NULL
+    }
+  } else {
+    if (is.null(color.class)) {
+      color.class <- "Blues"
+    }
+  }
+
   # For setting dimensions correctly later
   nc <- ncol(d)
 
@@ -185,7 +203,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   } else if (is.null(modxvals) && is.factor(d[,modx])){
     modxvals2 <- levels(d[,modx])
   } else { # Use user-supplied values otherwise
-    modxvals2 <- modxvals
+    modxvals2 <- sort(modxvals, decreasing = T)
   }
 
   # Same process for second moderator
@@ -339,7 +357,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
 
   p <- p + ggplot2::theme_bw()
   p <- p + ggplot2::labs(x = x.label, y = y.label)
-  p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette=color.class)
+  p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette = color.class)
 
   if (!is.null(main.title)){
     p <- p + ggplot2::ggtitle(main.title)
