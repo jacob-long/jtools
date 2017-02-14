@@ -362,6 +362,10 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "+1 SD"))
     } else if (exists("modxvalssd") && length(modxvalssd)==3){
       pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "Mean", "+1 SD"))
+    } else if (!is.factor(d[,modx])) {
+      labs <- as.character(modxvals2)
+      pm[,modx] <- factor(pm[,modx], labels = labs)
+      names(modxvals2) <- labs
     }
   } else if (length(modx.labels)==length(modxvals2)) {
     pm[,modx] <- factor(pm[,modx], labels=modx.labels)
@@ -375,6 +379,10 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
         pm[,mod2] <- factor(pm[,mod2], labels=c("-1 SD", "+1 SD"))
       } else if (exists("mod2valssd") && length(mod2valssd)==3){
         pm[,mod2] <- factor(pm[,mod2], labels=c("-1 SD", "Mean", "+1 SD"))
+      } else if (!is.factor(d[,mod2])) {
+        labs <- as.character(mod2vals2)
+        pm[,mod2] <- factor(pm[,mod2], labels = labs)
+        names(mod2vals2) <- labs
       }
     } else if (length(mod2.labels)==length(mod2vals2)) {
       pm[,mod2] <- factor(pm[,mod2], labels=mod2.labels)
