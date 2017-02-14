@@ -359,9 +359,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   # Labels for values of moderator
   if (is.null(modx.labels)) {
     if (exists("modxvalssd") && length(modxvalssd)==2){
-      pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "+1 SD"))
+      pm[,modx] <- factor(pm[,modx], labels=names(modxvals2))
     } else if (exists("modxvalssd") && length(modxvalssd)==3){
-      pm[,modx] <- factor(pm[,modx], labels=c("-1 SD", "Mean", "+1 SD"))
+      pm[,modx] <- factor(pm[,modx], labels=names(modxvals2))
     } else if (!is.factor(d[,modx])) {
       labs <- as.character(modxvals2)
       pm[,modx] <- factor(pm[,modx], labels = labs)
@@ -376,9 +376,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   if (!is.null(mod2)) {
     if (is.null(mod2.labels)) {
       if (exists("mod2valssd") && length(mod2valssd)==2){
-        pm[,mod2] <- factor(pm[,mod2], labels=c("-1 SD", "+1 SD"))
+        pm[,mod2] <- factor(pm[,mod2], labels=names(mod2vals2))
       } else if (exists("mod2valssd") && length(mod2valssd)==3){
-        pm[,mod2] <- factor(pm[,mod2], labels=c("-1 SD", "Mean", "+1 SD"))
+        pm[,mod2] <- factor(pm[,mod2], labels=names(mod2vals2))
       } else if (!is.factor(d[,mod2])) {
         labs <- as.character(mod2vals2)
         pm[,mod2] <- factor(pm[,mod2], labels = labs)
