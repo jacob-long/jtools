@@ -253,17 +253,20 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
       mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2])-mod2sd)
       names(mod2valssd) <- c("+1 SD", "-1 SD")
       mod2vals2 <- mod2valssd
+      mod2vals2 <- sort(mod2vals2, decreasing = F)
     } else if (class(mod2vals) == "character" && mod2vals == "mean-plus-minus") {
       mod2sd <- sd(d[,mod2])
       mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
       names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
       mod2vals2 <- mod2valssd
+      mod2vals2 <- sort(mod2vals2, decreasing = F)
     } else if (is.null(mod2vals) && is.factor(d[,mod2])){
       mod2vals2 <- levels(d[,mod2])
     } else { # Use user-supplied values otherwise
-      mod2vals2 <- mod2vals
+      mod2vals2 <- sort(mod2vals, decreasing = F)
     }
   }
+
 
   # Creating a set of dummy values of the focal predictor for use in predict()
   xpreds <- seq(from=range(d[,pred])[1], to=range(d[,pred])[2], length.out=100)
@@ -359,13 +362,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   # Labels for values of moderator
   if (is.null(modx.labels)) {
     if (exists("modxvalssd") && length(modxvalssd)==2){
-      pm[,modx] <- factor(pm[,modx], labels=names(modxvals2))
+      pm[,modx] <- factor(pm[,modx], labels=names(sort(modxvals2, decreasing = F)))
     } else if (exists("modxvalssd") && length(modxvalssd)==3){
-      pm[,modx] <- factor(pm[,modx], labels=names(modxvals2))
+      pm[,modx] <- factor(pm[,modx], labels=names(sort(modxvals2, decreasing = F)))
     } else if (!is.factor(d[,modx])) {
       labs <- as.character(modxvals2)
-      pm[,modx] <- factor(pm[,modx], labels = labs)
       names(modxvals2) <- labs
+      pm[,modx] <- factor(pm[,modx], labels = names(sort(modxvals2, decreasing = F)))
     }
   } else if (length(modx.labels)==length(modxvals2)) {
     pm[,modx] <- factor(pm[,modx], labels=modx.labels)
@@ -376,13 +379,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   if (!is.null(mod2)) {
     if (is.null(mod2.labels)) {
       if (exists("mod2valssd") && length(mod2valssd)==2){
-        pm[,mod2] <- factor(pm[,mod2], labels=names(mod2vals2))
+        pm[,mod2] <- factor(pm[,mod2], labels=names(sort(mod2vals2, decreasing = F)))
       } else if (exists("mod2valssd") && length(mod2valssd)==3){
-        pm[,mod2] <- factor(pm[,mod2], labels=names(mod2vals2))
+        pm[,mod2] <- factor(pm[,mod2], labels=names(sort(mod2vals2, decreasing = F)))
       } else if (!is.factor(d[,mod2])) {
         labs <- as.character(mod2vals2)
-        pm[,mod2] <- factor(pm[,mod2], labels = labs)
         names(mod2vals2) <- labs
+        pm[,mod2] <- factor(pm[,mod2], labels = names(sort(mod2vals2, decreasing = F)))
       }
     } else if (length(mod2.labels)==length(mod2vals2)) {
       pm[,mod2] <- factor(pm[,mod2], labels=mod2.labels)
@@ -397,7 +400,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   # Get palette from RColorBrewer myself so I can use darker values
   colors <- RColorBrewer::brewer.pal((length(modxvals2)+1), color.class)
   colors <- rev(colors)
-  names(colors) <- c(names(modxvals2), NA)
+  names(colors) <- c(names(modxvals2))
 
   # Defining linetype here
   if (vary.lty == TRUE) {
@@ -421,7 +424,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     if (facmod == TRUE) {
       p <- p + ggplot2::scale_fill_brewer(palette = color.class)
     } else {
-      p <- p + ggplot2::scale_fill_manual(values = colors, breaks = names(modxvals2))
+      p <- p + ggplot2::scale_fill_manual(values = colors, breaks = levels(pm[,modx]))
     }
   }
 
@@ -447,14 +450,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   if (facmod == TRUE) {
     p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette = color.class)
   } else {
-    p <- p + ggplot2::scale_colour_manual(name = legend.main, values = colors,
-                                          breaks = names(modxvals2))
+    p <- p + ggplot2::scale_colour_manual(name = legend.main, values = colors, breaks = pm[,modx])
   }
 
   if (vary.lty == TRUE) {# Add line-specific changes
     if (facmod == FALSE) {
-      p <- p + ggplot2::scale_linetype_discrete(name = legend.main,
-                                                breaks = names(modxvals2))
+      p <- p + ggplot2::scale_linetype_discrete(name = legend.main, breaks = pm[,modx])
     } else {
       p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
     }
