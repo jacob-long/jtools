@@ -41,7 +41,8 @@
 #'   The function accepts a \code{lm} object and uses it to recompute models with
 #'   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
 #'    objects are also accepted, though users should be cautioned against using
-#'   simple slopes analysis with non-linear models.
+#'   simple slopes analysis with non-linear models (\code{svyglm} also estimates
+#'   linear models).
 #'
 #' @return
 #'
