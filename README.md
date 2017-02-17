@@ -14,6 +14,9 @@ is the more efficient presentation of regression analyses, including those with
 interactions. Support for the `survey` package's `svyglm` objects is a common theme
 throughout.
 
+**Note**: This is beta software. Bugs are possible, both in terms of code-breaking
+errors and more pernicious errors of mistaken computation.
+
 ## Installation
 
 If you don't have `devtools` installed, first install it.
@@ -42,10 +45,10 @@ j_summ(fit)
 ```
 
 ```
-#> MODEL INFO
+#> MODEL INFO:
 #> Sample Size: 32
 #> Dependent Variable: mpg
-#> Number of Predictors: 3
+#> Number of Terms: 3
 #> 
 #> MODEL FIT: 
 #> F(3,28) = 71.66, p = 0
