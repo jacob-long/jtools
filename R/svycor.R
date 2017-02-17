@@ -85,8 +85,8 @@
 
 
 
-svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE, bootn = 1000,
-                   mean1 = TRUE, ... ) {
+svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
+                   bootn = 1000, mean1 = TRUE, ... ) {
 
   # If sig.stats == T, Need to get the data in a data.frame-esque format to pass to wtd.cor
   if (inherits(formula,"formula") && sig.stats == TRUE) {
@@ -126,7 +126,8 @@ svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE
     return(c)
   } else {
     # Use wtd.cor
-    wcors <- weights::wtd.cor(mf, weight=wts, bootse=TRUE, mean1=mean1, bootn=bootn, bootp=T)
+    wcors <- weights::wtd.cor(mf, weight=wts, bootse=TRUE, mean1=mean1,
+                              bootn=bootn, bootp=T)
 
     c$cors <- wcors$correlation
     c$p.values <- wcors$p.value
