@@ -4,13 +4,16 @@
 #' \code{summary()}, but formatted differently with more options.
 #'
 #' @param lm A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.
-#' @param stdbeta If \code{TRUE}, adds a column to output with standardized regression
+#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
 #'   coefficients. Default is \code{FALSE}.
 #' @param vifs If \code{TRUE}, adds a column to output with variance inflation factors
 #'   (VIF). Default is \code{FALSE}.
 #' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors
-#'   instead of conventional SEs. These are also known as Huber-White standard errors.
+#'   instead of conventional SEs. These are also known as Huber-White standard
+#'   errors.
+#'
 #'   Default is \code{FALSE}.
+#'
 #'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
 #'    standard errors.
 #' @param robust.type Only used if \code{robust=TRUE}. Specificies the type of
@@ -24,6 +27,10 @@
 #'  and AIC (when applicable).
 #' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
 #'  and print number of high-leverage observations. See details for more info.
+#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
+#'  predictors be divided by? Default is 1, though some suggest 2.
+#' @param center If you want coefficients for mean-centered variables but don't
+#'  want to standardize, set this to \code{TRUE}.
 #'
 #' @details By default, this function will print the following items to the console:
 #' \itemize{
@@ -31,15 +38,26 @@
 #'   \item The name of the outcome variable
 #'   \item The number of predictors used
 #'   \item The (Pseudo-)R-squared value (plus adjusted R-squared if OLS regression).
-#'   \item A table with regression coefficients, standard errors, t-values, and p-values.
+#'   \item A table with regression coefficients, standard errors, t-values, and
+#'    p-values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy lifting is done by
-#'  \code{\link[sandwich]{vcovHC}}, where those are better described. Put simply, you may choose
-#'  from \code{"HC0"} to \code{"HC5"}. Based on the recommendation of the developers of
-#'  \code{sandwich}, the default is set to \code{"HC3"}. Stata's default is \code{"HC1"}, so
-#'  that choice may be better if the goal is to replicate Stata's output. Any option that
-#'  is understood by \code{vcovHC} will be accepted.
+#'  There are several options available for \code{robust.type}. The heavy lifting
+#'  is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+#'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
+#'  recommendation of the developers of \pkg{sandwich}, the default is set to
+#'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
+#'  if the goal is to replicate Stata's output. Any option that is understood by
+#'  \code{vcovHC} will be accepted.
+#'
+#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  mean-centering and scaling. These functions can handle \code{svyglm} objects
+#'  correctly by calling \code{svymean} and \code{svyvar} to compute means and
+#'  standard deviations. Weights are not altered. The fact that the model is
+#'  refit means the runtime will be similar to the original time it took to fit
+#'  the model.
 #'
 #'  There are two pieces of information given for \code{model.check}, provided that
 #'  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
@@ -50,27 +68,29 @@
 #'  to inference as sample size increases (Lumley, Diehr, Emerson, & Lu, 2002).
 #'  Take the result of the test as a cue to check graphical checks rather than a
 #'  definitive decision. Note that the use of robust standard errors can account
-#'   for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
+#'  for heteroskedasticity, though some oppose this approach (see King & Roberts,
+#'  2015).
 #'
-#'  The second piece of information provided by setting \code{model.check} to \code{TRUE}
-#'  is the number of high leverage observations. There are no hard and fast rules
-#'  for determining high leverage either, but in this case it is based on Cook's
-#'  Distance. All Cook's Distance values greater than (4/N) are included in the
-#'  count. Again, this is not a recommendation to locate and remove such observations,
-#'  but rather to look more closely with graphical and other methods.
+#'  The second piece of information provided by setting \code{model.check} to
+#'  \code{TRUE} is the number of high leverage observations. There are no hard
+#'  and fast rules for determining high leverage either, but in this case it is
+#'  based on Cook's Distance. All Cook's Distance values greater than (4/N) are
+#'  included in the count. Again, this is not a recommendation to locate and
+#'  remove such observations, but rather to look more closely with graphical and
+#'  other methods.
 #'
 #' @return If saved, users can access most of the items that are returned in the
 #'   output (and without rounding).
 #'
-#'
-#'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
-#'  \item{rsq}{The R-squared value, if applicable}
-#'  \item{arsq}{The adjusted R-squared value, if applicable}
-#'  \item{n}{The number of observations used}
-#'  \item{npreds}{The number of predictors used in the model}
 #'
+#'  Much other information can be accessed as attributes.
 #'
+#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#'  preferred.
+#'
+#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -79,8 +99,14 @@
 #' fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
 #'
 #' # Print the output with standardized coefficients and 2 digits past the decimal
-#' j_summ(fit, stdbeta=TRUE, digits=2)
+#' j_summ(fit, standardize=TRUE, digits=2)
 #'
+#' # With svyglm
+#' library(survey)
+#' data(api)
+#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' j_summ(regmodel)
 #'
 #' @references
 #'
@@ -100,11 +126,21 @@
 #'
 #'
 
-j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
+j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
                    robust.type = "HC3", digits = 3, model.info = TRUE,
-                   model.fit = TRUE, model.check = FALSE) {
+                   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE) {
 
   j <- NULL
+
+  # Standardized betas
+  if (standardize == TRUE) {
+    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE)
+  }
+
+  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
+                        robust.type = robust.type, digits = digits,
+                        model.info = model.info, model.fit = model.fit,
+                        model.check = model.check, n.sd = n.sd, center = center)
 
   # Using information from summary()
   sum <- summary(lm)
@@ -121,7 +157,13 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
     linear <- F
   }
 
-  j$linear <- linear
+  if (!all(attributes(lm$terms)$order > 1)) {
+    interaction <- TRUE
+  } else {
+    interaction <- FALSE
+  }
+
+  j <- structure(j, linear = linear)
 
   # Intercept?
   if (lm$rank != attr(lm$terms, "intercept")) {
@@ -132,7 +174,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
 
   # Sample size used
   n <- length(lm$residuals)
-  j$n <- n
+  j <- structure(j, n = n)
 
   # Calculate R-squared and adjusted R-squared
   ### Below taken from summary.lm
@@ -160,7 +202,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
 
   # AIC for GLMs
   if (class(lm)[1] != "lm") {
-    j$aic <- lm$aic
+    j <- structure(j, aic = lm$aic)
   }
 
   # List of names of predictors
@@ -169,34 +211,11 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
   # Unstandardized betas
   ucoefs <- unname(coef(lm))
 
-  ## Taken and modified from QuantPsyc package
-  # Standardized betas
-  if (stdbeta==T && linear==T) {
-    b <- rep(NA, length(ivs))
-    b[(1+df.int):as.numeric(length(ivs))] <- coef(lm)[(1+df.int):length(ivs)]
-    sx <- rep(NA, length(ivs))
-    sx[(1+df.int):as.numeric(length(ivs))] <- sapply(lm$model[(1+df.int):length(ivs)],
-                                                     sd)
-    sy <- sapply(lm$model[1], sd)
-    betas <- rep(NA, length(ivs))
-    betas <- (b * sx) / sy
-  } else if (stdbeta==T && linear == F) {
-    stdbeta <- F
-    warning("Standardized coefficients can't be computed for non-linear models.
-            Are you sure that your model's coefficients aren't already standardized
-            (e.g., logit model)?")
-  }
-
   # Model statistics
   fstat <- unname(sum$fstatistic[1])
-  j$fstat <- fstat
   fnum <- unname(sum$fstatistic[2])
-  j$fnum <- fnum
   fden <- unname(sum$fstatistic[3])
-  j$fden <- fden
-
-  # Passing model.fit param to print method
-  j$model.fit <- model.fit
+  j <- structure(j, fstat = fstat, fnum = fnum, fden = fden)
 
   # VIFs
   if (vifs==T) {
@@ -228,8 +247,7 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
     ses <- coefs[,2]
     ts <- coefs[,3]
     pvals <- coefs[,4]
-    # stdses <- rep(NA, length(ivs))
-    # stdses[-1] <- ses * sx / sy
+
   } else if (robust == TRUE && linear == FALSE) {
     warning("Heteroskedasticity-robust standard errors should not be used for
             non-linear models. Using the glm object's standard errors instead.")
@@ -240,17 +258,11 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
     pvals <- coef(sum)[,4]
-    # stdses <- rep(NA, length(ivs))
-    # stdses[-1] <- ses * sx / sy
   }
 
-  if (stdbeta==T) {
-    params <- list(ucoefs, ses, betas, ts, pvals)
-    namevec <- c("Est.", "S.E.", "Std. Beta", "t val.", "p")
-  } else {
-    params <- list(ucoefs, ses, ts, pvals)
-    namevec <- c("Est.", "S.E.", "t val.", "p")
-  }
+  params <- list(ucoefs, ses, ts, pvals)
+  namevec <- c("Est.", "S.E.", "t val.", "p")
+
   if (vifs==T) {
     params[length(params)+1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
@@ -268,7 +280,6 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
     }
   }
 
-  j$model.check <- model.check
   if (model.check == TRUE && linear == TRUE && class(lm)[1] == "lm") {
     if (!requireNamespace("car", quietly = TRUE)) {
       stop("When model.check is set to TRUE, you need to have the \'car\' package
@@ -276,39 +287,25 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
            to FALSE.", call. = FALSE)
     }
 
-    j$homoskedp <- car::ncvTest(lm)$p
+    homoskedp <- car::ncvTest(lm)$p
+    j <- structure(j, homoskedp = homoskedp)
 
     cd <- table(cooks.distance(lm) > 4/n)
-    j$cooksdf <- cd[2]
+    j <- structure(j, cooksdf = cd[2])
 
   } else if (model.check == TRUE && linear == FALSE) {
     warning("Model checking for non-linear models is not yet implemented.")
   }
 
-
-  j$rsq <- rsq
-  j$arsq <- arsq
-
-  j$model.info <- model.info
-  j$dv <- names(lm$model[1])
-  j$npreds <- lm$rank-1
-  j$n <- n
-  j$digits <- digits
-  j$vifs <- vifs
-
-  j$lmClass <- class(lm)
+  j <- structure(j, rsq = rsq, arsq = arsq, dv = names(lm$model[1]),
+                        npreds = lm$rank-1, lmClass = class(lm))
 
   if (class(lm)[1]=="lm") {
-    j$modpval <- bsum$p.value
+    j <- structure(j, modpval = bsum$p.value)
   }
 
   if (class(lm)[1] == "glm" | class(lm)[1] == "svyglm" | class(lm)[1] == "svrepglm") {
-    j$lmFamily <- lm$family
-  }
-
-  j$robust <- robust
-  if (robust==T) {
-    j$robust.type <- robust.type
+    j <- structure(j, lmFamily = lm$family)
   }
 
   j$coeftable <- mat
@@ -326,12 +323,17 @@ j_summ <- function(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
 
 print.j_summ <- function(x, ...) {
 
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
   # Saving number of columns in output table
-  width <- dim(x$coeftable)[2]
+  width <- dim(j$coeftable)[2]
   # Saving number of coefficients in output table
-  height <- dim(x$coeftable)[1]
+  height <- dim(j$coeftable)[1]
   # Saving table to separate object
-  ctable <- round(x$coeftable, x$digits)
+  ctable <- round(j$coeftable, x$digits)
 
   # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
   if (x$vifs) {
@@ -366,8 +368,8 @@ print.j_summ <- function(x, ...) {
   }
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
-        x$dv, "\n", "Number of Predictors: ", (x$npreds), "\n", sep="")
+    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
+        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
     if (x$lmClass[1]=="svyglm" || x$lmClass[1]=="svrepglm") {
       cat("\n", "Analysis of complex survey design", "\n", sep="")
       if (as.character(x$lmFamily[1])=="gaussian" &&
@@ -427,6 +429,16 @@ print.j_summ <- function(x, ...) {
   }
 
   print(as.table(ctable))
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
   cat("\n")
 
 }
