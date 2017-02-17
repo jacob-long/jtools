@@ -75,11 +75,18 @@
 #' Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 #'
 #' @examples
+#'
 #' # Using a fitted model as formula input
 #' fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 #'
+#' # With svyglm
+#' library(survey)
+#' data(api)
+#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' sim_slopes(regmodel, pred = ell, modx = meals)
 #'
 #' @importFrom stats coef coefficients lm predict sd update
 #' @export

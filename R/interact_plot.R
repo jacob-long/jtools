@@ -132,6 +132,12 @@
 #' interact_plot(model = fit, pred = Murder,
 #'   modx = Illiteracy, mod2 = HSGrad)
 #'
+#' # With svyglm
+#' library(survey)
+#' data(api)
+#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' interact_plot(regmodel, pred = ell, modx = meals)
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm
 #' @export interact_plot

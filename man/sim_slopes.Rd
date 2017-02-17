@@ -59,14 +59,22 @@ This allows the user to perform a simple slopes analysis for the purpose
   The function accepts a \code{lm} object and uses it to recompute models with
   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
    objects are also accepted, though users should be cautioned against using
-  simple slopes analysis with non-linear models.
+  simple slopes analysis with non-linear models (\code{svyglm} also estimates
+  linear models).
 }
 \examples{
+
 # Using a fitted model as formula input
 fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
   data=as.data.frame(state.x77))
 sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 
+# With svyglm
+library(survey)
+data(api)
+dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+regmodel <- svyglm(api00~ell*meals,design=dstrat)
+sim_slopes(regmodel, pred = ell, modx = meals)
 
 }
 \references{
