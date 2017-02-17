@@ -4,12 +4,17 @@
 \alias{center_lm}
 \title{Center variables in fitted regression models}
 \usage{
-center_lm(model)
+center_lm(model, binary.inputs = "0/1")
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
 \code{\link[survey]{svyglm}}. It should contain the interaction(s) of interest,
 if any.}
+
+\item{binary.inputs}{Options for binary variables. Default is \code{0/1};
+\code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
+\code{center} substracts the mean; and \code{full} treats them like other
+continuous variables.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting from
@@ -23,7 +28,13 @@ The functions returns a \code{lm} or \code{glm} object, inheriting from
 \details{
 This function will mean-center all continuous variables in a regression
   model for ease of interpretation, especially for those models that have
-  interaction terms.
+  interaction terms. The mean for \code{svyglm} objects is calculated using
+  \code{svymean}, so reflects the survey-weighted mean. The weight variables
+  in \code{svyglm} are not centered, nor are they in other \code{lm} family
+  models.
+
+  This function re-estimates the model, so for large models one should expect
+  a runtime equal to the first run.
 }
 \examples{
 
@@ -31,14 +42,15 @@ fit <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x77
 fit_center <- center_lm(fit)
 
 # With weights
-fitw <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x77),
-   weights = Population)
+fitw <- lm(formula = Murder ~ Income * Illiteracy,
+           data = as.data.frame(state.x77),
+           weights = Population)
 fitw_center <- center_lm(fitw)
 
 # With svyglm
 library(survey)
 data(api)
-dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 regmodel <- svyglm(api00~ell*meals,design=dstrat)
 regmodel_center <- center_lm(regmodel)
 
@@ -53,7 +65,11 @@ regression/correlation analyses for the behavioral sciences} (3rd ed.).
 Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 }
 \seealso{
-\code{\link{sim_slopes}} performs a simple slopes analysis.
+\code{\link{gscale}} does the centering behind the scenes.
+
+  \code{\link{scale_lm}} is a near duplicate, but will scale variables as well.
+
+  \code{\link{sim_slopes}} performs a simple slopes analysis.
 
   \code{\link{interact_plot}} creates attractive, user-configurable plots of
   interaction models.
