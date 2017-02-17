@@ -138,12 +138,30 @@ to be "drowned out" by higher VIFs.
 
 Some prefer to use standardized coefficients in order to avoid dismissing an effect
 as "small" when it is just the units of measure that are small. Standardized betas
-are added to the table when `stdbeta = TRUE`.
+are used instead when `standardized = TRUE`.
 
 ```{r}
-j_summ(fit, stdbeta = TRUE)
+j_summ(fit, standardize = TRUE)
 ```
 
-You will get a warning if you ask for standardized betas for a non-linear model and
-the argument will be ignored.
+You can also choose a different number of standard deviations to divide by for
+standardization. Andrew Gelman has been a proponent of dividing by 2 standard
+deviations; if you want to do things that way, give the argument `n.sd = 2`. 
+
+```{r}
+j_summ(fit, standardize = TRUE, n.sd = 2)
+```
+
+Note that this is achieved by refitting the model. If the model took a long time
+to fit initially, expect a similarly long time to refit it.
+
+### Mean-centered variables
+
+In the same vein as the standardization feature, you can keep the original scale
+while still mean-centering the predictors with the `center = TRUE` argument.
+
+```{r}
+j_summ(fit, center = TRUE)
+```
+
 
