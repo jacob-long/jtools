@@ -6,7 +6,8 @@
 \usage{
 j_summ(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
-  model.check = FALSE, n.sd = 1, center = FALSE)
+  model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE)
 }
 \arguments{
 \item{lm}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
@@ -47,6 +48,9 @@ predictors be divided by? Default is 1, though some suggest 2.}
 
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
+
+\item{standardize.response}{Should standardization apply to response variable?
+Default is \code{FALSE}.}
 }
 \value{
 If saved, users can access most of the items that are returned in the
@@ -110,7 +114,7 @@ By default, this function will print the following items to the console:
 }
 \examples{
 # Create lm object
-fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
+fit <- lm(Income ~ Frost + Illiteracy + Murder, data=as.data.frame(state.x77))
 
 # Print the output with standardized coefficients and 2 digits past the decimal
 j_summ(fit, standardize=TRUE, digits=2)
