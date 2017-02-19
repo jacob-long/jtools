@@ -501,8 +501,10 @@ if (is.numeric(x)) {
       if (!is.numeric(d[,i]) || all(is.na(d[,i]))) {
         # just skip over non-numeric variables
         # columns that are all NA will still show up as numeric
-        message <- paste("All values of", i, "were NA. Skipping...\n")
-        warning(message)
+        if (all(is.na(d[,i]))) {
+          message <- paste("All values of", names(d)[i], "were NA. Skipping...\n")
+          warning(message)
+        }
       } else {
 
       # for binary cases
@@ -597,8 +599,10 @@ if (is.numeric(x)) {
         if (!is.numeric(d[,i]) || all(is.na(d[,i]))) {
           # just skip over non-numeric variables
           # columns that are all NA will still show up as numeric
-          message <- paste("All values of", i, "were NA. Skipping...\n")
-          warning(message)
+          if (all(is.na(d[,i]))) {
+            message <- paste("All values of", names(d)[i], "were NA. Skipping...\n")
+            warning(message)
+          }
         } else {
 
           # for binary cases
