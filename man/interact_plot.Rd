@@ -5,11 +5,12 @@
 \title{Plot interaction effects in regression models}
 \usage{
 interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
-  mod2vals = NULL, centered = NULL, plot.points = FALSE,
-  interval = FALSE, int.type = c("confidence", "prediction"),
-  int.width = 0.95, x.label = NULL, y.label = NULL, modx.labels = NULL,
-  mod2.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = NULL, line.thickness = 1.1, vary.lty = TRUE)
+  mod2vals = NULL, centered = NULL, standardize = FALSE, n.sd = 1,
+  plot.points = FALSE, interval = FALSE, int.type = c("confidence",
+  "prediction"), int.width = 0.95, x.label = NULL, y.label = NULL,
+  modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
+  legend.main = NULL, color.class = NULL, line.thickness = 1.1,
+  vary.lty = TRUE)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -23,10 +24,11 @@ in the interaction.}
 
 \item{modxvals}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
-deviation from the mean values are used for continuous moderators. If the
-moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
-of the factor is included. If \code{"mean-plus-minus"}, plots a line when
-moderator is at mean in addition to the default +/- standard deviation.}
+deviation from the mean as well as the mean itself are used for continuous
+moderators. If the moderator is a factor variable and \code{modxvals} is
+\code{NULL}, each level of the factor is included. If
+\code{"plus-minus"}, plots lines when the moderator is at +/- 1 standard
+deviation without the mean.}
 
 \item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction.}
@@ -35,10 +37,18 @@ variable involved in the interaction.}
 facetted by? That is, there will be a separate plot for each level of this
 moderator. Defaults are the same as \code{modxvals}.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.
-If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
-then no others are centered. Alternately, "all" will center focal variables
-as well.}
+\item{centered}{A vector of quoted variable names that are to be mean-centered. If
+\code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
+the user-specified predictors are centered. User can also use "none" or "all"
+arguments. The response variable is not centered unless specified directly.}
+
+\item{standardize}{Logical. Would you like to standardize the variables
+that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
+standardize variables specified by the \code{centered} argument. Note that
+non-focal predictors are centered when \code{centered = NULL}, its default.}
+
+\item{n.sd}{How many standard deviations should be used if \code{standardize
+= TRUE}? Default is 1, but some prefer 2.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterpolot on top of the interaction lines. If moderator is a factor, the dots
