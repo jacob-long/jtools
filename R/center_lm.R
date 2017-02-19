@@ -65,7 +65,7 @@
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' regmodel_center <- center_lm(regmodel)
 #'
-#' @importFrom stats weighted.mean as.formula
+#' @importFrom stats weighted.mean as.formula getCall
 #' @export center_lm
 #'
 
@@ -79,9 +79,6 @@ center_lm <- function(model, binary.inputs = "0/1") {
   # things are different for these svyglm objects...
   if (survey == TRUE) {
 
-    # Otherwise update() won't work
-    requireNamespace(survey)
-
     # Get the survey design object
     design <- model$survey.design
 
@@ -94,7 +91,10 @@ center_lm <- function(model, binary.inputs = "0/1") {
                      binary.inputs = binary.inputs)
 
     # Update the model
-    new <- update(model, design = design)
+    call <- getCall(model)
+    call$design <- design
+    call[[1]] <- survey::svyglm
+    new <- eval(call)
   }
 
 

@@ -74,7 +74,7 @@
 #' regmodel_scale <- scale_lm(regmodel)
 #' regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
 #'
-#' @importFrom stats weighted.mean as.formula
+#' @importFrom stats weighted.mean as.formula getCall
 #' @export scale_lm
 #'
 
@@ -87,9 +87,6 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE) {
 
   # things are different for these svyglm objects...
   if (survey == TRUE) {
-
-    # Otherwise update() won't work
-    requireNamespace(survey)
 
     # Get the survey design object
     design <- model$survey.design
@@ -105,8 +102,10 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE) {
       design <- gscale(x = vars, data = design, n.sd = n.sd)
     }
 
-    # Update the model
-    new <- update(model, design = design)
+    call <- getCall(model)
+    call$design <- design
+    call[[1]] <- survey::svyglm
+    new <- eval(call)
   }
 
 
