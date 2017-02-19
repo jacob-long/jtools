@@ -9,9 +9,9 @@ theme_apa(legend.pos = "topleft", legend.use.title = FALSE,
   facet.title.size = 12)
 }
 \arguments{
-\item{legend.pos}{One of \code{"topleft"}, \code{"topright"}, \code{"bottomleft"},
-or \code{"bottomright"}. Positions the legend, which will layer on top of any
-geoms, on the plane.}
+\item{legend.pos}{One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
+\code{"bottomleft"}, \code{"bottomright"}, or \code{"bottommiddle"}.
+Positions the legend, which will layer on top of any geoms, on the plane.}
 
 \item{legend.use.title}{Logical. Specify whether to include a legend title. Defaults
 to \code{FALSE}.}

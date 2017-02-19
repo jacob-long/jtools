@@ -4,33 +4,51 @@
 \alias{interact_plot}
 \title{Plot interaction effects in regression models}
 \usage{
-interact_plot(model, pred, modx, modxvals = NULL, centered = NULL,
+interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
+  mod2vals = NULL, centered = NULL, standardize = FALSE, n.sd = 1,
   plot.points = FALSE, interval = FALSE, int.type = c("confidence",
   "prediction"), int.width = 0.95, x.label = NULL, y.label = NULL,
-  mod.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "Set2")
+  modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
+  legend.main = NULL, color.class = NULL, line.thickness = 1.1,
+  vary.lty = TRUE)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
 \code{\link[survey]{svyglm}}. It should contain the interaction of interest.}
 
-\item{pred}{The name of the predictor variable involved in the interaction in
-quotations.}
+\item{pred}{The name of the predictor variable involved
+in the interaction.}
 
-\item{modx}{The name of the moderator variable involved in the interaction in
-quotations.}
+\item{modx}{The name of the moderator variable involved
+in the interaction.}
 
 \item{modxvals}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
-deviation from the mean values are used for continuous moderators. If the
-moderator is a factor variable and \code{modxvals} is \code{NULL}, each level
-of the factor is included. If \code{"mean-plus-minus"}, plots a line when
-moderator is at mean in addition to the default +/- standard deviation.}
+deviation from the mean as well as the mean itself are used for continuous
+moderators. If the moderator is a factor variable and \code{modxvals} is
+\code{NULL}, each level of the factor is included. If
+\code{"plus-minus"}, plots lines when the moderator is at +/- 1 standard
+deviation without the mean.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.
-If \code{NULL}, all non-focal variables are mean-centered. If variables are specified,
-then no others are centered. Alternately, "all" will center focal variables
-as well.}
+\item{mod2}{Optional. The name of the second moderator
+variable involved in the interaction.}
+
+\item{mod2vals}{For which values of the second moderator should the plot be
+facetted by? That is, there will be a separate plot for each level of this
+moderator. Defaults are the same as \code{modxvals}.}
+
+\item{centered}{A vector of quoted variable names that are to be mean-centered. If
+\code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
+the user-specified predictors are centered. User can also use "none" or "all"
+arguments. The response variable is not centered unless specified directly.}
+
+\item{standardize}{Logical. Would you like to standardize the variables
+that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
+standardize variables specified by the \code{centered} argument. Note that
+non-focal predictors are centered when \code{centered = NULL}, its default.}
+
+\item{n.sd}{How many standard deviations should be used if \code{standardize
+= TRUE}? Default is 1, but some prefer 2.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterpolot on top of the interaction lines. If moderator is a factor, the dots
@@ -53,9 +71,14 @@ the variable name is used.}
 \item{y.label}{A character object specifying the desired x-axis label. If \code{NULL},
 the variable name is used.}
 
-\item{mod.labels}{A character vector of labels for each level of the moderator values,
+\item{modx.labels}{A character vector of labels for each level of the moderator values,
 provided in the same order as the \code{modxvals} argument. If \code{NULL},
 the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
+In that case, "+1 SD" and "-1 SD" are used.}
+
+\item{mod2.labels}{A character vector of labels for each level of the 2nd moderator
+values, provided in the same order as the \code{mod2vals} argument. If \code{NULL},
+the values themselves are used as labels unless \code{mod2vals} is also \code{NULL}.
 In that case, "+1 SD" and "-1 SD" are used.}
 
 \item{main.title}{A character object that will be used as an overall title for the
@@ -64,7 +87,15 @@ plot. If \code{NULL}, no main title is used.}
 \item{legend.main}{A character object that will be used as the title that appears
 above the legend. If \code{NULL}, the name of the moderating variable is used.}
 
-\item{color.class}{No options available for this in-development feature.}
+\item{color.class}{Any palette argument accepted by
+\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor moderators,
+"Blues" for +/- SD and user-specified \code{modxvals} values.}
+
+\item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
+ggplot's default is 1.}
+
+\item{vary.lty}{Should the resulting plot have different shapes for each line
+in addition to colors? Defaults to \code{TRUE}.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated like
@@ -92,14 +123,26 @@ states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
   data = states)
-interact_plot(model = fit, pred = "Murder",
-  modx = "Illiteracy")
+interact_plot(model = fit, pred = Murder,
+  modx = Illiteracy)
 
 # Using interval feature
 fit <- lm(accel ~ mag*dist, data=attenu)
-interact_plot(fit, pred = "mag", modx = "dist", interval = TRUE,
+interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
   int.type = "confidence", int.width = .8)
 
+# Using second moderator
+fit <- lm(Income ~ HSGrad*Murder*Illiteracy,
+  data = states)
+interact_plot(model = fit, pred = Murder,
+  modx = Illiteracy, mod2 = HSGrad)
+
+# With svyglm
+library(survey)
+data(api)
+dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+regmodel <- svyglm(api00~ell*meals,design=dstrat)
+interact_plot(regmodel, pred = ell, modx = meals)
 
 }
 \references{
@@ -118,6 +161,9 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 
   \code{\link{sim_slopes}} performs a simple slopes analysis with a similar
   argument syntax to this function.
+
+Other interaction tools: \code{\link{probe_interaction}},
+  \code{\link{sim_slopes}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

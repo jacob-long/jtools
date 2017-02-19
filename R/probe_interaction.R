@@ -1,0 +1,124 @@
+#' Probe interaction efffects via simple slopes and plotting
+#'
+#' \code{probe_interaction} is a convenience function that allows users to call
+#' both \code{\link{sim_slopes}} and \code{\link{interact_plot}} with a single
+#' call.
+#'
+#' @usage probe_interaction(model, pred, modx, mod2 = NULL, ...)
+#'
+#' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
+#'    It should contain the interaction of interest.
+#'
+#' @param pred The predictor variable involved in the interaction.
+#'
+#' @param modx The moderator variable involved in the interaction.
+#'
+#' @param mod2 Optional. The name of the second moderator
+#'  variable involved in the interaction.
+#'
+#' @param ... Other arguments accepted by \code{\link{sim_slopes}} and
+#'  \code{\link{interact_plot}}
+#'
+#' @details
+#'
+#' This function simply merges the nearly-equivalent arguments needed to call
+#' both \code{\link{sim_slopes}} and \code{\link{interact_plot}} without the
+#' need for re-typing their common arguments. Note that each function is called
+#' separately and they re-fit a separate model for each level of each moderator;
+#' therefore, the runtime may be considerably longer than the original model
+#' fit. For larger models, this is worth keeping in mind.
+#'
+#' Sometimes, you may want different parameters when doing simple slopes anaysis
+#' compared to when plotting interaction effects. For instance, it is often
+#' easier to interpret the regression output when variables are standardized;
+#' but plots are often easier to understand when the variables are in their
+#' original units of measure. \code{probe_interaction} does not support
+#' providing different arguments to each function. If that is needed, use
+#' \code{sim_slopes} and \code{interact_plot} directly.
+#'
+#' @return
+#'
+#' \item{simslopes}{The \code{sim_slopes} object created.}
+#' \item{interactplot}{The \code{ggplot} object created by \code{interact_plot}.}
+#'
+#' @family interaction tools
+#'
+#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#'
+#' @examples
+#'
+#' # Using a fitted model as formula input
+#' fiti <- lm(Income ~ Frost + Murder*Illiteracy,
+#'   data=as.data.frame(state.x77))
+#' probe_interaction(model = fiti, pred = Murder, modx = Illiteracy,
+#'                   modxvals = "plus-minus")
+#' # 3-way interaction
+#' fiti3 <- lm(Income ~ Frost*Murder*Illiteracy,
+#'   data=as.data.frame(state.x77))
+#' probe_interaction(model = fiti3, pred = Murder, modx = Illiteracy,
+#'                   mod2 = Frost, mod2vals = "plus-minus")
+#'
+#' # With svyglm
+#' library(survey)
+#' data(api)
+#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+#' regmodel <- svyglm(api00~ell*meals + sch.wide, design = dstrat)
+#' probe_interaction(model = regmodel, pred = ell, modx = meals,
+#'                   modxvals = "plus-minus", cond.int = TRUE) # conditional intercepts
+#'
+#' # 3-way with survey and factor input
+#' regmodel3 <- svyglm(api00~ell*meals*sch.wide, design = dstrat)
+#' probe_interaction(model = regmodel3, pred = ell, modx = meals, mod2 = sch.wide)
+#' # Can try different configurations of 1st vs 2nd mod
+#' probe_interaction(model = regmodel3, pred = ell, modx = sch.wide, mod2 = meals)
+#'
+#' @export
+
+
+probe_interaction <- function(model, pred, modx, mod2 = NULL, ...) {
+
+  # Create list of acceptable arguments to both functions
+  ssnames <- names(formals(sim_slopes))
+  ipnames <- names(formals(interact_plot))
+
+  # Capture the arguments
+  dots <- eval(substitute(alist(...)))
+
+  # Capture explicit args
+  args <- match.call()
+
+  # Add the actual arguments
+  dots <- list(unlist(dots), model = args$model, modx = args$modx, pred = args$pred,
+               mod2 = args$mod2)
+  dots <- unlist(dots)
+
+  # Create list of arguments accepted by sim_slopes
+  ssargs <- dots[names(dots) %in% ssnames]
+  # Create list of arguments accepted by interact_plot
+  ipargs <- dots[names(dots) %in% ipnames]
+
+  # Call sim_slopes
+  ss <- do.call("sim_slopes", ssargs)
+  # Call interact_plot
+  ip <- do.call("interact_plot", ipargs)
+
+  # Save both to output object
+  out <- NULL
+  out$simslopes <- ss
+  out$interactplot <- ip
+
+  # Set class for print method
+  class(out) <- "probe_interaction"
+
+  return(out)
+
+}
+
+#' @export
+
+print.probe_interaction <- function(x, ...) {
+
+  print(x$simslopes)
+  print(x$interactplot)
+
+}

@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r echo=FALSE}
-knitr::opts_chunk$set(message=F, warning=F)
+knitr::opts_chunk$set(message=F, warning=F, fig.width = 6, fig.height = 4)
 library(jtools)
 ```
 
@@ -61,10 +61,21 @@ So we see a significant main effect of `Murder` on `Income` in the presence of a
 significant interaction between `Murder` and `Illiteracy`. The positive estimate 
 for `Illiteracy` does not differ significantly from zero.
 
+Note that if you would like to see the output if the input variables were 
+mean-centered and/or standardized, `j_summ()` can do that for you.
+
+```{r}
+j_summ(fiti, standardize = TRUE)
+```
+
+
+Don't sweat the change in the significance of the lower-order focal variables---they 
+aren't directly interpretable, anyway.
+
 Now let's do the most basic simple slopes analysis:
 
 ```{r}
-sim_slopes(fiti, pred = "Illiteracy", modx = "Murder")
+sim_slopes(fiti, pred = Illiteracy, modx = Murder)
 ```
 
 So what we see in this example is that when the value of `Murder` is high, the
@@ -78,7 +89,7 @@ only exists when `Murder` is high.
 You may also choose the values of the moderator yourself with the `modxvals =` argument.
 
 ```{r}
-sim_slopes(fiti, pred = "Illiteracy", modx = "Murder", modxvals = c(0, 5, 10))
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10))
 ```
 
 
@@ -95,7 +106,7 @@ know that if you know the conditional intercept.
 You can print the conditional intercepts with the `cond.int = TRUE` argument.
 
 ```{r}
-sim_slopes(fiti, pred = "Illiteracy", modx = "Murder", cond.int = TRUE)
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, cond.int = TRUE)
 ```
 
 This example shows you that while the slope associated with `Illiteracy` is negative
@@ -111,13 +122,13 @@ with the reporting of heteroskedasticity-robust standard errors offered by `j_su
 can consistently report standard errors across models.
 
 ```{r}
-sim_slopes(fiti, pred = "Illiteracy", modx = "Murder", robust = TRUE)
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, robust = TRUE)
 ```
 These data are a relatively rare case in which the robust standard errors are even 
 more efficient than typical OLS standard errors. Note that you must have `sandwich` 
 and `lmtest` packages installed to use this feature.
 
-#### Centering variables
+#### Centering and standardizing variables
 
 By default, all non-focal variables are mean-centered. You can additionally specify 
 that the focal predictors are centered with `centered = "all"`. You may also request
@@ -127,6 +138,17 @@ in that case.
 
 Note that the moderator is centered around the specified values. Factor variables 
 are ignored in the centering process.
+
+You can standardize the variables as well using the `standardize = TRUE` argument.
+
+```{r}
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, standardize = TRUE, 
+           centered = "all")
+```
+
+Standardization is only meaningful if applied to the focal predictors. If you use
+`standardize = TRUE` when `centered = NULL`, the output won't change since the
+scale of the other predictors has no direct effect on the others.
 
 ## Plotting interactions
 
@@ -138,12 +160,13 @@ backend.
 ```{r}
 interact_plot(fiti, pred = "Illiteracy", modx = "Murder")
 ```
-By default, with a continuous moderator you get two lines---1 standard deviation 
-above and below the mean. If you specify `modxvals = "mean-plus-minus"`, the mean
-of the moderator is also plotted.
+
+By default, with a continuous moderator you get three lines---1 standard deviation 
+above and below the mean and the mean itself. If you specify `modxvals = "plus-minus"`,
+the mean of the moderator is not plotted, just the two +/- SD lines.
 
 ```{r}
-interact_plot(fiti, pred = "Illiteracy", modx = "Murder", modxvals = "mean-plus-minus")
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder", modxvals = "plus-minus")
 ```
 
 However, if your moderator is **a factor**, each level will be plotted and you should
@@ -162,6 +185,7 @@ fitted lines related to the observed data, you can use the `plot.points = TRUE` 
 ```{r}
 interact_plot(fiti, pred = "Illiteracy", modx = "Murder", plot.points = TRUE)
 ```
+
 This isn't especially informative for a continuous moderator. It can be very 
 enlightening, though, for categorical moderators.
 
@@ -198,4 +222,63 @@ Because the function uses `ggplot2`, it can be modified and extended like any ot
 ```{r}
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species") + theme_apa()
 ```
+
+## Do simple slopes and plotting with one function
+
+You won't have to use these functions long before you may find yourself using
+both of them for each model you want to explore. To streamline the process,
+this package offers `probe_interaction()` as a convenience function that calls
+both `sim_slopes()` and `interact_plot()`, taking advantage of their overlapping
+syntax.
+
+```{r}
+fitc <- lm(mpg ~ hp*wt, data=mtcars)
+probe_interaction(fitc, pred = hp, modx = wt, cond.int = TRUE, interval = TRUE)
+```
+
+Note in the above example that you can provide arguments that only apply to one
+function and they will be used appropriately. On the other hand, you cannot
+apply their overlapping functions selectively. That is, you can't have one 
+`standardize = TRUE` and the other `standardize = FALSE`. If you want that level
+of control, just call each function separately.
+
+It returns an object with each of the two function's return objects:
+
+```{r}
+out <- probe_interaction(fitc, pred = hp, modx = wt, cond.int = TRUE, interval = TRUE)
+names(out)
+```
+## 3-way interactions
+
+If 2-way interactions can be hard to grasp by looking at regular regression output,
+then 3-way interactions are outright inscrutable. The aforementioned functions
+also support 3-way interactions, however. Plotting these effects is particularly
+helpful.
+
+```{r}
+fita3 <- lm(rating ~ privileges*critical*learning, data = attitude)
+probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
+```
+
+The only downside is that `ggplot2` does not offer any easy ways to clearly
+display what variable each panel represents, so you'll have to keep track of 
+what your 2nd moderator is. So in the figure above, each panel represents a 
+different level of the `privileges` variable from the `attitudes` built-in 
+dataset. 
+
+`interact_plot()` has a bit more flexibility here than `sim_slopes()`, allowing
+for factor moderators with greater than 2 levels. And don't forget that you can
+use `theme_apa()` to format for publications or just to make more economical
+use of space.
+
+```{r}
+mtcars$cyl <- factor(mtcars$cyl)
+fitc3 <- lm(mpg ~ hp*wt*cyl, data=mtcars)
+interact_plot(fitc3, pred = hp, modx = wt, mod2 = cyl) + 
+  theme_apa(legend.pos = "bottomright")
+```
+
+
+
+
 

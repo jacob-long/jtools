@@ -4,24 +4,27 @@
 \alias{j_summ}
 \title{Regression summaries with options}
 \usage{
-j_summ(lm, stdbeta = FALSE, vifs = FALSE, robust = FALSE,
+j_summ(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
-  model.check = FALSE)
+  model.check = FALSE, n.sd = 1, center = FALSE)
 }
 \arguments{
 \item{lm}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
 
-\item{stdbeta}{If \code{TRUE}, adds a column to output with standardized regression
+\item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
 coefficients. Default is \code{FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation factors
 (VIF). Default is \code{FALSE}.}
 
 \item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard errors
-instead of conventional SEs. These are also known as Huber-White standard errors.
-Default is \code{FALSE}.
-This requires the \code{sandwich} and \code{lmtest} packages to compute the
- standard errors.}
+  instead of conventional SEs. These are also known as Huber-White standard
+  errors.
+
+  Default is \code{FALSE}.
+
+  This requires the \code{sandwich} and \code{lmtest} packages to compute the
+   standard errors.}
 
 \item{robust.type}{Only used if \code{robust=TRUE}. Specificies the type of
 robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
@@ -38,18 +41,20 @@ and AIC (when applicable).}
 
 \item{model.check}{Toggles whether to perform Breusch-Pagan test for heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
+
+\item{n.sd}{If \code{standardize = TRUE}, how many standard deviations should
+predictors be divided by? Default is 1, though some suggest 2.}
+
+\item{center}{If you want coefficients for mean-centered variables but don't
+want to standardize, set this to \code{TRUE}.}
 }
 \value{
 If saved, users can access most of the items that are returned in the
   output (and without rounding).
 
-
-
  \item{coeftable}{The outputted table of variables and coefficients}
- \item{rsq}{The R-squared value, if applicable}
- \item{arsq}{The adjusted R-squared value, if applicable}
- \item{n}{The number of observations used}
- \item{npreds}{The number of predictors used in the model}
+
+ Much other information can be accessed as attributes.
 }
 \description{
 \code{j_summ()} prints output for a regression model in a fashion similar to
@@ -62,15 +67,26 @@ By default, this function will print the following items to the console:
   \item The name of the outcome variable
   \item The number of predictors used
   \item The (Pseudo-)R-squared value (plus adjusted R-squared if OLS regression).
-  \item A table with regression coefficients, standard errors, t-values, and p-values.
+  \item A table with regression coefficients, standard errors, t-values, and
+   p-values.
 }
 
- There are several options available for \code{robust.type}. The heavy lifting is done by
- \code{\link[sandwich]{vcovHC}}, where those are better described. Put simply, you may choose
- from \code{"HC0"} to \code{"HC5"}. Based on the recommendation of the developers of
- \code{sandwich}, the default is set to \code{"HC3"}. Stata's default is \code{"HC1"}, so
- that choice may be better if the goal is to replicate Stata's output. Any option that
- is understood by \code{vcovHC} will be accepted.
+ There are several options available for \code{robust.type}. The heavy lifting
+ is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+ Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
+ recommendation of the developers of \pkg{sandwich}, the default is set to
+ \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
+ if the goal is to replicate Stata's output. Any option that is understood by
+ \code{vcovHC} will be accepted.
+
+ The \code{standardize} and \code{center} options are performed via refitting
+ the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+ respectively. Each of those in turn uses \code{\link{gscale}} for the
+ mean-centering and scaling. These functions can handle \code{svyglm} objects
+ correctly by calling \code{svymean} and \code{svyvar} to compute means and
+ standard deviations. Weights are not altered. The fact that the model is
+ refit means the runtime will be similar to the original time it took to fit
+ the model.
 
  There are two pieces of information given for \code{model.check}, provided that
  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
@@ -81,22 +97,30 @@ By default, this function will print the following items to the console:
  to inference as sample size increases (Lumley, Diehr, Emerson, & Lu, 2002).
  Take the result of the test as a cue to check graphical checks rather than a
  definitive decision. Note that the use of robust standard errors can account
-  for heteroskedasticity, though some oppose this approach (see King & Roberts, 2015).
+ for heteroskedasticity, though some oppose this approach (see King & Roberts,
+ 2015).
 
- The second piece of information provided by setting \code{model.check} to \code{TRUE}
- is the number of high leverage observations. There are no hard and fast rules
- for determining high leverage either, but in this case it is based on Cook's
- Distance. All Cook's Distance values greater than (4/N) are included in the
- count. Again, this is not a recommendation to locate and remove such observations,
- but rather to look more closely with graphical and other methods.
+ The second piece of information provided by setting \code{model.check} to
+ \code{TRUE} is the number of high leverage observations. There are no hard
+ and fast rules for determining high leverage either, but in this case it is
+ based on Cook's Distance. All Cook's Distance values greater than (4/N) are
+ included in the count. Again, this is not a recommendation to locate and
+ remove such observations, but rather to look more closely with graphical and
+ other methods.
 }
 \examples{
 # Create lm object
 fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
 
 # Print the output with standardized coefficients and 2 digits past the decimal
-j_summ(fit, stdbeta=TRUE, digits=2)
+j_summ(fit, standardize=TRUE, digits=2)
 
+# With svyglm
+library(survey)
+data(api)
+dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+regmodel <- svyglm(api00~ell*meals,design=dstrat)
+j_summ(regmodel)
 
 }
 \references{
@@ -108,6 +132,13 @@ Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
 Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
  Public Health}, \emph{23}, 151–169.
  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
+}
+\seealso{
+\code{\link{scale_lm}} can simply perform the standardization if
+ preferred.
+
+ \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+ behind the scenes.
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

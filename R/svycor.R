@@ -57,6 +57,8 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family \pkg{survey} package extensions
+#'
 #' @seealso \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
 #'
 #' @note This function was designed in part on the procedure recommended by Thomas
@@ -85,8 +87,8 @@
 
 
 
-svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE, bootn = 1000,
-                   mean1 = TRUE, ... ) {
+svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
+                   bootn = 1000, mean1 = TRUE, ... ) {
 
   # If sig.stats == T, Need to get the data in a data.frame-esque format to pass to wtd.cor
   if (inherits(formula,"formula") && sig.stats == TRUE) {
@@ -126,7 +128,8 @@ svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE
     return(c)
   } else {
     # Use wtd.cor
-    wcors <- weights::wtd.cor(mf, weight=wts, bootse=TRUE, mean1=mean1, bootn=bootn, bootp=T)
+    wcors <- weights::wtd.cor(mf, weight=wts, bootse=TRUE, mean1=mean1,
+                              bootn=bootn, bootp=T)
 
     c$cors <- wcors$correlation
     c$p.values <- wcors$p.value
@@ -169,7 +172,11 @@ print.svycor <- function(x, ...) {
 
     # Create a matrix of significance stars
     pm <- x$p.values
-    pm[] <- suppressWarnings(star(pm[]))
+    for (i in 1:nrow(pm)) {
+      for (j in 1:ncol(pm)) {
+        pm[i,j] <- star(pm[i,j])
+      }
+    }
     # Taking asterisks out of self-correlations
     diag(pm)[] <- ""
 
