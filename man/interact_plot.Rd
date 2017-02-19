@@ -151,6 +151,9 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 
   \code{\link{sim_slopes}} performs a simple slopes analysis with a similar
   argument syntax to this function.
+
+Other interaction tools: \code{\link{probe_interaction}},
+  \code{\link{sim_slopes}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

@@ -95,6 +95,8 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family interaction tools
+#'
 #' @seealso \code{\link[rockchalk]{plotSlopes}} performs a similar function, but
 #'   but with the base graphics package--this function is meant, in part, to simulate
 #'   its features.

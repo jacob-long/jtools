@@ -65,14 +65,13 @@ regression/correlation analyses for the behavioral sciences} (3rd ed.).
 Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 }
 \seealso{
-\code{\link{gscale}} does the centering behind the scenes.
-
-  \code{\link{scale_lm}} is a near duplicate, but will scale variables as well.
-
-  \code{\link{sim_slopes}} performs a simple slopes analysis.
+\code{\link{sim_slopes}} performs a simple slopes analysis.
 
   \code{\link{interact_plot}} creates attractive, user-configurable plots of
   interaction models.
+
+Other standardization, scaling, and centering tools: \code{\link{gscale}},
+  \code{\link{scale_lm}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

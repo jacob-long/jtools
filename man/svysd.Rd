@@ -43,5 +43,7 @@ This function was designed independent of the \pkg{survey} package and
 
 }
 \seealso{
-\code{\link{svycor}}, \code{\link[survey]{svyvar}}
+\code{\link[survey]{svyvar}}
+
+Other \pkg{survey} package extensions: \code{\link{svycor}}
 }

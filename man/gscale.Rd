@@ -135,11 +135,13 @@ deviations. \emph{Statistics in Medicine}, \emph{27}, 2865–2873.
 \url{http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
 }
 \seealso{
-\code{\link{center_lm}} and \code{\link{scale_lm}} accept \code{lm} and related
-objects as input and call \code{gscale} to center and standardize, respectively,
-the inputs to those models.
-
 \code{\link{j_summ}} is a replacement for the \code{summary} function for
 regression models. On request, it will center and/or standardize variables
 before printing its output.
+
+Other standardization, scaling, and centering tools: \code{\link{center_lm}},
+  \code{\link{scale_lm}}
+}
+\author{
+Jacob Long <\email{long.1377@osu.edu}>
 }

@@ -95,6 +95,9 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
 
   \code{\link[pequod]{simpleSlope}} performs a similar analysis and can analyze
   a second moderator.
+
+Other interaction tools: \code{\link{interact_plot}},
+  \code{\link{probe_interaction}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

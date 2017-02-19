@@ -85,6 +85,8 @@ This function was designed in part on the procedure recommended by Thomas
 }
 \seealso{
 \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
+
+Other \pkg{survey} package extensions: \code{\link{svysd}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

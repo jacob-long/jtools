@@ -55,6 +55,8 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family interaction tools
+#'
 #' @seealso \code{\link{interact_plot}} accepts similar syntax and will plot the
 #'   results with \code{\link[ggplot2]{ggplot}}.
 #'

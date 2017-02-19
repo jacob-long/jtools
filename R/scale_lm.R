@@ -34,12 +34,9 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family standardization, scaling, and centering tools
+#'
 #' @seealso
-#'
-#'   \code{\link{gscale}} does the centering behind the scenes.
-#'
-#'   \code{\link{center_lm}} is a near duplicate, but will only center the
-#'   predictors.
 #'
 #'   \code{\link{sim_slopes}} performs a simple slopes analysis.
 #'

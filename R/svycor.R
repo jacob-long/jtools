@@ -57,6 +57,8 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family \pkg{survey} package extensions
+#'
 #' @seealso \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
 #'
 #' @note This function was designed in part on the procedure recommended by Thomas

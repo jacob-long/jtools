@@ -20,7 +20,9 @@
 #' However, if printing and sharing the output, this may be misleading since
 #' the output will say "variance."
 #'
-#' @seealso \code{\link{svycor}}, \code{\link[survey]{svyvar}}
+#' @family \pkg{survey} package extensions
+#'
+#' @seealso \code{\link[survey]{svyvar}}
 #'
 #' @note This function was designed independent of the \pkg{survey} package and
 #'  is neither endorsed nor known to its authors.
