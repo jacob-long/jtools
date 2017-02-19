@@ -286,23 +286,77 @@ if (is.numeric(x)) {
 
         } else if (binary.inputs=="center") {
 
-          d[,i] <- (d[,i]-mean(d[,i], na.rm = TRUE))
+          if (is.null(weights)) {
+            d[,i] <- (d[,i]-mean(d[,i], na.rm = TRUE))
+          } else {
+            d[,i] <- (d[,i]-weighted.mean(d[,i], weights, na.rm = TRUE))
+          }
 
         } else if (binary.inputs=="full") {
 
-          if (center.only == FALSE) {
-            d[,i] <- ((d[,i]-mean(d[,i], na.rm = TRUE))/(n.sd*sd(d[,i], na.rm = TRUE)))
+          # support for weights, although clunky
+          if (is.null(weights)) {
+            if (center.only == FALSE && scale.only == FALSE) {
+              d[,i] <- ((d[,i]-mean(d[,i], na.rm = TRUE))/(n.sd*sd(d[,i], na.rm = TRUE)))
+            } else if (center.only == TRUE && scale.only == FALSE) {
+              d[,i] <- d[,i]-mean(d[,i], na.rm = TRUE)
+            } else if (center.only == FALSE && scale.only == TRUE) {
+              d[,i] <- d[,i]/(n.sd*sd(d[,i], na.rm = TRUE))
+            } else if (center.only == TRUE && scale.only == TRUE) {
+              stop("You cannot set both center.only and scale.only to TRUE.")
+            }
           } else {
-            d[,i] <- d[,i]-mean(d[,i], na.rm = TRUE)
+
+            wtd.sd <- function(x, w) {
+              xm <- weighted.mean(x, w)
+              out <- sum((w * (x - xm)^2)/(sum(w)-1))
+              out <- sqrt(out)
+              return(out)
+            }
+
+            if (center.only == FALSE && scale.only == FALSE) {
+              d[,i] <- ((d[,i]-weighted.mean(d[,i], weights))/(n.sd*wtd.sd(d[,i], weights)))
+            } else if (center.only == TRUE && scale.only == FALSE) {
+              d[,i] <- d[,i]-weighted.mean(d[,i], weights)
+            } else if (center.only == FALSE && scale.only == TRUE) {
+              d[,i] <- d[,i]/(n.sd*wtd.sd(d[,i], weights))
+            } else if (center.only == TRUE && scale.only == TRUE) {
+              stop("You cannot set both center.only and scale.only to TRUE.")
+            }
           }
 
         }
-      } else { # For continous vars
+      } else {
 
-        if (center.only == FALSE) {
-          d[,i] <- ((d[,i]-mean(d[,i], na.rm = TRUE))/(n.sd*sd(d[,i], na.rm = TRUE)))
+        # support for weights, though fairly clunky
+        if (is.null(weights)) {
+          if (center.only == FALSE && scale.only == FALSE) {
+            d[,i] <- ((d[,i]-mean(d[,i], na.rm = TRUE))/(n.sd*sd(d[,i], na.rm = TRUE)))
+          } else if (center.only == TRUE && scale.only == FALSE) {
+            d[,i] <- d[,i]-mean(d[,i], na.rm = TRUE)
+          } else if (center.only == FALSE && scale.only == TRUE) {
+            d[,i] <- d[,i]/(n.sd*sd(d[,i], na.rm = TRUE))
+          } else if (center.only == TRUE && scale.only == TRUE) {
+            stop("You cannot set both center.only and scale.only to TRUE.")
+          }
         } else {
-          d[,i] <- d[,i]-mean(d[,i], na.rm = TRUE)
+
+          wtd.sd <- function(x, w) {
+            xm <- weighted.mean(x, w)
+            out <- sum((w * (x - xm)^2)/(sum(w)-1))
+            out <- sqrt(out)
+            return(out)
+          }
+
+          if (center.only == FALSE && scale.only == FALSE) {
+            d[,i] <- ((d[,i]-weighted.mean(d[,i], weights))/(n.sd*wtd.sd(d[,i], weights)))
+          } else if (center.only == TRUE && scale.only == FALSE) {
+            d[,i] <- d[,i]-weighted.mean(d[,i], weights)
+          } else if (center.only == FALSE && scale.only == TRUE) {
+            d[,i] <- d[,i]/(n.sd*wtd.sd(d[,i], weights))
+          } else if (center.only == TRUE && scale.only == TRUE) {
+            stop("You cannot set both center.only and scale.only to TRUE.")
+          }
         }
 
       }
@@ -313,28 +367,31 @@ if (is.numeric(x)) {
   } else if (survey == FALSE && is.null(x)) {
     # If no varnames given, do 'em all
 
+    # See if weights variable is a column
+    if (!is.null(weights)) {
+      # If it's the weight column, skip
+      wname <- as.character(substitute(weights))
+
+      if (wname %in% names(d)) {
+        weights <- d[,wname]
+      }
+    }
+
     # Looping through every column with rescale
     for (i in 1:ncol(d)) {
 
       skip <- FALSE # For weights handling
       if (!is.null(weights)) {
         # If it's the weight column, skip
-        wname <- as.character(substitute(weights))
-
-        if (wname %in% names(d)) {
-          weights <- d[,wname]
-        }
-
         if (names(d)[i] == wname) {
           skip <- TRUE
         }
-
       }
 
       if (!is.numeric(d[,i]) || all(is.na(d[,i])) || skip == TRUE) {
         # just skip over non-numeric variables
         # columns that are all NA will still show up as numeric
-        if (!is.numeric(d[,i]) || all(is.na(d[,i]))) {
+        if (all(is.na(d[,i]))) {
           message <- paste("All values of", names(d)[i], "were NA. Skipping...\n")
           warning(message)
         }
@@ -395,7 +452,7 @@ if (is.numeric(x)) {
         }
       } else {
 
-        # support for weights, though fairly clunk
+        # support for weights, though fairly clunky
         if (is.null(weights)) {
           if (center.only == FALSE && scale.only == FALSE) {
             d[,i] <- ((d[,i]-mean(d[,i], na.rm = TRUE))/(n.sd*sd(d[,i], na.rm = TRUE)))
