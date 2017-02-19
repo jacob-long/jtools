@@ -158,60 +158,156 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   }
 
   # Handling user-requested centered vars
-  if (!is.null(centered) && (centered != "all" || centered != "none")){
-    for (var in centered) {
-      if (survey == FALSE && !is.factor(d[,var])) {
-        d[,var] <- d[,var] - mean(d[,var])
-      } else if (!is.factor(d[,var])) {
-        d[,var] <- d[,var] - survey::svymean(as.formula(paste("~", var, sep = "")),
-                                             design = design)
-      }
+  if (!is.null(centered) && centered != "all" && centered != "none"){
+    # Need to handle surveys differently within this condition
+    if (survey == FALSE) {
+      d <- gscale(x = centered, data = d, center.only = !standardize, n.sd = n.sd)
+    } else {
+      design <- gscale(x = centered, data = design, center.only = !standardize,
+                       n.sd = n.sd)
+      d <- design$variables
     }
+
   } else if (!is.null(centered) && centered == "none") {
 
   } else if (!is.null(centered) && centered == "all") {
-    for (var in names(d)) {
-      if (survey == FALSE && !is.factor(d[,var]) && var != wname) {
-        d[,var] <- d[,var] - mean(d[,var])
-      } else if (is.numeric(d[,var]) && var %in% fvars) {
-        d[,var] <- d[,var] - survey::svymean(as.formula(paste("~", var, sep = "")),
-                                             design = design)
+    # Need to handle surveys differently within this condition
+    vars <- names(d)[!(names(d) %in% c(resp, wname))] # saving all vars expect response
+    if (survey == FALSE) {
+      d <- gscale(x = vars, data = d, center.only = !standardize, n.sd = n.sd)
+    } else {
+      # Need a different strategy for not iterating over unimportant vars for
+      # survey designs
+      ndfvars <- fvars[!(fvars %in% c(resp, wname))]
+      if (length(ndfvars) > 0) {
+        design <- gscale(x = ndfvars, data = design, center.only = !standardize,
+                         n.sd = n.sd)
+        d <- design$variables
       }
     }
+
   } else { # Center all non-focal
-    # Centering the non-focal variables to make the slopes more interpretable (0 = mean)
-    for (j in 1:ncol(d)) {
-      if ((names(d)[j] %in% c(pred, resp, modx, wname))==FALSE &&
-          is.numeric(d[,j]) && survey == FALSE) {
-        d[,j] <- as.vector((d[,j] - mean(d[,j])))
-      } else if (survey == TRUE && fvars[j] %in% c(pred, resp, modx) == FALSE &&
-         names(d)[j] %in% fvars && is.numeric(d[,j])) {
-        d[,j] <- as.vector(d[,j] - survey::svymean(as.formula(paste("~", names(d)[j],
-                                                                     sep = "")),
-                                                    design = design))
+    # Centering the non-focal variables to make the slopes more interpretable
+    vars <- names(d)[!(names(d) %in% c(pred, resp, modx, mod2, wname))]
+    # Need to handle surveys differently within this condition
+    if (survey == FALSE) {
+      d <- gscale(x = vars, data = d, center.only = !standardize, n.sd = n.sd)
+    } else {
+      # Need a different strategy for not iterating over unimportant vars for
+      # survey designs
+      nfvars <- fvars[!(fvars %in% c(pred, resp, modx, mod2, wname))]
+      if (length(nfvars) > 0) {
+        design <- gscale(x = nfvars, data = design, center.only = !standardize,
+                         n.sd = n.sd)
+        d <- design$variables
       }
     }
   }
 
   # Default to +/- 1 SD unless modx is factor
-  if (is.null(modxvals) && !is.factor(d[,modx])) {
+  if (is.null(modxvals) && !is.factor(d[,modx]) && length(unique(d[,modx])) > 2) {
     if (survey == FALSE) {
       modsd <- sd(d[,modx])
       modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
       names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
       modxvals2 <- modxvalssd
-      ss$def <- TRUE
+      ss <- structure(ss, def = TRUE)
     } else if (survey == TRUE) {
-      modsd <- sqrt(survey::svyvar(as.formula(paste("~", modx, sep = "")), design = design))
+      modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
       modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
       modxvalssd <- c(modmean+modsd, modmean, modmean-modsd)
       names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
       modxvals2 <- modxvalssd
-      ss$def <- TRUE
+      ss <- structure(ss, def = TRUE)
     }
+  } else if (!is.null(modxvals) && !is.factor(d[,modx]) &&
+             length(unique(d[,modx])) > 2 && modxvals == "plus-minus") {
+    if (survey == FALSE) {
+      modsd <- sd(d[,modx])
+      modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
+      names(modxvalssd) <- c("+1 SD", "-1 SD")
+      modxvals2 <- modxvalssd
+      ss <- structure(ss, def = TRUE)
+    } else if (survey == TRUE) {
+      modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
+      modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
+      modxvalssd <- c(modmean+modsd, modmean-modsd)
+      names(modxvalssd) <- c("+1 SD", "-1 SD")
+      modxvals2 <- modxvalssd
+      ss <- structure(ss, def = TRUE)
+    }
+  } else if (!is.factor(d[,modx]) && length(unique(d[,modx])) == 2) {
+    # Detecting binary variable
+    modxvals2 <- as.numeric(levels(factor(d[,modx])))
+    ss <- structure(ss, def = FALSE)
+  } else if (length(unique(d[,modx])) < 2) {
+    msg <- "Every observation has the same value for the moderator. Did you enter
+            your data correctly?"
+    stop(msg)
+  } else if (is.factor(d[,modx]) && length(levels(d[,modx])) == 2) {
+    # We can work with a two-level factor
+    names <- levels(d[,modx])
+    condition <- suppressWarnings(all(is.na(as.numeric(levels(d[,modx])))))
+    if (condition) {
+      modxvals2 <- c(0,1)
+    } else {
+      modxvals2 <- sort(as.numeric(levels(d[,modx])), decreasing = FALSE)
+    }
+    d[,modx] <- as.numeric(d[,modx]) - 1
+    names(modxvals2) <- names
+    ss <- structure(ss, def = TRUE)
+  } else if (is.factor(d[,modx]) && length(levels(d[,modx])) != 2) {
+    stop("Factor moderators can only have 2 levels.")
   } else { # Use user-supplied values otherwise
     modxvals2 <- modxvals
-    ss$def <- FALSE
+    ss <- structure(ss, def = FALSE)
+  }
+
+  # Default to +/- 1 SD unless mod2 is factor
+  if (!is.null(mod2)) {
+  if (is.null(mod2vals) && !is.factor(d[,mod2]) &&
+      length(unique(d[,mod2])) > 2) {
+    if (survey == FALSE) {
+      mod2sd <- sd(d[,mod2])
+      mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
+      names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+      mod2vals2 <- mod2valssd
+      ss <- structure(ss, def2 = TRUE)
+    } else if (survey == TRUE) {
+      mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
+      mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
+      mod2valssd <- c(mod2mean+mod2sd, mod2mean, mod2mean-mod2sd)
+      names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+      mod2vals2 <- mod2valssd
+      ss <- structure(ss, def2 = TRUE)
+    }
+  } else if (!is.factor(d[,mod2]) && length(unique(d[,mod2])) == 2) {
+    # Detecting binary variable
+    mod2vals2 <- as.numeric(levels(factor(d[,mod2])))
+    ss <- structure(ss, def2 = FALSE)
+  } else if (length(unique(d[,mod2])) < 2) {
+    msg <- "Every observation has the same value for the 2nd moderator. Did you
+            enter your data correctly?"
+    stop(msg)
+  } else if (is.factor(d[,mod2]) && length(levels(d[,mod2])) == 2) {
+    # We can work with a two-level factor
+    names <- levels(d[,mod2])
+    condition <- suppressWarnings(all(is.na(as.numeric(levels(d[,mod2])))))
+    if (condition) {
+      mod2vals2 <- c(0,1)
+    } else {
+      mod2vals2 <- sort(as.numeric(levels(d[,mod2])), decreasing = FALSE)
+    }
+    d[,mod2] <- as.numeric(d[,mod2]) - 1
+    names(mod2vals2) <- names
+    ss <- structure(ss, def2 = TRUE)
+  } else if (is.factor(d[,mod2]) && length(levels(d[,mod2])) != 2) {
+    stop("Factor moderators can only have 2 levels.")
+  } else {
+    # Use user-supplied values otherwise
+    mod2vals2 <- mod2vals
+    ss <- structure(ss, def2 = FALSE)
+  }
   }
 
   # Need to make a matrix filled with NAs to store values from looped model-making
