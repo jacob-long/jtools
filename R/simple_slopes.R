@@ -153,10 +153,6 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   # Save data from model object
   d <- model.frame(model)
 
-  if (is.factor(d[,modx])){
-    stop("Factor variables are not supported. You can try using a binary numeric variable and set modxvals = c(0,1), however.")
-  }
-
   # Deal with svyglm objects
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
     survey <- TRUE
