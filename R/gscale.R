@@ -276,9 +276,12 @@ if (is.numeric(x)) {
     if (!is.null(weights)) {
       # If it's the weight column, skip
       wname <- as.character(substitute(weights))
+      wname2 <- weights
 
       if (wname %in% names(d)) {
         weights <- d[,wname]
+      } else if (wname2 %in% names(d)) {
+        weights <- d[,wname2]
       }
 
     }
@@ -385,9 +388,12 @@ if (is.numeric(x)) {
     if (!is.null(weights)) {
       # If it's the weight column, skip
       wname <- as.character(substitute(weights))
+      wname2 <- weights
 
       if (wname %in% names(d)) {
         weights <- d[,wname]
+      } else if (wname2 %in% names(d)) {
+        weights <- d[,wname2]
       }
     }
 
