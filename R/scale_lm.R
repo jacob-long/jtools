@@ -124,7 +124,6 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
   # weights?
   if (survey == FALSE && "(weights)" %in% names(d)) {
     weights <- TRUE
-    theweights <- d$`(weights)`
     wname <- sub("()", model$call["weights"], "")
     colnames(d)[which(colnames(d) == "(weights)")] <- wname
   } else {
@@ -140,7 +139,8 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
     }
 
     d <- gscale(x = varnames, data = d, binary.inputs = binary.inputs,
-                scale.only = !center, weights = theweights, n.sd = n.sd)
+                scale.only = !center, weights = wname, n.sd = n.sd)
+
   } else {
     if (scale.response == FALSE) {
       # Now we need to know the variables of interest
@@ -148,7 +148,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
       vars <- as.character(vars)[2:length(vars)]
       vars <- vars[!(vars %in% resp)]
       d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
-                  scale.only = !center, weights = theweights, n.sd = n.sd)
+                  scale.only = !center, n.sd = n.sd)
     } else {
       d <- gscale(data = d, binary.inputs = binary.inputs,
                 scale.only = !center, n.sd = n.sd)

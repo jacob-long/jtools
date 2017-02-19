@@ -112,7 +112,6 @@ center_lm <- function(model, binary.inputs = "0/1", center.response = FALSE) {
   # weights?
   if (survey == FALSE && "(weights)" %in% names(d)) {
     weights <- TRUE
-    theweights <- d$`(weights)`
     wname <- sub("()", model$call["weights"], "")
     colnames(d)[which(colnames(d) == "(weights)")] <- wname
   } else {
@@ -128,7 +127,7 @@ center_lm <- function(model, binary.inputs = "0/1", center.response = FALSE) {
     }
 
     d <- gscale(x = varnames, data = d, binary.inputs = binary.inputs,
-                center.only = TRUE, weights = theweights)
+                center.only = TRUE, weights = wname)
   } else {
 
     if (center.response == FALSE) {
