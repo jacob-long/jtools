@@ -4,8 +4,9 @@
 \alias{sim_slopes}
 \title{Perform a simple slopes analysis}
 \usage{
-sim_slopes(model, pred, modx, modxvals = NULL, centered = NULL,
-  robust = FALSE, robust.type = "HC3", cond.int = FALSE, digits = 3)
+sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
+  mod2vals = NULL, centered = NULL, standardize = FALSE, robust = FALSE,
+  robust.type = "HC3", cond.int = FALSE, digits = 3, n.sd = 1)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
@@ -15,18 +16,32 @@ It should contain the interaction of interest.}
 
 \item{modx}{The moderator variable involved in the interaction.}
 
+\item{mod2}{Optional. The name of the second moderator
+variable involved in the interaction.}
+
 \item{modxvals}{For which values of the moderator should simple slopes analysis
 be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
 the customary +/- 1 standard deviation from the mean as well as the mean itself.
 There is no specific limit on the number of variables provided. Factor variables
 are not particularly suited to simple slopes analysis, but you could have a
 numeric moderator with values of 0 and 1 and give \code{c(0,1)} to compare the
-slopes at the different conditions.}
+slopes at the different conditions. Two-level factor variables are coerced
+to numeric 0/1 variables, but are not standardized/centered like they could
+be if your input data had a numeric 0/1 variable.}
+
+\item{mod2vals}{For which values of the second moderator should the plot be
+facetted by? That is, there will be a separate plot for each level of this
+moderator. Defaults are the same as \code{modxvals}.}
 
 \item{centered}{A vector of quoted variable names that are to be mean-centered. If
 \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
 the user-specified predictors are centered. User can also use "none" or "all"
-arguments.}
+arguments. The response variable is not centered unless specified directly.}
+
+\item{standardize}{Logical. Would you like to standardize the variables
+that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
+standardize variables specified by the \code{centered} argument. Note that
+non-focal predictors are centered when \code{centered = NULL}, its default.}
 
 \item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust standard errors.}
 
@@ -38,6 +53,9 @@ Default is \code{FALSE}.}
 
 \item{digits}{How many significant digits after the decimal point should the output
 contain?}
+
+\item{n.sd}{How many standard deviations should be used if \code{standardize
+= TRUE}? Default is 1, but some prefer 2.}
 }
 \value{
 \item{slopes}{A table of coefficients for the focal predictor at each value of
@@ -48,19 +66,25 @@ contain?}
  coefficients.}
 }
 \description{
-\code{sim_slopes()} conducts a simple slopes analysis for the purposes of understanding
-interaction effects in linear regression.
+\code{sim_slopes()} conducts a simple slopes analysis for the purposes of
+understanding two- and three-way interaction effects in linear regression.
 }
 \details{
 This allows the user to perform a simple slopes analysis for the purpose
-  of probing interaction effects in a linear regression. Only two-way interactions
-  are supported.
+  of probing interaction effects in a linear regression. Two- and three-way
+  interactions are supported, though one should be warned that three-way
+  interactions are not easy to interpret in this way.
 
   The function accepts a \code{lm} object and uses it to recompute models with
   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
    objects are also accepted, though users should be cautioned against using
   simple slopes analysis with non-linear models (\code{svyglm} also estimates
   linear models).
+
+  Factor moderators are coerced to a 0/1 numeric variable and are not centered,
+  even when requested in arguments. To avoid this, modify your data to change
+  the factor to a binary numeric variable. Factors with more than 2 levels
+  trigger an error.
 }
 \examples{
 
@@ -75,6 +99,10 @@ data(api)
 dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 regmodel <- svyglm(api00~ell*meals,design=dstrat)
 sim_slopes(regmodel, pred = ell, modx = meals)
+
+# 3-way with survey and factor input
+regmodel <- svyglm(api00~ell*meals*sch.wide,design=dstrat)
+sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
 
 }
 \references{

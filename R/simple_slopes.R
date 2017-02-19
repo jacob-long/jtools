@@ -1,7 +1,7 @@
 #' Perform a simple slopes analysis
 #'
-#' \code{sim_slopes()} conducts a simple slopes analysis for the purposes of understanding
-#' interaction effects in linear regression.
+#' \code{sim_slopes()} conducts a simple slopes analysis for the purposes of
+#' understanding two- and three-way interaction effects in linear regression.
 #'
 #' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
 #'    It should contain the interaction of interest.
@@ -10,18 +10,32 @@
 #'
 #' @param modx The moderator variable involved in the interaction.
 #'
+#' @param mod2 Optional. The name of the second moderator
+#'  variable involved in the interaction.
+#'
 #' @param modxvals For which values of the moderator should simple slopes analysis
 #'   be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
 #'   the customary +/- 1 standard deviation from the mean as well as the mean itself.
 #'   There is no specific limit on the number of variables provided. Factor variables
 #'   are not particularly suited to simple slopes analysis, but you could have a
 #'   numeric moderator with values of 0 and 1 and give \code{c(0,1)} to compare the
-#'   slopes at the different conditions.
+#'   slopes at the different conditions. Two-level factor variables are coerced
+#'   to numeric 0/1 variables, but are not standardized/centered like they could
+#'   be if your input data had a numeric 0/1 variable.
+#'
+#' @param mod2vals For which values of the second moderator should the plot be
+#'   facetted by? That is, there will be a separate plot for each level of this
+#'   moderator. Defaults are the same as \code{modxvals}.
 #'
 #' @param centered A vector of quoted variable names that are to be mean-centered. If
 #'   \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
 #'   the user-specified predictors are centered. User can also use "none" or "all"
-#'   arguments.
+#'   arguments. The response variable is not centered unless specified directly.
+#'
+#' @param standardize Logical. Would you like to standardize the variables
+#'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
+#'   standardize variables specified by the \code{centered} argument. Note that
+#'   non-focal predictors are centered when \code{centered = NULL}, its default.
 #'
 #' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust standard errors.
 #'
@@ -34,15 +48,25 @@
 #' @param digits How many significant digits after the decimal point should the output
 #'   contain?
 #'
+#' @param n.sd How many standard deviations should be used if \code{standardize
+#'   = TRUE}? Default is 1, but some prefer 2.
+#'
 #' @details This allows the user to perform a simple slopes analysis for the purpose
-#'   of probing interaction effects in a linear regression. Only two-way interactions
-#'   are supported.
+#'   of probing interaction effects in a linear regression. Two- and three-way
+#'   interactions are supported, though one should be warned that three-way
+#'   interactions are not easy to interpret in this way.
 #'
 #'   The function accepts a \code{lm} object and uses it to recompute models with
 #'   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
 #'    objects are also accepted, though users should be cautioned against using
 #'   simple slopes analysis with non-linear models (\code{svyglm} also estimates
 #'   linear models).
+#'
+#'   Factor moderators are coerced to a 0/1 numeric variable and are not centered,
+#'   even when requested in arguments. To avoid this, modify your data to change
+#'   the factor to a binary numeric variable. Factors with more than 2 levels
+#'   trigger an error.
+#'
 #'
 #' @return
 #'
@@ -90,17 +114,28 @@
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals)
 #'
-#' @importFrom stats coef coefficients lm predict sd update
+#' # 3-way with survey and factor input
+#' regmodel <- svyglm(api00~ell*meals*sch.wide,design=dstrat)
+#' sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
+#'
+#' @importFrom stats coef coefficients lm predict sd update getCall
 #' @export
 #'
 
-sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
+sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
+                       mod2vals = NULL, centered = NULL, standardize = FALSE,
                        robust=FALSE, robust.type="HC3", cond.int = FALSE,
-                       digits = 3) {
+                       digits = 3, n.sd = 1) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
   modx <- as.character(substitute(modx))
+  mod2 <- as.character(substitute(mod2))
+  # To avoid unexpected behavior, need to un-un-parse mod2 when it is NULL
+  if (length(mod2) == 0) {
+    mod2 <- NULL
+    mod2vals2 <- NULL
+  }
 
   # Create object to return
   ss <- NULL
@@ -109,7 +144,7 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   if (!is.numeric(digits)) { # digits
     stop("The digits argument must be an integer.")
   }
-  ss$digits <- digits
+  ss <- structure(ss, digits = digits)
 
   if (!is.null(modxvals) && !is.vector(modxvals)) {
     stop("The modxvals argument must be a vector of at least length 2 if it is used.")
@@ -131,6 +166,8 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
     # Focal vars so the weights don't get centered
     fvars <- as.character(attributes(model$terms)$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars <- fvars[2:length(fvars)]
 
   } else {
     survey <- FALSE
@@ -143,9 +180,9 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
   resp <- trimws(resp)
 
-  ss$resp <- resp
-  ss$modx <- modx
-  ss$pred <- pred
+  # Saving key arguments as attributes of return object
+  ss <- structure(ss, resp = resp, modx = modx, mod2 = mod2, pred = pred,
+                  cond.int = cond.int)
 
   # weights?
   if (survey == FALSE && "(weights)" %in% names(d)) {
@@ -322,7 +359,18 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
   colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
 
   # Make empty list to put actual models into
-  mods <- as.list(rep(NA, length(modxvals2)))
+  mods <- list()
+
+  # Make empty list to hold above list if 2nd mod used
+  if (!is.null(mod2)) {
+
+    # Make empty list to put each matrix into
+    mats <- list()
+    imats <- list()
+  }
+
+  # Looping through (perhaps non-existent)
+  for (j in 1:length(mod2vals2)) {
 
   # Looping so any amount of moderator values can be used
   for (i in 1:length(modxvals2)) {
@@ -335,6 +383,14 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
       # The moderator value-adjusted variable
       dt[,modx] <- dt[,modx] - modxvals2[i]
+
+      if (!is.null(mod2)) {
+
+        # The moderator value-adjusted variable
+        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
+
+
+      }
 
       # Creating the model
       newmod <- update(model, data=dt)
@@ -382,14 +438,25 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
       # Set the moderator at the given value
       dt[,modx] <- dt[,modx] - modxvals2[i]
 
+      if (!is.null(mod2)) {
+
+        # The moderator value-adjusted variable
+        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
+
+      }
+
       # Update design
       designt$variables <- dt
 
       # Update model
-      newmod <- update(model, design = designt)
+      ## Have to do all this to avoid adding survey to dependencies
+      call <- getCall(model)
+      call$design <- designt
+      call[[1]] <- survey::svyglm
+      newmod <- eval(call)
 
       # Get the coefs
-      sum <- jtools::j_summ(newmod)
+      sum <- j_summ(newmod)
       summat <- sum$coeftable
 
       slopep <- summat[pred,c("Est.","S.E.","p")]
@@ -403,18 +470,42 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
     }
 
-    mods[[i]] <- newmod
+    mods <- list(mods, newmod)
 
   }
 
-    ss$slopes <- retmat
-    ss$ints <- retmati
-    ss$modxvals <- modxvals2
+    if (!is.null(mod2)) {
+      mats[[j]] <- retmat
+      imats[[j]] <- retmati
 
-    ss$robust <- robust
-    ss$cond.int <- cond.int
+      # Now reset the return matrices
+      holdvals <- rep(NA, length(modxvals2)*4)
+      retmat <- matrix(holdvals, nrow=length(modxvals2))
+
+      # Create another matrix to hold intercepts (no left-hand column needed)
+      retmati <- retmat
+
+      # Value labels
+      colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+      colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+
+    }
+
+  } # end mod2 loop
+
+
+    ss <- structure(ss, modxvals = modxvals2, robust = robust, cond.int = cond.int)
 
     ss$mods <- mods
+
+    if (!is.null(mod2)) {
+      ss$slopes <- mats
+      ss$ints <- imats
+      ss <- structure(ss, mod2vals = mod2vals2)
+    } else {
+      ss$slopes <- retmat
+      ss$ints <- retmati
+    }
 
     class(ss) <- "sim_slopes"
     return(ss)
@@ -431,6 +522,44 @@ sim_slopes <- function(model, pred, modx, modxvals = NULL, centered = NULL,
 
 print.sim_slopes <- function(x, ...) {
 
+  # This is to make refactoring easier after switch to attributes
+  ss <- x
+  x <- attributes(x)
+
+  # This helps deal with the fact sometimes mod2vals has no length, so we want
+  # to loop just once
+  if (!is.null(x$mod2)) {
+    length <- length(x$mod2vals)
+  } else {
+    length <- 1
+  }
+
+  # Loop through each value of second moderator...if none, just one loop
+  for (j in 1:length) {
+
+    # If we're using second moderator, need to make things make sense to inner loop
+    if (!is.null(x$mod2)) {
+      m <- NULL
+      m$slopes <- ss$slopes[[j]]
+      m$ints <- ss$ints[[j]]
+
+      # Printing output to make it clear where each batch of second moderator
+      # slopes begins
+      if (x$def2 == FALSE) {
+        cat("#######################################################\n")
+        cat("While", x$mod2, "(2nd moderator)", "=", x$mod2vals[j], "\n")
+        cat("#######################################################\n\n")
+      } else {
+        cat("#######################################################\n")
+        cat("While ", x$mod2, " (2nd moderator)", " = ", x$mod2vals[j], " (",
+            names(x$mod2vals)[j], ")", "\n", sep = "")
+        cat("#######################################################\n\n")
+      }
+
+    } else {
+      m <- ss
+    }
+
   for (i in 1:length(x$modxvals)) {
 
     # Use the labels for the automatic +/- 1 SD
@@ -439,31 +568,33 @@ print.sim_slopes <- function(x, ...) {
       cat("Slope of ", x$pred, " when ", x$modx, " = ",
           round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
           ": \n", sep="")
-      print(round(x$slopes[i,2:4], x$digits))
+      print(round(m$slopes[i,2:4], x$digits))
 
       # Print conditional intercept
       if (x$cond.int == TRUE) {
         cat("Conditional intercept"," when ", x$modx, " = ",
             round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
             ": \n", sep="")
-        print(round(x$ints[i,2:4], x$digits))
+        print(round(m$ints[i,2:4], x$digits))
         cat("\n")
       } else {cat("\n")}
 
     } else { # otherwise don't use labels
 
-      cat("Slope of ", x$pred, " when ", x$modx, " = ", round(x$modxvals[i],x$digits),
+      cat("Slope of ", x$pred, " when ", x$modx, " = ",
+          round(x$modxvals[i],x$digits),
           ": \n", sep="")
-      print(round(x$slopes[i,2:4],x$digits))
+      print(round(m$slopes[i,2:4],x$digits))
 
       # Print conditional intercept
       if (x$cond.int == TRUE) {
         cat("Conditional intercept", " when ", x$modx, " = ",
             round(x$modxvals[i],x$digits), ": \n", sep="")
-        print(round(x$ints[i,2:4], x$digits))
+        print(round(m$ints[i,2:4], x$digits))
         cat("\n")
       } else {cat("\n")}
 
     }
   }
+  } # end mod2 loop
 }
