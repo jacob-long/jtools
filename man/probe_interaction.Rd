@@ -8,9 +8,7 @@ probe_interaction(model, pred, modx, mod2 = NULL, ...)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
-It should contain the interaction of interest. Note that unlike the
-constituent functions, you must explicitly write \code{model =} in your
-call.}
+It should contain the interaction of interest.}
 
 \item{pred}{The predictor variable involved in the interaction.}
 
