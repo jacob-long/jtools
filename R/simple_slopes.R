@@ -314,6 +314,21 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       mod2vals2 <- mod2valssd
       ss <- structure(ss, def2 = TRUE)
     }
+  } else if (!is.null(mod2vals) && mod2vals == "plus-minus") {
+    if (survey == FALSE) {
+      mod2sd <- sd(d[,mod2])
+      mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2])-mod2sd)
+      names(mod2valssd) <- c("+1 SD", "-1 SD")
+      mod2vals2 <- mod2valssd
+      ss <- structure(ss, def2 = TRUE)
+    } else if (survey == TRUE) {
+      mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
+      mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
+      mod2valssd <- c(mod2mean+mod2sd, mod2mean-mod2sd)
+      names(mod2valssd) <- c("+1 SD", "-1 SD")
+      mod2vals2 <- mod2valssd
+      ss <- structure(ss, def2 = TRUE)
+    }
   } else if (!is.factor(d[,mod2]) && length(unique(d[,mod2])) == 2) {
     # Detecting binary variable
     mod2vals2 <- as.numeric(levels(factor(d[,mod2])))
