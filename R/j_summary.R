@@ -425,7 +425,7 @@ print.j_summ <- function(x, ...) {
 
   if (x$linear==T) {
     if (x$lmClass[1] == "svyglm" || x$lmClass[1] == "svrepglm") {
-      cat("Robust\n")
+      cat("Standard errors: Robust\n")
     } else if (x$robust==F) {
       cat("Standard errors: OLS", "\n")
     } else if (x$robust==T) {
