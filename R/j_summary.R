@@ -31,6 +31,8 @@
 #'  predictors be divided by? Default is 1, though some suggest 2.
 #' @param center If you want coefficients for mean-centered variables but don't
 #'  want to standardize, set this to \code{TRUE}.
+#' @param standardize.response Should standardization apply to response variable?
+#'  Default is \code{FALSE}.
 #'
 #' @details By default, this function will print the following items to the console:
 #' \itemize{
@@ -128,13 +130,14 @@
 
 j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
                    robust.type = "HC3", digits = 3, model.info = TRUE,
-                   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE) {
+                   model.fit = TRUE, model.check = FALSE, n.sd = 1,
+                   center = FALSE, standardize.response = FALSE) {
 
   j <- NULL
 
   # Standardized betas
   if (standardize == TRUE) {
-    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE)
+    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE, scale.response = standardize.response)
   } else if (center == TRUE && standardize == FALSE) {
     lm <- center_lm(lm)
   }

@@ -27,7 +27,7 @@ like this:
 
 ```{r}
 # Fit model
-fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data = as.data.frame(state.x77))
+fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 j_summ(fit)
 ```
 

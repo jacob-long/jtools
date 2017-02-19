@@ -18,6 +18,9 @@
 #'   mean-centered. For binary predictors, the \code{binary.inputs} argument
 #'   supersedes this one.
 #'
+#' @param scale.response Should the response variable also be rescaled? Default
+#'   is \code{TRUE}.
+#'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
 #'   interaction terms. It can also mean-center all of them as well, if requested.
@@ -74,13 +77,18 @@
 #' regmodel_scale <- scale_lm(regmodel)
 #' regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
 #'
-#' @importFrom stats weighted.mean as.formula getCall
+#' @importFrom stats weighted.mean as.formula getCall formula
 #' @export scale_lm
 #'
 
-scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE) {
+scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
+                     scale.response = TRUE) {
+
   # Save data
   d <- model.frame(model)
+
+  # Save response variable
+  resp <- as.character(formula(model)[2])
 
   # svyglm?
   if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {survey <- TRUE} else {survey <- FALSE}
@@ -94,6 +102,10 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE) {
     # Now we need to know the variables of interest
     vars <- attributes(model$terms)$variables
     vars <- as.character(vars)[2:length(vars)]
+
+    if (scale.response == FALSE) {
+      vars <- vars[!(vars %in% resp)]
+    }
 
     # Call gscale()
     if (center == FALSE) {
@@ -122,11 +134,25 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE) {
   # calling gscale(), incorporating the weights
   if (weights == TRUE) {
     varnames <- names(d)[!(names(d) %in% wname)]
+
+    if (scale.response == FALSE) {
+      varnames <- varnames[!(varnames %in% resp)]
+    }
+
     d <- gscale(x = varnames, data = d, binary.inputs = binary.inputs,
                 scale.only = !center, weights = theweights, n.sd = n.sd)
   } else {
-    d <- gscale(data = d, binary.inputs = binary.inputs,
+    if (scale.response == FALSE) {
+      # Now we need to know the variables of interest
+      vars <- attributes(model$terms)$variables
+      vars <- as.character(vars)[2:length(vars)]
+      vars <- vars[!(vars %in% resp)]
+      d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
+                  scale.only = !center, weights = theweights, n.sd = n.sd)
+    } else {
+      d <- gscale(data = d, binary.inputs = binary.inputs,
                 scale.only = !center, n.sd = n.sd)
+    }
   }
 
 

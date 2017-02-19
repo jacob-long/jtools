@@ -4,7 +4,8 @@
 \alias{scale_lm}
 \title{Scale variables in fitted regression models}
 \usage{
-scale_lm(model, binary.inputs = "0/1", n.sd = 1, center = FALSE)
+scale_lm(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
+  scale.response = TRUE)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -21,6 +22,9 @@ standardization? Default is 1, though some prefer 2.}
 \item{center}{Default is \code{FALSE}. If \code{TRUE}, the predictors are also
 mean-centered. For binary predictors, the \code{binary.inputs} argument
 supersedes this one.}
+
+\item{scale.response}{Should the response variable also be rescaled? Default
+is \code{TRUE}.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting from

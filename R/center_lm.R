@@ -13,6 +13,9 @@
 #'   \code{center} substracts the mean; and \code{full} treats them like other
 #'   continuous variables.
 #'
+#' @param center.response Should the response variable also be centered? Default
+#'   is \code{FALSE}.
+#'
 #' @details This function will mean-center all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
 #'   interaction terms. The mean for \code{svyglm} objects is calculated using
@@ -65,13 +68,17 @@
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' regmodel_center <- center_lm(regmodel)
 #'
-#' @importFrom stats weighted.mean as.formula getCall
+#' @importFrom stats weighted.mean as.formula getCall formula
 #' @export center_lm
 #'
 
-center_lm <- function(model, binary.inputs = "0/1") {
+center_lm <- function(model, binary.inputs = "0/1", center.response = FALSE) {
+
   # Save data
   d <- model.frame(model)
+
+  # Save response variable
+  resp <- as.character(formula(model)[2])
 
   # svyglm?
   if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {survey <- TRUE} else {survey <- FALSE}
@@ -85,6 +92,10 @@ center_lm <- function(model, binary.inputs = "0/1") {
     # Now we need to know the variables of interest
     vars <- attributes(model$terms)$variables
     vars <- as.character(vars)[2:length(vars)]
+
+    if (center.response == FALSE) {
+      vars <- vars[!(vars %in% resp)]
+    }
 
     # Call gscale()
     design <- gscale(x = vars, data = design, center.only = TRUE,
@@ -111,11 +122,27 @@ center_lm <- function(model, binary.inputs = "0/1") {
   # Do the stuff, dealing with weights if needed
   if (weights == TRUE) {
     varnames <- names(d)[!(names(d) %in% wname)]
+
+    if (center.response == FALSE) {
+      varnames <- varnames[!(varnames %in% resp)]
+    }
+
     d <- gscale(x = varnames, data = d, binary.inputs = binary.inputs,
                 center.only = TRUE, weights = theweights)
   } else {
-    d <- gscale(data = d, binary.inputs = binary.inputs,
-                center.only = TRUE)
+
+    if (center.response == FALSE) {
+      vars <- attributes(model$terms)$variables
+      vars <- as.character(vars)[2:length(vars)]
+      vars <- vars[!(vars %in% resp)]
+      d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
+                  center.only = TRUE)
+    } else {
+      d <- gscale(data = d, binary.inputs = binary.inputs,
+                  center.only = TRUE)
+    }
+
+
   }
 
 

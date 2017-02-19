@@ -4,7 +4,7 @@
 \alias{center_lm}
 \title{Center variables in fitted regression models}
 \usage{
-center_lm(model, binary.inputs = "0/1")
+center_lm(model, binary.inputs = "0/1", center.response = FALSE)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -15,6 +15,9 @@ if any.}
 \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
 \code{center} substracts the mean; and \code{full} treats them like other
 continuous variables.}
+
+\item{center.response}{Should the response variable also be centered? Default
+is \code{FALSE}.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting from
