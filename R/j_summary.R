@@ -135,6 +135,8 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
   # Standardized betas
   if (standardize == TRUE) {
     lm <- scale_lm(lm, n.sd = n.sd, center = TRUE)
+  } else if (center == TRUE && standardize == FALSE) {
+    lm <- center_lm(lm)
   }
 
   j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
