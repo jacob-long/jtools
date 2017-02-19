@@ -4,9 +4,9 @@
 #'   \code{\link[ggplot2]{ggplot}}. To the extent possible, it aligns with
 #'   the (vague) APA figure guidelines.
 #'
-#' @param legend.pos One of \code{"topleft"}, \code{"topright"}, \code{"bottomleft"},
-#'   or \code{"bottomright"}. Positions the legend, which will layer on top of any
-#'   geoms, on the plane.
+#' @param legend.pos One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
+#'   \code{"bottomleft"}, \code{"bottomright"}, or \code{"bottommiddle"}.
+#'   Positions the legend, which will layer on top of any geoms, on the plane.
 #'
 #' @param legend.use.title Logical. Specify whether to include a legend title. Defaults
 #'   to \code{FALSE}.
@@ -106,11 +106,15 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
     plot <- plot + ggplot2::theme(legend.position = c(.05,.95), legend.justification = c(.05,.95)) # manually position the legend (numbers being from 0,0 at bottom left of whole plot to 1,1 at top right)
   } else if (legend.pos=="topright") {
     plot <- plot + ggplot2::theme(legend.position = c(.95, .95), legend.justification = c(.95,.95))
+  } else if (legend.pos=="topmiddle") {
+    plot <- plot + ggplot2::theme(legend.position = c(.50, .95), legend.justification = c(.50,.95))
   } else if (legend.pos=="bottomleft") {
     plot <- plot + ggplot2::theme(legend.position = c(.05, .05), legend.justification = c(.05,.05))
   } else if (legend.pos=="bottomright") {
     plot <- plot + ggplot2::theme(legend.position = c(.95, .05), legend.justification = c(.95,.05))
-  } else {
+  } else if (legend.pos=="bottommiddle") {
+      plot <- plot + ggplot2::theme(legend.position = c(.50, .05), legend.justification = c(.50,.05))
+  } else if (!is.null(legend.pos) || legend.pos == "none") {
     plot <- plot + ggplot2::theme(legend.position = "none")
   }
 
