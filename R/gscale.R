@@ -263,16 +263,20 @@ if (is.numeric(x)) {
   # Okay, if not a survey and user provided variable names, do this
   if (survey == FALSE && !is.null(x)) {
 
+    if (!is.null(weights)) {
+      # If it's the weight column, skip
+      wname <- as.character(substitute(weights))
+
+      if (wname %in% names(d)) {
+        weights <- d[,wname]
+      }
+
+    }
+
     # Loop through the variable names
     for (i in x) {
 
       # Now just calling the rescale function, basically
-      if (!is.numeric(d[,i])) {
-
-        d[,i] <- as.numeric(factor(d[,i]))
-
-      }
-
       # for binary cases
       if (length(unique(d[,i]))==2) {
 
