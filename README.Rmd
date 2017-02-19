@@ -115,9 +115,8 @@ This will format your `ggplot2` graphics to make them (mostly) appropriate for A
 There's no drop-in, perfect way to get plots into APA format sight unseen, but this 
 gets you close and returns a `ggplot` object that can be further tweaked to your specification.
 
-You might start with something like the above interaction plots.
-
-And then use `theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
+You might start with something like the above interaction plots and then use
+`theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
 
 ```{r theme_apa_ex}
 p <- interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
@@ -125,7 +124,7 @@ p + theme_apa(legend.pos = "topleft")
 ```
 
 Facet grids like those produced by `interact_plot` for 3-way interactions are 
-also supported, though APA guidance on these kinds of constructions are less 
+also supported, though APA guidance on these kinds of constructions is less 
 than clear. The embedded legend has a nice space-saving quality, though some
 trial and error may be needed before finding the ideal `legend.pos` argument.
 

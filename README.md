@@ -202,9 +202,7 @@ svycor(~api00+api99+dnum, design = dstrat, digits = 3, sig.stats = T, bootn = 20
 
 This will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications. There's no drop-in, perfect way to get plots into APA format sight unseen, but this gets you close and returns a `ggplot` object that can be further tweaked to your specification.
 
-You might start with something like the above interaction plots.
-
-And then use `theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
+You might start with something like the above interaction plots and then use `theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
 
 ``` r
 p <- interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
@@ -213,7 +211,7 @@ p + theme_apa(legend.pos = "topleft")
 
 ![](README-theme_apa_ex-1.png)
 
-Facet grids like those produced by `interact_plot` for 3-way interactions are also supported, though APA guidance on these kinds of constructions are less than clear. The embedded legend has a nice space-saving quality, though some trial and error may be needed before finding the ideal `legend.pos` argument.
+Facet grids like those produced by `interact_plot` for 3-way interactions are also supported, though APA guidance on these kinds of constructions is less than clear. The embedded legend has a nice space-saving quality, though some trial and error may be needed before finding the ideal `legend.pos` argument.
 
 ``` r
 p2 <- probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
