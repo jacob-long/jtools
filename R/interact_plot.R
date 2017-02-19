@@ -184,8 +184,27 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
 
+    facvars <- c()
+    for (v in fvars) {
+      if (is.factor((d[,v]))) {
+        facvars <- c(facvars, v)
+      }
+    }
+
   } else {
     survey <- FALSE
+
+    fvars <- as.character(attributes(model$terms)$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars <- fvars[2:length(fvars)]
+
+    facvars <- c()
+    for (v in fvars) {
+      if (is.factor((d[,v]))) {
+        facvars <- c(facvars, v)
+      }
+    }
+
   }
 
   # weights?
@@ -226,6 +245,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   # Pulling the name of the response variable for labeling
   resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
   resp <- trimws(resp)
+
+  # Update facvars by pulling out all non-focals
+  facvars <- facvars[!(facvars %in% c(pred, resp, modx, mod2, wname))]
 
   # Handling user-requested centered vars
   if (!is.null(centered) && centered != "all" && centered != "none") {
@@ -418,6 +440,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
 
   # Add values of focal predictor to df
   pm[,pred] <- xpreds
+
+  # Set factor predictors arbitrarily to their first level
+  if (length(facvars) > 0) {
+    for (v in facvars) {
+      pm[,v] <- levels(d[,v])[1]
+    }
+  }
 
   # Create predicted values based on specified levels of the moderator, focal predictor
   if (survey == FALSE) {
