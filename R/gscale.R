@@ -109,12 +109,22 @@
 #' gscale(x, n.sd = 1, weights = wts)
 #' gscale(x, scale.only = TRUE, weights = wts)
 #' gscale(x, center.only = TRUE, weights = wts)
-#' # If using a weights column of data frame, supply the vector itself
+#' # If using a weights column of data frame, give its name
 #' gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
 #' gscale(data = mtcars, weights = weights, scale.only = TRUE)
 #' gscale(data = mtcars, weights = weights, center.only = TRUE)
 #' gscale(data = mtcars, weights = weights, binary.inputs = "center")
 #' gscale(data = mtcars, weights = weights, binary.inputs = "full")
+#' # If using a weights column of data frame, can still select variables
+#' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
+#' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights,
+#'        scale.only = TRUE)
+#' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights,
+#'        center.only = TRUE)
+#' gscale(c("hp", "wt", "vs"), data = mtcars, weights = weights,
+#'        binary.inputs = "center") # "x =" is optional for first argument
+#' gscale(c("hp", "wt", "vs"), data = mtcars, weights = weights,
+#'        binary.inputs = "full")
 #'
 #' # Survey designs
 #' library(survey)
