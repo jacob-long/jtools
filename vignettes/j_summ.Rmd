@@ -27,7 +27,7 @@ like this:
 
 ```{r}
 # Fit model
-fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data=as.data.frame(state.x77))
+fit <- lm(Income ~ `HS Grad` + Illiteracy + Murder, data = as.data.frame(state.x77))
 j_summ(fit)
 ```
 
@@ -138,7 +138,9 @@ to be "drowned out" by higher VIFs.
 
 Some prefer to use standardized coefficients in order to avoid dismissing an effect
 as "small" when it is just the units of measure that are small. Standardized betas
-are used instead when `standardized = TRUE`.
+are used instead when `standardized = TRUE`. To be clear, since the meaning of
+"standardized beta" can vary depending on who you talk to, this option mean-centers
+the variables too.
 
 ```{r}
 j_summ(fit, standardize = TRUE)
