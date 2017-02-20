@@ -85,6 +85,8 @@
 #'   output (and without rounding).
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
+#'  \item{model}{The model for which statistics are displayed. This would be
+#'    most useful in cases in which \code{standardize = TRUE}.}
 #'
 #'  Much other information can be accessed as attributes.
 #'
@@ -314,6 +316,7 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
   }
 
   j$coeftable <- mat
+  j$model <- lm
   class(j) <- "j_summ"
   return(j)
 

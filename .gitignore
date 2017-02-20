@@ -25,3 +25,5 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 inst/doc
+Simple slopes macro replication.Rmd
+Simple slopes macro replication.nb.html
