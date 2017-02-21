@@ -8,7 +8,9 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = FALSE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "README-",
+  fig.width = 6,
+  fig.height = 4
 )
 library(jtools)
 ```
@@ -43,6 +45,7 @@ devtools::install_github("jacob-long/jtools")
 Here's a brief synopsis of the current functions in the package:
 
 #### `j_summ()` 
+
 This is a replacement for `summary.lm` that provides the user several options for formatting regression summaries. It supports `glm` and `svyglm` objects as input as well, but it is not tested with nonlinear models. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
 
 ```{r}
@@ -64,14 +67,20 @@ j_summ(fit2, standardize = TRUE, n.sd = 2, vifs = TRUE, robust = TRUE,
 
 
 #### `sim_slopes()`
-This is an interface for simple slopes analysis for 2- and 3-way interactions. Users can specify values of the moderator to test or use the default +/- 1 SD values.
 
-```{r}
-sim_slopes(fit, pred="wt", modx = "hp")
+This is an interface for simple slopes analysis for 2- and 3-way interactions.
+Users can specify values of the moderator to test or use the default +/- 1 SD values.
+Johnson-Neyman intervals are also calculated and, if requested, Johnson-Neyman
+plots are returned.
+
+```{r j-n plot}
+fiti <- lm(Murder ~ Assault*UrbanPop, data = USArrests)
+sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 ```
 
 
 #### `interact_plot()`
+
 This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes()` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
 
 ```{r interact_plot_continuous}
@@ -98,6 +107,7 @@ probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
 
 
 #### `svycor()`
+
 This function extends the `survey` package by calculating correlations with complex survey designs, a 
 feature absent from `survey`. Users may request significance tests, which are calculated 
 via bootstrap by calling the `weights` package.
@@ -111,9 +121,13 @@ svycor(~api00+api99+dnum, design = dstrat, digits = 3, sig.stats = T, bootn = 20
 ```
 
 #### `theme_apa()` 
+
 This will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications.
 There's no drop-in, perfect way to get plots into APA format sight unseen, but this 
 gets you close and returns a `ggplot` object that can be further tweaked to your specification.
+The plots produced by other functions in this package use `theme_apa`, but use its
+options to position the plots and alter other details to make them more in line
+with `ggplot2` defaults than APA norms.
 
 You might start with something like the above interaction plots and then use
 `theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
