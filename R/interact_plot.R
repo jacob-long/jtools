@@ -355,14 +355,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
       if (survey == FALSE) {
         mod2sd <- sd(d[,mod2])
         mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
-        names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2),
+                               paste("Mean of", mod2, "-1 SD"))
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
       } else if (survey == TRUE) {
         mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2valssd <- c(mod2mean+mod2sd, mod2mean, mod2mean-mod2sd)
-        names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2),
+                               paste("Mean of", mod2, "-1 SD"))
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
       }
@@ -371,14 +375,16 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
       if (survey == FALSE) {
         mod2sd <- sd(d[,mod2])
         mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2])-mod2sd)
-        names(mod2valssd) <- c("+1 SD", "-1 SD")
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2, "-1 SD"))
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
       } else if (survey == TRUE) {
         mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2valssd <- c(mod2mean+mod2sd, mod2mean-mod2sd)
-        names(mod2valssd) <- c("+1 SD", "-1 SD")
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2, "-1 SD"))
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
       }
@@ -576,7 +582,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
                                  inherit.aes = F, position = "jitter")
   }
 
-  p <- p + ggplot2::theme_bw() # I just like it better
+  # Using theme_apa for theming...but using legend title and side positioning
+  if (is.null(mod2)) {
+    p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
+  } else { # make better use of space by putting legend on bottom for facet plots
+    p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE)
+  }
   p <- p + ggplot2::labs(x = x.label, y = y.label) # better labels for axes
 
   # Get scale colors, provide better legend title
