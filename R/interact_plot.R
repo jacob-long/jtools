@@ -118,6 +118,7 @@
 #' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
 #'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
 #'  Research}, \emph{40}(3), 373-400.
+#'  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 #'
 #' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 #' regression/correlation analyses for the behavioral sciences} (3rd ed.).

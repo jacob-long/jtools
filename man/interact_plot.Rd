@@ -149,6 +149,7 @@ interact_plot(regmodel, pred = ell, modx = meals)
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
  Research}, \emph{40}(3), 373-400.
+ \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 
 Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 regression/correlation analyses for the behavioral sciences} (3rd ed.).
@@ -162,8 +163,8 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
   \code{\link{sim_slopes}} performs a simple slopes analysis with a similar
   argument syntax to this function.
 
-Other interaction tools: \code{\link{probe_interaction}},
-  \code{\link{sim_slopes}}
+Other interaction tools: \code{\link{johnson_neyman}},
+  \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
