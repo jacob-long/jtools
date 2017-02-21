@@ -7,7 +7,7 @@
 #' @param legend.pos One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
 #'   \code{"bottomleft"}, \code{"bottomright"}, or \code{"bottommiddle"}.
 #'   Positions the legend, which will layer on top of any geoms, on the plane.
-#'   Any other arguments will be passed to \code{\link[ggplot]{theme}}'s
+#'   Any other arguments will be passed to \code{\link[ggplot2]{theme}}'s
 #'   \code{legend.position =} argument, which takes \code{"left"},
 #'   \code{"right"}, \code{"top"}, and \code{"bottom"}.
 #'
