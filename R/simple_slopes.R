@@ -37,13 +37,22 @@
 #'   standardize variables specified by the \code{centered} argument. Note that
 #'   non-focal predictors are centered when \code{centered = NULL}, its default.
 #'
-#' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust standard errors.
+#' @param cond.int Should conditional intercepts be printed in addition to the
+#'   slopes? Default is \code{FALSE}.
 #'
-#' @param robust.type Type of heteroskedasticity-robust standard errors to use if \code{robust=TRUE}.
-#'   See details of \code{\link{j_summ}} for more on options.
+#' @param johnson_neyman Should the Johnson-Neyman interval be calculated?
+#'   Default is \code{TRUE}. This can be performed separately with
+#'   \code{\link{johnson_neyman}}.
 #'
-#' @param cond.int Should conditional intercepts be printed in addition to the slopes?
-#'   Default is \code{FALSE}.
+#' @param jnplot Should the Johnson-Neyman interval be plotted as well? Default
+#'   is \code{FALSE}.
+#'
+#' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust
+#'   standard errors.
+#'
+#' @param robust.type Type of heteroskedasticity-robust standard errors to use
+#'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on options.
+#'
 #'
 #' @param digits How many significant digits after the decimal point should the output
 #'   contain?
@@ -55,6 +64,8 @@
 #'   of probing interaction effects in a linear regression. Two- and three-way
 #'   interactions are supported, though one should be warned that three-way
 #'   interactions are not easy to interpret in this way.
+#'
+#'   For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 #'
 #'   The function accepts a \code{lm} object and uses it to recompute models with
 #'   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
@@ -76,6 +87,11 @@
 #'  \item{modxvals}{The values of the moderator used in the analysis}
 #'  \item{mods}{A list containing each regression model created to estimate the conditional
 #'  coefficients.}
+#'  \item{jn}{If \code{johnson_neyman = TRUE}, a list of `johnson_neyman`
+#'  objects from \code{\link{johnson_neyman}}. These contain the values of the
+#'  interval and the plots. If a 2-way interaction, the list will be of length
+#'  1. Otherwise, there will be 1 `johnson_neyman` object for each value of the
+#'  2nd moderator for 3-way interactions.}
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -119,13 +135,14 @@
 #' regmodel <- svyglm(api00~ell*meals*sch.wide,design=dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
 #'
-#' @importFrom stats coef coefficients lm predict sd update getCall
+#' @importFrom stats coef coefficients lm predict sd update getCall vcov
 #' @export
 #'
 
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        mod2vals = NULL, centered = NULL, standardize = FALSE,
-                       robust=FALSE, robust.type="HC3", cond.int = FALSE,
+                       cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
+                       robust=FALSE, robust.type="HC3",
                        digits = 3, n.sd = 1) {
 
   # Allows unquoted variable names
@@ -366,6 +383,9 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   # Create another matrix to hold intercepts (no left-hand column needed)
   retmati <- retmat
 
+  # Create a list to hold Johnson-Neyman objects
+  jns <- list()
+
   # Value labels
   colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
   colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
@@ -383,6 +403,76 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   # Looping through (perhaps non-existent)
   for (j in 1:length(mod2vals2)) {
+
+    # We don't want to do the J-N interval with the 1st moderator adjusted,
+    # so we do it here. Requires an extra model fit.
+    if (johnson_neyman == TRUE) {
+
+      if (survey == FALSE) {
+
+        # Creating extra "copy" of model frame to change for model update
+        dt <- d
+
+        if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
+
+          # The moderator value-adjusted variable
+          dt[,mod2] <- dt[,mod2] - mod2vals2[j]
+
+        }
+
+        # Creating the model
+        newmod <- update(model, data=dt)
+
+        # Getting SEs, robust or otherwise
+        if (robust==TRUE) {
+
+          # For J-N
+          covmat <- sandwich::vcovHC(newmod)
+
+        } else {
+
+          # For J-N
+          covmat <- vcov(newmod)
+
+        }
+
+      } else if (survey == TRUE) {
+
+        # Create new design to modify
+        designt <- design
+
+        # Create new df to modify
+        dt <- d
+
+        if (!is.null(mod2)) {
+
+          # The moderator value-adjusted variable
+          dt[,mod2] <- dt[,mod2] - mod2vals2[j]
+
+        }
+
+        # Update design
+        designt$variables <- dt
+
+        # Update model
+        ## Have to do all this to avoid adding survey to dependencies
+        call <- getCall(model)
+        call$design <- designt
+        call[[1]] <- survey::svyglm
+        newmod <- eval(call)
+
+        # For J-N
+        covmat <- vcov(newmod)
+
+      }
+
+      jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx, vmat = covmat,
+                           plot = jnplot), error = function(e) {return("No values")})
+      if (j != 0) {
+          jns[[j]] <- jn
+      }
+
+    }
 
   # Looping so any amount of moderator values can be used
   for (i in 1:length(modxvals2)) {
@@ -487,6 +577,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   }
 
     if (!is.null(mod2)) {
+
       mats[[j]] <- retmat
       imats[[j]] <- retmati
 
@@ -506,9 +597,12 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   } # end mod2 loop
 
 
-    ss <- structure(ss, modxvals = modxvals2, robust = robust, cond.int = cond.int)
+    ss <- structure(ss, modxvals = modxvals2, robust = robust,
+                    cond.int = cond.int, johnson_neyman = johnson_neyman,
+                    jnplot = jnplot, jns = jns)
 
     ss$mods <- mods
+    ss$jn <- jns
 
     if (!is.null(mod2)) {
       ss$slopes <- mats
@@ -538,6 +632,22 @@ print.sim_slopes <- function(x, ...) {
   ss <- x
   x <- attributes(x)
 
+  # Is the plot wanted? Needed for 3-way interaction handling
+  wantplot <- FALSE
+  if (x$johnson_neyman == TRUE && !is.null(x$mod2)) {
+    value <- any(sapply(x$jns,FUN = function(x) {class(x) == "johnson_neyman"}))
+    if (value) {
+      # Find where the valid ones are
+      index <- which(sapply(x$jns,
+                            FUN = function(x) {class(x) == "johnson_neyman"}))
+      # Save the first one
+      index <- index[1]
+      wantplot <- attributes(x$jns[[index]])$plot
+    } else {
+      wantplot <- FALSE
+    }
+  }
+
   # This helps deal with the fact sometimes mod2vals has no length, so we want
   # to loop just once
   if (!is.null(x$mod2)) {
@@ -545,6 +655,11 @@ print.sim_slopes <- function(x, ...) {
   } else {
     length <- 1
   }
+
+  # Need to make some things outside the loops for efficent grid plotting
+  labs <- c()
+  plots <- list()
+  legend <- NULL
 
   # Loop through each value of second moderator...if none, just one loop
   for (j in 1:length) {
@@ -555,6 +670,8 @@ print.sim_slopes <- function(x, ...) {
       m$slopes <- ss$slopes[[j]]
       m$ints <- ss$ints[[j]]
 
+      x$mod2vals <- round(x$mod2vals, x$digits)
+
       # Printing output to make it clear where each batch of second moderator
       # slopes begins
       if (x$def2 == FALSE) {
@@ -562,19 +679,95 @@ print.sim_slopes <- function(x, ...) {
         cat("While", x$mod2, "(2nd moderator)", "=", x$mod2vals[j], "\n")
         cat("#######################################################\n\n")
       } else {
+        # If the user went with default +/- SD or used a factor variable,
+        # we use the labels
         cat("#######################################################\n")
         cat("While ", x$mod2, " (2nd moderator)", " = ", x$mod2vals[j], " (",
             names(x$mod2vals)[j], ")", "\n", sep = "")
         cat("#######################################################\n\n")
       }
 
+
+      if (x$johnson_neyman == TRUE) {
+
+        # Handling occasions when there is no solution for the J-N interval
+        if (x$jns[[j]][1] != "No values") {
+          # For 3-way interactions, we don't want each plot being printed
+          attributes(x$jns[[j]])$plot <- FALSE
+          print(x$jns[[j]])
+          skip <- FALSE # Giving a way to skip over instances with no J-N vals
+        } else {
+          cat("The Johnson-Neyman interval could not be found. Is your interaction term significant?\n\n")
+          skip <- TRUE # Giving a way to skip over instances with no J-N vals
+        }
+
+        # Tell user we can't plot if they don't have cowplot installed
+        if (wantplot == TRUE && !requireNamespace("cowplot", quietly = TRUE)) {
+          msg <- "To plot Johnson-Neyman plots for 3-way interactions,
+          you need the cowplot package."
+          warning(msg)
+        } else if (wantplot == TRUE && requireNamespace("cowplot",
+                                                        quietly = TRUE)) {
+
+          if (is.null(legend) && skip == FALSE) {
+            # We save the legend the first time around to use w/ cowplot
+            legend <- cowplot::get_legend(x$jns[[j]]$plot +
+                                          theme_apa(legend.font.size = 8) +
+                                          ggplot2::theme(legend.position = "top"))
+
+            # Now we get rid of it for the actual plotting of the first plot
+            x$jns[[j]]$plot <- x$jns[[j]]$plot +
+              ggplot2::theme(legend.position = "none")
+
+            # Save the legend to the first spot in the list of plots
+            plots[[1]] <- legend
+            # Since we have two columns, we reserve an empty spot in the short
+            # first row by putting NULL in the second spot on the list
+            plots[[2]] <- ggplot2::ggplot() + ggplot2::theme_void() # white background
+            # We give these two plots empty labels
+            labs <- c("","")
+          } else if (skip == FALSE) {
+            # For each subsequent plot, we don't need to save the legend,
+            # just need to get rid of it
+            x$jns[[j]]$plot <- x$jns[[j]]$plot +
+              ggplot2::theme(legend.position = "none")
+          }
+
+          # Add a label for cowplot
+          if (skip == FALSE) { # only if we aren't skipping it
+            labs <- c(labs, paste(x$mod2, "=", x$mod2vals[j]))
+
+            # Add the plot to the plot list at whatever the current end is
+            index <- length(plots) + 1
+            plots[[index]] <- x$jns[[j]]$plot
+          }
+
+        }
+      }
+
     } else {
       m <- ss
+
+      # If we don't have a three-way interaction, just do what the user asked
+      # with regard to J-N plots
+      if (x$johnson_neyman == TRUE) {
+        if (x$jns[[j]][1] != "No values") {
+          print(x$jns[[j]])
+        } else {
+          cat("The Johnson-Neyman interval could not be found. Is your interaction term significant?\n\n")
+        }
+      }
+
     }
+
+
+
+    # Clearly label simple slopes
+    cat("SIMPLE SLOPES ANALYSIS\n\n")
 
   for (i in 1:length(x$modxvals)) {
 
-    # Use the labels for the automatic +/- 1 SD
+    # Use the labels for the automatic +/- 1 SD, factors
     if (x$def == TRUE) {
 
       cat("Slope of ", x$pred, " when ", x$modx, " = ",
@@ -609,4 +802,24 @@ print.sim_slopes <- function(x, ...) {
     }
   }
   } # end mod2 loop
+
+  # If 3-way interaction and the user has `cowplot`, here's where we make the
+  # final output
+  if (wantplot == TRUE && !is.null(x$mod2) &&
+      requireNamespace("cowplot", quietly = TRUE) && length(plots) > 2) {
+    # This makes the legend row smaller than the others
+    sizes <- c(0.2, rep(1, times = (length(plots)-1)))
+    # Now we put it all together--vjust is at a non-default level
+    print(cowplot::plot_grid(plotlist = plots, labels = labs, label_size = 10,
+                               align = "auto", ncol = 2, rel_heights = sizes,
+                             vjust = 0, scale = 1))
+  } else if (wantplot == TRUE && !is.null(x$mod2) && length(plots) == 2) {
+    # If only 1 of the values of the 2nd moderator had defined J-N values, then
+    # we don't want to use cowplot.
+
+    # We want to give it its legend back before printing
+    plots[[1]] <- plots[[1]] + ggplot2::theme(legend.position = "right")
+    print(plots[[1]])
+  }
+
 }

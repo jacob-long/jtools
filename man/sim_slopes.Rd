@@ -5,8 +5,9 @@
 \title{Perform a simple slopes analysis}
 \usage{
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
-  mod2vals = NULL, centered = NULL, standardize = FALSE, robust = FALSE,
-  robust.type = "HC3", cond.int = FALSE, digits = 3, n.sd = 1)
+  mod2vals = NULL, centered = NULL, standardize = FALSE,
+  cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
+  robust = FALSE, robust.type = "HC3", digits = 3, n.sd = 1)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
@@ -43,13 +44,21 @@ that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 standardize variables specified by the \code{centered} argument. Note that
 non-focal predictors are centered when \code{centered = NULL}, its default.}
 
-\item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust standard errors.}
+\item{cond.int}{Should conditional intercepts be printed in addition to the
+slopes? Default is \code{FALSE}.}
 
-\item{robust.type}{Type of heteroskedasticity-robust standard errors to use if \code{robust=TRUE}.
-See details of \code{\link{j_summ}} for more on options.}
+\item{johnson_neyman}{Should the Johnson-Neyman interval be calculated?
+Default is \code{TRUE}. This can be performed separately with
+\code{\link{johnson_neyman}}.}
 
-\item{cond.int}{Should conditional intercepts be printed in addition to the slopes?
-Default is \code{FALSE}.}
+\item{jnplot}{Should the Johnson-Neyman interval be plotted as well? Default
+is \code{FALSE}.}
+
+\item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust
+standard errors.}
+
+\item{robust.type}{Type of heteroskedasticity-robust standard errors to use
+if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on options.}
 
 \item{digits}{How many significant digits after the decimal point should the output
 contain?}
@@ -64,6 +73,11 @@ contain?}
  \item{modxvals}{The values of the moderator used in the analysis}
  \item{mods}{A list containing each regression model created to estimate the conditional
  coefficients.}
+ \item{jn}{If \code{johnson_neyman = TRUE}, a list of `johnson_neyman`
+ objects from \code{\link{johnson_neyman}}. These contain the values of the
+ interval and the plots. If a 2-way interaction, the list will be of length
+ 1. Otherwise, there will be 1 `johnson_neyman` object for each value of the
+ 2nd moderator for 3-way interactions.}
 }
 \description{
 \code{sim_slopes()} conducts a simple slopes analysis for the purposes of
@@ -74,6 +88,8 @@ This allows the user to perform a simple slopes analysis for the purpose
   of probing interaction effects in a linear regression. Two- and three-way
   interactions are supported, though one should be warned that three-way
   interactions are not easy to interpret in this way.
+
+  For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 
   The function accepts a \code{lm} object and uses it to recompute models with
   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
