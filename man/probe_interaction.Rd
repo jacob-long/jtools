@@ -75,7 +75,7 @@ probe_interaction(model = regmodel3, pred = ell, modx = sch.wide, mod2 = meals)
 }
 \seealso{
 Other interaction tools: \code{\link{interact_plot}},
-  \code{\link{sim_slopes}}
+  \code{\link{johnson_neyman}}, \code{\link{sim_slopes}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

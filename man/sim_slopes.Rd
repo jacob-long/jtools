@@ -126,6 +126,7 @@ Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
   a second moderator.
 
 Other interaction tools: \code{\link{interact_plot}},
+  \code{\link{johnson_neyman}},
   \code{\link{probe_interaction}}
 }
 \author{
