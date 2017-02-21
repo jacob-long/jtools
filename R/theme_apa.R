@@ -7,6 +7,9 @@
 #' @param legend.pos One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
 #'   \code{"bottomleft"}, \code{"bottomright"}, or \code{"bottommiddle"}.
 #'   Positions the legend, which will layer on top of any geoms, on the plane.
+#'   Any other arguments will be passed to \code{\link[ggplot]{theme}}'s
+#'   \code{legend.position =} argument, which takes \code{"left"},
+#'   \code{"right"}, \code{"top"}, and \code{"bottom"}.
 #'
 #' @param legend.use.title Logical. Specify whether to include a legend title. Defaults
 #'   to \code{FALSE}.
@@ -113,9 +116,11 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
   } else if (legend.pos=="bottomright") {
     plot <- plot + ggplot2::theme(legend.position = c(.95, .05), legend.justification = c(.95,.05))
   } else if (legend.pos=="bottommiddle") {
-      plot <- plot + ggplot2::theme(legend.position = c(.50, .05), legend.justification = c(.50,.05))
-  } else if (!is.null(legend.pos) || legend.pos == "none") {
+    plot <- plot + ggplot2::theme(legend.position = c(.50, .05), legend.justification = c(.50,.05))
+  } else if (legend.pos == "none") {
     plot <- plot + ggplot2::theme(legend.position = "none")
+  } else {
+    plot <- plot + ggplot2::theme(legend.position = legend.pos)
   }
 
   # Should legend have title? If so, format it correctly
