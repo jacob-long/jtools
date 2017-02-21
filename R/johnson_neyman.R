@@ -17,6 +17,9 @@
 #'
 #' @param alpha The alpha level. By default, the standard 0.05.
 #'
+#' @param plot Should a plot of the results be printed? Default is \code{TRUE}.
+#'   The \code{ggplot2} object is returned either way.
+#'
 #' @details
 #'
 #'  The interpretation of the values given by this function is important and not
@@ -72,6 +75,7 @@
 #' johnson_neyman(model = fit, pred = Murder,
 #'   modx = Illiteracy)
 #'
+#' @importFrom stats vcov
 #' @export
 #'
 
@@ -79,8 +83,17 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
                            plot = TRUE) {
 
   # Parse unquoted variable names
-  pred <- as.character(substitute(pred))
-  modx <- as.character(substitute(modx))
+  predt <- as.character(substitute(pred))
+  modxt <- as.character(substitute(modx))
+
+  # Doing a check so it works when called from inside a function
+  if (!(predt %in% names(coef(model)))) {
+    pred <- as.character(eval(pred))
+    modx <- as.character(eval(modx))
+  } else {
+    pred <- predt
+    modx <- modxt
+  }
 
   # Structure
   out <- NULL
@@ -230,17 +243,10 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   cbs <- cbands(x2, y1, y3, covy1, covy3, covy1y3, tcrit, predl, modx)
 
   out$bounds <- bounds
-  out$cbands <- cbs
   out <- structure(out, modrange = modrangeo)
 
   # Need to check whether sig vals are within or outside bounds
   sigs <- which((cbs$Lower < 0 & cbs$Upper < 0) | (cbs$Lower > 0 & cbs$Upper > 0))
-  # I'm looking for whether the significant vals are inside or outside
-  ## Would like to find more elegant way to do it
-  inside <- suppressWarnings(any(cbs[sigs,modx] > cbs$Lower &&
-                                   cbs[sigs,modx] < cbs$Upper))
-
-  out <- structure(out, inside = inside)
 
   # Going to split cbands values into significant and insignificant pieces
   insigs <- setdiff(1:1000, sigs)
@@ -251,6 +257,22 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   index <- 1:1000 %in% sigs
   cbs$Significance[index] <- "Significant"
   cbs$Significance <- factor(cbs$Significance)
+
+  # Give user this little df
+  out$cbands <- cbs
+
+  # I'm looking for whether the significant vals are inside or outside
+  ## Would like to find more elegant way to do it
+  index <- which(cbs$Significance == "Significant")[1]
+
+  if (index != 0) {
+    inside <- (cbs[index,modx] > bounds[1] && cbs[index,modx] < bounds[2])
+  } else {
+    stop("No moderator values in the range of the observed data were associated with significant slopes of the predictor.")
+  }
+
+
+  out <- structure(out, inside = inside)
 
   # Splitting df into three pieces
   cbso1 <- cbs[cbs[,modx] < bounds[1],]
@@ -266,25 +288,25 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   plot <- ggplot2::ggplot() +
     ggplot2::geom_path(data = cbso1, ggplot2::aes(x = cbso1[,modx],
                                     y = cbso1[,predl],
-                                    color = Significance)) +
+                                    color = cbso1[,"Significance"])) +
     ggplot2::geom_path(data = cbsi, ggplot2::aes(x = cbsi[,modx],
                                                   y = cbsi[,predl],
-                                                  color = Significance)) +
+                                                  color = cbsi[,"Significance"])) +
     ggplot2::geom_path(data = cbso2, ggplot2::aes(x = cbso2[,modx],
                                                   y = cbso2[,predl],
-                                                  color = Significance)) +
+                                                  color = cbso2[,"Significance"])) +
     ggplot2::geom_ribbon(data = cbso1,
-                         ggplot2::aes(x = cbso1[,modx], ymin = Lower,
-                                      ymax = Upper,
-                                      fill = Significance), alpha = 0.2) +
+                         ggplot2::aes(x = cbso1[,modx], ymin = cbso1[,"Lower"],
+                                      ymax = cbso1[,"Upper"],
+                                      fill = cbso1[,"Significance"]), alpha = 0.2) +
     ggplot2::geom_ribbon(data = cbsi,
-                         ggplot2::aes(x = cbsi[,modx], ymin = Lower,
-                                      ymax = Upper,
-                                      fill = Significance), alpha = 0.2) +
+                         ggplot2::aes(x = cbsi[,modx], ymin = cbsi[,"Lower"],
+                                      ymax = cbsi[,"Upper"],
+                                      fill = cbsi[,"Significance"]), alpha = 0.2) +
     ggplot2::geom_ribbon(data = cbso2,
-                         ggplot2::aes(x = cbso2[,modx], ymin = Lower,
-                                      ymax = Upper,
-                                      fill = Significance), alpha = 0.2) +
+                         ggplot2::aes(x = cbso2[,modx], ymin = cbso2[,"Lower"],
+                                      ymax = cbso2[,"Upper"],
+                                      fill = cbso2[,"Significance"]), alpha = 0.2) +
     ggplot2::scale_fill_manual(values = c("Significant" = "#00BFC4",
                                           "Insignificant" = "#F8766D"),
                                labels = c("n.s.", pmsg)) +
@@ -343,14 +365,16 @@ print.johnson_neyman <- function(x, ...) {
 
   x$bounds <- round(x$bounds, 4)
   atts$modrange <- round(atts$modrange, 4)
+  alpha <- gsub("0\\.", "\\.", as.character(atts$alpha))
+  pmsg <- paste("p <", alpha)
 
   # Print the output
-  cat("JOHNSON-NEYMAN INTERVAL\n")
-  cat("The slope of", atts$pred, "is significant when the value of", atts$modx,
+  cat("JOHNSON-NEYMAN INTERVAL\n\n")
+  cat("The slope of", atts$pred, "is", pmsg, "when", atts$modx,
       "is", inout, "this interval:\n")
   cat("[", x$bounds[1], ", ", x$bounds[2], "]\n", sep = "")
-  cat("Note: The range of observed values is [", atts$modrange[1], ", ",
-      atts$modrange[2], "]", sep = "")
+  cat("Note: The range of observed values of ", atts$modx, " is [", atts$modrange[1], ", ",
+      atts$modrange[2], "]\n\n", sep = "")
 
   # If requested, print the plot
   if (atts$plot == TRUE) {

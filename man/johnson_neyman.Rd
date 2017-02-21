@@ -19,6 +19,17 @@ coefficients yourself. This is useful if you are using robust standard
 errors, as you could if using the \pkg{sandwich} package.}
 
 \item{alpha}{The alpha level. By default, the standard 0.05.}
+
+\item{plot}{Should a plot of the results be printed? Default is \code{TRUE}.
+The \code{ggplot2} object is returned either way.}
+}
+\value{
+\item{bounds}{The two numbers that make up the interval.}
+ \item{cbands}{A dataframe with predicted values of the predictor's slope
+   and lower/upper bounds of confidence bands if you would like to make your
+   own plots}
+ \item{plot}{The \code{ggplot} object used for plotting. You can tweak the
+   plot like you could any other from \code{ggplot}.}
 }
 \description{
 \code{johnson_neyman} finds so-called "Johnson-Neyman" intervals for
@@ -36,8 +47,15 @@ The interpretation of the values given by this function is important and not
  The Johnson-Neyman interval provides the two values of the moderator at
  which the slope of the predictor goes from non-significant to significant.
  Usually, the predictor's slope is only significant \emph{outside} of the
- range given by the function; however, there are occasions when the opposite
- is true. Further inspection can be necessary to tease this out.
+ range given by the function. The output of this function will make it clear
+ either way.
+
+ This technique is not easily ported to 3-way interaction contexts. You could,
+ however, look at the J-N interval at two different levels of a second
+ moderator. This does forego a benefit of the J-N technique, which is not
+ having to pick arbitrary points. If you want to do this, just use the
+ \code{\link{sim_slopes}} function's ability to handle 3-way interactions
+ and request Johnson-Neyman intervals for each.
 }
 \examples{
 # Using a fitted lm model
