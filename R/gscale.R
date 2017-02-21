@@ -543,8 +543,8 @@ if (is.numeric(x)) {
 
           numerator <- d[,i] - survey::svymean(as.formula(paste("~", i, sep = "")),
                                                design = design, na.rm = TRUE)
-          denominator <- n.sd * sqrt(survey::svyvar(as.formula(paste("~",  i, sep = "")),
-                                                    design = design, na.rm = TRUE))
+          denominator <- n.sd * svysd(as.formula(paste("~",  i, sep = "")),
+                                                    design = design, na.rm = TRUE)
 
           if (center.only == FALSE && scale.only == FALSE) {
             d[,i] <-  numerator/denominator
@@ -561,8 +561,8 @@ if (is.numeric(x)) {
 
         numerator <- d[,i] - survey::svymean(as.formula(paste("~", i, sep = "")),
                                              design = design, na.rm = TRUE)
-        denominator <- n.sd * sqrt(survey::svyvar(as.formula(paste("~",  i, sep = "")),
-                                                  design = design, na.rm = TRUE))
+        denominator <- n.sd * svysd(as.formula(paste("~",  i, sep = "")),
+                                                  design = design, na.rm = TRUE)
 
         if (center.only == FALSE && scale.only == FALSE) {
           d[,i] <-  numerator/denominator
@@ -641,8 +641,8 @@ if (is.numeric(x)) {
 
               numerator <- d[,i] - survey::svymean(as.formula(paste("~", i, sep = "")),
                                                    design = design, na.rm = TRUE)
-              denominator <- n.sd * sqrt(survey::svyvar(as.formula(paste("~",  i, sep = "")),
-                                                        design = design, na.rm = TRUE))
+              denominator <- n.sd * svysd(as.formula(paste("~",  i, sep = "")),
+                                                        design = design, na.rm = TRUE)
 
               if (center.only == FALSE && scale.only == FALSE) {
                 d[,i] <-  numerator/denominator
@@ -659,8 +659,8 @@ if (is.numeric(x)) {
 
             numerator <- d[,i] - survey::svymean(as.formula(paste("~", i, sep = "")),
                                                            design = design, na.rm = TRUE)
-            denominator <- n.sd * sqrt(survey::svyvar(as.formula(paste("~",  i, sep = "")),
-                                                      design = design, na.rm = TRUE))
+            denominator <- n.sd * svysd(as.formula(paste("~",  i, sep = "")),
+                                                      design = design, na.rm = TRUE)
 
             if (center.only == FALSE && scale.only == FALSE) {
               d[,i] <-  numerator/denominator
