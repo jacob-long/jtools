@@ -59,7 +59,8 @@ j_summ(fiti)
 ```
 So we see a significant main effect of `Murder` on `Income` in the presence of a 
 significant interaction between `Murder` and `Illiteracy`. The positive estimate 
-for `Illiteracy` does not differ significantly from zero.
+for `Illiteracy` does not differ significantly from zero. With that said, you 
+shouldn't focus too much on the main effects of terms included in the interaction.
 
 Note that if you would like to see the output if the input variables were 
 mean-centered and/or standardized, `j_summ()` can do that for you.
@@ -75,7 +76,7 @@ aren't directly interpretable, anyway.
 Now let's do the most basic simple slopes analysis:
 
 ```{r}
-sim_slopes(fiti, pred = Illiteracy, modx = Murder)
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, johnson_neyman = FALSE)
 ```
 
 So what we see in this example is that when the value of `Murder` is high, the
@@ -89,9 +90,57 @@ only exists when `Murder` is high.
 You may also choose the values of the moderator yourself with the `modxvals =` argument.
 
 ```{r}
-sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10))
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10),
+           johnson_neyman = FALSE)
 ```
 
+### Johnson-Neyman intervals
+
+Did you notice how I was adding the argument `johnson_neyman = FALSE` above? 
+That's because by default, `sim_slopes` will also calculate what is called the
+Johnson-Neyman interval. This tells you *all* the values of the moderator for 
+which the slope of the predictor will be statistically significant. Depending
+on the specific analysis, it may be that all values of the moderator **outside**
+of the interval will have a significant slope for the predictor. Other times,
+it will only be values **inside** the interval---you will have to look at the 
+output to see.
+
+It can take a moment to interpret this correctly if you aren't familiar with
+the Johnson-Neyman technique. But if you read the output carefully and take it
+literally, you'll get the hang of it.
+
+```{r}
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10),
+           johnson_neyman = TRUE)
+```
+
+So in the example above, we can see that the Johnson-Neyman interval and the 
+simple slopes analysis agree---they always will. The benefit of the J-N interval
+is it will tell you exactly where the predictor's slope becomes
+significant/insignificant. You can also call the `johnson_neyman` function 
+directly if you want to do something like tweak the alpha level. The 
+`johnson_neyman` function will also create a plot by default---you can get them
+by setting `jnplot = TRUE` with `sim_slopes`.
+
+```{r}
+johnson_neyman(fiti, pred = Illiteracy, modx = Murder, alpha = 0.01)
+```
+
+One note on Johnson-Neyman plots: Once again, it is easy to misinterpret the 
+meaning. Notice that the y-axis is the **conditional slope** of the predictor.
+The plot shows you where the conditional slope differs significantly from zero.
+In the plot above, we see that from the point Murder (the moderator) = 9.12 and
+greater, the slope of Illiteracy (the predictor) is significantly different from
+zero and in this case negative. The lower bound for this interval (about -32) 
+is so far outside the observed data that it is not plotted. If you could have
+-32 as a value for Murder rate, though, that would be the other threshold before
+which the slope of Illiteracy would become positive. 
+
+The purpose of reminding you both within the plot and the printed output of the 
+range of observed data is to help you put the results in context; in this case,
+the only justifiable interpretation is that Illiteracy has no effect on the 
+outcome variable except when Murder is higher than 9.12. You wouldn't interpret
+the lower boundary because your dataset doesn't contain any values near it.
 
 ### Additional options
 
@@ -124,9 +173,10 @@ can consistently report standard errors across models.
 ```{r}
 sim_slopes(fiti, pred = Illiteracy, modx = Murder, robust = TRUE)
 ```
+
 These data are a relatively rare case in which the robust standard errors are even 
-more efficient than typical OLS standard errors. Note that you must have `sandwich` 
-and `lmtest` packages installed to use this feature.
+more efficient than typical OLS standard errors. Note that you must have the
+`sandwich` and `lmtest` packages installed to use this feature.
 
 #### Centering and standardizing variables
 
@@ -232,8 +282,12 @@ both `sim_slopes()` and `interact_plot()`, taking advantage of their overlapping
 syntax.
 
 ```{r}
-fitc <- lm(mpg ~ hp*wt, data=mtcars)
-probe_interaction(fitc, pred = hp, modx = wt, cond.int = TRUE, interval = TRUE)
+library(survey)
+data(api)
+dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+regmodel <- svyglm(api00 ~ avg.ed*growth, design = dstrat)
+probe_interaction(regmodel, pred = growth, modx = avg.ed, cond.int = TRUE, interval = TRUE, 
+                  jnplot = TRUE)
 ```
 
 Note in the above example that you can provide arguments that only apply to one
@@ -242,10 +296,15 @@ apply their overlapping functions selectively. That is, you can't have one
 `standardize = TRUE` and the other `standardize = FALSE`. If you want that level
 of control, just call each function separately.
 
-It returns an object with each of the two function's return objects:
+Also, the above example comes from the survey package as a means to show that,
+yes, these tools can be used with `svyglm` objects, though should only be applied
+to linear models.
+
+It returns an object with each of the two functions' return objects:
 
 ```{r}
-out <- probe_interaction(fitc, pred = hp, modx = wt, cond.int = TRUE, interval = TRUE)
+out <- probe_interaction(regmodel, pred = growth, modx = avg.ed, cond.int = TRUE,
+                         interval = TRUE, jnplot = TRUE)
 names(out)
 ```
 ## 3-way interactions
@@ -254,6 +313,12 @@ If 2-way interactions can be hard to grasp by looking at regular regression outp
 then 3-way interactions are outright inscrutable. The aforementioned functions
 also support 3-way interactions, however. Plotting these effects is particularly
 helpful.
+
+Note that Johnson-Neyman intervals are still provided, but only insofar as you
+get the intervals for chosen levels of the second moderator. This does go against
+some of the distinctiveness of the J-N technique, which for 2-way interactions
+is a way to avoid having to choose points of the moderator to check whether the
+predictor has a significant slope.
 
 ```{r}
 fita3 <- lm(rating ~ privileges*critical*learning, data = attitude)
@@ -272,13 +337,25 @@ use `theme_apa()` to format for publications or just to make more economical
 use of space.
 
 ```{r}
-mtcars$cyl <- factor(mtcars$cyl)
+mtcars$cyl <- factor(mtcars$cyl, labels = c("4 cylinder", "6 cylinder", "8 cylinder"))
 fitc3 <- lm(mpg ~ hp*wt*cyl, data=mtcars)
 interact_plot(fitc3, pred = hp, modx = wt, mod2 = cyl) + 
   theme_apa(legend.pos = "bottomright")
 ```
 
 
+You can get Johnson-Neyman plots for 3-way interactions as well, but keep in
+mind what I mentioned earlier in this section about the J-N technique for 3-way
+interactions. You will also need the `cowplot` package, which is used on the 
+backend to mush together the separate J-N plots.
 
+```{r}
+regmodel3 <- svyglm(api00 ~ avg.ed*growth*enroll, design = dstrat)
+probe_interaction(regmodel3, pred = growth, modx = avg.ed, mod2 = enroll,
+                  johnson_neyman = TRUE, jnplot = TRUE, interval = T)
+```
 
-
+Notice that at one of the three values of the second moderator, there were no
+Johnson-Neyman interval values so it wasn't plotted. The more levels of the 
+second moderator you want to plot, the more likely that the resulting plot
+will be unwiedly and hard to read. You can resize your window to help, though.
