@@ -397,7 +397,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
 
 
   # Creating a set of dummy values of the focal predictor for use in predict()
-  xpreds <- seq(from=range(d[,pred])[1], to=range(d[,pred])[2], length.out=100)
+  xpreds <- seq(from=range(d[!is.na(d[,pred]),pred])[1],
+                to=range(d[!is.na(d[,pred]),pred])[2],
+                length.out=100)
   xpreds <- rep(xpreds, length(modxvals2))
 
   # Create values of moderator for use in predict()
