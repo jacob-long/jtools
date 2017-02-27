@@ -14,9 +14,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-  broom,
-  ggplot2
 Suggests:
+  ggplot2,
   lmtest,
   sandwich,
   car,

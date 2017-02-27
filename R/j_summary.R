@@ -125,7 +125,7 @@
 #'
 #'
 #'
-#' @importFrom stats coef coefficients lm predict sd cooks.distance
+#' @importFrom stats coef coefficients lm predict sd cooks.distance pf
 #' @export
 #'
 #'
@@ -151,9 +151,6 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
 
   # Using information from summary()
   sum <- summary(lm)
-  if (class(lm)[1] == "lm") {
-    bsum <- broom::glance(lm)
-  }
 
   # Check if linear model
   if (class(lm)[1] == "lm") {
@@ -287,15 +284,16 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
     }
   }
 
-  if (model.check == TRUE && linear == TRUE && class(lm)[1] == "lm") {
+  if (model.check == TRUE && linear == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
       stop("When model.check is set to TRUE, you need to have the \'car\' package
            for model checking functionality. Please install it or set model.check
            to FALSE.", call. = FALSE)
     }
-
-    homoskedp <- car::ncvTest(lm)$p
-    j <- structure(j, homoskedp = homoskedp)
+    if (class(lm)[1] == "lm") {
+      homoskedp <- car::ncvTest(lm)$p
+      j <- structure(j, homoskedp = homoskedp)
+    }
 
     cd <- table(cooks.distance(lm) > 4/n)
     j <- structure(j, cooksdf = cd[2])
@@ -308,7 +306,8 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
                         npreds = lm$rank-1, lmClass = class(lm))
 
   if (class(lm)[1]=="lm") {
-    j <- structure(j, modpval = bsum$p.value)
+    modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
+    j <- structure(j, modpval = modpval)
   }
 
   if (class(lm)[1] == "glm" | class(lm)[1] == "svyglm" | class(lm)[1] == "svrepglm") {
@@ -413,17 +412,25 @@ print.j_summ <- function(x, ...) {
     }
   }
 
-  if (x$model.check == TRUE && x$lmClass[1] == "lm") {
-    if (x$homoskedp < .05) {
-      homoskedtf <- paste("Assumption violated (p = ",
-                          round(x$homoskedp,digits=x$digits), ")", sep="")
-    } else {
-      homoskedtf <- paste("Assumption not violated (p = ",
-                          round(x$homoskedp, digits=x$digits), ")", sep="")
+  if (x$model.check == TRUE && x$linear == TRUE) {
+    if (x$lmClass[1] == "lm") {
+      # If it's lm, we can do Breusch-Pagan test
+      if (x$homoskedp < .05) {
+        homoskedtf <- paste("Assumption violated (p = ",
+                            round(x$homoskedp,digits=x$digits), ")", sep="")
+      } else {
+        homoskedtf <- paste("Assumption not violated (p = ",
+                            round(x$homoskedp, digits=x$digits), ")", sep="")
+      }
+      # Print everything if lm object
+      cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ", homoskedtf,
+          "\n", "Number of high-leverage observations = ", x$cooksdf, "\n\n", sep="")
+    } else { # Just check outliers
+      cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
+          x$cooksdf, "\n\n", sep="")
     }
 
-    cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ", homoskedtf,
-        "\n", "Number of high-leverage observations = ", x$cooksdf, "\n\n", sep="")
+
   }
 
   if (x$linear==T) {
