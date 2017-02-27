@@ -204,21 +204,25 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     lower <- c() # Lower values
 
     # Iterate through mod values given
-    for (i in x2) {
-
+    slopesf <- function(i) {
       # Slope
       s <- y1 + y3*i
-      slopes <- c(slopes, s)
-
+      return(s)
+    }
+    upperf <- function(i, s) {
       # Upper confidence band
       u <- s + tcrit * sqrt((covy1 + 2*i*covy1y3 + i^2 * covy3))
-      upper <- c(upper, u)
-
+      return(u)
+    }
+    lowerf <- function(i, s) {
       # Lower confidence band
       l <- s - tcrit * sqrt((covy1 + 2*i*covy1y3 + i^2 * covy3))
-      lower <- c(lower, l)
-
+      return(l)
     }
+
+    slopes <- sapply(x2, slopesf, simplify = "vector", USE.NAMES = FALSE)
+    upper <- mapply(upperf, x2, slopes)
+    lower <- mapply(lowerf, x2, slopes)
 
     out <- matrix(c(x2, slopes, lower, upper), ncol = 4)
     colnames(out) <- c(modx, predl, "Lower", "Upper")
