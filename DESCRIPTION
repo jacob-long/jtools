@@ -2,7 +2,7 @@ Package: jtools
 Type: Package
 Title: Some Tools for Analyzing and Presenting Social Scientific Analyses
 Version: 0.4.1
-Authors@R: person("Jacob", "Long", email = "long.1377@osu.edu",
+Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
 Description: This is a collection of tools that the author (Jacob) has written
   for the purpose of more efficiently understanding and sharing the results of 
