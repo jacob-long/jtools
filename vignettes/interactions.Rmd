@@ -358,4 +358,4 @@ probe_interaction(regmodel3, pred = growth, modx = avg.ed, mod2 = enroll,
 Notice that at one of the three values of the second moderator, there were no
 Johnson-Neyman interval values so it wasn't plotted. The more levels of the 
 second moderator you want to plot, the more likely that the resulting plot
-will be unwiedly and hard to read. You can resize your window to help, though.
+will be unwieldy and hard to read. You can resize your window to help, though.
