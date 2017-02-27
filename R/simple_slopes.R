@@ -47,15 +47,18 @@
 #' @param jnplot Should the Johnson-Neyman interval be plotted as well? Default
 #'   is \code{FALSE}.
 #'
+#' @param jnalpha What should the alpha level be for the Johnson-Neyman interval?
+#'   Default is .05, which corresponds to a 95\% confidence interval.
+#'
 #' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust
 #'   standard errors.
 #'
 #' @param robust.type Type of heteroskedasticity-robust standard errors to use
-#'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on options.
+#'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
+#'    options.
 #'
-#'
-#' @param digits How many significant digits after the decimal point should the output
-#'   contain?
+#' @param digits How many significant digits after the decimal point should the
+#'   output contain?
 #'
 #' @param n.sd How many standard deviations should be used if \code{standardize
 #'   = TRUE}? Default is 1, but some prefer 2.
@@ -77,7 +80,6 @@
 #'   even when requested in arguments. To avoid this, modify your data to change
 #'   the factor to a binary numeric variable. Factors with more than 2 levels
 #'   trigger an error.
-#'
 #'
 #' @return
 #'
@@ -120,7 +122,7 @@
 #' @examples
 #'
 #' # Using a fitted model as formula input
-#' fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
+#' fiti <- lm(Income ~ Frost + Murder*Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 #'
@@ -142,7 +144,7 @@
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        mod2vals = NULL, centered = NULL, standardize = FALSE,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
-                       robust=FALSE, robust.type="HC3",
+                       jnalpha = .05, robust = FALSE, robust.type = "HC3",
                        digits = 3, n.sd = 1) {
 
   # Allows unquoted variable names
@@ -466,8 +468,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
       }
 
-      jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx, vmat = covmat,
-                           plot = jnplot), error = function(e) {return("No values")})
+      jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
+                                    vmat = covmat, plot = jnplot,
+                                    alpha = jnalpha),
+                     error = function(e) {return("No values")})
       if (j != 0) {
           jns[[j]] <- jn
       }

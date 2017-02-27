@@ -7,7 +7,8 @@
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   mod2vals = NULL, centered = NULL, standardize = FALSE,
   cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = 3, n.sd = 1)
+  jnalpha = 0.05, robust = FALSE, robust.type = "HC3", digits = 3,
+  n.sd = 1)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
@@ -54,14 +55,18 @@ Default is \code{TRUE}. This can be performed separately with
 \item{jnplot}{Should the Johnson-Neyman interval be plotted as well? Default
 is \code{FALSE}.}
 
+\item{jnalpha}{What should the alpha level be for the Johnson-Neyman interval?
+Default is .05, which corresponds to a 95\% confidence interval.}
+
 \item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust
 standard errors.}
 
 \item{robust.type}{Type of heteroskedasticity-robust standard errors to use
-if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on options.}
+if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
+ options.}
 
-\item{digits}{How many significant digits after the decimal point should the output
-contain?}
+\item{digits}{How many significant digits after the decimal point should the
+output contain?}
 
 \item{n.sd}{How many standard deviations should be used if \code{standardize
 = TRUE}? Default is 1, but some prefer 2.}
@@ -105,7 +110,7 @@ This allows the user to perform a simple slopes analysis for the purpose
 \examples{
 
 # Using a fitted model as formula input
-fiti <- lm(Income ~ `HS Grad` + Murder*Illiteracy,
+fiti <- lm(Income ~ Frost + Murder*Illiteracy,
   data=as.data.frame(state.x77))
 sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 
