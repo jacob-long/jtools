@@ -154,11 +154,17 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
 
   # Check if linear model
   if (class(lm)[1] == "lm") {
-    linear <- T
+    linear <- TRUE
   } else if (lm$family[1] == "gaussian" && lm$family[2] == "identity") {
-    linear <- T
+    linear <- TRUE
   } else {
-    linear <- F
+    linear <- FALSE
+  }
+
+  if (class(lm)[1] == "svyglm" || class(lm)[1] == "svrepglm") {
+    survey <- TRUE
+  } else {
+    survey <- FALSE
   }
 
   if (!all(attributes(lm$terms)$order > 1)) {
@@ -232,7 +238,7 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE && linear == TRUE) {
+  if (robust == TRUE && linear == TRUE && survey == FALSE) {
 
     if (!requireNamespace("sandwich", quietly = TRUE)) {
       stop("When robust is set to TRUE, you need to have the \'sandwich\' package
@@ -252,6 +258,9 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
     ts <- coefs[,3]
     pvals <- coefs[,4]
 
+  } else if (robust == TRUE && linear == TRUE && survey == FALSE) {
+    warning("svyglm objects already have robust standard errors. Using those
+            instead...")
   } else if (robust == TRUE && linear == FALSE) {
     warning("Heteroskedasticity-robust standard errors should not be used for
             non-linear models. Using the glm object's standard errors instead.")
