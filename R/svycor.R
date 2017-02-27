@@ -12,10 +12,10 @@
 #'
 #' @param digits How many digits past the decimal should be printed?
 #'
-#' @param sig.stats Logical. Perform non-parametric bootstrapping (using \code{\link[weights]{wtd.cor}}
-#'   to generate standard errors and associated t- and p-values. See details for
-#'   some considerations when doing null hypothesis testing with complex survey
-#'   correlations.
+#' @param sig.stats Logical. Perform non-parametric bootstrapping
+#'   (using \code{\link[weights]{wtd.cor}}) to generate standard errors and
+#'   associated t- and p-values. See details for some considerations when doing
+#'   null hypothesis testing with complex survey correlations.
 #'
 #' @param bootn If \code{sig.stats} is TRUE, this defines the number of bootstraps
 #'   to be run to generate the standard errors and p-values. For large values and
@@ -36,7 +36,7 @@
 #'   Using the \code{\link[weights]{wtd.cor}} function, this function also returns
 #'   standard errors and p-values for the correlation terms using a sample-weighted
 #'   bootstrapping procedure. While correlations do not require distributional
-#'   assumptions, hypothesis testing (i.e., $r > 0$) does. The appropriate way to
+#'   assumptions, hypothesis testing (i.e., \eqn{r > 0}) does. The appropriate way to
 #'   calculate standard errors and use them to define a probability is not straightforward
 #'   in this scenario since the weighting causes heteroskedasticity, thereby violating
 #'   an assumption inherent in the commonly used methods for converting Pearson's
