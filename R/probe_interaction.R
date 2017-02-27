@@ -1,4 +1,4 @@
-#' Probe interaction efffects via simple slopes and plotting
+#' Probe interaction effects via simple slopes and plotting
 #'
 #' \code{probe_interaction} is a convenience function that allows users to call
 #' both \code{\link{sim_slopes}} and \code{\link{interact_plot}} with a single

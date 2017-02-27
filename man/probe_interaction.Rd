@@ -2,7 +2,7 @@
 % Please edit documentation in R/probe_interaction.R
 \name{probe_interaction}
 \alias{probe_interaction}
-\title{Probe interaction efffects via simple slopes and plotting}
+\title{Probe interaction effects via simple slopes and plotting}
 \usage{
 probe_interaction(model, pred, modx, mod2 = NULL, ...)
 }
