@@ -15,7 +15,9 @@ knitr::opts_chunk$set(
 library(jtools)
 ```
 
-# jtools [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active) [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT)
+# jtools [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools) [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools) 
+
+<!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT) -->
 
 This package consists of a series of functions created by the author (Jacob) to 
 automate otherwise tedious research tasks. At this juncture, the unifying theme 
@@ -28,13 +30,21 @@ errors and more pernicious errors of mistaken computation.
 
 ## Installation
 
-If you don't have `devtools` installed, first install it.
+For the most stable version, simply install from CRAN.
+
+```r
+install.packages(jtools)
+```
+
+If you want the latest features and bug fixes (and perhaps the latest bugs, too)
+then you can download from Github. To do that you will need to have
+`devtools` installed if you don't already:
 
 ```r
 install.packages("devtools")
 ```
 
-Then install the package from Github--it is not yet available from CRAN as it is in its early stages of development.
+Then install the package from Github.
 
 ```r
 devtools::install_github("jacob-long/jtools")
