@@ -14,7 +14,7 @@ Installation
 For the most stable version, simply install from CRAN.
 
 ``` r
-install.packages(jtools)
+install.packages("jtools")
 ```
 
 If you want the latest features and bug fixes (and perhaps the latest bugs, too) then you can download from Github. To do that you will need to have `devtools` installed if you don't already:
