@@ -1,6 +1,6 @@
 bibentry(
   bibtype = "Manual",
-  title = "jtools: Analysis and Presentation of Social Scientiﬁc Data",
+  title = "jtools: Analysis and Presentation of Social Scientific Data",
   author =  person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
                     role = c("aut", "cre")),
   year = "2017",
