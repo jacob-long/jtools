@@ -291,7 +291,7 @@ if (is.numeric(x)) {
 
       # Now just calling the rescale function, basically
       # for binary cases
-      if (length(unique(d[,i]))==2) {
+      if (length(unique(d[,i]))==2 && is.numeric(d[,i])) {
 
         if (binary.inputs=="0/1") {
 
@@ -343,7 +343,7 @@ if (is.numeric(x)) {
           }
 
         }
-      } else {
+      } else if (is.numeric(d[,i])) {
 
         # support for weights, though fairly clunky
         if (is.null(weights)) {
