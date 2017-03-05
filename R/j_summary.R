@@ -125,15 +125,26 @@
 #'
 #'
 #'
-#' @importFrom stats coef coefficients lm predict sd cooks.distance pf
+#' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #' @export
 #'
 #'
 
-j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+j_summ <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
                    robust.type = "HC3", digits = 3, model.info = TRUE,
                    model.fit = TRUE, model.check = FALSE, n.sd = 1,
                    center = FALSE, standardize.response = FALSE) {
+  UseMethod("j_summ")
+}
+
+
+#' @rdname j_summ
+#' @export
+
+j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+                      robust.type = "HC3", digits = 3, model.info = TRUE,
+                      model.fit = TRUE, model.check = FALSE, n.sd = 1,
+                      center = FALSE, standardize.response = FALSE) {
 
   j <- NULL
 
@@ -152,28 +163,11 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
   # Using information from summary()
   sum <- summary(lm)
 
-  # Check if linear model
-  if (class(lm)[1] == "lm") {
-    linear <- TRUE
-  } else if (lm$family[1] == "gaussian" && lm$family[2] == "identity") {
-    linear <- TRUE
-  } else {
-    linear <- FALSE
-  }
-
-  if (class(lm)[1] == "svyglm" || class(lm)[1] == "svrepglm") {
-    survey <- TRUE
-  } else {
-    survey <- FALSE
-  }
-
   if (!all(attributes(lm$terms)$order > 1)) {
     interaction <- TRUE
   } else {
     interaction <- FALSE
   }
-
-  j <- structure(j, linear = linear)
 
   # Intercept?
   if (lm$rank != attr(lm$terms, "intercept")) {
@@ -186,34 +180,9 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
   n <- length(lm$residuals)
   j <- structure(j, n = n)
 
-  # Calculate R-squared and adjusted R-squared
-  ### Below taken from summary.lm
-  r <- lm$residuals
-  f <- lm$fitted.values
-  w <- lm$weights
-  ## Dealing with no-intercept models, getting the df.int
-  if (is.null(w)) {
-    mss <- if (df.int == 1L)
-      sum((f - mean(f))^2)
-    else sum(f^2)
-    rss <- sum(r^2)
-  } else {
-    mss <- if (df.int == 1L) {
-      m <- sum(w * f/sum(w))
-      sum(w * (f - m)^2)
-    } else sum(w * f^2)
-    rss <- sum(w * r^2)
-    r <- sqrt(w) * r
-  }
-
-  ## Final calculations
-  rsq <- mss/(mss+rss)
-  arsq <- 1 - (1 - rsq) * ((n-df.int)/lm$df.residual)
-
-  # AIC for GLMs
-  if (class(lm)[1] != "lm") {
-    j <- structure(j, aic = lm$aic)
-  }
+  # Get R-squared and adjusted R-squared
+  rsq <- unname(sum$r.squared)
+  arsq <- unname(sum$adj.r.squared)
 
   # List of names of predictors
   ivs <- names(coefficients(lm))
@@ -238,7 +207,7 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE && linear == TRUE && survey == FALSE) {
+  if (robust == TRUE) {
 
     if (!requireNamespace("sandwich", quietly = TRUE)) {
       stop("When robust is set to TRUE, you need to have the \'sandwich\' package
@@ -258,10 +227,10 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
     ts <- coefs[,3]
     pvals <- coefs[,4]
 
-  } else if (robust == TRUE && linear == TRUE && survey == FALSE) {
+  } else if (robust == TRUE) {
     warning("svyglm objects already have robust standard errors. Using those
             instead...")
-  } else if (robust == TRUE && linear == FALSE) {
+  } else if (robust == TRUE) {
     warning("Heteroskedasticity-robust standard errors should not be used for
             non-linear models. Using the glm object's standard errors instead.")
     ses <- coef(sum)[,2]
@@ -293,39 +262,317 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
     }
   }
 
-  if (model.check == TRUE && linear == TRUE) {
+  # Implement model checking features
+  if (model.check == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
       stop("When model.check is set to TRUE, you need to have the \'car\' package
            for model checking functionality. Please install it or set model.check
            to FALSE.", call. = FALSE)
     }
-    if (class(lm)[1] == "lm") {
-      homoskedp <- car::ncvTest(lm)$p
-      j <- structure(j, homoskedp = homoskedp)
-    }
+
+    homoskedp <- car::ncvTest(lm)$p
+    j <- structure(j, homoskedp = homoskedp)
 
     cd <- table(cooks.distance(lm) > 4/n)
     j <- structure(j, cooksdf = cd[2])
 
-  } else if (model.check == TRUE && linear == FALSE) {
-    warning("Model checking for non-linear models is not yet implemented.")
   }
 
   j <- structure(j, rsq = rsq, arsq = arsq, dv = names(lm$model[1]),
-                        npreds = lm$rank-1, lmClass = class(lm))
+                        npreds = lm$rank-df.int, lmClass = class(lm))
 
-  if (class(lm)[1]=="lm") {
-    modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
-    j <- structure(j, modpval = modpval)
-  }
-
-  if (class(lm)[1] == "glm" | class(lm)[1] == "svyglm" | class(lm)[1] == "svrepglm") {
-    j <- structure(j, lmFamily = lm$family)
-  }
+  modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
+  j <- structure(j, modpval = modpval)
 
   j$coeftable <- mat
   j$model <- lm
-  class(j) <- "j_summ"
+  class(j) <- c("j_summ.lm", "j_summ")
+  return(j)
+
+}
+
+#' @rdname j_summ
+#' @export
+
+j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+                       robust.type = "HC3", digits = 3, model.info = TRUE,
+                       model.fit = TRUE, model.check = FALSE, n.sd = 1,
+                       center = FALSE, standardize.response = FALSE) {
+
+  j <- NULL
+
+  # Standardized betas
+  if (standardize == TRUE) {
+    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE,
+                   scale.response = standardize.response)
+  } else if (center == TRUE && standardize == FALSE) {
+    lm <- center_lm(lm)
+  }
+
+  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
+                 robust.type = robust.type, digits = digits,
+                 model.info = model.info, model.fit = model.fit, n.sd = n.sd,
+                 center = center)
+
+  # Using information from summary()
+  sum <- summary(lm)
+
+  if (!all(attributes(lm$terms)$order > 1)) {
+    interaction <- TRUE
+  } else {
+    interaction <- FALSE
+  }
+
+  # Intercept?
+  if (lm$rank != attr(lm$terms, "intercept")) {
+    df.int <- if (attr(lm$terms, "intercept"))
+      1L
+    else 0L
+  }
+
+  # Sample size used
+  n <- length(lm$residuals)
+  j <- structure(j, n = n)
+
+  # Calculate R-squared
+  ### Below taken from summary.lm
+  r <- lm$residuals
+  f <- lm$fitted.values
+  w <- lm$weights
+  ## Dealing with no-intercept models, getting the df.int
+  if (is.null(w)) {
+    mss <- if (df.int == 1L)
+      sum((f - mean(f))^2)
+    else sum(f^2)
+    rss <- sum(r^2)
+  } else {
+    mss <- if (df.int == 1L) {
+      m <- sum(w * f/sum(w))
+      sum(w * (f - m)^2)
+    } else sum(w * f^2)
+    rss <- sum(w * r^2)
+    r <- sqrt(w) * r
+  }
+
+  ## Final calculations (linear pseudo-rsq)
+  # rsq <- mss/(mss+rss)
+  ## Cragg-Uhler pseudo-rsq
+  rsq <- pR2(lm)$r2CU
+  rsqmc <- pR2(lm)$McFadden
+
+  # AIC for GLMs
+  j <- structure(j, aic = lm$aic)
+
+  # List of names of predictors
+  ivs <- names(coefficients(lm))
+
+  # Unstandardized betas
+  ucoefs <- unname(coef(lm))
+
+  # VIFs
+  if (vifs==T) {
+    if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
+      tvifs <- rep(NA, 1)
+    } else {
+      tvifs <- rep(NA, length(ivs))
+      tvifs[-1] <- unname(car::vif(lm))
+    }
+  }
+
+  # Standard errors and t-statistics
+  ses <- coef(sum)[,2]
+  ts <- coef(sum)[,3]
+  pvals <- coef(sum)[,4]
+
+  # Need proper name for test statistic
+  tcol <- colnames(coef(sum))[3]
+  tcol <- gsub("value", "val.", tcol)
+
+  # Put things together
+  params <- list(ucoefs, ses, ts, pvals)
+  namevec <- c("Est.", "S.E.", tcol, "p")
+
+  # Calculate vifs
+  if (vifs==T) {
+    params[length(params)+1] <- list(tvifs)
+    namevec <- c(namevec, "VIF")
+  }
+
+  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  rownames(mat) <- ivs
+  colnames(mat) <- namevec
+
+  for (i in 1:length(params)) {
+    if (is.numeric(params[[i]])) {
+      mat[,i] <- params[[i]]
+    } else {
+      mat[,i] <- params[[i]]
+    }
+  }
+
+  j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(lm$model[1]),
+                 npreds = lm$rank-df.int)
+
+  j <- structure(j, lmFamily = lm$family)
+
+  j$coeftable <- mat
+  j$model <- lm
+  class(j) <- c("j_summ.glm", "j_summ")
+  return(j)
+
+}
+
+#' @rdname j_summ
+#' @export
+
+j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+                          robust.type = "HC3", digits = 3, model.info = TRUE,
+                          model.fit = TRUE, model.check = FALSE, n.sd = 1,
+                          center = FALSE, standardize.response = FALSE) {
+
+  j <- NULL
+
+  # Standardized betas
+  if (standardize == TRUE) {
+    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE,
+                   scale.response = standardize.response)
+  } else if (center == TRUE && standardize == FALSE) {
+    lm <- center_lm(lm)
+  }
+
+  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
+                 robust.type = robust.type, digits = digits,
+                 model.info = model.info, model.fit = model.fit,
+                 model.check = model.check, n.sd = n.sd, center = center)
+
+  # Using information from summary()
+  sum <- summary(lm)
+
+  # Check if linear model
+  if (lm$family[1] == "gaussian" && lm$family[2] == "identity") {
+    linear <- TRUE
+  } else {
+    linear <- FALSE
+  }
+
+  if (!all(attributes(lm$terms)$order > 1)) {
+    interaction <- TRUE
+  } else {
+    interaction <- FALSE
+  }
+
+  j <- structure(j, linear = linear)
+
+  # Intercept?
+  if (lm$rank != attr(lm$terms, "intercept")) {
+    df.int <- if (attr(lm$terms, "intercept"))
+      1L
+    else 0L
+  }
+
+  # Sample size used
+  n <- length(lm$residuals)
+  j <- structure(j, n = n)
+
+  if (linear == TRUE) { # If it's linear, treat it like lm
+    # Calculate R-squared and adjusted R-squared
+    ### Below taken from summary.lm
+    r <- lm$residuals
+    f <- lm$fitted.values
+    w <- lm$weights
+    ## Dealing with no-intercept models, getting the df.int
+    if (is.null(w)) {
+      mss <- if (df.int == 1L)
+        sum((f - mean(f))^2)
+      else sum(f^2)
+      rss <- sum(r^2)
+    } else {
+      mss <- if (df.int == 1L) {
+        m <- sum(w * f/sum(w))
+        sum(w * (f - m)^2)
+      } else sum(w * f^2)
+      rss <- sum(w * r^2)
+      r <- sqrt(w) * r
+    }
+
+    ## Final calculations
+    rsq <- mss/(mss+rss)
+    arsq <- 1 - (1 - rsq) * ((n-df.int)/lm$df.residual)
+
+    j <- structure(j, rsq = rsq, arsq = arsq)
+  } else { # If not linear, calculate pseudo-rsq
+    ## Cragg-Uhler pseudo-rsq
+    rsq <- pR2(lm)$r2CU
+    rsqmc <- pR2(lm)$McFadden
+
+    j <- structure(j, rsq = rsq, rsqmc = rsqmc)
+
+    # AIC for GLMs
+    j <- structure(j, aic = lm$aic)
+  }
+
+  # List of names of predictors
+  ivs <- names(coefficients(lm))
+
+  # Unstandardized betas
+  ucoefs <- unname(coef(lm))
+
+  # VIFs
+  if (vifs==T) {
+    if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
+      tvifs <- rep(NA, 1)
+    } else {
+      tvifs <- rep(NA, length(ivs))
+      tvifs[-1] <- unname(car::vif(lm))
+    }
+  }
+
+  # Standard errors and t-statistics
+  ses <- coef(sum)[,2]
+  ts <- coef(sum)[,3]
+  pvals <- coef(sum)[,4]
+
+  # Need proper name for test statistic
+  tcol <- colnames(coef(sum))[3]
+  tcol <- gsub("value", "val.", tcol)
+
+  # Put things together
+  params <- list(ucoefs, ses, ts, pvals)
+  namevec <- c("Est.", "S.E.", tcol, "p")
+
+  if (vifs==T) {
+    params[length(params)+1] <- list(tvifs)
+    namevec <- c(namevec, "VIF")
+  }
+
+  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  rownames(mat) <- ivs
+  colnames(mat) <- namevec
+
+  for (i in 1:length(params)) {
+    if (is.numeric(params[[i]])) {
+      mat[,i] <- params[[i]]
+    } else {
+      mat[,i] <- params[[i]]
+    }
+  }
+
+  if (model.check == TRUE && linear == TRUE) {
+    cd <- table(cooks.distance(lm) > 4/n)
+    j <- structure(j, cooksdf = cd[2])
+
+    if (model.check == TRUE && linear == FALSE) {
+      warning("Model checking for non-linear models is not yet implemented.")
+    }
+  }
+
+  j <- structure(j, dv = names(lm$model[1]), npreds = lm$rank-df.int)
+
+  j <- structure(j, lmFamily = lm$family)
+
+  j$coeftable <- mat
+  j$model <- lm
+  class(j) <- c("j_summ.svyglm", "j_summ")
   return(j)
 
 }
@@ -337,7 +584,7 @@ j_summ <- jsumm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALS
 
 #' @export
 
-print.j_summ <- function(x, ...) {
+print.j_summ.lm <- function(x, ...) {
 
   # saving input object as j
   j <- x
@@ -384,72 +631,124 @@ print.j_summ <- function(x, ...) {
   }
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
+    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
+        "Dependent Variable: ",
         x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
-    if (x$lmClass[1]=="svyglm" || x$lmClass[1]=="svrepglm") {
-      cat("\n", "Analysis of complex survey design", "\n", sep="")
-      if (as.character(x$lmFamily[1])=="gaussian" &&
-          as.character(x$lmFamily[2])=="identity") {
-        cat("Survey-weighted linear regression", "\n", "\n", sep="")
-      } else {
-        cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n", "Link function: ",
-            as.character(x$lmFamily[2]), "\n", "\n", sep="")
-      }
-    } else if (x$lmClass[1]=="glm" && (x$lmFamily[1] == "gaussian" &&
-                                       x$lmFamily[2] == "identity")) {
-      cat("Type: Linear regression", "\n\n")
-    } else if (x$lmClass[1]=="glm") {
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n", "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep="")
+    cat("\n")
+    }
+
+  if (x$model.fit==T) {
+    cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
+        round(x$fstat, digits=x$digits), ", p = ",
+        round(x$modpval, digits=x$digits),
+        "\n", "R-squared = ", round(x$rsq, digits=x$digits), "\n",
+        "Adj. R-squared = ",
+        round(x$arsq, digits=x$digits), "\n", "\n", sep="")
+  }
+
+  if (x$model.check == TRUE) {
+    # Since it's lm, we can do Breusch-Pagan test
+    if (x$homoskedp < .05) {
+      homoskedtf <- paste("Assumption violated (p = ",
+                          round(x$homoskedp,digits=x$digits), ")", sep="")
     } else {
-      cat("\n")
+      homoskedtf <- paste("Assumption not violated (p = ",
+                          round(x$homoskedp, digits=x$digits), ")", sep="")
+    }
+    cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ",
+        homoskedtf,
+        "\n", "Number of high-leverage observations = ", x$cooksdf,
+        "\n\n", sep="")
+  }
+
+  if (x$robust == FALSE) {
+    cat("Standard errors: OLS", "\n")
+  } else if (x$robust == TRUE) {
+    cat("Standard errors: Robust, type = ", x$robust.type, "\n", sep="")
+   }
+
+  print(as.table(ctable))
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}
+
+#' @export
+
+print.j_summ.glm <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
+  if (x$vifs) {
+    vifvec <- ctable[,width]
+    ctable <- ctable[,1:width-1]
+    width <- width - 1
+  }
+
+  # Making a vector of p-value significance indicators
+  sigstars <- c()
+  for (y in 1:height) {
+    if (ctable[y,width] > 0.1) {
+      sigstars[y] <- ""
+    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+      sigstars[y] <- "."
+    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+      sigstars[y] <- "*"
+    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+      sigstars[y] <- "**"
+    } else if (ctable[y,width] <= 0.001) {
+      sigstars[y] <- "***"
+    }
+  }
+
+  onames <- colnames(ctable)
+  if (x$vifs) {
+    ctable <- cbind(ctable, sigstars, vifvec)
+    colnames(ctable) <- c(onames, "", "VIF")
+  } else {
+    ctable <- cbind(ctable, sigstars)
+    colnames(ctable) <- c(onames, "")
+  }
+
+  if (x$model.info == TRUE) {
+    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
+        "Dependent Variable: ",
+        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      cat("Type: Linear regression", "\n\n")
+    } else {
+      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
+          "Link function: ",
+          as.character(x$lmFamily[2]), "\n", "\n", sep="")
     }
   }
 
   if (x$model.fit==T) {
-    if (x$lmClass[1]=="lm") {
-      cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
-          round(x$fstat, digits=x$digits), ", p = ", round(x$modpval, digits=x$digits),
-          "\n", "R-squared = ", round(x$rsq, digits=x$digits), "\n",
-          "Adj. R-squared = ",
-          round(x$arsq, digits=x$digits), "\n", "\n", sep="")
-    }
-
-    if (x$lmClass[1] != "lm") {
-      cat("MODEL FIT: ", "\n", "Pseudo R-squared = ", round(x$rsq, digits=x$digits),
-          "\n", "AIC = ", x$aic, "\n\n", sep="")
-    }
-  }
-
-  if (x$model.check == TRUE && x$linear == TRUE) {
-    if (x$lmClass[1] == "lm") {
-      # If it's lm, we can do Breusch-Pagan test
-      if (x$homoskedp < .05) {
-        homoskedtf <- paste("Assumption violated (p = ",
-                            round(x$homoskedp,digits=x$digits), ")", sep="")
-      } else {
-        homoskedtf <- paste("Assumption not violated (p = ",
-                            round(x$homoskedp, digits=x$digits), ")", sep="")
-      }
-      # Print everything if lm object
-      cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ", homoskedtf,
-          "\n", "Number of high-leverage observations = ", x$cooksdf, "\n\n", sep="")
-    } else { # Just check outliers
-      cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
-          x$cooksdf, "\n\n", sep="")
-    }
-
-
-  }
-
-  if (x$linear==T) {
-    if (x$lmClass[1] == "svyglm" || x$lmClass[1] == "svrepglm") {
-      cat("Standard errors: Robust\n")
-    } else if (x$robust==F) {
-      cat("Standard errors: OLS", "\n")
-    } else if (x$robust==T) {
-      cat("Standard errors: Robust, type = ", x$robust.type, "\n", sep="")
-    }
+    cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
+        round(x$rsq, digits=x$digits), "\n",
+        "Pseudo R-squared (McFadden) = ",
+        round(x$rsqmc, digits=x$digits),
+        "\n", "AIC = ", x$aic, "\n\n", sep="")
   }
 
   print(as.table(ctable))
@@ -467,3 +766,109 @@ print.j_summ <- function(x, ...) {
 
 }
 
+#' @export
+
+print.j_summ.svyglm <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
+  if (x$vifs) {
+    vifvec <- ctable[,width]
+    ctable <- ctable[,1:width-1]
+    width <- width - 1
+  }
+
+  # Making a vector of p-value significance indicators
+  sigstars <- c()
+  for (y in 1:height) {
+    if (ctable[y,width] > 0.1) {
+      sigstars[y] <- ""
+    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+      sigstars[y] <- "."
+    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+      sigstars[y] <- "*"
+    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+      sigstars[y] <- "**"
+    } else if (ctable[y,width] <= 0.001) {
+      sigstars[y] <- "***"
+    }
+  }
+
+  onames <- colnames(ctable)
+  if (x$vifs) {
+    ctable <- cbind(ctable, sigstars, vifvec)
+    colnames(ctable) <- c(onames, "", "VIF")
+  } else {
+    ctable <- cbind(ctable, sigstars)
+    colnames(ctable) <- c(onames, "")
+  }
+
+  if (x$model.info == TRUE) {
+    # Always showing this
+    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
+        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep = "")
+    cat("\n", "Analysis of complex survey design", "\n", sep = "")
+    # If it's linear...
+    if (as.character(x$lmFamily[1]) == "gaussian" &&
+        as.character(x$lmFamily[2]) == "identity") {
+      # Just call it linear
+      cat("Survey-weighted linear regression", "\n", "\n", sep = "")
+    } else {
+      # Otherwise just treat it like glm
+      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
+          "Link function: ", as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+    }
+  }
+
+  if (x$model.fit == TRUE) { # Show fit statistics
+    if (as.character(x$lmFamily[1]) == "gaussian" &&
+        as.character(x$lmFamily[2]) == "identity") {
+      # If it's a linear model, show regular lm fit stats
+      cat("MODEL FIT: ", "\n", "R-squared = ", round(x$rsq, digits = x$digits),
+          "\n", "Adj. R-squared = ", round(x$arsq, digits = x$digits), "\n",
+          "\n", sep = "")
+    } else {
+      # If it isn't linear, show GLM fit stats
+      cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
+          round(x$rsq, digits = x$digits), "\n",
+          "Pseudo R-squared (McFadden) = ",
+          round(x$rsqmc, digits = x$digits),
+          "\n", "AIC = ", x$aic, "\n\n", sep = "")
+    }
+  }
+
+  if (x$model.check == TRUE && x$linear == TRUE) {
+    # Just check outliers
+    cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
+        x$cooksdf, "\n\n", sep = "")
+  }
+
+  if (x$linear == TRUE) {
+    cat("Standard errors: Robust\n")
+  }
+
+  print(as.table(ctable))
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}

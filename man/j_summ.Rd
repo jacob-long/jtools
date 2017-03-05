@@ -2,11 +2,29 @@
 % Please edit documentation in R/j_summary.R
 \name{j_summ}
 \alias{j_summ}
+\alias{j_summ.lm}
+\alias{j_summ.glm}
+\alias{j_summ.svyglm}
 \title{Regression summaries with options}
 \usage{
 j_summ(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
   model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE)
+
+\method{j_summ}{lm}(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+  robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
+  model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE)
+
+\method{j_summ}{glm}(lm, standardize = FALSE, vifs = FALSE,
+  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE)
+
+\method{j_summ}{svyglm}(lm, standardize = FALSE, vifs = FALSE,
+  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
   standardize.response = FALSE)
 }
 \arguments{
