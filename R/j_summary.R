@@ -502,8 +502,8 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
     j <- structure(j, rsq = rsq, arsq = arsq)
   } else { # If not linear, calculate pseudo-rsq
     ## Cragg-Uhler pseudo-rsq
-    rsq <- pR2(lm)$r2CU
-    rsqmc <- pR2(lm)$McFadden
+    rsq <- suppressWarnings(pR2(lm)$r2CU) # svyglm doesn't use maximum likelihood
+    rsqmc <- suppressWarnings(pR2(lm)$McFadden) # svyglm doesn't use maximum likelihood
 
     j <- structure(j, rsq = rsq, rsqmc = rsqmc)
 
