@@ -14,7 +14,7 @@ BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports:
+Imports: 
 Suggests:
   ggplot2,
   lmtest,
@@ -25,6 +25,7 @@ Suggests:
   RColorBrewer,
   cowplot,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
