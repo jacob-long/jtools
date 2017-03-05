@@ -7,28 +7,28 @@
 \alias{j_summ.svyglm}
 \title{Regression summaries with options}
 \usage{
-j_summ(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+j_summ(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
   robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
   model.check = FALSE, n.sd = 1, center = FALSE,
   standardize.response = FALSE)
 
-\method{j_summ}{lm}(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
-  robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
-  model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE)
-
-\method{j_summ}{glm}(lm, standardize = FALSE, vifs = FALSE,
+\method{j_summ}{lm}(model, standardize = FALSE, vifs = FALSE,
   robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
   standardize.response = FALSE)
 
-\method{j_summ}{svyglm}(lm, standardize = FALSE, vifs = FALSE,
+\method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE,
+  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE)
+
+\method{j_summ}{svyglm}(model, standardize = FALSE, vifs = FALSE,
   robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
   standardize.response = FALSE)
 }
 \arguments{
-\item{lm}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
+\item{model}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
 
 \item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
 coefficients. Default is \code{FALSE}.}

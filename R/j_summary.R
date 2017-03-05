@@ -3,7 +3,7 @@
 #' \code{j_summ()} prints output for a regression model in a fashion similar to
 #' \code{summary()}, but formatted differently with more options.
 #'
-#' @param lm A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.
+#' @param model A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.
 #' @param standardize If \code{TRUE}, adds a column to output with standardized regression
 #'   coefficients. Default is \code{FALSE}.
 #' @param vifs If \code{TRUE}, adds a column to output with variance inflation factors
@@ -131,7 +131,7 @@
 #'
 #'
 
-j_summ <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+j_summ <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
                    robust.type = "HC3", digits = 3, model.info = TRUE,
                    model.fit = TRUE, model.check = FALSE, n.sd = 1,
                    center = FALSE, standardize.response = FALSE) {
@@ -142,7 +142,7 @@ j_summ <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 #' @rdname j_summ
 #' @export
 
-j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+j_summ.lm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
                       robust.type = "HC3", digits = 3, model.info = TRUE,
                       model.fit = TRUE, model.check = FALSE, n.sd = 1,
                       center = FALSE, standardize.response = FALSE) {
@@ -151,9 +151,9 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 
   # Standardized betas
   if (standardize == TRUE) {
-    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE, scale.response = standardize.response)
+    model <- scale_lm(model, n.sd = n.sd, center = TRUE, scale.response = standardize.response)
   } else if (center == TRUE && standardize == FALSE) {
-    lm <- center_lm(lm)
+    model <- center_lm(model)
   }
 
   j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
@@ -162,23 +162,23 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
                         model.check = model.check, n.sd = n.sd, center = center)
 
   # Using information from summary()
-  sum <- summary(lm)
+  sum <- summary(model)
 
-  if (!all(attributes(lm$terms)$order > 1)) {
+  if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
   } else {
     interaction <- FALSE
   }
 
   # Intercept?
-  if (lm$rank != attr(lm$terms, "intercept")) {
-    df.int <- if (attr(lm$terms, "intercept"))
+  if (model$rank != attr(model$terms, "intercept")) {
+    df.int <- if (attr(model$terms, "intercept"))
       1L
     else 0L
   }
 
   # Sample size used
-  n <- length(lm$residuals)
+  n <- length(model$residuals)
   j <- structure(j, n = n)
 
   # Get R-squared and adjusted R-squared
@@ -186,10 +186,10 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   arsq <- unname(sum$adj.r.squared)
 
   # List of names of predictors
-  ivs <- names(coefficients(lm))
+  ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(lm))
+  ucoefs <- unname(coef(model))
 
   # Model statistics
   fstat <- unname(sum$fstatistic[1])
@@ -199,11 +199,11 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 
   # VIFs
   if (vifs==T) {
-    if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
+    if (model$rank==2 | (model$rank==1 & df.int==0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(lm))
+      tvifs[-1] <- unname(car::vif(model))
     }
   }
 
@@ -222,8 +222,8 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
            call. = FALSE)
     }
 
-    coefs <- sandwich::vcovHC(lm, type=robust.type)
-    coefs <- lmtest::coeftest(lm,coefs)
+    coefs <- sandwich::vcovHC(model, type=robust.type)
+    coefs <- lmtest::coeftest(model,coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     pvals <- coefs[,4]
@@ -261,22 +261,22 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
            to FALSE.", call. = FALSE)
     }
 
-    homoskedp <- car::ncvTest(lm)$p
+    homoskedp <- car::ncvTest(model)$p
     j <- structure(j, homoskedp = homoskedp)
 
-    cd <- table(cooks.distance(lm) > 4/n)
+    cd <- table(cooks.distance(model) > 4/n)
     j <- structure(j, cooksdf = cd[2])
 
   }
 
-  j <- structure(j, rsq = rsq, arsq = arsq, dv = names(lm$model[1]),
-                        npreds = lm$rank-df.int, lmClass = class(lm))
+  j <- structure(j, rsq = rsq, arsq = arsq, dv = names(model$model[1]),
+                        npreds = model$rank-df.int, lmClass = class(model))
 
   modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
   j <- structure(j, modpval = modpval)
 
   j$coeftable <- mat
-  j$model <- lm
+  j$model <- model
   class(j) <- c("j_summ.lm", "j_summ")
   return(j)
 
@@ -285,7 +285,7 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 #' @rdname j_summ
 #' @export
 
-j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
                        robust.type = "HC3", digits = 3, model.info = TRUE,
                        model.fit = TRUE, model.check = FALSE, n.sd = 1,
                        center = FALSE, standardize.response = FALSE) {
@@ -294,11 +294,65 @@ j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 
   # Standardized betas
   if (standardize == TRUE) {
-    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE,
-                   scale.response = standardize.response)
+    # Save data --- using the call to access the data to avoid problems w/
+    # transformed data
+    call <- getCall(model)
+    if (!is.null(call$data)) {
+      d <- eval(call$data)
+      mframe <- FALSE # telling myself whether I use model.frame
+    } else {
+      d <- model.frame(model)
+      mframe <- TRUE
+    }
+    form <- update(formula(model),
+                   as.formula(formula(model)))
+
+    # Save response variable
+    resp <- as.character(formula(model)[2])
+
+    # Save list of terms
+    vars <- attributes(model$terms)$variables
+    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+
+    # calling gscale(), incorporating the weights
+    if (standardize.response == FALSE) {
+      # Now we need to know the variables of interest
+      vars <- vars[!(vars %in% resp)]
+      d <- gscale(x = vars, data = d, n.sd = n.sd)
+    } else {
+      d <- gscale(x = vars, data = d, n.sd = n.sd)
+    }
+    model <- update(model, formula = form, data = d)
   } else if (center == TRUE && standardize == FALSE) {
-    lm <- center_lm(lm)
+    call <- getCall(model)
+    if (!is.null(call$data)) {
+      d <- eval(call$data)
+      mframe <- FALSE # telling myself whether I use model.frame
+    } else {
+      d <- model.frame(model)
+      mframe <- TRUE
+    }
+    form <- update(formula(model),
+                   as.formula(formula(model)))
+
+    # Save response variable
+    resp <- as.character(formula(model)[2])
+
+    # Save list of terms
+    vars <- attributes(model$terms)$variables
+    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+
+    # calling gscale(), incorporating the weights
+    if (standardize.response == FALSE) {
+      # Now we need to know the variables of interest
+      vars <- vars[!(vars %in% resp)]
+      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
+    } else {
+      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
+    }
+    model <- update(model, formula = form, data = d)
   }
+
 
   j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
                  robust.type = robust.type, digits = digits,
@@ -306,30 +360,30 @@ j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
                  center = center)
 
   # Using information from summary()
-  sum <- summary(lm)
+  sum <- summary(model)
 
-  if (!all(attributes(lm$terms)$order > 1)) {
+  if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
   } else {
     interaction <- FALSE
   }
 
   # Intercept?
-  if (lm$rank != attr(lm$terms, "intercept")) {
-    df.int <- if (attr(lm$terms, "intercept"))
+  if (model$rank != attr(model$terms, "intercept")) {
+    df.int <- if (attr(model$terms, "intercept"))
       1L
     else 0L
   }
 
   # Sample size used
-  n <- length(lm$residuals)
+  n <- length(model$residuals)
   j <- structure(j, n = n)
 
   # Calculate R-squared
   ### Below taken from summary.lm
-  r <- lm$residuals
-  f <- lm$fitted.values
-  w <- lm$weights
+  r <- model$residuals
+  f <- model$fitted.values
+  w <- model$weights
   ## Dealing with no-intercept models, getting the df.int
   if (is.null(w)) {
     mss <- if (df.int == 1L)
@@ -345,28 +399,36 @@ j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
     r <- sqrt(w) * r
   }
 
-  ## Final calculations (linear pseudo-rsq)
-  # rsq <- mss/(mss+rss)
-  ## Cragg-Uhler pseudo-rsq
-  rsq <- pR2(lm)$r2CU
-  rsqmc <- pR2(lm)$McFadden
+  # Final calculations (linear pseudo-rsq)
+  ## Need to define this here because of glm's weird namespace behavior
+  pR2 <- function(object){
+    llh <- suppressWarnings(logLik(object))
+    objectNull <- suppressWarnings(update(object, ~ 1))
+    llhNull <- logLik(objectNull)
+    n <- dim(object$model)[1]
+    pR2Work(llh,llhNull,n)
+  }
+  ## Cragg-Uhler
+  rsq <- pR2(model)$r2CU
+  ## McFadden
+  rsqmc <- pR2(model)$McFadden
 
   # AIC for GLMs
-  j <- structure(j, aic = lm$aic)
+  j <- structure(j, aic = model$aic)
 
   # List of names of predictors
-  ivs <- names(coefficients(lm))
+  ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(lm))
+  ucoefs <- unname(coef(model))
 
   # VIFs
   if (vifs==T) {
-    if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
+    if (model$rank==2 | (model$rank==1 & df.int==0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(lm))
+      tvifs[-1] <- unname(car::vif(model))
     }
   }
 
@@ -401,13 +463,13 @@ j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
     }
   }
 
-  j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(lm$model[1]),
-                 npreds = lm$rank-df.int)
+  j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(model$model[1]),
+                 npreds = model$rank-df.int)
 
-  j <- structure(j, lmFamily = lm$family)
+  j <- structure(j, lmFamily = model$family)
 
   j$coeftable <- mat
-  j$model <- lm
+  j$model <- model
   class(j) <- c("j_summ.glm", "j_summ")
   return(j)
 
@@ -416,7 +478,7 @@ j_summ.glm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 #' @rdname j_summ
 #' @export
 
-j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
+j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
                           robust.type = "HC3", digits = 3, model.info = TRUE,
                           model.fit = TRUE, model.check = FALSE, n.sd = 1,
                           center = FALSE, standardize.response = FALSE) {
@@ -424,11 +486,53 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   j <- NULL
 
   # Standardized betas
-  if (standardize == TRUE) {
-    lm <- scale_lm(lm, n.sd = n.sd, center = TRUE,
-                   scale.response = standardize.response)
-  } else if (center == TRUE && standardize == FALSE) {
-    lm <- center_lm(lm)
+  if (standardize == TRUE || center == TRUE) {
+    # Save data --- using the call to access the data to avoid problems w/
+    # transformed data
+    call <- getCall(model)
+    if (!is.null(call$data)) {
+      d <- eval(call$data)
+      mframe <- FALSE # telling myself whether I use model.frame
+    } else {
+      d <- model.frame(model)
+      mframe <- TRUE
+    }
+
+    form <- update(formula(model), as.formula(formula(model)))
+    call$formula <- as.call(as.formula(call$formula))
+
+    # Save response variable
+    resp <- as.character(formula(model)[2])
+
+    # Save list of terms
+    vars <- attributes(model$terms)$variables
+    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+
+    # Get the survey design object
+    design <- model$survey.design
+
+    # Now we need to know the variables of interest
+    vars <- attributes(model$terms)$variables
+    vars <- as.character(vars)[2:length(vars)]
+
+    if (standardize.response == FALSE) {
+      vars <- vars[!(vars %in% resp)]
+    }
+
+    # Call gscale()
+    if (standardize == TRUE) {
+      design <- gscale(x = vars, data = design, n.sd = n.sd)
+    } else if (standardize == FALSE && center == TRUE) {
+      design <- gscale(x = vars, data = design, n.sd = n.sd,
+                       center.only = TRUE)
+    }
+
+    # this weirdness is all to deal with namespace issues with update
+    call$design <- design
+    call[[1]] <- survey::svyglm
+    model <- eval(call)
+  } else {
+    design <- model$survey.design
   }
 
   j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
@@ -437,16 +541,16 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
                  model.check = model.check, n.sd = n.sd, center = center)
 
   # Using information from summary()
-  sum <- summary(lm)
+  sum <- summary(model)
 
   # Check if linear model
-  if (lm$family[1] == "gaussian" && lm$family[2] == "identity") {
+  if (model$family[1] == "gaussian" && model$family[2] == "identity") {
     linear <- TRUE
   } else {
     linear <- FALSE
   }
 
-  if (!all(attributes(lm$terms)$order > 1)) {
+  if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
   } else {
     interaction <- FALSE
@@ -455,22 +559,22 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   j <- structure(j, linear = linear)
 
   # Intercept?
-  if (lm$rank != attr(lm$terms, "intercept")) {
-    df.int <- if (attr(lm$terms, "intercept"))
+  if (model$rank != attr(model$terms, "intercept")) {
+    df.int <- if (attr(model$terms, "intercept"))
       1L
     else 0L
   }
 
   # Sample size used
-  n <- length(lm$residuals)
+  n <- length(model$residuals)
   j <- structure(j, n = n)
 
   if (linear == TRUE) { # If it's linear, treat it like lm
     # Calculate R-squared and adjusted R-squared
     ### Below taken from summary.lm
-    r <- lm$residuals
-    f <- lm$fitted.values
-    w <- lm$weights
+    r <- model$residuals
+    f <- model$fitted.values
+    w <- model$weights
     ## Dealing with no-intercept models, getting the df.int
     if (is.null(w)) {
       mss <- if (df.int == 1L)
@@ -488,33 +592,43 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
 
     ## Final calculations
     rsq <- mss/(mss+rss)
-    arsq <- 1 - (1 - rsq) * ((n-df.int)/lm$df.residual)
+    arsq <- 1 - (1 - rsq) * ((n-df.int)/model$df.residual)
 
     j <- structure(j, rsq = rsq, arsq = arsq)
   } else { # If not linear, calculate pseudo-rsq
-    ## Cragg-Uhler pseudo-rsq
-    rsq <- suppressWarnings(pR2(lm)$r2CU) # svyglm doesn't use maximum likelihood
-    rsqmc <- suppressWarnings(pR2(lm)$McFadden) # svyglm doesn't use maximum likelihood
+    # Final calculations (linear pseudo-rsq)
+    ## Need to define this here because of glm's weird namespace behavior
+    pR2 <- function(object){
+      llh <- suppressWarnings(logLik(object))
+      objectNull <- suppressWarnings(update(object, ~ 1, design = design))
+      llhNull <- logLik(objectNull)
+      n <- dim(object$model)[1]
+      pR2Work(llh,llhNull,n)
+    }
+    ## Cragg-Uhler
+    rsq <- suppressWarnings(pR2(model)$r2CU)
+    ## McFadden
+    rsqmc <- suppressWarnings(pR2(model)$McFadden)
 
     j <- structure(j, rsq = rsq, rsqmc = rsqmc)
 
     # AIC for GLMs
-    j <- structure(j, aic = lm$aic)
+    j <- structure(j, aic = model$aic)
   }
 
   # List of names of predictors
-  ivs <- names(coefficients(lm))
+  ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(lm))
+  ucoefs <- unname(coef(model))
 
   # VIFs
   if (vifs==T) {
-    if (lm$rank==2 | (lm$rank==1 & df.int==0L)) {
+    if (model$rank==2 | (model$rank==1 & df.int==0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(lm))
+      tvifs[-1] <- unname(car::vif(model))
     }
   }
 
@@ -549,7 +663,7 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   }
 
   if (model.check == TRUE && linear == TRUE) {
-    cd <- table(cooks.distance(lm) > 4/n)
+    cd <- table(cooks.distance(model) > 4/n)
     j <- structure(j, cooksdf = cd[2])
 
     if (model.check == TRUE && linear == FALSE) {
@@ -557,12 +671,12 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
     }
   }
 
-  j <- structure(j, dv = names(lm$model[1]), npreds = lm$rank-df.int)
+  j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int)
 
-  j <- structure(j, lmFamily = lm$family)
+  j <- structure(j, lmFamily = model$family)
 
   j$coeftable <- mat
-  j$model <- lm
+  j$model <- model
   class(j) <- c("j_summ.svyglm", "j_summ")
   return(j)
 
