@@ -1,6 +1,6 @@
 Package: jtools
 Type: Package
-Title: Analysis and Presentation of Social Scientiﬁc Data
+Title: Analysis and Presentation of Social Scientific Data
 Version: 0.4.3
 Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
