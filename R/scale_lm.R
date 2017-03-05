@@ -84,11 +84,23 @@
 scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
                      scale.response = TRUE) {
 
-  # Save data
-  d <- model.frame(model)
+  # Save data --- using the call to access the data to avoid problems w/
+  # transformed data
+  call <- getCall(model)
+  if (!is.null(call$data)) {
+    d <- eval(call$data)
+    mframe <- FALSE # telling myself whether I use model.frame
+  } else {
+    d <- model.frame(model)
+    mframe <- TRUE
+  }
 
   # Save response variable
   resp <- as.character(formula(model)[2])
+
+  # Save list of terms
+  vars <- attributes(model$terms)$variables
+  vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
 
   # svyglm?
   if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {survey <- TRUE} else {survey <- FALSE}
@@ -114,7 +126,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
       design <- gscale(x = vars, data = design, n.sd = n.sd)
     }
 
-    call <- getCall(model)
+
     call$design <- design
     call[[1]] <- survey::svyglm
     new <- eval(call)
@@ -122,42 +134,41 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
 
 
   # weights?
-  if (survey == FALSE && "(weights)" %in% names(d)) {
+  if (survey == FALSE && !is.null(call$weights)) {
     weights <- TRUE
-    wname <- sub("()", model$call["weights"], "")
-    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    wname <- as.character(call$weights)
+    if (mframe == TRUE) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
   } else {
     weights <- FALSE
   }
 
   # calling gscale(), incorporating the weights
   if (weights == TRUE) {
-    varnames <- names(d)[!(names(d) %in% wname)]
+    vars <- vars[!(vars %in% wname)]
 
     if (scale.response == FALSE) {
-      varnames <- varnames[!(varnames %in% resp)]
+      vars <- vars[!(vars %in% resp)]
     }
 
-    d <- gscale(x = varnames, data = d, binary.inputs = binary.inputs,
+    d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
                 scale.only = !center, weights = wname, n.sd = n.sd)
 
   } else {
     if (scale.response == FALSE) {
       # Now we need to know the variables of interest
-      vars <- attributes(model$terms)$variables
-      vars <- as.character(vars)[2:length(vars)]
       vars <- vars[!(vars %in% resp)]
       d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
                   scale.only = !center, n.sd = n.sd)
     } else {
-      d <- gscale(data = d, binary.inputs = binary.inputs,
+      d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
                 scale.only = !center, n.sd = n.sd)
     }
   }
 
 
   if (survey == FALSE) {
-    # Update model
     new <- update(model, data = d)
   }
   return(new)
