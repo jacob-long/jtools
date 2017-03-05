@@ -12,7 +12,7 @@
 #'   frame or \code{svydesign} object is, all columns will be processed and returned.
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{center};
-#'   \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
+#'   \code{0/1} keeps original scale; \code{-0.5/0.5} rescales 0 as -0.5 and 1 as 0.5;
 #'   \code{center} substracts the mean; and \code{full} substracts the mean and
 #'   divides by 2 sd.
 #'
@@ -93,38 +93,18 @@
 #'
 #' # Data frame as input
 #' gscale(data = mtcars, binary.inputs = "-0.5/0.5") # loops through each numeric column
-#' gscale(data = mtcars, scale.only = TRUE, binary.inputs = "0/1")
-#' gscale(data = mtcars, center.only = TRUE, binary.inputs = "full")
 #' # Specified vars in data frame
 #' gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
-#' gscale(c("hp", "wt", "vs"), data = mtcars, scale.only = TRUE,
-#'        binary.inputs = "full")
-#' gscale(c("hp", "wt", "vs"), data = mtcars, center.only = TRUE)
 #'
 #' wts <- runif(100, 0, 1)
 #' mtcars$weights <- wts[1:32]
 #'
 #' # Weighted inputs
 #' gscale(x, weights = wts)
-#' gscale(x, n.sd = 1, weights = wts)
-#' gscale(x, scale.only = TRUE, weights = wts)
-#' gscale(x, center.only = TRUE, weights = wts)
 #' # If using a weights column of data frame, give its name
 #' gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
-#' gscale(data = mtcars, weights = weights, scale.only = TRUE)
-#' gscale(data = mtcars, weights = weights, center.only = TRUE)
-#' gscale(data = mtcars, weights = weights, binary.inputs = "center")
-#' gscale(data = mtcars, weights = weights, binary.inputs = "full")
 #' # If using a weights column of data frame, can still select variables
 #' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
-#' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights,
-#'        scale.only = TRUE)
-#' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights,
-#'        center.only = TRUE)
-#' gscale(c("hp", "wt", "vs"), data = mtcars, weights = weights,
-#'        binary.inputs = "center") # "x =" is optional for first argument
-#' gscale(c("hp", "wt", "vs"), data = mtcars, weights = weights,
-#'        binary.inputs = "full")
 #'
 #' # Survey designs
 #' library(survey)
@@ -134,15 +114,8 @@
 #'                      fpc=~fpc)
 #' dstrat$variables$binary <- rbinom(200, 1, 0.5) # Creating test binary variable
 #'
-#' gscale(data = dstrat, binary.inputs = "-0.5,0.5")
-#' gscale(data = dstrat, scale.only = TRUE, binary.input = "full")
-#' gscale(data = dstrat, center.only = TRUE, binary.input = "center")
-#'
-#' gscale(c("api00","meals"), data = dstrat, binary.inputs = "-0.5,0.5")
-#' gscale(c("api00","meals"), data = dstrat, scale.only = TRUE,
-#'        binary.input = "full")
-#' gscale(c("api00","meals"), data = dstrat, center.only = TRUE,
-#'        binary.input = "center")
+#' gscale(data = dstrat, binary.inputs = "-0.5/0.5")
+#' gscale(c("api00","meals","binary"), data = dstrat, binary.inputs = "-0.5/0.5")
 #'
 #'
 #'
@@ -152,6 +125,10 @@
 
 gscale <- function(x = NULL, binary.inputs = "center", data = NULL, n.sd = 2,
                    center.only = FALSE, scale.only = FALSE, weights = NULL) {
+
+if (!(binary.inputs %in% c("center","full","0/1","-0.5/0.5"))) {
+  stop("binary.inputs must be one of \"center\", \"full\", \"0/1\", or \"-0.5/0.5\"")
+}
 
 # If it's a vector, just do the thing
 if (is.numeric(x)) {
@@ -167,7 +144,7 @@ if (is.numeric(x)) {
       x <- (x-min(x.obs))/(max(x.obs)-min(x.obs))
       return(x)
 
-    } else if (binary.inputs=="-0.5,0.5") {
+    } else if (binary.inputs=="-0.5/0.5") {
       # Keep scale, but center at 0 (not mean center!)
       return(x-0.5)
 
@@ -195,13 +172,6 @@ if (is.numeric(x)) {
         }
       } else {
 
-        wtd.sd <- function(x, w) {
-          xm <- weighted.mean(x, w)
-          out <- sum((w * (x - xm)^2)/(sum(w)-1))
-          out <- sqrt(out)
-          return(out)
-        }
-
         if (center.only == FALSE && scale.only == FALSE) {
           return((x-weighted.mean(x.obs, weights))/(n.sd*wtd.sd(x.obs, weights)))
         } else if (center.only == TRUE && scale.only == FALSE) {
@@ -228,13 +198,6 @@ if (is.numeric(x)) {
         stop("You cannot set both center.only and scale.only to TRUE.")
       }
     } else {
-
-      wtd.sd <- function(x, w) {
-        xm <- weighted.mean(x, w)
-        out <- sum((w * (x - xm)^2)/(sum(w)-1))
-        out <- sqrt(out)
-        return(out)
-      }
 
       if (center.only == FALSE && scale.only == FALSE) {
         return((x-weighted.mean(x.obs, weights))/(n.sd*wtd.sd(x.obs, weights)))
@@ -297,7 +260,7 @@ if (is.numeric(x)) {
 
           d[,i] <- (d[,i]-min(d[,i]))/(max(d[,i])-min(d[,i]))
 
-        } else if (binary.inputs=="-0.5,0.5") {
+        } else if (binary.inputs=="-0.5/0.5") {
 
           d[,i] <- (d[,i]-0.5)
 
@@ -323,13 +286,6 @@ if (is.numeric(x)) {
               stop("You cannot set both center.only and scale.only to TRUE.")
             }
           } else {
-
-            wtd.sd <- function(x, w) {
-              xm <- weighted.mean(x, w)
-              out <- sum((w * (x - xm)^2)/(sum(w)-1))
-              out <- sqrt(out)
-              return(out)
-            }
 
             if (center.only == FALSE && scale.only == FALSE) {
               d[,i] <- ((d[,i]-weighted.mean(d[,i], weights))/(n.sd*wtd.sd(d[,i], weights)))
@@ -357,13 +313,6 @@ if (is.numeric(x)) {
             stop("You cannot set both center.only and scale.only to TRUE.")
           }
         } else {
-
-          wtd.sd <- function(x, w) {
-            xm <- weighted.mean(x, w)
-            out <- sum((w * (x - xm)^2)/(sum(w)-1))
-            out <- sqrt(out)
-            return(out)
-          }
 
           if (center.only == FALSE && scale.only == FALSE) {
             d[,i] <- ((d[,i]-weighted.mean(d[,i], weights))/(n.sd*wtd.sd(d[,i], weights)))
@@ -424,7 +373,7 @@ if (is.numeric(x)) {
 
           d[,i] <- (d[,i]-min(d[,i]))/(max(d[,i])-min(d[,i]))
 
-        } else if (binary.inputs=="-0.5,0.5") {
+        } else if (binary.inputs=="-0.5/0.5") {
 
           d[,i] <- (d[,i]-0.5)
 
@@ -450,13 +399,6 @@ if (is.numeric(x)) {
               stop("You cannot set both center.only and scale.only to TRUE.")
             }
           } else {
-
-            wtd.sd <- function(x, w) {
-              xm <- weighted.mean(x, w)
-              out <- sum((w * (x - xm)^2)/(sum(w)-1))
-              out <- sqrt(out)
-              return(out)
-            }
 
             if (center.only == FALSE && scale.only == FALSE) {
               d[,i] <- ((d[,i]-weighted.mean(d[,i], weights))/(n.sd*wtd.sd(d[,i], weights)))
@@ -485,13 +427,6 @@ if (is.numeric(x)) {
           }
         } else {
 
-          wtd.sd <- function(x, w) {
-            xm <- weighted.mean(x, w)
-            out <- sum((w * (x - xm)^2)/(sum(w)-1))
-            out <- sqrt(out)
-            return(out)
-          }
-
           if (center.only == FALSE && scale.only == FALSE) {
             d[,i] <- ((d[,i]-weighted.mean(d[,i], weights))/(n.sd*wtd.sd(d[,i], weights)))
           } else if (center.only == TRUE && scale.only == FALSE) {
@@ -518,7 +453,7 @@ if (is.numeric(x)) {
         # just skip over non-numeric variables
         # columns that are all NA will still show up as numeric
         if (all(is.na(d[,i]))) {
-          message <- paste("All values of", names(d)[i], "were NA. Skipping...\n")
+          message <- paste("All values of", i, "were NA. Skipping...\n")
           warning(message)
         }
       } else {
@@ -530,7 +465,7 @@ if (is.numeric(x)) {
 
           d[,i] <- (d[,i]-min(d[,i]))/(max(d[,i])-min(d[,i]))
 
-        } else if (binary.inputs=="-0.5,0.5") {
+        } else if (binary.inputs=="-0.5/0.5") {
 
           d[,i] <- (d[,i] - 0.5)
 
@@ -616,7 +551,7 @@ if (is.numeric(x)) {
           # just skip over non-numeric variables
           # columns that are all NA will still show up as numeric
           if (all(is.na(d[,i]))) {
-            message <- paste("All values of", names(d)[i], "were NA. Skipping...\n")
+            message <- paste("All values of", i, "were NA. Skipping...\n")
             warning(message)
           }
         } else {
@@ -628,7 +563,7 @@ if (is.numeric(x)) {
 
               d[,i] <- (d[,i]-min(d[,i]))/(max(d[,i])-min(d[,i]))
 
-            } else if (binary.inputs=="-0.5,0.5") {
+            } else if (binary.inputs=="-0.5/0.5") {
 
               d[,i] <- (d[,i]-0.5)
 

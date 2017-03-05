@@ -12,7 +12,7 @@ gscale(x = NULL, binary.inputs = "center", data = NULL, n.sd = 2,
 frame or \code{svydesign} object is, all columns will be processed and returned.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{center};
-\code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
+\code{0/1} keeps original scale; \code{-0.5/0.5} rescales 0 as -0.5 and 1 as 0.5;
 \code{center} substracts the mean; and \code{full} substracts the mean and
 divides by 2 sd.}
 
@@ -84,38 +84,18 @@ gscale(x2, binary.inputs = "center") # mean center it
 
 # Data frame as input
 gscale(data = mtcars, binary.inputs = "-0.5/0.5") # loops through each numeric column
-gscale(data = mtcars, scale.only = TRUE, binary.inputs = "0/1")
-gscale(data = mtcars, center.only = TRUE, binary.inputs = "full")
 # Specified vars in data frame
 gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
-gscale(c("hp", "wt", "vs"), data = mtcars, scale.only = TRUE,
-       binary.inputs = "full")
-gscale(c("hp", "wt", "vs"), data = mtcars, center.only = TRUE)
 
 wts <- runif(100, 0, 1)
 mtcars$weights <- wts[1:32]
 
 # Weighted inputs
 gscale(x, weights = wts)
-gscale(x, n.sd = 1, weights = wts)
-gscale(x, scale.only = TRUE, weights = wts)
-gscale(x, center.only = TRUE, weights = wts)
 # If using a weights column of data frame, give its name
 gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
-gscale(data = mtcars, weights = weights, scale.only = TRUE)
-gscale(data = mtcars, weights = weights, center.only = TRUE)
-gscale(data = mtcars, weights = weights, binary.inputs = "center")
-gscale(data = mtcars, weights = weights, binary.inputs = "full")
 # If using a weights column of data frame, can still select variables
 gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
-gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights,
-       scale.only = TRUE)
-gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights,
-       center.only = TRUE)
-gscale(c("hp", "wt", "vs"), data = mtcars, weights = weights,
-       binary.inputs = "center") # "x =" is optional for first argument
-gscale(c("hp", "wt", "vs"), data = mtcars, weights = weights,
-       binary.inputs = "full")
 
 # Survey designs
 library(survey)
@@ -125,15 +105,8 @@ dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
                      fpc=~fpc)
 dstrat$variables$binary <- rbinom(200, 1, 0.5) # Creating test binary variable
 
-gscale(data = dstrat, binary.inputs = "-0.5,0.5")
-gscale(data = dstrat, scale.only = TRUE, binary.input = "full")
-gscale(data = dstrat, center.only = TRUE, binary.input = "center")
-
-gscale(c("api00","meals"), data = dstrat, binary.inputs = "-0.5,0.5")
-gscale(c("api00","meals"), data = dstrat, scale.only = TRUE,
-       binary.input = "full")
-gscale(c("api00","meals"), data = dstrat, center.only = TRUE,
-       binary.input = "center")
+gscale(data = dstrat, binary.inputs = "-0.5/0.5")
+gscale(c("api00","meals","binary"), data = dstrat, binary.inputs = "-0.5/0.5")
 
 
 
