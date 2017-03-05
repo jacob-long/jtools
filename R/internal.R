@@ -24,3 +24,12 @@ pR2 <- function(object){
   n <- dim(object$model)[1]
   pR2Work(llh,llhNull,n)
 }
+
+# Weighted std. dev. used in gscale
+wtd.sd <- function(x, w) {
+  xm <- weighted.mean(x, w)
+  out <- sum((w * (x - xm)^2)/(sum(w)-1))
+  out <- sqrt(out)
+  return(out)
+}
+
