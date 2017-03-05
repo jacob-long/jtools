@@ -100,16 +100,17 @@
 #'
 #' @examples
 #' # Create lm object
-#' fit <- lm(Income ~ Frost + Illiteracy + Murder, data=as.data.frame(state.x77))
+#' fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 #'
 #' # Print the output with standardized coefficients and 2 digits past the decimal
-#' j_summ(fit, standardize=TRUE, digits=2)
+#' j_summ(fit, standardize = TRUE, digits = 2)
 #'
 #' # With svyglm
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw, data = apistrat,
+#'  fpc =~ fpc)
+#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #' j_summ(regmodel)
 #'
 #' @references
@@ -226,16 +227,6 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
     ses <- coefs[,2]
     ts <- coefs[,3]
     pvals <- coefs[,4]
-
-  } else if (robust == TRUE) {
-    warning("svyglm objects already have robust standard errors. Using those
-            instead...")
-  } else if (robust == TRUE) {
-    warning("Heteroskedasticity-robust standard errors should not be used for
-            non-linear models. Using the glm object's standard errors instead.")
-    ses <- coef(sum)[,2]
-    ts <- coef(sum)[,3]
-    pvals <- coef(sum)[,4]
   } else {
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
@@ -245,7 +236,7 @@ j_summ.lm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   params <- list(ucoefs, ses, ts, pvals)
   namevec <- c("Est.", "S.E.", "t val.", "p")
 
-  if (vifs==T) {
+  if (vifs == TRUE) {
     params[length(params)+1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
   }
@@ -540,7 +531,7 @@ j_summ.svyglm <- function(lm, standardize = FALSE, vifs = FALSE, robust = FALSE,
   params <- list(ucoefs, ses, ts, pvals)
   namevec <- c("Est.", "S.E.", tcol, "p")
 
-  if (vifs==T) {
+  if (vifs == TRUE) {
     params[length(params)+1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
   }
