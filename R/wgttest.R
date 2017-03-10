@@ -7,6 +7,9 @@
 #' @param weights The name of the weights column in \code{model}'s data frame
 #'   or a vector of weights equal in length to the number of observations
 #'   included in \code{model}.
+#' @param model_output Should a summary of the model with weights as predictor
+#'   be printed? Default is TRUE, but you may not want it if you are trying to
+#'   declutter a document.
 #'
 #' @details
 #'
@@ -42,7 +45,7 @@
 #' @importFrom stats anova reformulate
 #' @export
 
-wgttest <- function(model, weights) {
+wgttest <- function(model, weights, model_output = TRUE) {
 
   # Need to parse the arguments
   wname <- as.character(substitute(weights))
@@ -68,7 +71,9 @@ wgttest <- function(model, weights) {
 
   newmod <- update(model, formula. = newf, data = d)
 
-  print(j_summ(newmod, model.info = F, model.fit = F))
+  if (model_output == TRUE) {
+    print(j_summ(newmod, model.info = F, model.fit = F))
+  }
   anova(model, newmod)
 
 }

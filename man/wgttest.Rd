@@ -4,7 +4,7 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, weights)
+wgttest(model, weights, model_output = TRUE)
 }
 \arguments{
 \item{model}{The unweighted linear model (must be \code{lm}) you want to check}
@@ -12,6 +12,10 @@ wgttest(model, weights)
 \item{weights}{The name of the weights column in \code{model}'s data frame
 or a vector of weights equal in length to the number of observations
 included in \code{model}.}
+
+\item{model_output}{Should a summary of the model with weights as predictor
+be printed? Default is TRUE, but you may not want it if you are trying to
+declutter a document.}
 }
 \description{
 Use the DuMouchel-Duncan (1983) test to assess the need for sampling weights
