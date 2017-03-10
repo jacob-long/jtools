@@ -316,7 +316,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
   d <- as.data.frame(d)
 
   # Default to +/- 1 SD unless modx is factor
-  if (is.null(modxvals) && !is.factor(d[,modx])) {
+  if (is.null(modxvals) && !is.factor(d[,modx]) &&
+      length(unique(d[,modx])) > 2) {
     if (survey == FALSE) {
       modsd <- sd(d[,modx])
       modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
@@ -343,15 +344,21 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
       names(modxvalssd) <- c("+1 SD", "-1 SD")
       modxvals2 <- modxvalssd
     }
+  } else if (is.null(modxvals) && !is.factor(d[,modx]) &&
+             length(unique(d[,modx])) == 2) {
+    modxvals2 <- as.numeric(levels(factor(d[,modx])))
   } else if (is.null(modxvals) && is.factor(d[,modx])){
     modxvals2 <- levels(d[,modx])
   } else { # Use user-supplied values otherwise
     modxvals2 <- sort(modxvals, decreasing = T)
   }
 
+
+
   # Same process for second moderator
   if (!is.null(mod2)) {
-    if (is.null(mod2vals) && !is.factor(d[,mod2])) {
+    if (is.null(mod2vals) && !is.factor(d[,mod2]) &&
+        length(unique(d[,mod2])) > 2) {
       if (survey == FALSE) {
         mod2sd <- sd(d[,mod2])
         mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
@@ -388,6 +395,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
       }
+    } else if (is.null(mod2vals) && !is.factor(d[,mod2]) &&
+               length(unique(d[,mod2])) == 2) {
+      mod2vals2 <- as.numeric(levels(factor(d[,mod2])))
     } else if (is.null(mod2vals) && is.factor(d[,mod2])){
       mod2vals2 <- levels(d[,mod2])
     } else { # Use user-supplied values otherwise
