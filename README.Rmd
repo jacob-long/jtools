@@ -83,7 +83,7 @@ Users can specify values of the moderator to test or use the default +/- 1 SD va
 Johnson-Neyman intervals are also calculated and, if requested, Johnson-Neyman
 plots are returned.
 
-```{r j-n plot}
+```{r j-n-plot}
 fiti <- lm(Murder ~ Assault*UrbanPop, data = USArrests)
 sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 ```

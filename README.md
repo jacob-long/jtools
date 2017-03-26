@@ -105,7 +105,7 @@ sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
     #> [193.5072, 363.9215]
     #> Note: The range of observed values of Assault is [45, 337]
 
-![](README-j-n%20plot-1.png)
+![](README-j-n-plot-1.png)
 
     #> SIMPLE SLOPES ANALYSIS
     #> 
