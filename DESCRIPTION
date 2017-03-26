@@ -5,8 +5,8 @@ Version: 0.4.4
 Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
 Description: This is a collection of tools that the author (Jacob) has written
-  for the purpose of more efficiently understanding and sharing the results of 
-  (primarily) regression analyses. There are a number of functions focused 
+  for the purpose of more efficiently understanding and sharing the results of
+  (primarily) regression analyses. There are a number of functions focused
   specifically on the interpretation and presentation of interactions in linear
   models. Just about everything supports models from the survey package.
 URL: https://github.com/jacob-long/jtools
