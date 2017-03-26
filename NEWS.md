@@ -1,3 +1,10 @@
+## jtools 0.4.4
+
+* Under the hood changes to j_summ
+* Cleaned up examples
+* Added wgttest function, which runs a test to assess need for sampling weights
+in linear regression
+
 ## jtools 0.4.3 
 
 * No matter what you do, there's nothing like seeing your package on CRAN to 
