@@ -56,6 +56,13 @@
 #'   level for values outside the range. In other words, for a confidence interval,
 #'   .95 is analagous to a 95\% confidence interval.
 #'
+#' @param outcome.scale For nonlinear models (i.e., GLMs), should the outcome
+#'   variable be plotted on the link scale (e.g., log odds for logit models) or
+#'   the original scale (e.g., predicted probabilities for logit models)? The
+#'   default is \code{"response"}, which is the original scale. For the link
+#'   scale, which will show straight lines rather than curves, use
+#'   \code{"link"}.
+#'
 #' @param x.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
 #'
@@ -154,13 +161,15 @@
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall
 #' @export interact_plot
 
-interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2vals = NULL,
-                          centered = NULL, standardize = FALSE, n.sd = 1,
-                          plot.points = FALSE, interval = FALSE,
-                          int.type = c("confidence","prediction"), int.width = .95,
+interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
+                          mod2vals = NULL, centered = NULL, standardize = FALSE,
+                          n.sd = 1, plot.points = FALSE, interval = FALSE,
+                          int.type = c("confidence","prediction"),
+                          int.width = .95, outcome.scale = "response",
                           x.label = NULL, y.label = NULL, modx.labels = NULL,
-                          mod2.labels = NULL, main.title = NULL, legend.main = NULL,
-                          color.class = NULL, line.thickness = 1.1, vary.lty = TRUE) {
+                          mod2.labels = NULL, main.title = NULL,
+                          legend.main = NULL, color.class = NULL,
+                          line.thickness = 1.1, vary.lty = TRUE) {
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
@@ -477,7 +486,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL, mod2v
     call[[1]] <- survey::svyglm
     modelu <- eval(call)
   }
-  predicted <- as.data.frame(predict(modelu, pm, se.fit=T, interval=int.type[1]))
+  predicted <- as.data.frame(predict(modelu, pm, se.fit=T,
+                                     interval=int.type[1],
+                                     type = outcome.scale))
   pm[,resp] <- predicted[,1] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
