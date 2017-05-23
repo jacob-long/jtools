@@ -127,6 +127,7 @@
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
+#'  extractAIC family fitted pt residuals terms
 #' @export
 #'
 #'
@@ -682,6 +683,229 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
 
 }
 
+#' @rdname j_summ
+#' @export
+
+j_summ.merMod <- function(model, standardize = FALSE, vifs = FALSE,
+                          robust = FALSE, robust.type = "HC3", digits = 3,
+                          model.info = TRUE, model.fit = FALSE,
+                          model.check = FALSE, n.sd = 1, center = FALSE,
+                          standardize.response = FALSE) {
+
+  j <- list()
+
+  # Standardized betas
+  if (standardize == TRUE) {
+    # Save data --- using the call to access the data to avoid problems w/
+    # transformed data
+    call <- getCall(model)
+    if (!is.null(call$data)) {
+      d <- eval(call$data)
+      mframe <- FALSE # telling myself whether I use model.frame
+    } else {
+      d <- model.frame(model)
+      mframe <- TRUE
+    }
+    form <- update(formula(model),
+                   as.formula(formula(model)))
+
+    # Save response variable
+    resp <- as.character(formula(model)[2])
+
+    # Save list of terms
+    vars <- attributes(terms(model))$variables
+    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+
+    # calling gscale(), incorporating the weights
+    if (standardize.response == FALSE) {
+      # Now we need to know the variables of interest
+      vars <- vars[!(vars %in% resp)]
+      d <- gscale(x = vars, data = d, n.sd = n.sd)
+    } else {
+      d <- gscale(x = vars, data = d, n.sd = n.sd)
+    }
+    model <- update(model, formula = form, data = d)
+  } else if (center == TRUE && standardize == FALSE) {
+    call <- getCall(model)
+    if (!is.null(call$data)) {
+      d <- eval(call$data)
+      mframe <- FALSE # telling myself whether I use model.frame
+    } else {
+      d <- model.frame(model)
+      mframe <- TRUE
+    }
+    form <- update(formula(model),
+                   as.formula(formula(model)))
+
+    # Save response variable
+    resp <- as.character(formula(model)[2])
+
+    # Save list of terms
+    vars <- attributes(terms(model))$variables
+    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+
+    # calling gscale(), incorporating the weights
+    if (standardize.response == FALSE) {
+      # Now we need to know the variables of interest
+      vars <- vars[!(vars %in% resp)]
+      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
+    } else {
+      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
+    }
+    model <- update(model, formula = form, data = d)
+  }
+
+
+  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
+                 robust.type = robust.type, digits = digits,
+                 model.info = model.info, model.fit = model.fit, n.sd = n.sd,
+                 center = center)
+
+  # Using information from summary()
+  sum <- summary(model)
+
+  if (!all(attributes(terms(model))$order > 1)) {
+    interaction <- TRUE
+  } else {
+    interaction <- FALSE
+  }
+
+  # Intercept?
+  if (length(terms(model)) != attr(terms(model), "intercept")) {
+    df.int <- if (attr(terms(model), "intercept"))
+      1L
+    else 0L
+  }
+
+  # Sample size used
+  n <- length(residuals(model))
+  j <- structure(j, n = n)
+
+  # Calculate R-squared
+  ### Below taken from summary.lm
+  r <- residuals(model)
+  f <- fitted(model)
+  w <- weights(model)
+  ## Dealing with no-intercept models, getting the df.int
+  if (is.null(w)) {
+    mss <- if (df.int == 1L)
+      sum((f - mean(f))^2)
+    else sum(f^2)
+    rss <- sum(r^2)
+  } else {
+    mss <- if (df.int == 1L) {
+      m <- sum(w * f/sum(w))
+      sum(w * (f - m)^2)
+    } else sum(w * f^2)
+    rss <- sum(w * r^2)
+    r <- sqrt(w) * r
+  }
+
+  # TODO: Figure out model fit indices for MLMs
+  # Final calculations (linear pseudo-rsq)
+  ## Need to define this here because of glm's weird namespace behavior
+  # pR2 <- function(object){
+  #   llh <- suppressWarnings(logLik(object))
+  #   objectNull <- suppressWarnings(update(object, ~ 1))
+  #   llhNull <- logLik(objectNull)
+  #   n <- dim(model.frame(model))[1]
+  #   pR2Work(llh,llhNull,n)
+  # }
+  # ## Cragg-Uhler
+  # rsq <- pR2(model)$r2CU
+  # ## McFadden
+  # rsqmc <- pR2(model)$McFadden
+
+  # AIC for GLMs
+  j <- structure(j, aic = extractAIC(model))
+
+  # List of names of predictors
+  ivs <- rownames(sum$coefficients)
+
+  # Unstandardized betas
+  ucoefs <- unname(sum$coefficients[,1])
+
+  # VIFs
+  if (vifs==T) {
+    warning("VIFs not supported for merMod objects.")
+  }
+
+  # Standard errors and t-statistics
+  ses <- sum$coefficients[,2]
+  ts <- sum$coefficients[,3]
+
+  # lmerMod doesn't have p-values, so
+  if (!sum$isLmer) {
+    pvals <- sum$coefficients[,4]
+  } else {
+    df <- n - length(ivs) - 1
+    vec <- rep(NA, times = length(ts))
+    for (i in 1:length(ts)) {
+      p <- pt(ts[i], df)
+      vec[i] <- p
+    }
+    pvals <- vec
+  }
+
+  # Need proper name for test statistic
+  tcol <- colnames(sum$coefficients)[3]
+  tcol <- gsub("value", "val.", tcol)
+
+  # Put things together
+  params <- list(ucoefs, ses, ts, pvals)
+  namevec <- c("Est.", "S.E.", tcol, "p")
+
+  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  rownames(mat) <- ivs
+  colnames(mat) <- namevec
+
+  for (i in 1:length(params)) {
+    if (is.numeric(params[[i]])) {
+      mat[,i] <- params[[i]]
+    } else {
+      mat[,i] <- params[[i]]
+    }
+  }
+
+  # Dealing with random effects
+  ## Names of grouping vars
+  groups <- names(sum$ngrps)
+  ## Number of groups
+  ngroups <- sum$ngrps
+  ## Calculate ICCs w/ internal function from sjstats
+  iccs <- icc(model)
+
+  ## Make a table summarizing grouping vars
+  gvmat <- matrix(ncol = 3, nrow = length(ngroups))
+  colnames(gvmat) <- c("Group","# groups","ICC")
+  for (i in 1:length(ngroups)) {
+    gvmat[i,1] <- groups[i]
+    gvmat[i,2] <- ngroups[i]
+    gvmat[i,3] <- iccs[i]
+  }
+
+  ## Make table explaining random coefs
+  rcmat <- as.data.frame(lme4::VarCorr(model))
+  rcmat <- rcmat[is.na(rcmat$var2),]
+  rcmat <- rcmat[,names(rcmat) %in% c("grp","var1","sdcor")]
+  rcmat <- as.matrix(rcmat)
+  colnames(rcmat) <- c("Group","Parameter","Std.Dev.")
+
+
+  j <- structure(j, groups = groups, ngroups = ngroups, iccs = iccs,
+                 vcnames = names(iccs), dv = names(model.frame(model)[1]),
+                 npreds = nrow(mat))
+
+  j <- structure(j, lmFamily = family(model))
+
+  j$coeftable <- mat
+  j$rcoeftable <- rcmat # Random effects table
+  j$gvars <- gvmat # Grouping variables table
+  j$model <- model
+  class(j) <- c("j_summ.merMod", "j_summ")
+  return(j)
+
+}
 
 #######################################################################
 #  PRINT METHOD                                                       #
@@ -964,6 +1188,91 @@ print.j_summ.svyglm <- function(x, ...) {
   }
 
   print(as.table(ctable))
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}
+
+#' @export
+
+print.j_summ.merMod <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Making a vector of p-value significance indicators
+  sigstars <- c()
+  for (y in 1:height) {
+    if (ctable[y,width] > 0.1) {
+      sigstars[y] <- ""
+    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+      sigstars[y] <- "."
+    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+      sigstars[y] <- "*"
+    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+      sigstars[y] <- "**"
+    } else if (ctable[y,width] <= 0.001) {
+      sigstars[y] <- "***"
+    }
+  }
+
+  onames <- colnames(ctable)
+  ctable <- cbind(ctable, sigstars)
+  colnames(ctable) <- c(onames, "")
+
+  if (x$model.info == TRUE) {
+    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
+        "Dependent Variable: ",
+        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      cat("Type: Mixed effects linear regression", "\n\n")
+    } else {
+      cat("\nType: Mixed effects generalized linear regression", "\n",
+          "Error Distribution: ", as.character(x$lmFamily[1]), "\n",
+          "Link function: ",
+          as.character(x$lmFamily[2]), "\n", "\n", sep="")
+    }
+  }
+
+  if (x$model.fit==T) {
+    cat("MODEL FIT: ",
+        "\n", "AIC = ", x$aic, "\n\n", sep="")
+  }
+
+  cat("FIXED EFFECTS:\n")
+  print(as.table(ctable))
+
+  cat("\nRANDOM EFFECTS:\n")
+  rtable <- j$rcoeftable
+  rtable[,3] <- round(as.numeric(rtable[,3]), digits = x$digits)
+  rtable <- as.table(rtable)
+  rownames(rtable) <- rep("", times = nrow(rtable))
+  print(rtable)
+
+  cat("\nGrouping variables:\n")
+  gtable <- j$gvars
+  gtable[,2:3] <- round(as.numeric(gtable[,2:3]), digits = x$digits)
+  gtable <- as.table(gtable)
+  rownames(gtable) <- rep("", times = nrow(gtable))
+  print(gtable)
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {

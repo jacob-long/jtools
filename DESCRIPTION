@@ -24,6 +24,7 @@ Suggests:
   weights,
   RColorBrewer,
   cowplot,
+  lme4,
     knitr,
     rmarkdown,
     testthat
