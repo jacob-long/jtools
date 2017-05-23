@@ -147,7 +147,7 @@ j_summ.lm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
                       model.fit = TRUE, model.check = FALSE, n.sd = 1,
                       center = FALSE, standardize.response = FALSE) {
 
-  j <- NULL
+  j <- list()
 
   # Standardized betas
   if (standardize == TRUE) {
@@ -290,7 +290,7 @@ j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
                        model.fit = TRUE, model.check = FALSE, n.sd = 1,
                        center = FALSE, standardize.response = FALSE) {
 
-  j <- NULL
+  j <- list()
 
   # Standardized betas
   if (standardize == TRUE) {
@@ -483,7 +483,7 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
                           model.fit = TRUE, model.check = FALSE, n.sd = 1,
                           center = FALSE, standardize.response = FALSE) {
 
-  j <- NULL
+  j <- list()
 
   # Standardized betas
   if (standardize == TRUE || center == TRUE) {
