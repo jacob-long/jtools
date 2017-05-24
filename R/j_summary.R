@@ -293,6 +293,11 @@ j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
 
   j <- list()
 
+  if (robust == TRUE) {
+    warning("Robust standard errors are not supported for glm models.")
+    robust <- FALSE
+  }
+
   # Standardized betas
   if (standardize == TRUE) {
     # Save data --- using the call to access the data to avoid problems w/
@@ -485,6 +490,11 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
                           center = FALSE, standardize.response = FALSE) {
 
   j <- list()
+
+  if (robust == TRUE) {
+    warning("The survey package always reports robust standard errors by default.")
+    robust <- FALSE
+  }
 
   # Standardized betas
   if (standardize == TRUE || center == TRUE) {
@@ -693,6 +703,11 @@ j_summ.merMod <- function(model, standardize = FALSE, vifs = FALSE,
                           standardize.response = FALSE) {
 
   j <- list()
+
+  if (robust == TRUE) {
+    warning("Robust standard errors are not supported for merMod models.")
+    robust <- FALSE
+  }
 
   # Standardized betas
   if (standardize == TRUE) {
