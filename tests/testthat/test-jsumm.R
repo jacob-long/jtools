@@ -15,10 +15,16 @@ regmodell <- svyglm(mealsdec ~ ell + api00, design = dstrat)
 
 fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 
+library(lme4)
+data(VerbAgg)
+mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
+            control = glmerControl("bobyqa"))
+
 test_that("jsumm: non-linear models work", {
   expect_is(j_summ(fitgf), "j_summ.glm")
   expect_is(j_summ(fitgf, standardize = TRUE), "j_summ.glm")
   expect_is(j_summ(fitgf, center = TRUE), "j_summ.glm")
+  expect_warning(j_summ(fitgf, robust = TRUE))
 })
 
 
@@ -34,6 +40,10 @@ test_that("jsumm: svyglm linear model check works", {
   expect_is(j_summ(regmodel, model.check = TRUE), "j_summ.svyglm")
 })
 
+test_that("jsumm: svyglm robust std. error warning", {
+  expect_warning(j_summ(regmodel, robust = TRUE))
+})
+
 test_that("jsumm and scale_lm: scaling works", {
   expect_is(j_summ(fitgf, standardize = TRUE, n.sd = 2), "j_summ.glm")
   expect_is(j_summ(fit, standardize = TRUE, n.sd = 2), "j_summ.lm")
@@ -42,6 +52,12 @@ test_that("jsumm and scale_lm: scaling works", {
 test_that("jsumm and center_lm: centering works", {
   expect_is(j_summ(fitgf, center = TRUE, n.sd = 2), "j_summ.glm")
   expect_is(j_summ(fit, center = TRUE, n.sd = 2), "j_summ.lm")
+})
+
+test_that("jsumm and merMod objects: everything works", {
+  expect_is(suppressWarnings(j_summ(mv, center = TRUE, n.sd = 2)), "j_summ.merMod")
+  expect_is(j_summ(mv, standardize = TRUE, n.sd = 2), "j_summ.merMod")
+  expect_warning(j_summ(mv, robust = TRUE))
 })
 
 test_that("jsumm: Printing isn't borked", {
