@@ -164,11 +164,13 @@
 #' interact_plot(regmodel, pred = ell, modx = meals)
 #'
 #' # With lme4
+#' \dontrun{
 #' library(lme4)
 #' data(VerbAgg)
 #' mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
 #'             control = glmerControl("bobyqa"))
 #' interact_plot(mv, pred = Anger, modx = mode)
+#' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall
 #' @export interact_plot
