@@ -13,8 +13,9 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   color.class = NULL, line.thickness = 1.1, vary.lty = TRUE)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm}, or
-\code{\link[survey]{svyglm}}. It should contain the interaction of interest.}
+\item{model}{A regression model of type \code{lm}, \code{glm},
+\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
+contain the interaction of interest.}
 
 \item{pred}{The name of the predictor variable involved
 in the interaction.}
@@ -55,7 +56,8 @@ scatterpolot on top of the interaction lines. If moderator is a factor, the dots
 will be the same color as their parent factor.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
-the line using \code{\link[ggplot2]{geom_ribbon}}.}
+the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
+\code{merMod} models.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or "prediction".
 Default is confidence interval.}
@@ -150,6 +152,13 @@ data(api)
 dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 regmodel <- svyglm(api00~ell*meals,design=dstrat)
 interact_plot(regmodel, pred = ell, modx = meals)
+
+# With lme4
+library(lme4)
+data(VerbAgg)
+mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
+            control = glmerControl("bobyqa"))
+interact_plot(mv, pred = Anger, modx = mode)
 
 }
 \references{

@@ -4,8 +4,9 @@
 #' variable to explore interactions. The plotting is done with \code{ggplot2} rather than
 #' base graphics, which some similar functions use.
 #'
-#' @param model A regression model of type \code{lm}, \code{glm}, or
-#' \code{\link[survey]{svyglm}}. It should contain the interaction of interest.
+#' @param model A regression model of type \code{lm}, \code{glm},
+#'   \code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
+#'   contain the interaction of interest.
 #'
 #' @param pred The name of the predictor variable involved
 #'  in the interaction.
@@ -46,7 +47,8 @@
 #'   will be the same color as their parent factor.
 #'
 #' @param interval Logical. If \code{TRUE}, plots confidence/prediction intervals
-#'   the line using \code{\link[ggplot2]{geom_ribbon}}.
+#'   the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
+#'   \code{merMod} models.
 #'
 #' @param int.type Type of interval to plot. Options are "confidence" or "prediction".
 #'   Default is confidence interval.
@@ -158,6 +160,13 @@
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' interact_plot(regmodel, pred = ell, modx = meals)
 #'
+#' # With lme4
+#' library(lme4)
+#' data(VerbAgg)
+#' mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
+#'             control = glmerControl("bobyqa"))
+#' interact_plot(mv, pred = Anger, modx = mode)
+#'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall
 #' @export interact_plot
 
@@ -186,11 +195,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
     survey <- TRUE
+    mixed <- FALSE
     design <- model$survey.design
     d <- design$variables
 
     # Focal vars so the weights don't get centered
-    fvars <- as.character(attributes(model$terms)$variables)
+    fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
 
@@ -203,8 +213,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   } else {
     survey <- FALSE
+    if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
 
-    fvars <- as.character(attributes(model$terms)$variables)
+      mixed <- TRUE
+      if (interval == TRUE) {
+        warning("Confidence intervals cannot be provided for random effects models.")
+        interval <- FALSE
+      }
+
+    } else {
+    mixed <- FALSE
+    }
+
+    fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
 
@@ -486,9 +507,16 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     call[[1]] <- survey::svyglm
     modelu <- eval(call)
   }
-  predicted <- as.data.frame(predict(modelu, pm, se.fit=T,
-                                     interval=int.type[1],
-                                     type = outcome.scale))
+  if (mixed == TRUE) {
+    predicted <- as.data.frame(predict(modelu, pm,
+                                       type = outcome.scale,
+                                       allow.new.levels = F,
+                                       re.form = ~0))
+  } else {
+    predicted <- as.data.frame(predict(modelu, pm, se.fit=T,
+                                       interval=int.type[1],
+                                       type = outcome.scale))
+  }
   pm[,resp] <- predicted[,1] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
@@ -496,7 +524,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   ses <- qnorm(intw, 0, 1)
 
   # See minimum and maximum values for plotting intervals
-  if (survey == FALSE) {
+  if (mixed == TRUE) {
+    # No SEs
+  } else if (survey == FALSE) {
     pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
     pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
   } else if (survey == TRUE) {
