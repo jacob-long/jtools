@@ -123,8 +123,11 @@ This function provides a means for plotting conditional effects for the
   The function is designed for two-way interactions. For additional terms, the
   \code{\link[effects]{effects}} package may be better suited to the task.
 
-  This function has not been extensively tested with non-linear models and may
-  display unusual behavior and/or errors when used with them.
+  This function supports nonlinear models and by default will plot them on
+  their original scale (\code{outcome.scale = "response"}).
+
+  While mixed effects models from \code{lme4} are supported, only the fixed
+  effects are plotted.
 }
 \examples{
 # Using a fitted lm model
