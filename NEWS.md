@@ -2,6 +2,7 @@
 
 * Added better support for plotting nonlinear interactions with interact_plot,
 providing an option to plot on original (nonlinear) scale.
+* interact_plot can now plot fixed effects interactions from merMod objects
 * Fixed warning messages when using j_summ with R 3.4.x
 * Added preliminary merMod support for j_summ. Still needs convergence warnings,
   some other items.
