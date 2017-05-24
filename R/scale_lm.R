@@ -8,7 +8,7 @@
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{"0/1"};
 #'   \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5 and
-#'    1 as 0.5; \code{center} substracts the mean; and \code{full} treats them
+#'    1 as 0.5; \code{center} subtracts the mean; and \code{full} treats them
 #'   like other continuous variables.
 #'
 #' @param n.sd How many standard deviations should you divide by for
@@ -54,7 +54,7 @@
 #'
 #' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 #' regression/correlation analyses for the behavioral sciences} (3rd ed.).
-#' Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+#' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'

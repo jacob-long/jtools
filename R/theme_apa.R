@@ -63,7 +63,7 @@
 #'
 #' @references
 #'
-#' American Psychological Assocation. (2010). \emph{Publication manual of the American
+#' American Psychological Association. (2010). \emph{Publication manual of the American
 #' Psychological Association, Sixth Edition}. Washington, DC: American Psychological
 #'  Association.
 #'

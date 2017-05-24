@@ -1,6 +1,6 @@
 #' Center variables in fitted regression models
 #'
-#' \code{center_lm()} takes fitted regression models and mean-centers the continous
+#' \code{center_lm()} takes fitted regression models and mean-centers the continuous
 #'   variables in the model to aid interpretation, especially in the case of models
 #'   with interactions.
 #'
@@ -10,7 +10,7 @@
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{0/1};
 #'   \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
-#'   \code{center} substracts the mean; and \code{full} treats them like other
+#'   \code{center} subtracts the mean; and \code{full} treats them like other
 #'   continuous variables.
 #'
 #' @param center.response Should the response variable also be centered? Default
@@ -48,7 +48,7 @@
 #'
 #' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 #' regression/correlation analyses for the behavioral sciences} (3rd ed.).
-#' Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+#' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
