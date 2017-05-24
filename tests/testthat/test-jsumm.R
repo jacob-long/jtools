@@ -69,5 +69,6 @@ test_that("jsumm: Printing isn't borked", {
   expect_output(print(j_summ(regmodell, model.check = TRUE, vifs = TRUE)))
   expect_output(print(j_summ(fit, standardize = TRUE, n.sd = 2)))
   expect_output(print(j_summ(fit, model.check = TRUE, vifs = TRUE)))
+  expect_output(print(j_summ(mv, standardize = TRUE, n.sd = 2)))
 
 })
