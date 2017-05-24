@@ -440,6 +440,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     }
   }
 
+  if (is.factor(d[,pred]) & length(unique(d[,pred] == 2))) {
+    d[,pred] <- as.numeric(d[,pred]) - 1
+  } else if (is.factor(d[,pred]) & length(unique(d[,pred] != 2))) {
+    stop("Focal predictor (\"pred\") cannot have more than two levels. Either use it as modx or convert it to a continuous or single dummy variable.")
+  }
+
 
   # Creating a set of dummy values of the focal predictor for use in predict()
   xpreds <- seq(from=range(d[!is.na(d[,pred]),pred])[1],
