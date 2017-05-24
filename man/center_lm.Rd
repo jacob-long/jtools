@@ -13,7 +13,7 @@ if any.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{0/1};
 \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
-\code{center} substracts the mean; and \code{full} treats them like other
+\code{center} subtracts the mean; and \code{full} treats them like other
 continuous variables.}
 
 \item{center.response}{Should the response variable also be centered? Default
@@ -24,7 +24,7 @@ The functions returns a \code{lm} or \code{glm} object, inheriting from
   whichever class was supplied.
 }
 \description{
-\code{center_lm()} takes fitted regression models and mean-centers the continous
+\code{center_lm()} takes fitted regression models and mean-centers the continuous
   variables in the model to aid interpretation, especially in the case of models
   with interactions.
 }
@@ -65,7 +65,7 @@ Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilev
 
 Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 regression/correlation analyses for the behavioral sciences} (3rd ed.).
-Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{sim_slopes}} performs a simple slopes analysis.

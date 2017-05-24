@@ -74,7 +74,7 @@ output contain?}
 \value{
 \item{slopes}{A table of coefficients for the focal predictor at each value of
  the moderator}
- \item{ints}{A table of coefficents for the intercept at each value of the moderator}
+ \item{ints}{A table of coefficients for the intercept at each value of the moderator}
  \item{modxvals}{The values of the moderator used in the analysis}
  \item{mods}{A list containing each regression model created to estimate the conditional
  coefficients.}
@@ -134,7 +134,7 @@ Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilev
 
 Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 regression/correlation analyses for the behavioral sciences} (3rd ed.).
-Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{interact_plot}} accepts similar syntax and will plot the

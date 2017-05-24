@@ -52,7 +52,7 @@ The interpretation of the values given by this function is important and not
 
  This technique is not easily ported to 3-way interaction contexts. You could,
  however, look at the J-N interval at two different levels of a second
- moderator. This does forego a benefit of the J-N technique, which is not
+ moderator. This does forgo a benefit of the J-N technique, which is not
  having to pick arbitrary points. If you want to do this, just use the
  \code{\link{sim_slopes}} function's ability to handle 3-way interactions
  and request Johnson-Neyman intervals for each.

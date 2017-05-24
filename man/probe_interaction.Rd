@@ -37,7 +37,7 @@ separately and they re-fit a separate model for each level of each moderator;
 therefore, the runtime may be considerably longer than the original model
 fit. For larger models, this is worth keeping in mind.
 
-Sometimes, you may want different parameters when doing simple slopes anaysis
+Sometimes, you may want different parameters when doing simple slopes analysis
 compared to when plotting interaction effects. For instance, it is often
 easier to interpret the regression output when variables are standardized;
 but plots are often easier to understand when the variables are in their

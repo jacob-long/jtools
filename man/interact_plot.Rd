@@ -52,7 +52,7 @@ non-focal predictors are centered when \code{centered = NULL}, its default.}
 = TRUE}? Default is 1, but some prefer 2.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
-scatterpolot on top of the interaction lines. If moderator is a factor, the dots
+scatterplot on top of the interaction lines. If moderator is a factor, the dots
 will be the same color as their parent factor.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
@@ -65,7 +65,7 @@ Default is confidence interval.}
 \item{int.width}{How large should the interval be, relative to the standard error?
 The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
 level for values outside the range. In other words, for a confidence interval,
-.95 is analagous to a 95\% confidence interval.}
+.95 is analogous to a 95\% confidence interval.}
 
 \item{outcome.scale}{For nonlinear models (i.e., GLMs), should the outcome
 variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -172,7 +172,7 @@ Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilev
 
 Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
 regression/correlation analyses for the behavioral sciences} (3rd ed.).
-Mahwah, NJ: Lawerence Erlbaum Associates, Inc.
+Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link[rockchalk]{plotSlopes}} performs a similar function, but

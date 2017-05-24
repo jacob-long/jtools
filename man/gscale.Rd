@@ -13,7 +13,7 @@ frame or \code{svydesign} object is, all columns will be processed and returned.
 
 \item{binary.inputs}{Options for binary variables. Default is \code{center};
 \code{0/1} keeps original scale; \code{-0.5/0.5} rescales 0 as -0.5 and 1 as 0.5;
-\code{center} substracts the mean; and \code{full} substracts the mean and
+\code{center} subtracts the mean; and \code{full} subtracts the mean and
 divides by 2 sd.}
 
 \item{data}{A data frame or survey design. Only needed if you would like to

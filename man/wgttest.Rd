@@ -24,7 +24,7 @@ in your linear regression analysis.
 \details{
 This is designed to be similar to the \code{wgttest} macro for Stata
 (\url{http://fmwww.bc.edu/repec/bocode/w/wgttest.html}). This method,
-advocated for by DuMouchel and Duncan (1983), is fairly straigthforward. To
+advocated for by DuMouchel and Duncan (1983), is fairly straightforward. To
 decide whether weights are needed, the weights are added to the linear model
 as a predictor and interaction with each other predictor. Then, an omnibus
 test of significance is performed to compare the weights-added model to the

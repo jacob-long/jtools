@@ -51,7 +51,7 @@ coefficients. Default is \code{FALSE}.}
   This requires the \code{sandwich} and \code{lmtest} packages to compute the
    standard errors.}
 
-\item{robust.type}{Only used if \code{robust=TRUE}. Specificies the type of
+\item{robust.type}{Only used if \code{robust=TRUE}. Specifies the type of
 robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
 . See details for more on options.}
 
