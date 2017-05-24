@@ -406,14 +406,6 @@ j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
   }
 
   # Final calculations (linear pseudo-rsq)
-  ## Need to define this here because of glm's weird namespace behavior
-  pR2 <- function(object){
-    llh <- suppressWarnings(logLik(object))
-    objectNull <- suppressWarnings(update(object, ~ 1))
-    llhNull <- logLik(objectNull)
-    n <- dim(object$model)[1]
-    pR2Work(llh,llhNull,n)
-  }
   ## Cragg-Uhler
   rsq <- pR2(model)$r2CU
   ## McFadden
@@ -608,14 +600,6 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
     j <- structure(j, rsq = rsq, arsq = arsq)
   } else { # If not linear, calculate pseudo-rsq
     # Final calculations (linear pseudo-rsq)
-    ## Need to define this here because of glm's weird namespace behavior
-    pR2 <- function(object){
-      llh <- suppressWarnings(logLik(object))
-      objectNull <- suppressWarnings(update(object, ~ 1, design = design))
-      llhNull <- logLik(objectNull)
-      n <- dim(object$model)[1]
-      pR2Work(llh,llhNull,n)
-    }
     ## Cragg-Uhler
     rsq <- suppressWarnings(pR2(model)$r2CU)
     ## McFadden

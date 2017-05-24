@@ -17,9 +17,11 @@ pR2Work <- function(llh,llhNull,n){
   out
 }
 
-pR2 <- function(object){
+### Have to specify data differently than pscl to fix namespace issues
+pR2 <- function(object) {
   llh <- suppressWarnings(logLik(object))
-  objectNull <- suppressWarnings(update(object, ~ 1))
+  objectNull <- suppressWarnings(update(object, ~ 1,
+                                        data = model.frame(object)))
   llhNull <- logLik(objectNull)
   n <- dim(object$model)[1]
   pR2Work(llh,llhNull,n)
