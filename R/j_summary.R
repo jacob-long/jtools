@@ -405,6 +405,15 @@ j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
     r <- sqrt(w) * r
   }
 
+  ## Namespace issues require me to define pR2 here
+  pR2 <- function(object) {
+    llh <- suppressWarnings(logLik(object))
+    objectNull <- suppressWarnings(update(object, ~ 1))
+    llhNull <- logLik(objectNull)
+    n <- dim(object$model)[1]
+    pR2Work(llh,llhNull,n)
+  }
+
   # Final calculations (linear pseudo-rsq)
   ## Cragg-Uhler
   rsq <- pR2(model)$r2CU
@@ -599,6 +608,18 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
 
     j <- structure(j, rsq = rsq, arsq = arsq)
   } else { # If not linear, calculate pseudo-rsq
+
+    ## Have to specify pR2 here to fix namespace issues
+    pR2 <- function(object) {
+      llh <- suppressWarnings(logLik(object))
+      objectNull <- suppressWarnings(update(object, ~ 1,
+                                            design = object$survey.design))
+
+      llhNull <- logLik(objectNull)
+      n <- dim(object$model)[1]
+      pR2Work(llh,llhNull,n)
+    }
+
     # Final calculations (linear pseudo-rsq)
     ## Cragg-Uhler
     rsq <- suppressWarnings(pR2(model)$r2CU)
