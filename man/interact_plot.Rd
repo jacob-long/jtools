@@ -11,6 +11,7 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   x.label = NULL, y.label = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL,
   color.class = NULL, line.thickness = 1.1, vary.lty = TRUE)
+  pred.labels = NULL, mod2.labels = NULL, main.title = NULL,
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -84,6 +85,10 @@ the variable name is used.}
 provided in the same order as the \code{modxvals} argument. If \code{NULL},
 the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
 In that case, "+1 SD" and "-1 SD" are used.}
+
+\item{pred.labels}{A character vector of 2 labels for the predictor if it is
+a 2-level factor or a continuous variable with only 2 values. If \code{NULL},
+the default, the factor labels are used.}
 
 \item{mod2.labels}{A character vector of labels for each level of the 2nd moderator
 values, provided in the same order as the \code{mod2vals} argument. If \code{NULL},

@@ -71,6 +71,10 @@
 #' @param y.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
 #'
+#' @param pred.labels A character vector of 2 labels for the predictor if it is
+#'   a 2-level factor or a continuous variable with only 2 values. If \code{NULL},
+#'   the default, the factor labels are used.
+#'
 #' @param modx.labels A character vector of labels for each level of the moderator values,
 #'   provided in the same order as the \code{modxvals} argument. If \code{NULL},
 #'   the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
@@ -181,6 +185,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           int.type = c("confidence","prediction"),
                           int.width = .95, outcome.scale = "response",
                           x.label = NULL, y.label = NULL, modx.labels = NULL,
+                          pred.labels = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE) {
@@ -440,10 +445,20 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     }
   }
 
+  # Support for factor input for pred term, but only if it has two levels
   if (is.factor(d[,pred]) & length(unique(d[,pred] == 2))) {
+    # Getting the labels from the factor
+    predlabs <- levels(d[,pred])
+    # Now convert it to a numeric variable, subtracting 1 to make it 0/1 rather
+    # than 1/2
     d[,pred] <- as.numeric(d[,pred]) - 1
+    # Set this indicator so it is treated properly later
+    predfac <- TRUE
   } else if (is.factor(d[,pred]) & length(unique(d[,pred] != 2))) {
+    # I could assume the factor is properly ordered, but that's too risky
     stop("Focal predictor (\"pred\") cannot have more than two levels. Either use it as modx or convert it to a continuous or single dummy variable.")
+  } else {
+    predfac <- FALSE
   }
 
 
@@ -654,6 +669,28 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                        facet.title.size = 8)
   }
   p <- p + ggplot2::labs(x = x.label, y = y.label) # better labels for axes
+
+  # Getting rid of tick marks for factor predictor
+  if (predfac == TRUE) {
+    if (is.null(pred.labels)) { # Let pred.labels override factor labels
+      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = predlabs)
+    } else { # Use the factor labels
+      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = pred.labels)
+    }
+  } else if (length(unique(d[,pred])) == 2) { # Predictor has only two unique values
+    # Make sure those values are in increasing order
+    brks <- sort(unique(d[,pred]), decreasing = F)
+    if (is.null(pred.labels)) {
+      p <- p + ggplot2::scale_x_continuous(breaks = brks)
+    } else {
+      if (length(pred.labels) == 2) { # Make sure pred.labels has right length
+        p <- p + ggplot2::scale_x_continuous(breaks = brks, labels = pred.labels)
+      } else {
+        warning("pred.labels argument has the wrong length. It won't be used")
+        p <- p + ggplot2::scale_x_continuous(breaks = brks)
+      }
+    }
+  }
 
   # Get scale colors, provide better legend title
   if (facmod == TRUE) {
