@@ -65,6 +65,11 @@
 #'   scale, which will show straight lines rather than curves, use
 #'   \code{"link"}.
 #'
+#' @param set.offset For models with an offset (e.g., Poisson models), sets a
+#'   offset for the predicted values. All predicted values will have the same
+#'   offset. By default, this is set to 1, which makes the predicted values a
+#'   proportion.
+#'
 #' @param x.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
 #'
@@ -184,8 +189,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           n.sd = 1, plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence","prediction"),
                           int.width = .95, outcome.scale = "response",
-                          x.label = NULL, y.label = NULL, modx.labels = NULL,
-                          pred.labels = NULL,
+                          set.offset = 1,
+                          x.label = NULL, y.label = NULL,
+                          pred.labels = NULL, modx.labels = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE) {
@@ -258,6 +264,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     wname <- NULL
   }
 
+  # offset?
+  if (!is.null(model.offset(model.frame(model)))) {
+    off <- TRUE
+    offname <- as.character(model$call$offset[-1])
+  } else {
+    off <- FALSE
+    offname <- NULL
+  }
+
   # Setting default for colors
   if (is.factor(d[,modx])) {
     facmod <- TRUE
@@ -288,7 +303,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   resp <- trimws(resp)
 
   # Update facvars by pulling out all non-focals
-  facvars <- facvars[!(facvars %in% c(pred, resp, modx, mod2, wname))]
+  facvars <- facvars[!(facvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]
 
   # Handling user-requested centered vars
   if (!is.null(centered) && centered != "all" && centered != "none") {
@@ -307,7 +322,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     }
   } else if (!is.null(centered) && centered == "all") {
     # Need to handle surveys differently within this condition
-    vars <- names(d)[!(names(d) %in% c(resp, wname))] # saving all vars expect response
+    vars <- names(d)[!(names(d) %in% c(resp, wname, "(offset)"))] # saving all vars expect response
     if (survey == FALSE) {
       if (weights == FALSE) {
         d <- gscale(x = vars, data = d, center.only = !standardize,
@@ -319,7 +334,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     } else {
       # Need a different strategy for not iterating over unimportant vars for
       # survey designs
-      ndfvars <- fvars[!(fvars %in% c(resp, wname))]
+      ndfvars <- fvars[!(fvars %in% c(resp, wname, "(offset)"))]
       if (length(ndfvars) > 0) {
         design <- gscale(x = ndfvars, data = design, center.only = !standardize,
                          n.sd = n.sd)
@@ -330,7 +345,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   } else { # Center all non-focal
     # Centering the non-focal variables to make the slopes more interpretable
-    vars <- names(d)[!(names(d) %in% c(pred, resp, modx, mod2, wname))]
+    vars <- names(d)[!(names(d) %in% c(pred, resp, modx, mod2, wname, "(offset)"))]
     # Need to handle surveys differently within this condition
     if (survey == FALSE) {
       if (weights == FALSE) {
@@ -343,7 +358,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     } else {
       # Need a different strategy for not iterating over unimportant vars for
       # survey designs
-      nfvars <- fvars[!(fvars %in% c(pred, resp, modx, mod2, wname))]
+      nfvars <- fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]
       if (length(nfvars) > 0) {
         design <- gscale(x = nfvars, data = design, center.only = !standardize,
                          n.sd = n.sd)
@@ -503,6 +518,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     pm <- matrix(rep(0, (nc+2)*length(facs)), ncol=(nc+2))
   }
 
+  # Change name of offset column to its original
+  if (off == TRUE) {
+    # Avoiding the variable not found stuff
+    colnames(d)[colnames(d) %in% "(offset)"] <- offname
+    d[,offname] <- exp(d[,offname])
+  }
+
   # Naming columns
   colnames(pm) <- c(colnames(d),"ymax","ymin")
   # Convert to dataframe
@@ -521,6 +543,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     for (v in facvars) {
       pm[,v] <- levels(d[,v])[1]
     }
+  }
+
+  if (off == TRUE) {
+    if (is.null(set.offset)) {
+      offset.num <- median(d[,offname])
+    } else {
+      offset.num <- set.offset
+    }
+
+    pm[,offname] <- offset.num
+    msg <- paste("Count is based on a total of", offset.num, "exposures")
+    message(msg)
   }
 
   # Create predicted values based on specified levels of the moderator, focal predictor
