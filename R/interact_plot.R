@@ -373,75 +373,168 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx]) &&
       length(unique(d[,modx])) > 2) {
+
     if (survey == FALSE) {
-      modsd <- sd(d[,modx])
-      modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
-      names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
-      modxvals2 <- modxvalssd
+
+      if (weights == FALSE) { # can have weights w/o svyglm
+
+        modsd <- sd(d[,modx]) # save the SD
+        # Now save a vector of those focal values
+        modxvalssd <- c(mean(d[,modx]) + modsd,
+                        mean(d[,modx]),
+                        mean(d[,modx]) - modsd)
+        # Name the vector for better labeling of the plot
+        names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+
+      } else { # Same thing, but with weights
+
+        modsd <- wtd.sd(d[,modx], d[,wname])
+        modxvalssd <- c(weighted.mean(d[,modx], d[,wname]) + modsd,
+                        weighted.mean(d[,modx], d[,wname]),
+                        weighted.mean(d[,modx], d[,wname]) - modsd)
+        names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+
+      }
+
+      modxvals2 <- modxvalssd # Saving the values to a new object for use later
+
     } else if (survey == TRUE) {
+
       modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
-      modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
-      modxvalssd <- c(modmean+modsd, modmean, modmean-modsd)
+      # Have to construct the formula this way since the syntax for svymean
+      # differs from mean
+      modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")),
+                                 design = design)
+      modxvalssd <- c(modmean + modsd,
+                      modmean,
+                      modmean - modsd)
       names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+
       modxvals2 <- modxvalssd
+
     }
+
   } else if (!is.factor(d[,modx]) && class(modxvals) == "character" &&
-                        modxvals == "plus-minus") {
+                        modxvals == "plus-minus") { # No mean
+
     if (survey == FALSE) {
-      modsd <- sd(d[,modx])
-      modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
-      names(modxvalssd) <- c("+1 SD", "-1 SD")
-      modxvals2 <- modxvalssd
+
+      if (weights == FALSE) {
+
+        modsd <- sd(d[,modx])
+        modxvalssd <- c(mean(d[,modx]) + modsd,
+                        mean(d[,modx]) - modsd)
+        names(modxvalssd) <- c("+1 SD", "-1 SD")
+        modxvals2 <- modxvalssd
+
+      } else {
+
+        modsd <- wtd.sd(d[,modx], d[,wname])
+        modxvalssd <- c(weighted.mean(d[,modx], d[,wname]) + modsd,
+                        weighted.mean(d[,modx], d[,wname]) - modsd)
+        names(modxvalssd) <- c("+1 SD", "-1 SD")
+        modxvals2 <- modxvalssd
+
+      }
+
     } else if (survey == TRUE) {
+
       modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
       modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
       modxvalssd <- c(modmean+modsd, modmean-modsd)
       names(modxvalssd) <- c("+1 SD", "-1 SD")
       modxvals2 <- modxvalssd
+
     }
+
   } else if (is.null(modxvals) && !is.factor(d[,modx]) &&
              length(unique(d[,modx])) == 2) {
+
     modxvals2 <- as.numeric(levels(factor(d[,modx])))
+
   } else if (is.null(modxvals) && is.factor(d[,modx])){
+
     modxvals2 <- levels(d[,modx])
+
   } else { # Use user-supplied values otherwise
+
     modxvals2 <- sort(modxvals, decreasing = T)
+
   }
-
-
 
   # Same process for second moderator
   if (!is.null(mod2)) {
+
     if (is.null(mod2vals) && !is.factor(d[,mod2]) &&
         length(unique(d[,mod2])) > 2) {
+
       if (survey == FALSE) {
-        mod2sd <- sd(d[,mod2])
-        mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
-        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
-                               paste("Mean of", mod2),
-                               paste("Mean of", mod2, "-1 SD"))
+
+        if (weights == FALSE) {
+          mod2sd <- sd(d[,mod2])
+          mod2valssd <- c(mean(d[,mod2]) + mod2sd,
+                          mean(d[,mod2]),
+                          mean(d[,mod2]) - mod2sd)
+          names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                                 paste("Mean of", mod2),
+                                 paste("Mean of", mod2, "-1 SD"))
+
+        } else {
+
+          mod2sd <- wtd.sd(d[,mod2], d[,wname])
+          mod2valssd <- c(weighted.mean(d[,mod2], d[,wname]) + mod2sd,
+                          weighted.mean(d[,mod2], d[,wname]),
+                          weighted.mean(d[,mod2], d[,wname]) - mod2sd)
+          names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                                 paste("Mean of", mod2),
+                                 paste("Mean of", mod2, "-1 SD"))
+
+        }
+
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
+
       } else if (survey == TRUE) {
+
         mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
-        mod2valssd <- c(mod2mean+mod2sd, mod2mean, mod2mean-mod2sd)
+        mod2valssd <- c(mod2mean + mod2sd, mod2mean, mod2mean - mod2sd)
         names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
                                paste("Mean of", mod2),
                                paste("Mean of", mod2, "-1 SD"))
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
+
       }
+
     } else if (!is.factor(d[,mod2]) && class(mod2vals) == "character" &&
                mod2vals == "plus-minus") {
+
       if (survey == FALSE) {
-        mod2sd <- sd(d[,mod2])
-        mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2])-mod2sd)
-        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
-                               paste("Mean of", mod2, "-1 SD"))
-        mod2vals2 <- mod2valssd
-        mod2vals2 <- sort(mod2vals2, decreasing = F)
+
+        if (weights == FALSE) {
+
+          mod2sd <- sd(d[,mod2])
+          mod2valssd <- c(mean(d[,mod2]) + mod2sd,
+                          mean(d[,mod2]) - mod2sd)
+          names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                                 paste("Mean of", mod2, "-1 SD"))
+
+        } else {
+
+          mod2sd <- wtd.sd(d[,mod2])
+          mod2valssd <- c(weighted.mean(d[,mod2], d[,wname]) + mod2sd,
+                          weighted.mean(d[,mod2], d[,wname]) - mod2sd)
+          names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                                 paste("Mean of", mod2, "-1 SD"))
+
+        }
+
+          mod2vals2 <- mod2valssd
+          mod2vals2 <- sort(mod2vals2, decreasing = F)
+
       } else if (survey == TRUE) {
+
         mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
         mod2valssd <- c(mod2mean+mod2sd, mod2mean-mod2sd)
@@ -449,15 +542,24 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                                paste("Mean of", mod2, "-1 SD"))
         mod2vals2 <- mod2valssd
         mod2vals2 <- sort(mod2vals2, decreasing = F)
+
       }
+
     } else if (is.null(mod2vals) && !is.factor(d[,mod2]) &&
                length(unique(d[,mod2])) == 2) {
+
       mod2vals2 <- as.numeric(levels(factor(d[,mod2])))
-    } else if (is.null(mod2vals) && is.factor(d[,mod2])){
+
+    } else if (is.null(mod2vals) && is.factor(d[,mod2])) {
+
       mod2vals2 <- levels(d[,mod2])
+
     } else { # Use user-supplied values otherwise
+
       mod2vals2 <- sort(mod2vals, decreasing = F)
+
     }
+
   }
 
   # Support for factor input for pred term, but only if it has two levels
@@ -558,6 +660,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Create predicted values based on specified levels of the moderator, focal predictor
+
   if (survey == FALSE) {
     modelu <- update(model, data = d)
   } else {
@@ -567,6 +670,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     call[[1]] <- survey::svyglm
     modelu <- eval(call)
   }
+
   if (mixed == TRUE) {
     predicted <- as.data.frame(predict(modelu, pm,
                                        type = outcome.scale,
@@ -743,10 +847,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     p <- p + ggplot2::theme(legend.key.width = grid::unit(2, "lines"))
   }
 
+  # Give the plot the user-specified title if there is one
   if (!is.null(main.title)){
     p <- p + ggplot2::ggtitle(main.title)
   }
 
+  # Return the plot
   return(p)
 
 }
