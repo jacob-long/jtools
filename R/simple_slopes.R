@@ -158,7 +158,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   }
 
   # Create object to return
-  ss <- NULL
+  ss <- list()
 
   # Check arguments
   if (!is.numeric(digits)) { # digits
