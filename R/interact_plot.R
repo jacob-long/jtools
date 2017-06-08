@@ -614,10 +614,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Creating matrix for use in predict()
-  if (is.null(mod2)) {
-    pm <- matrix(rep(0, 100*(nc+2)*length(modxvals2)), ncol=(nc+2))
+  if (interval == TRUE) { # Only create SE columns if intervals needed
+    if (is.null(mod2)) {
+      pm <- matrix(rep(0, 100*(nc+2)*length(modxvals2)), ncol=(nc+2))
+    } else {
+      pm <- matrix(rep(0, (nc+2)*length(facs)), ncol=(nc+2))
+    }
   } else {
-    pm <- matrix(rep(0, (nc+2)*length(facs)), ncol=(nc+2))
+    if (is.null(mod2)) {
+      pm <- matrix(rep(0, 100*(nc)*length(modxvals2)), ncol=(nc))
+    } else {
+      pm <- matrix(rep(0, (nc)*length(facs)), ncol=(nc))
+    }
   }
 
   # Change name of offset column to its original
@@ -628,7 +636,11 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Naming columns
-  colnames(pm) <- c(colnames(d),"ymax","ymin")
+  if (interval == TRUE) { # if intervals, name the SE columns
+    colnames(pm) <- c(colnames(d),"ymax","ymin")
+  } else {
+    colnames(pm) <- colnames(d)
+  }
   # Convert to dataframe
   pm <- as.data.frame(pm)
   # Add values of moderator to df
@@ -688,14 +700,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   ses <- qnorm(intw, 0, 1)
 
   # See minimum and maximum values for plotting intervals
-  if (mixed == TRUE) {
-    # No SEs
-  } else if (survey == FALSE) {
-    pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
-    pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
-  } else if (survey == TRUE) {
-    pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
-    pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+  if (interval == TRUE) { # only create SE columns if intervals are needed
+    if (mixed == TRUE) {
+      # No SEs
+      warning("Standard errors cannot be calculated for mixed effect models.")
+    } else if (survey == FALSE) {
+      pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
+      pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
+    } else if (survey == TRUE) {
+      pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
+      pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+    }
+  } else {
+    # Do nothing
   }
 
   # For plotting, it's good to have moderator as factor...
