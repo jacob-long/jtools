@@ -747,9 +747,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       labs <- as.character(modxvals2)
       names(modxvals2) <- labs
       pm[,modx] <- factor(pm[,modx], labels = names(sort(modxvals2, decreasing = F)))
+    } else if (is.factor(d[,modx])) {
+      pm[,modx] <- factor(pm[,modx], levels = modxvals2)
     }
-  } else if (length(modx.labels)==length(modxvals2)) {
-    pm[,modx] <- factor(pm[,modx], labels=modx.labels)
+  } else if (length(modx.labels) == length(modxvals2)) {
+    if (!is.factor(d[,modx])) {
+      pm[,modx] <- factor(pm[,modx], labels = modx.labels)
+    } else if (is.factor(d[,modx])) {
+      pm[,modx] <- factor(pm[,modx], levels = modxvals2, labels = modx.labels)
+    }
   } else {warning("modx.labels argument was not the same length as modxvals. Ignoring...")}
 
 
@@ -764,9 +770,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
         labs <- as.character(mod2vals2)
         names(mod2vals2) <- labs
         pm[,mod2] <- factor(pm[,mod2], labels = names(sort(mod2vals2, decreasing = F)))
+      } else if (is.factor(d[,mod2])) {
+        pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2)
       }
-    } else if (length(mod2.labels)==length(mod2vals2)) {
-      pm[,mod2] <- factor(pm[,mod2], labels=mod2.labels)
+    } else if (length(mod2.labels) == length(mod2vals2)) {
+      if (!is.factor(d[,mod2])) {
+        pm[,mod2] <- factor(pm[,mod2], labels = mod2.labels)
+      } else if (is.factor(d[,mod2])) {
+        pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2, labels = mod2.labels)
+      }
     } else {warning("mod2.labels argument was not the same length as modxvals. Ignoring...")}
   }
 
