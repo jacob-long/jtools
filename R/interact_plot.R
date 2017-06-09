@@ -673,14 +673,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Create predicted values based on specified levels of the moderator, focal predictor
 
-  if (survey == FALSE) {
-    modelu <- update(model, data = d)
+  ## Don't update model if no vars were centered
+  if (!is.null(centered) && centered == "none") {
+    modelu <- model
   } else {
-    # Have to do all this to avoid adding survey to dependencies
-    call <- getCall(model)
-    call$design <- design
-    call[[1]] <- survey::svyglm
-    modelu <- eval(call)
+    if (survey == FALSE) {
+      modelu <- update(model, data = d)
+    } else {
+      # Have to do all this to avoid adding survey to dependencies
+      call <- getCall(model)
+      call$design <- design
+      call[[1]] <- survey::svyglm
+      modelu <- eval(call)
+    }
   }
 
   if (mixed == TRUE) {
