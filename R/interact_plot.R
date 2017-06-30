@@ -678,7 +678,20 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     modelu <- model
   } else {
     if (survey == FALSE) {
-      modelu <- update(model, data = d)
+      if (mixed == FALSE) {
+        modelu <- update(model, data = d)
+      } else {
+        optimiz <- model@optinfo$optimizer
+        if (class(model) == "glmerMod") {
+          modelu <- update(model, data = d,
+                           control = lme4::glmerControl(optimizer = optimiz,
+                                                        calc.derivs = FALSE))
+        } else {
+          modelu <- update(model, data = d,
+                           control = lme4::lmerControl(optimizer = optimiz,
+                                                        calc.derivs = FALSE))
+        }
+      }
     } else {
       # Have to do all this to avoid adding survey to dependencies
       call <- getCall(model)
