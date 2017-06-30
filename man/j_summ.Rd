@@ -8,33 +8,31 @@
 \alias{j_summ.merMod}
 \title{Regression summaries with options}
 \usage{
-j_summ(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
-  robust.type = "HC3", digits = 3, model.info = TRUE, model.fit = TRUE,
-  model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE)
+j_summ(model, ...)
 
 \method{j_summ}{lm}(model, standardize = FALSE, vifs = FALSE,
   robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE)
+  standardize.response = FALSE, ...)
 
-\method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE)
+\method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE, digits = 3,
+  model.info = TRUE, model.fit = TRUE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, ...)
 
 \method{j_summ}{svyglm}(model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE)
+  digits = 3, model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, ...)
 
-\method{j_summ}{merMod}(model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
-  model.fit = FALSE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE)
+\method{j_summ}{merMod}(model, standardize = FALSE, digits = 3,
+  model.info = TRUE, model.fit = TRUE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, ...)
 }
 \arguments{
-\item{model}{A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.}
+\item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
+\code{\link[lme4]{merMod}} object.}
+
+\item{...}{This just captures extra arguments that may only work for other
+types of models.}
 
 \item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
 coefficients. Default is \code{FALSE}.}

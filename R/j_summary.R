@@ -3,7 +3,8 @@
 #' \code{j_summ()} prints output for a regression model in a fashion similar to
 #' \code{summary()}, but formatted differently with more options.
 #'
-#' @param model A \code{lm}, \code{glm}, or \code{\link[survey]{svyglm}} object.
+#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
+#'   \code{\link[lme4]{merMod}} object.
 #' @param standardize If \code{TRUE}, adds a column to output with standardized regression
 #'   coefficients. Default is \code{FALSE}.
 #' @param vifs If \code{TRUE}, adds a column to output with variance inflation factors
@@ -33,6 +34,8 @@
 #'  want to standardize, set this to \code{TRUE}.
 #' @param standardize.response Should standardization apply to response variable?
 #'  Default is \code{FALSE}.
+#' @param ... This just captures extra arguments that may only work for other
+#'  types of models.
 #'
 #' @details By default, this function will print the following items to the console:
 #' \itemize{
@@ -132,10 +135,7 @@
 #'
 #'
 
-j_summ <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
-                   robust.type = "HC3", digits = 3, model.info = TRUE,
-                   model.fit = TRUE, model.check = FALSE, n.sd = 1,
-                   center = FALSE, standardize.response = FALSE) {
+j_summ <- function(model, ...) {
   UseMethod("j_summ")
 }
 
@@ -143,10 +143,11 @@ j_summ <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
 #' @rdname j_summ
 #' @export
 
-j_summ.lm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
-                      robust.type = "HC3", digits = 3, model.info = TRUE,
-                      model.fit = TRUE, model.check = FALSE, n.sd = 1,
-                      center = FALSE, standardize.response = FALSE) {
+j_summ.lm <- function(
+  model, standardize = FALSE, vifs = FALSE,
+  robust = FALSE, robust.type = "HC3", digits = 3,
+  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
 
   j <- list()
 
@@ -286,16 +287,21 @@ j_summ.lm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
 #' @rdname j_summ
 #' @export
 
-j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
-                       robust.type = "HC3", digits = 3, model.info = TRUE,
-                       model.fit = TRUE, model.check = FALSE, n.sd = 1,
-                       center = FALSE, standardize.response = FALSE) {
+j_summ.glm <- function(
+  model, standardize = FALSE, vifs = FALSE, digits = 3, model.info = TRUE,
+  model.fit = TRUE, n.sd = 1,
+  center = FALSE, standardize.response = FALSE, ...) {
 
   j <- list()
 
-  if (robust == TRUE) {
-    warning("Robust standard errors are not supported for glm models.")
-    robust <- FALSE
+  ell <- list(...)
+
+  if ("robust" %in% names(ell) && ell$robust == TRUE) {
+    warning("Robust standard errors are not supported for GLMs.")
+  }
+
+  if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
+    warning("Model checking is not currently implemented for GLMs")
   }
 
   # Standardized betas
@@ -360,8 +366,7 @@ j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
   }
 
 
-  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
-                 robust.type = robust.type, digits = digits,
+  j <- structure(j, standardize = standardize, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
                  center = center)
 
@@ -485,16 +490,17 @@ j_summ.glm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
 #' @rdname j_summ
 #' @export
 
-j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FALSE,
-                          robust.type = "HC3", digits = 3, model.info = TRUE,
-                          model.fit = TRUE, model.check = FALSE, n.sd = 1,
-                          center = FALSE, standardize.response = FALSE) {
+j_summ.svyglm <- function(
+  model, standardize = FALSE, vifs = FALSE, digits = 3, model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, ...) {
 
   j <- list()
 
-  if (robust == TRUE) {
-    warning("The survey package always reports robust standard errors by default.")
-    robust <- FALSE
+  ell <- list(...)
+
+  if ("robust" %in% names(ell) && ell$robust == TRUE) {
+    warning("Robust standard errors are reported by default in the survey package.")
   }
 
   # Standardized betas
@@ -547,10 +553,9 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
     design <- model$survey.design
   }
 
-  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
-                 robust.type = robust.type, digits = digits,
+  j <- structure(j, standardize = standardize, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit,
-                 model.check = model.check, n.sd = n.sd, center = center)
+                 n.sd = n.sd, center = center)
 
   # Using information from summary()
   sum <- summary(model)
@@ -689,7 +694,7 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
 
   j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int)
 
-  j <- structure(j, lmFamily = model$family)
+  j <- structure(j, lmFamily = model$family, model.check = model.check)
 
   j$coeftable <- mat
   j$model <- model
@@ -701,17 +706,27 @@ j_summ.svyglm <- function(model, standardize = FALSE, vifs = FALSE, robust = FAL
 #' @rdname j_summ
 #' @export
 
-j_summ.merMod <- function(model, standardize = FALSE, vifs = FALSE,
-                          robust = FALSE, robust.type = "HC3", digits = 3,
-                          model.info = TRUE, model.fit = FALSE,
-                          model.check = FALSE, n.sd = 1, center = FALSE,
-                          standardize.response = FALSE) {
+j_summ.merMod <- function(
+  model, standardize = FALSE,
+  digits = 3, model.info = TRUE, model.fit = TRUE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
 
   j <- list()
 
-  if (robust == TRUE) {
-    warning("Robust standard errors are not supported for merMod models.")
-    robust <- FALSE
+  # Accept arguments meant for other types of models and print warnings as
+  # needed.
+  ell <- list(...)
+
+  if ("robust" %in% names(ell) && ell$robust == TRUE) {
+    warning("Robust standard errors are not supported for mixed models.")
+  }
+
+  if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
+    warning("Model checking is not currently implemented for mixed models.")
+  }
+
+  if ("vifs" %in% names(ell) && ell$vifs == TRUE) {
+    warning("VIFs are not supported for mixed models.")
   }
 
   # Standardized betas
@@ -776,9 +791,9 @@ j_summ.merMod <- function(model, standardize = FALSE, vifs = FALSE,
   }
 
 
-  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
-                 robust.type = robust.type, digits = digits,
-                 model.info = model.info, model.fit = model.fit, n.sd = n.sd,
+  j <- structure(j, standardize = standardize, digits = digits,
+                 model.info = model.info, model.fit = model.fit,
+                 n.sd = n.sd,
                  center = center)
 
   # Using information from summary()
@@ -844,11 +859,6 @@ j_summ.merMod <- function(model, standardize = FALSE, vifs = FALSE,
 
   # Unstandardized betas
   ucoefs <- unname(sum$coefficients[,1])
-
-  # VIFs
-  if (vifs==T) {
-    warning("VIFs not supported for merMod objects.")
-  }
 
   # Standard errors and t-statistics
   ses <- sum$coefficients[,2]
