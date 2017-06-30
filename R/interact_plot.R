@@ -181,7 +181,8 @@
 #' interact_plot(mv, pred = Anger, modx = mode)
 #' }
 #'
-#' @importFrom stats coef coefficients lm predict sd qnorm getCall
+#' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
+#' @importFrom stats median
 #' @export interact_plot
 
 interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
