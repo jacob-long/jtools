@@ -252,9 +252,14 @@ if (is.numeric(x)) {
     # Loop through the variable names
     for (i in x) {
 
+      # Dealing with two-level factors
+      if (length(unique(d[,i])) == 2 && is.factor(d[,i])) {
+        d[,i] <- as.numeric(d[,i]) - 1
+      } # Now it will follow the logic of any numeric binary var
+
       # Now just calling the rescale function, basically
       # for binary cases
-      if (length(unique(d[,i]))==2 && is.numeric(d[,i])) {
+      if (length(unique(d[,i])) == 2 && is.numeric(d[,i])) {
 
         if (binary.inputs=="0/1") {
 
@@ -357,8 +362,8 @@ if (is.numeric(x)) {
         }
       }
 
-      if (!is.numeric(d[,i]) || all(is.na(d[,i])) || skip == TRUE) {
-        # just skip over non-numeric variables
+      if ((!is.numeric(d[,i]) & length(unique(d[,i])) != 2) || all(is.na(d[,i])) || skip == TRUE) {
+        # just skip over non-numeric variables except binary factors
         # columns that are all NA will still show up as numeric
         if (all(is.na(d[,i]))) {
           message <- paste("All values of", names(d)[i], "were NA. Skipping...\n")
@@ -366,8 +371,13 @@ if (is.numeric(x)) {
         }
       } else {
 
+      # Dealing with two-level factors
+      if (length(unique(d[,i])) == 2 && is.factor(d[,i])) {
+        d[,i] <- as.numeric(d[,i]) - 1
+      } # Now it will follow the logic of any numeric binary var
+
       # for binary cases
-      if (length(unique(d[,i]))==2) {
+      if (length(unique(d[,i])) == 2) {
 
         if (binary.inputs=="0/1") {
 
@@ -449,7 +459,7 @@ if (is.numeric(x)) {
     # Just calling rescale
     for (i in x) {
 
-      if (!is.numeric(d[,i]) || all(is.na(d[,i]))) {
+      if ((!is.numeric(d[,i]) & length(unique(d[,i])) != 2) || all(is.na(d[,i]))) {
         # just skip over non-numeric variables
         # columns that are all NA will still show up as numeric
         if (all(is.na(d[,i]))) {
@@ -457,6 +467,11 @@ if (is.numeric(x)) {
           warning(message)
         }
       } else {
+
+      # Dealing with two-level factors
+      if (length(unique(d[,i])) == 2 && is.factor(d[,i])) {
+        d[,i] <- as.numeric(d[,i]) - 1
+      } # Now it will follow the logic of any numeric binary var
 
       # for binary cases
       if (length(unique(d[,i])) == 2) {
@@ -547,7 +562,7 @@ if (is.numeric(x)) {
         # I need its actual name for the svymean() commands
         i <- names(d)[i]
 
-        if (!is.numeric(d[,i]) || all(is.na(d[,i]))) {
+        if ((!is.numeric(d[,i]) & length(unique(d[,i])) != 2) || all(is.na(d[,i]))) {
           # just skip over non-numeric variables
           # columns that are all NA will still show up as numeric
           if (all(is.na(d[,i]))) {
@@ -556,8 +571,14 @@ if (is.numeric(x)) {
           }
         } else {
 
+          # Dealing with two-level factors
+          if (length(unique(d[,i])) == 2 && is.factor(d[,i])) {
+            d[,i] <- as.numeric(d[,i]) - 1
+            design$variables <- d
+          } # Now it will follow the logic of any numeric binary var
+
           # for binary cases
-          if (length(unique(d[,i]))==2) {
+          if (length(unique(d[,i])) == 2) {
 
             if (binary.inputs=="0/1") {
 
