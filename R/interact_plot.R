@@ -222,7 +222,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
     facvars <- c()
     for (v in fvars) {
-      if (is.factor((d[,v]))) {
+      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
         facvars <- c(facvars, v)
       }
     }
@@ -247,7 +247,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
     facvars <- c()
     for (v in fvars) {
-      if (is.factor((d[,v]))) {
+      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
         facvars <- c(facvars, v)
       }
     }
