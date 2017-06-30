@@ -861,7 +861,8 @@ j_summ.merMod <- function(model, standardize = FALSE, vifs = FALSE,
     df <- n - length(ivs) - 1
     vec <- rep(NA, times = length(ts))
     for (i in 1:length(ts)) {
-      p <- pt(ts[i], df)
+      p <- pt(abs(ts[i]), lower.tail = F, df)
+      p <- p*2
       vec[i] <- p
     }
     pvals <- vec
