@@ -413,7 +413,15 @@ j_summ.glm <- function(
   ## Namespace issues require me to define pR2 here
   pR2 <- function(object) {
     llh <- suppressWarnings(logLik(object))
-    objectNull <- suppressWarnings(update(object, ~ 1))
+    if (is.null(attr(terms(formula(object)),"offset"))) {
+      objectNull <- suppressWarnings(update(object, ~ 1))
+    } else {
+      offs <- model.offset(model.frame(object))
+      frame <- model.frame(object)
+      frame$jtools_offs <- offs
+      objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+                                            data = frame))
+    }
     llhNull <- logLik(objectNull)
     n <- dim(object$model)[1]
     pR2Work(llh,llhNull,n)
@@ -617,9 +625,16 @@ j_summ.svyglm <- function(
     ## Have to specify pR2 here to fix namespace issues
     pR2 <- function(object) {
       llh <- suppressWarnings(logLik(object))
-      objectNull <- suppressWarnings(update(object, ~ 1,
-                                            design = object$survey.design))
-
+      if (is.null(attr(terms(formula(object)),"offset"))) {
+        objectNull <- suppressWarnings(update(object, ~ 1,
+                                              design = object$survey.design))
+      } else {
+        offs <- model.offset(model.frame(object))
+        frame <- object$survey.design
+        frame$variables$jtools_offs <- offs
+        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+                                              data = frame))
+      }
       llhNull <- logLik(objectNull)
       n <- dim(object$model)[1]
       pR2Work(llh,llhNull,n)
