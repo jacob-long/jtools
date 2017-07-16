@@ -103,7 +103,7 @@ probe_interaction <- function(model, pred, modx, mod2 = NULL, ...) {
   ip <- do.call("interact_plot", ipargs)
 
   # Save both to output object
-  out <- NULL
+  out <- list()
   out$simslopes <- ss
   out$interactplot <- ip
 
