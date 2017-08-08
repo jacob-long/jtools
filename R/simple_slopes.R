@@ -189,6 +189,16 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     survey <- FALSE
   }
 
+  # weights?
+  if (survey == FALSE && "(weights)" %in% names(d)) {
+    weights <- TRUE
+    wname <- as.character(model$call["weights"])
+    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+  } else {
+    weights <- FALSE
+    wname <- NULL
+  }
+
   # Pulling the name of the response variable for labeling
   formula <- formula(model)
   formula <- paste(formula[2],formula[1],formula[3])
@@ -259,106 +269,223 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx]) && length(unique(d[,modx])) > 2) {
+
     if (survey == FALSE) {
-      modsd <- sd(d[,modx])
-      modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx]), mean(d[,modx])-modsd)
-      names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
-      modxvals2 <- modxvalssd
+
+      if (weights == FALSE) { # can have weights w/o svyglm
+
+        modsd <- sd(d[,modx]) # save the SD
+        # Now save a vector of those focal values
+        modxvalssd <- c(mean(d[,modx]) + modsd,
+                        mean(d[,modx]),
+                        mean(d[,modx]) - modsd)
+        # Name the vector for better labeling of the plot
+        names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+
+      } else { # Same thing, but with weights
+
+        modsd <- wtd.sd(d[,modx], d[,wname])
+        modxvalssd <- c(weighted.mean(d[,modx], d[,wname]) + modsd,
+                        weighted.mean(d[,modx], d[,wname]),
+                        weighted.mean(d[,modx], d[,wname]) - modsd)
+        names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+
+      }
+
+      modxvals2 <- modxvalssd # Saving the values to a new object for use later
       ss <- structure(ss, def = TRUE)
+
     } else if (survey == TRUE) {
+
       modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
-      modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
-      modxvalssd <- c(modmean+modsd, modmean, modmean-modsd)
+      # Have to construct the formula this way since the syntax for svymean
+      # differs from mean
+      modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")),
+                                 design = design)
+      modxvalssd <- c(modmean + modsd,
+                      modmean,
+                      modmean - modsd)
       names(modxvalssd) <- c("+1 SD", "Mean", "-1 SD")
+
       modxvals2 <- modxvalssd
       ss <- structure(ss, def = TRUE)
+
     }
   } else if (!is.null(modxvals) && !is.factor(d[,modx]) &&
              length(unique(d[,modx])) > 2 && modxvals == "plus-minus") {
+
     if (survey == FALSE) {
-      modsd <- sd(d[,modx])
-      modxvalssd <- c(mean(d[,modx])+modsd, mean(d[,modx])-modsd)
-      names(modxvalssd) <- c("+1 SD", "-1 SD")
-      modxvals2 <- modxvalssd
-      ss <- structure(ss, def = TRUE)
+
+      if (weights == FALSE) {
+
+        modsd <- sd(d[,modx])
+        modxvalssd <- c(mean(d[,modx]) + modsd,
+                        mean(d[,modx]) - modsd)
+        names(modxvalssd) <- c("+1 SD", "-1 SD")
+        modxvals2 <- modxvalssd
+        ss <- structure(ss, def = TRUE)
+
+      } else {
+
+        modsd <- wtd.sd(d[,modx], d[,wname])
+        modxvalssd <- c(weighted.mean(d[,modx], d[,wname]) + modsd,
+                        weighted.mean(d[,modx], d[,wname]) - modsd)
+        names(modxvalssd) <- c("+1 SD", "-1 SD")
+        modxvals2 <- modxvalssd
+        ss <- structure(ss, def = TRUE)
+
+      }
+
     } else if (survey == TRUE) {
+
       modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
       modmean <- survey::svymean(as.formula(paste("~", modx, sep = "")), design = design)
       modxvalssd <- c(modmean+modsd, modmean-modsd)
       names(modxvalssd) <- c("+1 SD", "-1 SD")
       modxvals2 <- modxvalssd
       ss <- structure(ss, def = TRUE)
+
     }
   } else if (!is.factor(d[,modx]) && length(unique(d[,modx])) == 2) {
     # Detecting binary variable
+
     modxvals2 <- as.numeric(levels(factor(d[,modx])))
     ss <- structure(ss, def = FALSE)
+
   } else if (length(unique(d[,modx])) < 2) {
+
     msg <- "Every observation has the same value for the moderator. Did you enter
             your data correctly?"
     stop(msg)
+
   } else if (is.factor(d[,modx]) && length(levels(d[,modx])) == 2) {
     # We can work with a two-level factor
+
     names <- levels(d[,modx])
     condition <- suppressWarnings(all(is.na(as.numeric(levels(d[,modx])))))
+
     if (condition) {
       modxvals2 <- c(0,1)
     } else {
       modxvals2 <- sort(as.numeric(levels(d[,modx])), decreasing = FALSE)
     }
+
     d[,modx] <- as.numeric(d[,modx]) - 1
     names(modxvals2) <- names
     ss <- structure(ss, def = TRUE)
+
   } else if (is.factor(d[,modx]) && length(levels(d[,modx])) != 2) {
+
     stop("Factor moderators can only have 2 levels.")
+
   } else { # Use user-supplied values otherwise
+
     modxvals2 <- modxvals
     ss <- structure(ss, def = FALSE)
+
   }
 
   # Default to +/- 1 SD unless mod2 is factor
-  if (!is.null(mod2)) {
+  if (!is.null(mod2)) { # Check whether there is 2nd moderator
+
   if (is.null(mod2vals) && !is.factor(d[,mod2]) &&
-      length(unique(d[,mod2])) > 2) {
+      length(unique(d[,mod2])) > 2) { # continuous mod2 w/ no specified vals
+
     if (survey == FALSE) {
-      mod2sd <- sd(d[,mod2])
-      mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2]), mean(d[,mod2])-mod2sd)
-      names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+
+      if (weights == FALSE) {
+        mod2sd <- sd(d[,mod2])
+        mod2valssd <- c(mean(d[,mod2]) + mod2sd,
+                        mean(d[,mod2]),
+                        mean(d[,mod2]) - mod2sd)
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2),
+                               paste("Mean of", mod2, "-1 SD"))
+
+      } else {
+
+        mod2sd <- wtd.sd(d[,mod2], d[,wname])
+        mod2valssd <- c(weighted.mean(d[,mod2], d[,wname]) + mod2sd,
+                        weighted.mean(d[,mod2], d[,wname]),
+                        weighted.mean(d[,mod2], d[,wname]) - mod2sd)
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2),
+                               paste("Mean of", mod2, "-1 SD"))
+
+      }
+
       mod2vals2 <- mod2valssd
+      mod2vals2 <- sort(mod2vals2, decreasing = F)
       ss <- structure(ss, def2 = TRUE)
+
     } else if (survey == TRUE) {
+
       mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
       mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
-      mod2valssd <- c(mod2mean+mod2sd, mod2mean, mod2mean-mod2sd)
-      names(mod2valssd) <- c("+1 SD", "Mean", "-1 SD")
+      mod2valssd <- c(mod2mean + mod2sd, mod2mean, mod2mean - mod2sd)
+      names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                             paste("Mean of", mod2),
+                             paste("Mean of", mod2, "-1 SD"))
       mod2vals2 <- mod2valssd
+      mod2vals2 <- sort(mod2vals2, decreasing = F)
       ss <- structure(ss, def2 = TRUE)
+
     }
-  } else if (!is.null(mod2vals) && mod2vals == "plus-minus") {
+  } else if (!is.null(mod2vals) && mod2vals == "plus-minus" &&
+             length(unique(d[,mod2])) > 2) {
+
     if (survey == FALSE) {
-      mod2sd <- sd(d[,mod2])
-      mod2valssd <- c(mean(d[,mod2])+mod2sd, mean(d[,mod2])-mod2sd)
-      names(mod2valssd) <- c("+1 SD", "-1 SD")
+
+      if (weights == FALSE) {
+
+        mod2sd <- sd(d[,mod2])
+        mod2valssd <- c(mean(d[,mod2]) + mod2sd,
+                        mean(d[,mod2]) - mod2sd)
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2, "-1 SD"))
+
+      } else {
+
+        mod2sd <- wtd.sd(d[,mod2])
+        mod2valssd <- c(weighted.mean(d[,mod2], d[,wname]) + mod2sd,
+                        weighted.mean(d[,mod2], d[,wname]) - mod2sd)
+        names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                               paste("Mean of", mod2, "-1 SD"))
+
+      }
+
       mod2vals2 <- mod2valssd
+      mod2vals2 <- sort(mod2vals2, decreasing = F)
       ss <- structure(ss, def2 = TRUE)
+
     } else if (survey == TRUE) {
+
       mod2sd <- svysd(as.formula(paste("~", mod2, sep = "")), design = design)
       mod2mean <- survey::svymean(as.formula(paste("~", mod2, sep = "")), design = design)
       mod2valssd <- c(mod2mean+mod2sd, mod2mean-mod2sd)
-      names(mod2valssd) <- c("+1 SD", "-1 SD")
+      names(mod2valssd) <- c(paste("Mean of", mod2, "+1 SD"),
+                             paste("Mean of", mod2, "-1 SD"))
       mod2vals2 <- mod2valssd
+      mod2vals2 <- sort(mod2vals2, decreasing = F)
       ss <- structure(ss, def2 = TRUE)
+
     }
+
   } else if (!is.factor(d[,mod2]) && length(unique(d[,mod2])) == 2) {
     # Detecting binary variable
+
     mod2vals2 <- as.numeric(levels(factor(d[,mod2])))
     ss <- structure(ss, def2 = FALSE)
+
   } else if (length(unique(d[,mod2])) < 2) {
+
     msg <- "Every observation has the same value for the 2nd moderator. Did you
             enter your data correctly?"
     stop(msg)
+
   } else if (is.factor(d[,mod2]) && length(levels(d[,mod2])) == 2) {
     # We can work with a two-level factor
+
     names <- levels(d[,mod2])
     condition <- suppressWarnings(all(is.na(as.numeric(levels(d[,mod2])))))
     if (condition) {
@@ -366,15 +493,21 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     } else {
       mod2vals2 <- sort(as.numeric(levels(d[,mod2])), decreasing = FALSE)
     }
+
     d[,mod2] <- as.numeric(d[,mod2]) - 1
     names(mod2vals2) <- names
     ss <- structure(ss, def2 = TRUE)
+
   } else if (is.factor(d[,mod2]) && length(levels(d[,mod2])) != 2) {
+
     stop("Factor moderators can only have 2 levels.")
+
   } else {
     # Use user-supplied values otherwise
+
     mod2vals2 <- mod2vals
     ss <- structure(ss, def2 = FALSE)
+
   }
   }
 
