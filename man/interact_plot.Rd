@@ -16,7 +16,8 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
 \code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
-contain the interaction of interest.}
+contain the interaction of interest. Models from other classes may work as
+well but are not officially supported.}
 
 \item{pred}{The name of the predictor variable involved
 in the interaction.}
@@ -130,14 +131,17 @@ This function provides a means for plotting conditional effects for the
   purpose of exploring interactions in the context of regression. You must have the
   package \code{ggplot2} installed to benefit from these plotting functions.
 
-  The function is designed for two-way interactions. For additional terms, the
+  The function is designed for two and three-way interactions. For
+   additional terms, the
   \code{\link[effects]{effects}} package may be better suited to the task.
 
-  This function supports nonlinear models and by default will plot them on
+  This function supports nonlinear and generalized linear models and by
+  default will plot them on
   their original scale (\code{outcome.scale = "response"}).
 
   While mixed effects models from \code{lme4} are supported, only the fixed
-  effects are plotted.
+  effects are plotted. \code{lme4} does not provide confidence intervals,
+  so they are not supported with this function either.
 }
 \examples{
 # Using a fitted lm model
@@ -187,8 +191,9 @@ regression/correlation analyses for the behavioral sciences} (3rd ed.).
 Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
-\code{\link[rockchalk]{plotSlopes}} performs a similar function, but
-  but with the base graphics package--this function is meant, in part, to simulate
+\code{\link[rockchalk]{plotSlopes}} from \pkg{rockchalk} performs a
+  similar function, but
+  with R's base graphics---this function is meant, in part, to emulate
   its features.
 
   \code{\link{sim_slopes}} performs a simple slopes analysis with a similar
