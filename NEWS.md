@@ -1,4 +1,4 @@
-## jtools 0.4.6
+## jtools 0.5.0
 
 More goodies for users of interact_plot:
 
@@ -15,6 +15,23 @@ labels for those ticks.
 if specified via the offset argument rather than included in the model formula.
 You can (and should) specify the offset used for the plot using the set.offset
 argument. By default it is 1 so that the y-axis represents a proportion. 
+
+Other feature changes:
+
+* sim_slopes now supports weights (from the weights argument rather than a
+svyglm model). Previously it used unweighted mean and standard deviation for
+non-survey models with weights.
+* Improved printing features of wgttest
+
+Bug fixes:
+
+* R 3.4 introduced a change that caused warning messages when return objects
+are created in a certain way. This was first addressed in jtools 0.4.5, but
+a few instances slipped through the cracks. Thanks to Kim Henry for pointing
+out one such instance.
+* When sim_slopes called johnson_neyman while the robust argument was set to 
+TRUE, the robust.type argument was not being passed (causing the default of 
+"HC3" to be used). Now it is passing that argument correctly.
 
 ## jtools 0.4.5
 
