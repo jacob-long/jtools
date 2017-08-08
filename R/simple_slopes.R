@@ -562,7 +562,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
         if (robust==TRUE) {
 
           # For J-N
-          covmat <- sandwich::vcovHC(newmod)
+          covmat <- sandwich::vcovHC(newmod, type = robust.type)
 
         } else {
 
