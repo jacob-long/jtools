@@ -1006,9 +1006,9 @@ print.j_summ.lm <- function(x, ...) {
   }
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
+    cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
         "Dependent Variable: ",
-        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
+        x$dv, "\n", sep="")
     cat("\n")
     }
 
@@ -1108,7 +1108,7 @@ print.j_summ.glm <- function(x, ...) {
   if (x$model.info == TRUE) {
     cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
         "Dependent Variable: ",
-        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
+        x$dv, "\n", sep="")
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
       cat("Type: Linear regression", "\n\n")
     } else {
@@ -1192,7 +1192,7 @@ print.j_summ.svyglm <- function(x, ...) {
   if (x$model.info == TRUE) {
     # Always showing this
     cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
-        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep = "")
+        x$dv, "\n", sep = "")
     cat("\n", "Analysis of complex survey design", "\n", sep = "")
     # If it's linear...
     if (as.character(x$lmFamily[1]) == "gaussian" &&
@@ -1287,7 +1287,7 @@ print.j_summ.merMod <- function(x, ...) {
   if (x$model.info == TRUE) {
     cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
         "Dependent Variable: ",
-        x$dv, "\n", "Number of Terms: ", (x$npreds), "\n", sep="")
+        x$dv, "\n", sep="")
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
       cat("Type: Mixed effects linear regression", "\n\n")
     } else {
