@@ -30,6 +30,9 @@ as a predictor and interaction with each other predictor. Then, an omnibus
 test of significance is performed to compare the weights-added model to the
 original; if insignificant, weights are not significantly related to the
 result and you can use the more efficient estimation from unweighted OLS.
+
+It can be helpful to look at the created model using \code{model_output = TRUE}
+to see which variables might be the ones affected by inclusion of weights.
 }
 \examples{
 # First, let's create some fake sampling weights

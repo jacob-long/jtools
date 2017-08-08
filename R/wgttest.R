@@ -22,6 +22,9 @@
 #' original; if insignificant, weights are not significantly related to the
 #' result and you can use the more efficient estimation from unweighted OLS.
 #'
+#' It can be helpful to look at the created model using \code{model_output = TRUE}
+#' to see which variables might be the ones affected by inclusion of weights.
+#'
 #' @references
 #'
 #' DuMouchel, W. H. & Duncan, D.J. (1983). Using sample survey weights in
@@ -71,9 +74,26 @@ wgttest <- function(model, weights, model_output = TRUE) {
 
   newmod <- update(model, formula. = newf, data = d)
 
-  if (model_output == TRUE) {
-    print(j_summ(newmod, model.info = F, model.fit = F))
+  aout <- anova(model, newmod)
+
+  out <- list(aout = aout, newmod = newmod, model_output = model_output)
+  class(out) <- "wgttest"
+  return(out)
+
+}
+
+#### PRINT FUNCTION
+
+#' @export
+
+print.wgttest <- function(x, ...) {
+
+  cat("Omnibus test of model change with weights\n", " F(", x$aout$Df[2], ",",
+      x$aout$Res.Df[2], ") = ", round(x$aout$F[2],3),
+      "\n p = ", round(x$aout$`Pr(>F)`[2],3), "\n", sep = "")
+
+  if (x$model_output == TRUE) {
+    j_summ(x$newmod, model.info = F, model.fit = F)
   }
-  anova(model, newmod)
 
 }
