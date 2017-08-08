@@ -96,7 +96,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   }
 
   # Structure
-  out <- NULL
+  out <- list()
   out <- structure(out, pred = pred, modx = modx, alpha = alpha, plot = plot)
 
   # Set critical t value
