@@ -970,12 +970,14 @@ print.j_summ.lm <- function(x, ...) {
   width <- dim(j$coeftable)[2]
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  pvals <- j$coeftable[,"p"]
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
   # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
   if (x$vifs) {
-    vifvec <- ctable[,width]
+    vifvec <- round(ctable[,width], x$digits)
     ctable <- ctable[,1:width-1]
     width <- width - 1
   }
@@ -983,15 +985,15 @@ print.j_summ.lm <- function(x, ...) {
   # Making a vector of p-value significance indicators
   sigstars <- c()
   for (y in 1:height) {
-    if (ctable[y,width] > 0.1) {
+    if (pvals[y] > 0.1) {
       sigstars[y] <- ""
-    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
       sigstars[y] <- "."
-    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
       sigstars[y] <- "*"
-    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
       sigstars[y] <- "**"
-    } else if (ctable[y,width] <= 0.001) {
+    } else if (pvals[y] <= 0.001) {
       sigstars[y] <- "***"
     }
   }
@@ -1070,12 +1072,14 @@ print.j_summ.glm <- function(x, ...) {
   width <- dim(j$coeftable)[2]
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  pvals <- j$coeftable[,"p"]
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
   # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
   if (x$vifs) {
-    vifvec <- ctable[,width]
+    vifvec <- round(ctable[,width], x$digits)
     ctable <- ctable[,1:width-1]
     width <- width - 1
   }
@@ -1083,15 +1087,15 @@ print.j_summ.glm <- function(x, ...) {
   # Making a vector of p-value significance indicators
   sigstars <- c()
   for (y in 1:height) {
-    if (ctable[y,width] > 0.1) {
+    if (pvals[y] > 0.1) {
       sigstars[y] <- ""
-    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
       sigstars[y] <- "."
-    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
       sigstars[y] <- "*"
-    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
       sigstars[y] <- "**"
-    } else if (ctable[y,width] <= 0.001) {
+    } else if (pvals[y] <= 0.001) {
       sigstars[y] <- "***"
     }
   }
@@ -1154,12 +1158,14 @@ print.j_summ.svyglm <- function(x, ...) {
   width <- dim(j$coeftable)[2]
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  pvals <- j$coeftable[,"p"]
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
   # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
   if (x$vifs) {
-    vifvec <- ctable[,width]
+    vifvec <- round(ctable[,width], x$digits)
     ctable <- ctable[,1:width-1]
     width <- width - 1
   }
@@ -1167,15 +1173,15 @@ print.j_summ.svyglm <- function(x, ...) {
   # Making a vector of p-value significance indicators
   sigstars <- c()
   for (y in 1:height) {
-    if (ctable[y,width] > 0.1) {
+    if (pvals[y] > 0.1) {
       sigstars[y] <- ""
-    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
       sigstars[y] <- "."
-    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
       sigstars[y] <- "*"
-    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
       sigstars[y] <- "**"
-    } else if (ctable[y,width] <= 0.001) {
+    } else if (pvals[y] <= 0.001) {
       sigstars[y] <- "***"
     }
   }
@@ -1261,21 +1267,23 @@ print.j_summ.merMod <- function(x, ...) {
   width <- dim(j$coeftable)[2]
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  pvals <- j$coeftable[,"p"]
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
   # Making a vector of p-value significance indicators
   sigstars <- c()
   for (y in 1:height) {
-    if (ctable[y,width] > 0.1) {
+    if (pvals[y] > 0.1) {
       sigstars[y] <- ""
-    } else if (ctable[y,width] <= 0.1 & ctable[y,width] > 0.05) {
+    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
       sigstars[y] <- "."
-    } else if (ctable[y,width] > 0.01 & ctable[y,width] <= 0.05) {
+    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
       sigstars[y] <- "*"
-    } else if (ctable[y,width] > 0.001 & ctable[y,width] <= 0.01) {
+    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
       sigstars[y] <- "**"
-    } else if (ctable[y,width] <= 0.001) {
+    } else if (pvals[y] <= 0.001) {
       sigstars[y] <- "***"
     }
   }
