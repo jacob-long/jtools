@@ -97,6 +97,11 @@ probe_interaction <- function(model, pred, modx, mod2 = NULL, ...) {
   # Create list of arguments accepted by interact_plot
   ipargs <- dots[names(dots) %in% ipnames]
 
+  # the "alpha" argument in johnson_neyman is "jnalpha" for sim_slopes
+  if ("alpha" %in% names(dots)) {
+    ssargs[["jnalpha"]] <- dots[["alpha"]]
+  }
+
   # Call sim_slopes
   ss <- do.call("sim_slopes", ssargs)
   # Call interact_plot
