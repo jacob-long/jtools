@@ -10,7 +10,10 @@
 #'
 #' @param na.rm Logical. Should cases with missing values be dropped?
 #'
-#' @param digits How many digits past the decimal should be printed?
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in the output. Default is 2. You can change the default number of
+#'   digits for all jtools functions with
+#'   \code{options("jtools-digits" = digits)} where digits is the desired number.
 #'
 #' @param sig.stats Logical. Perform non-parametric bootstrapping
 #'   (using \code{\link[weights]{wtd.cor}}) to generate standard errors and
@@ -87,7 +90,9 @@
 
 
 
-svycor <- function(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
+svycor <- function(formula, design, na.rm = FALSE,
+                   digits = getOption("jtools-digits", default = 2),
+                   sig.stats = FALSE,
                    bootn = 1000, mean1 = TRUE, ... ) {
 
   # If sig.stats == T, Need to get the data in a data.frame-esque format to pass to wtd.cor

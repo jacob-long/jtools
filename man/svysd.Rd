@@ -4,7 +4,8 @@
 \alias{svysd}
 \title{Calculate standard deviations with complex survey data}
 \usage{
-svysd(formula, design, na.rm = FALSE, digits = 3, ...)
+svysd(formula, design, na.rm = FALSE, digits = getOption("jtools-digits",
+  default = 3), ...)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the term(s) of interest.}
@@ -13,7 +14,10 @@ svysd(formula, design, na.rm = FALSE, digits = 3, ...)
 
 \item{na.rm}{Logical. Should cases with missing values be dropped?}
 
-\item{digits}{How many digits past the decimal should be printed?}
+\item{digits}{An integer specifying the number of digits past the decimal to
+report in the output. Default is 3. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired number.}
 
 \item{...}{Additional arguments passed to \code{\link[survey]{svyvar}}.}
 }

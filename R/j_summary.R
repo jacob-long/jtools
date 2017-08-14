@@ -21,7 +21,9 @@
 #'   robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
 #'   . See details for more on options.
 #' @param digits An integer specifying the number of digits past the decimal to report in
-#'   the output. Default is 5.
+#'   the output. Default is 3. You can change the default number of digits for
+#'   all jtools functions with \code{options("jtools-digits" = digits)} where
+#'   digits is the desired number.
 #' @param model.info Toggles printing of basic information on sample size, name of
 #'   DV, and number of predictors.
 #' @param model.fit Toggles printing of R-squared, Adjusted R-squared, Pseudo-R-squared,
@@ -145,7 +147,8 @@ j_summ <- function(model, ...) {
 
 j_summ.lm <- function(
   model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = 3,
+  robust = FALSE, robust.type = "HC3",
+  digits = getOption("jtools-digits", default = 3),
   model.info = TRUE, model.fit = TRUE, model.check = FALSE,
   n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
 
@@ -288,7 +291,8 @@ j_summ.lm <- function(
 #' @export
 
 j_summ.glm <- function(
-  model, standardize = FALSE, vifs = FALSE, digits = 3, model.info = TRUE,
+  model, standardize = FALSE, vifs = FALSE,
+  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, n.sd = 1,
   center = FALSE, standardize.response = FALSE, ...) {
 
@@ -499,7 +503,8 @@ j_summ.glm <- function(
 #' @export
 
 j_summ.svyglm <- function(
-  model, standardize = FALSE, vifs = FALSE, digits = 3, model.info = TRUE,
+  model, standardize = FALSE, vifs = FALSE,
+  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
   standardize.response = FALSE, ...) {
 
@@ -723,8 +728,9 @@ j_summ.svyglm <- function(
 
 j_summ.merMod <- function(
   model, standardize = FALSE,
-  digits = 3, model.info = TRUE, model.fit = TRUE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
+  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
+  model.fit = TRUE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, ...) {
 
   j <- list()
 

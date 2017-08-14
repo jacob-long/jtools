@@ -4,8 +4,8 @@
 \alias{svycor}
 \title{Calculate Pearson correlations with complex survey data}
 \usage{
-svycor(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
-  bootn = 1000, mean1 = TRUE, ...)
+svycor(formula, design, na.rm = FALSE, digits = getOption("jtools-digits",
+  default = 2), sig.stats = FALSE, bootn = 1000, mean1 = TRUE, ...)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the terms to correlate.}
@@ -14,7 +14,10 @@ svycor(formula, design, na.rm = FALSE, digits = 2, sig.stats = FALSE,
 
 \item{na.rm}{Logical. Should cases with missing values be dropped?}
 
-\item{digits}{How many digits past the decimal should be printed?}
+\item{digits}{An integer specifying the number of digits past the decimal to
+report in the output. Default is 2. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired number.}
 
 \item{sig.stats}{Logical. Perform non-parametric bootstrapping
 (using \code{\link[weights]{wtd.cor}}) to generate standard errors and

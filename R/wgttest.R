@@ -10,6 +10,10 @@
 #' @param model_output Should a summary of the model with weights as predictor
 #'   be printed? Default is TRUE, but you may not want it if you are trying to
 #'   declutter a document.
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in the output. Default is 3. You can change the default number of
+#'   digits for all jtools functions with
+#'   \code{options("jtools-digits" = digits)} where digits is the desired number.
 #'
 #' @details
 #'
@@ -48,7 +52,8 @@
 #' @importFrom stats anova reformulate
 #' @export
 
-wgttest <- function(model, weights, model_output = TRUE) {
+wgttest <- function(model, weights, model_output = TRUE,
+                    digits = getOption("jtools-digits", default = 3)) {
 
   # Need to parse the arguments
   wname <- as.character(substitute(weights))

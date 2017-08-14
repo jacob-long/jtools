@@ -1,3 +1,19 @@
+## jtools 0.5.1
+
+Bug fixes:
+
+* j_summ would print significance stars based on the rounded p value, sometimes
+resulting in misleading output. Now significance stars are based on the 
+non-rounded p values.
+* probe_interaction did not pass an "alpha" argument to sim_slopes, possibly
+confusing users of johnson_neyman. The argument sim_slopes is looking for is 
+called "jnalpha". Now probe_interaction will pass "alpha" arguments as "jn_alpha".
+
+Enhancements:
+
+* Set a default number of digits to print for all jtools functions with the
+option "jtools-digits". 
+
 ## jtools 0.5.0
 
 More goodies for users of interact_plot:

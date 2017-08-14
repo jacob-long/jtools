@@ -4,7 +4,8 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, weights, model_output = TRUE)
+wgttest(model, weights, model_output = TRUE,
+  digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The unweighted linear model (must be \code{lm}) you want to check}
@@ -16,6 +17,11 @@ included in \code{model}.}
 \item{model_output}{Should a summary of the model with weights as predictor
 be printed? Default is TRUE, but you may not want it if you are trying to
 declutter a document.}
+
+\item{digits}{An integer specifying the number of digits past the decimal to
+report in the output. Default is 3. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired number.}
 }
 \description{
 Use the DuMouchel-Duncan (1983) test to assess the need for sampling weights

@@ -4,7 +4,7 @@ bibentry(
   author =  person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
                     role = c("aut", "cre")),
   year = "2017",
-  note = "R package version 0.5.0",
+  note = "R package version 0.5.1",
   url = "https://cran.r-project.org/package=jtools",
   key = "jtools-package"
 )

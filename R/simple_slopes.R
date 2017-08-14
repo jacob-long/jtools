@@ -57,8 +57,10 @@
 #'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
 #'    options.
 #'
-#' @param digits How many significant digits after the decimal point should the
-#'   output contain?
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in the output. Default is 3. You can change the default number of
+#'   digits for all jtools functions with
+#'   \code{options("jtools-digits" = digits)} where digits is the desired number.
 #'
 #' @param n.sd How many standard deviations should be used if \code{standardize
 #'   = TRUE}? Default is 1, but some prefer 2.
@@ -145,7 +147,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        mod2vals = NULL, centered = NULL, standardize = FALSE,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE, robust.type = "HC3",
-                       digits = 3, n.sd = 1) {
+                       digits = getOption("jtools-digits", default = 3),
+                       n.sd = 1) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))

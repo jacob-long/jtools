@@ -7,8 +7,8 @@
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   mod2vals = NULL, centered = NULL, standardize = FALSE,
   cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
-  jnalpha = 0.05, robust = FALSE, robust.type = "HC3", digits = 3,
-  n.sd = 1)
+  jnalpha = 0.05, robust = FALSE, robust.type = "HC3",
+  digits = getOption("jtools-digits", default = 3), n.sd = 1)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
@@ -65,8 +65,10 @@ standard errors.}
 if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
  options.}
 
-\item{digits}{How many significant digits after the decimal point should the
-output contain?}
+\item{digits}{An integer specifying the number of digits past the decimal to
+report in the output. Default is 3. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired number.}
 
 \item{n.sd}{How many standard deviations should be used if \code{standardize
 = TRUE}? Default is 1, but some prefer 2.}

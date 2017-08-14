@@ -11,20 +11,23 @@
 j_summ(model, ...)
 
 \method{j_summ}{lm}(model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = 3, model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, ...)
+  robust = FALSE, robust.type = "HC3", digits = getOption("jtools-digits",
+  default = 3), model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, ...)
 
-\method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE, digits = 3,
-  model.info = TRUE, model.fit = TRUE, n.sd = 1, center = FALSE,
+\method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE,
+  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
+  model.fit = TRUE, n.sd = 1, center = FALSE,
   standardize.response = FALSE, ...)
 
 \method{j_summ}{svyglm}(model, standardize = FALSE, vifs = FALSE,
-  digits = 3, model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, ...)
+  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, ...)
 
-\method{j_summ}{merMod}(model, standardize = FALSE, digits = 3,
-  model.info = TRUE, model.fit = TRUE, n.sd = 1, center = FALSE,
+\method{j_summ}{merMod}(model, standardize = FALSE,
+  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
+  model.fit = TRUE, n.sd = 1, center = FALSE,
   standardize.response = FALSE, ...)
 }
 \arguments{
@@ -54,7 +57,9 @@ robust standard errors to be used by \code{sandwich}. By default, set to \code{"
 . See details for more on options.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to report in
-the output. Default is 5.}
+the output. Default is 3. You can change the default number of digits for
+all jtools functions with \code{options("jtools-digits" = digits)} where
+digits is the desired number.}
 
 \item{model.info}{Toggles printing of basic information on sample size, name of
 DV, and number of predictors.}

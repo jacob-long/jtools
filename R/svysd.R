@@ -10,7 +10,10 @@
 #'
 #' @param na.rm Logical. Should cases with missing values be dropped?
 #'
-#' @param digits How many digits past the decimal should be printed?
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in the output. Default is 3. You can change the default number of
+#'   digits for all jtools functions with
+#'   \code{options("jtools-digits" = digits)} where digits is the desired number.
 #'
 #' @param ... Additional arguments passed to \code{\link[survey]{svyvar}}.
 #'
@@ -41,7 +44,8 @@
 #' @export
 #'
 
-svysd <- function(formula, design, na.rm = FALSE, digits = 3, ... ) {
+svysd <- function(formula, design, na.rm = FALSE,
+                  digits = getOption("jtools-digits", default = 3), ... ) {
 
   # Pass to svyvar
   v <- survey::svyvar(formula, design, na.rm, ...)
