@@ -8,6 +8,9 @@ non-rounded p values.
 * probe_interaction did not pass an "alpha" argument to sim_slopes, possibly
 confusing users of johnson_neyman. The argument sim_slopes is looking for is 
 called "jnalpha". Now probe_interaction will pass "alpha" arguments as "jn_alpha".
+* interact_plot would stop on an error when the model included a two-level factor
+not involved in the interaction and not centered. Now those factors in that 
+situation are treated like other factors.
 
 Enhancements:
 

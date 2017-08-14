@@ -317,14 +317,47 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       if (weights == FALSE) {
         d <- gscale(x = centered, data = d, center.only = !standardize,
                     n.sd = n.sd)
+
+        # Dealing with two-level factors that aren't part of an interaction/focal pred
+        for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
+          if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
+              !(v %in% centered)) {
+
+            facvars <- c(facvars, v)
+
+          }
+        }
+
       } else {
         d <- gscale(x = centered, data = d, center.only = !standardize,
                     weights = wname, n.sd = n.sd)
+
+        # Dealing with two-level factors that aren't part of an interaction/focal pred
+        for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
+          if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
+              !(v %in% centered)) {
+
+            facvars <- c(facvars, v)
+
+          }
+        }
+
       }
     } else if (survey == TRUE) {
       design <- gscale(x = centered, data = design, center.only = !standardize,
                        n.sd = n.sd)
       d <- design$variables
+
+      # Dealing with two-level factors that aren't part of an interaction/focal pred
+      for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
+        if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
+            !(v %in% centered)) {
+
+          facvars <- c(facvars, v)
+
+        }
+      }
+
     }
   } else if (!is.null(centered) && centered == "all") {
     # Need to handle surveys differently within this condition
@@ -348,6 +381,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       }
     }
   } else if (!is.null(centered) && centered == "none") {
+
+    # Dealing with two-level factors that aren't part of an interaction/focal pred
+    for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
+      if (is.factor(d[,v]) && length(unique(d[,v])) == 2) {
+
+        facvars <- c(facvars, v)
+
+      }
+    }
 
   } else { # Center all non-focal
     # Centering the non-focal variables to make the slopes more interpretable
