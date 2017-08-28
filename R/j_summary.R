@@ -36,6 +36,10 @@
 #'  want to standardize, set this to \code{TRUE}.
 #' @param standardize.response Should standardization apply to response variable?
 #'  Default is \code{FALSE}.
+#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#'  confidence intervals for exponential models like logit and Poisson models.
+#'  This quantity is known as an odds ratio for binary outcomes and incidence
+#'  rate ratio for count models.
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
 #'
@@ -294,7 +298,7 @@ j_summ.glm <- function(
   model, standardize = FALSE, vifs = FALSE,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, n.sd = 1,
-  center = FALSE, standardize.response = FALSE, ...) {
+  center = FALSE, standardize.response = FALSE, odds.ratio = FALSE, ...) {
 
   j <- list()
 
@@ -431,11 +435,16 @@ j_summ.glm <- function(
     pR2Work(llh,llhNull,n)
   }
 
-  # Final calculations (linear pseudo-rsq)
-  ## Cragg-Uhler
-  rsq <- pR2(model)$r2CU
-  ## McFadden
-  rsqmc <- pR2(model)$McFadden
+  if (model.fit == TRUE) {
+    # Final calculations (linear pseudo-rsq)
+    ## Cragg-Uhler
+    rsq <- pR2(model)$r2CU
+    ## McFadden
+    rsqmc <- pR2(model)$McFadden
+  } else {
+    rsq <- NULL
+    rsqmc <- NULL
+  }
 
   # AIC for GLMs
   j <- structure(j, aic = model$aic)
@@ -466,11 +475,21 @@ j_summ.glm <- function(
   tcol <- gsub("value", "val.", tcol)
 
   # Put things together
-  params <- list(ucoefs, ses, ts, pvals)
-  namevec <- c("Est.", "S.E.", tcol, "p")
+
+  # Report odds ratios instead, with conf. intervals
+  if (odds.ratio == TRUE) {
+    ecoefs <- exp(ucoefs)
+    l95 <- exp(ucoefs - (ses*1.96))
+    u95 <- exp(ucoefs + (ses*1.96))
+    params <- list(ecoefs, l95, u95, ts, pvals)
+    namevec <- c("Odds Ratio", "2.5%", "97.5%", tcol, "p")
+  } else {
+    params <- list(ucoefs, ses, ts, pvals)
+    namevec <- c("Est.", "S.E.", tcol, "p")
+  }
 
   # Calculate vifs
-  if (vifs==T) {
+  if (vifs == TRUE) {
     params[length(params)+1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
   }
@@ -487,8 +506,11 @@ j_summ.glm <- function(
     }
   }
 
+  # Extract dispersion parameter
+  dispersion <- sum$dispersion
+
   j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(model$model[1]),
-                 npreds = model$rank-df.int)
+                 npreds = model$rank-df.int, dispersion = dispersion)
 
   j <- structure(j, lmFamily = model$family)
 
@@ -506,7 +528,7 @@ j_summ.svyglm <- function(
   model, standardize = FALSE, vifs = FALSE,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, ...) {
+  standardize.response = FALSE, odds.ratio = FALSE, ...) {
 
   j <- list()
 
@@ -683,6 +705,19 @@ j_summ.svyglm <- function(
   tcol <- gsub("value", "val.", tcol)
 
   # Put things together
+
+  # Report odds ratios instead, with conf. intervals
+  if (odds.ratio == TRUE) {
+    ecoefs <- exp(ucoefs)
+    l95 <- exp(ucoefs - (ses*1.96))
+    u95 <- exp(ucoefs + (ses*1.96))
+    params <- list(ecoefs, l95, u95, ts, pvals)
+    namevec <- c("Odds Ratio", "2.5%", "97.5%", tcol, "p")
+  } else {
+    params <- list(ucoefs, ses, ts, pvals)
+    namevec <- c("Est.", "S.E.", tcol, "p")
+  }
+
   params <- list(ucoefs, ses, ts, pvals)
   namevec <- c("Est.", "S.E.", tcol, "p")
 
@@ -712,7 +747,11 @@ j_summ.svyglm <- function(
     }
   }
 
-  j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int)
+  # Extract dispersion parameter
+  dispersion <- sum$dispersion
+
+  j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int,
+                 dispersion = dispersion)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -730,7 +769,7 @@ j_summ.merMod <- function(
   model, standardize = FALSE,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, ...) {
+  standardize.response = FALSE, odds.ratio = F, ...) {
 
   j <- list()
 
@@ -904,6 +943,19 @@ j_summ.merMod <- function(
   tcol <- gsub("value", "val.", tcol)
 
   # Put things together
+
+  # Report odds ratios instead, with conf. intervals
+  if (odds.ratio == TRUE) {
+    ecoefs <- exp(ucoefs)
+    l95 <- exp(ucoefs - (ses*1.96))
+    u95 <- exp(ucoefs + (ses*1.96))
+    params <- list(ecoefs, l95, u95, ts, pvals)
+    namevec <- c("Odds Ratio", "2.5%", "97.5%", tcol, "p")
+  } else {
+    params <- list(ucoefs, ses, ts, pvals)
+    namevec <- c("Est.", "S.E.", tcol, "p")
+  }
+
   params <- list(ucoefs, ses, ts, pvals)
   namevec <- c("Est.", "S.E.", tcol, "p")
 
@@ -1138,6 +1190,11 @@ print.j_summ.glm <- function(x, ...) {
 
   print(as.table(ctable))
 
+  if (x$dispersion != 1) {
+    cat("\n")
+    cat("Dispersion parameter estimate =", round(x$dispersion, x$digits))
+  }
+
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {
     cat("\n")
@@ -1246,6 +1303,11 @@ print.j_summ.svyglm <- function(x, ...) {
   }
 
   print(as.table(ctable))
+
+  if (x$dispersion != 1) {
+    cat("\n")
+    cat("Dispersion parameter estimate =", round(x$dispersion, x$digits))
+  }
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {

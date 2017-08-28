@@ -18,17 +18,17 @@ j_summ(model, ...)
 \method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, ...)
+  standardize.response = FALSE, odds.ratio = FALSE, ...)
 
 \method{j_summ}{svyglm}(model, standardize = FALSE, vifs = FALSE,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, ...)
+  standardize.response = FALSE, odds.ratio = FALSE, ...)
 
 \method{j_summ}{merMod}(model, standardize = FALSE,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, ...)
+  standardize.response = FALSE, odds.ratio = F, ...)
 }
 \arguments{
 \item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
@@ -78,6 +78,11 @@ want to standardize, set this to \code{TRUE}.}
 
 \item{standardize.response}{Should standardization apply to response variable?
 Default is \code{FALSE}.}
+
+\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+confidence intervals for exponential models like logit and Poisson models.
+This quantity is known as an odds ratio for binary outcomes and incidence
+rate ratio for count models.}
 }
 \value{
 If saved, users can access most of the items that are returned in the
