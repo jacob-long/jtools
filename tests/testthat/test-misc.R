@@ -23,10 +23,27 @@ test_that("interact_plot works for lm", {
                               centered = "HSGrad"))
 })
 
+test_that("effect_plot works for lm", {
+  expect_silent(effect_plot(model = fit,
+                              pred = Murder,
+                              centered = "all"))
+  expect_silent(effect_plot(model = fit,
+                              pred = Murder,
+                              centered = "HSGrad"))
+})
+
 test_that("interact_plot works for svyglm", {
   expect_silent(interact_plot(regmodel, pred = ell, modx = meals, mod2 = both,
                               centered = "all"))
   expect_silent(interact_plot(regmodel, pred = ell, modx = meals, mod2 = both,
+                              centered = "ell"))
+})
+
+
+test_that("effect_plot works for svyglm", {
+  expect_silent(effect_plot(regmodel, pred = meals,
+                              centered = "all"))
+  expect_silent(effect_plot(regmodel, pred = meals,
                               centered = "ell"))
 })
 
