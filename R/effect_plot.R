@@ -115,7 +115,7 @@
 #' data(api)
 #' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 #' regmodel <- svyglm(api00~ell + meals, design = dstrat)
-#' effect_plot(regmodel, pred = ell, interval = T)
+#' effect_plot(regmodel, pred = ell, interval = TRUE)
 #'
 #' # With lme4
 #' \dontrun{
