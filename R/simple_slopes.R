@@ -641,7 +641,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       if (robust==TRUE) {
 
         # Use j_summ to get the coefficients
-        sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type)
+        sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type,
+                              model.fit = F)
         summat <- sum$coeftable
 
         slopep <- summat[pred,c("Est.","S.E.","p")]
@@ -655,7 +656,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
       } else {
 
-        sum <- jtools::j_summ(newmod)
+        sum <- jtools::j_summ(newmod, model.fit = F)
         summat <- sum$coeftable
 
         slopep <- summat[pred,c("Est.","S.E.","p")]
@@ -698,7 +699,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       newmod <- eval(call)
 
       # Get the coefs
-      sum <- j_summ(newmod)
+      sum <- j_summ(newmod, model.fit = F)
       summat <- sum$coeftable
 
       slopep <- summat[pred,c("Est.","S.E.","p")]
