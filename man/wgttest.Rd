@@ -4,11 +4,12 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, weights, model_output = TRUE,
+wgttest(model, weights, model_output = TRUE, test = NULL,
   digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
-\item{model}{The unweighted linear model (must be \code{lm}) you want to check}
+\item{model}{The unweighted linear model (must be \code{lm},
+\code{glm}, see details for other types) you want to check.}
 
 \item{weights}{The name of the weights column in \code{model}'s data frame
 or a vector of weights equal in length to the number of observations
@@ -17,6 +18,10 @@ included in \code{model}.}
 \item{model_output}{Should a summary of the model with weights as predictor
 be printed? Default is TRUE, but you may not want it if you are trying to
 declutter a document.}
+
+\item{test}{Which type of test should be used in the ANOVA? The default,
+\code{NULL}, chooses based on the model type ("F" for linear models).
+This argument is passed to \code{anova}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 3. You can change the default number of
@@ -39,6 +44,16 @@ result and you can use the more efficient estimation from unweighted OLS.
 
 It can be helpful to look at the created model using \code{model_output = TRUE}
 to see which variables might be the ones affected by inclusion of weights.
+
+This test can support most GLMs in addition to LMs. It does not work for
+mixed models (e.g., \code{lmer} or \code{lme}) though it could plausibly be
+implemented. However, there is no scholarly consensus how to properly
+incorporate weights into mixed models. There are other types of models that
+may work, but have not been tested. The function is designed to be
+compatible with as many model types as possible, but the user should be
+careful to make sure s/he understands whether this type of test is
+appropriate for the model being considered. DuMouchel and Duncan (1983) were
+only thinking about linear regression when the test was conceived.
 }
 \examples{
 # First, let's create some fake sampling weights
@@ -49,6 +64,21 @@ fit <- lm(Income ~ Frost + Illiteracy + Murder,
 # See if the weights change the model
 wgttest(fit, wts)
 
+# With a GLM
+wts <- runif(100, 0, 2)
+x <- rnorm(100)
+y <- rbinom(100, 1, .5)
+fit <- glm(y ~ x, family = binomial)
+wgttest(fit, wts)
+
+# Quasi family is treated differently than likelihood-based
+## Dobson (1990) Page 93: Randomized Controlled Trial (plus some extra values):
+counts <- c(18,17,15,20,10,20,25,13,12,18,17,15,20,10,20,25,13,12)
+outcome <- gl(3,1,18)
+treatment <- gl(3,6)
+glm.D93 <- glm(counts ~ outcome + treatment, family = quasipoisson)
+wts <- runif(18, 0, 3)
+wgttest(glm.D93, wts)
 
 }
 \references{
