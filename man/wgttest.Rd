@@ -4,12 +4,14 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, weights, model_output = TRUE, test = NULL,
+wgttest(model, data = NULL, weights, model_output = TRUE, test = NULL,
   digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The unweighted linear model (must be \code{lm},
 \code{glm}, see details for other types) you want to check.}
+
+\item{data}{The data frame with the data fed to the fitted model and the weights}
 
 \item{weights}{The name of the weights column in \code{model}'s data frame
 or a vector of weights equal in length to the number of observations
@@ -45,8 +47,10 @@ result and you can use the more efficient estimation from unweighted OLS.
 It can be helpful to look at the created model using \code{model_output = TRUE}
 to see which variables might be the ones affected by inclusion of weights.
 
-This test can support most GLMs in addition to LMs. It does not work for
-mixed models (e.g., \code{lmer} or \code{lme}) though it could plausibly be
+This test can support most GLMs in addition to LMs, a use validated by
+Nordberg (1989). This, to my knowledge, is different from the Stata macro.
+It does not work for mixed models (e.g., \code{lmer} or \code{lme}) though
+it could plausibly be
 implemented. However, there is no scholarly consensus how to properly
 incorporate weights into mixed models. There are other types of models that
 may work, but have not been tested. The function is designed to be
@@ -54,6 +58,8 @@ compatible with as many model types as possible, but the user should be
 careful to make sure s/he understands whether this type of test is
 appropriate for the model being considered. DuMouchel and Duncan (1983) were
 only thinking about linear regression when the test was conceived.
+Nordberg (1989) validated its use with generalized linear models, but to
+this author's knowledge it has not been tested with other model types.
 }
 \examples{
 # First, let's create some fake sampling weights
@@ -70,6 +76,8 @@ x <- rnorm(100)
 y <- rbinom(100, 1, .5)
 fit <- glm(y ~ x, family = binomial)
 wgttest(fit, wts)
+## Can specify test manually
+wgttest(fit, wts, test = "Rao")
 
 # Quasi family is treated differently than likelihood-based
 ## Dobson (1990) Page 93: Randomized Controlled Trial (plus some extra values):
@@ -86,6 +94,14 @@ DuMouchel, W. H. & Duncan, D.J. (1983). Using sample survey weights in
   multiple regression analyses of stratified samples. \emph{Journal of the
   American Statistical Association}, \emph{78}. 535-543.
 
+Nordberg, L. (1989). Generalized linear modeling of sample survey data.
+  \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
+
 Winship, C. & Radbill, L. (1994). Sampling weights and regression
   analysis. \emph{Sociological Methods and Research}, \emph{23}, 230-257.
+}
+\seealso{
+Other survey tools: \code{\link{pf_sv_test}},
+  \code{\link{svycor}}, \code{\link{svysd}},
+  \code{\link{weights_tests}}
 }
