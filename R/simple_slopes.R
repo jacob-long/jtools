@@ -214,10 +214,13 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                   cond.int = cond.int)
 
   # weights?
-  if (survey == FALSE && "(weights)" %in% names(d)) {
+  if (survey == FALSE && ("(weights)" %in% names(d) |
+                          !is.null(model$call$weights))) {
     weights <- TRUE
     wname <- as.character(model$call["weights"])
-    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    if (any(colnames(d) == "(weights)")) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
   } else {
     weights <- FALSE
     wname <- NULL
