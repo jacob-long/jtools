@@ -1,4 +1,26 @@
-## jtools 0.5.1
+## jtools 0.6.0
+
+A lot of changes!
+
+New functions:
+
+* effect_plot: If you like the visualization of moderation effects from 
+interact_plot, then you should enjoy effect_plot. It is a clone of 
+interact_plot, but shows a single regression line rather than several. It
+supports GLMs and lme4 models and can plot original, observed data points.
+* pf_sv_test: Another tool for survey researchers to test whether it's okay
+to run unweighted regressions. Named after Pfefferman and Svervchkov, who
+devised the test.
+* weights_tests: Like probe_interaction does for the interaction functions,
+weights_tests will run the new pf_sv_test as well as wgttest simultaneously
+with a common set of arguments. 
+
+Enhancements:
+
+* Set a default number of digits to print for all jtools functions with the
+option "jtools-digits". 
+* wgttest now accepts and tests GLMs and may work for other regression models.
+
 
 Bug fixes:
 
@@ -11,11 +33,19 @@ called "jnalpha". Now probe_interaction will pass "alpha" arguments as "jn_alpha
 * interact_plot would stop on an error when the model included a two-level factor
 not involved in the interaction and not centered. Now those factors in that 
 situation are treated like other factors.
-
-Enhancements:
-
-* Set a default number of digits to print for all jtools functions with the
-option "jtools-digits". 
+* interact_plot sometimes gave misleading output when users manually defined
+moderator labels. It is now more consistent with the ordering the labels and 
+values and will not wrongly label them when the values are provided in an
+odd order.
+* wgttest now functions properly when a vector of weights is provided to the
+weights argument rather than a column name.
+* gscale now works properly on tibbles, which requires a different style of 
+column indexing than data frames.
+* Related to the prior point, j_summ/standardize_lm/center_lm now work properly
+on models that were originally fit with tibbles in the data argument.
+* sim_slopes would fail for certain weighted lm objects depending on the way
+the weights were specified in the function call. It should now work for all
+weighted lm objects.
 
 ## jtools 0.5.0
 

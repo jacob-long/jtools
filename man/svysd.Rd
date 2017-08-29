@@ -50,4 +50,8 @@ This function was designed independent of the \pkg{survey} package and
 \code{\link[survey]{svyvar}}
 
 Other \pkg{survey} package extensions: \code{\link{svycor}}
+
+Other survey tools: \code{\link{pf_sv_test}},
+  \code{\link{svycor}}, \code{\link{weights_tests}},
+  \code{\link{wgttest}}
 }

@@ -61,6 +61,7 @@
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @family \pkg{survey} package extensions
+#' @family survey tools
 #'
 #' @seealso \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
 #'

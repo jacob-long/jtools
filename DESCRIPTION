@@ -1,7 +1,7 @@
 Package: jtools
 Type: Package
 Title: Analysis and Presentation of Social Scientific Data
-Version: 0.5.1
+Version: 0.6.0
 Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"))
 Description: This is a collection of tools that the author (Jacob) has written
@@ -14,7 +14,7 @@ BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Imports: boot
 Suggests:
   ggplot2,
   lmtest,

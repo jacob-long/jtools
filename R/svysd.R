@@ -24,6 +24,7 @@
 #' the output will say "variance."
 #'
 #' @family \pkg{survey} package extensions
+#' @family survey tools
 #'
 #' @seealso \code{\link[survey]{svyvar}}
 #'
