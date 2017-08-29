@@ -4,18 +4,18 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, data = NULL, weights, model_output = TRUE, test = NULL,
+wgttest(model, weights, data = NULL, model_output = TRUE, test = NULL,
   digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The unweighted linear model (must be \code{lm},
 \code{glm}, see details for other types) you want to check.}
 
-\item{data}{The data frame with the data fed to the fitted model and the weights}
-
 \item{weights}{The name of the weights column in \code{model}'s data frame
 or a vector of weights equal in length to the number of observations
 included in \code{model}.}
+
+\item{data}{The data frame with the data fed to the fitted model and the weights}
 
 \item{model_output}{Should a summary of the model with weights as predictor
 be printed? Default is TRUE, but you may not want it if you are trying to
@@ -68,7 +68,7 @@ wts <- runif(50, 0, 5)
 fit <- lm(Income ~ Frost + Illiteracy + Murder,
           data = as.data.frame(state.x77))
 # See if the weights change the model
-wgttest(fit, wts)
+wgttest(fit, weights = wts)
 
 # With a GLM
 wts <- runif(100, 0, 2)

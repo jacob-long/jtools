@@ -74,7 +74,7 @@
 #' fit <- lm(Income ~ Frost + Illiteracy + Murder,
 #'           data = as.data.frame(state.x77))
 #' # See if the weights change the model
-#' wgttest(fit, wts)
+#' wgttest(fit, weights = wts)
 #'
 #' # With a GLM
 #' wts <- runif(100, 0, 2)
@@ -97,7 +97,7 @@
 #' @importFrom stats anova reformulate
 #' @export
 
-wgttest <- function(model, data = NULL, weights, model_output = TRUE,
+wgttest <- function(model, weights, data = NULL, model_output = TRUE,
                     test = NULL,
                     digits = getOption("jtools-digits", default = 3)) {
 
