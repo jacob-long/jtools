@@ -277,7 +277,7 @@ print.wgttest <- function(x, ...) {
 
 #' Test whether sampling weights are needed
 #'
-#' Use the test proposed in Pfefferman and Svervchkov (1999) to check whether
+#' Use the test proposed in Pfeffermann and Sverchkov (1999) to check whether
 #' a regression model is specified correctly without weights.
 #'
 #' @param model The fitted model, without weights
@@ -299,7 +299,7 @@ print.wgttest <- function(x, ...) {
 #'
 #' @details
 #'
-#' This is a test described by Pfefferman and Svervchkov (1999) that is
+#' This is a test described by Pfeffermann and Sverchkov (1999) that is
 #' designed to help analysts decide whether they need to use sample weights
 #' in their regressions to avoid biased parameter estimation.
 #'
@@ -314,7 +314,7 @@ print.wgttest <- function(x, ...) {
 #'
 #' @references
 #'
-#' Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
+#' Pfeffermannn, D., & Sverchkov, M. (1999). Parametric and semi-parametric
 #'  estimation of regression models fitted to survey data.
 #'  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
 #'
@@ -422,7 +422,7 @@ pf_sv_test <- function (model, data, weights, sims = 1000,
 
 print.pf_sv_test <- function (x, ...) {
 
-  cat("\nPfefferman-Svervchkov test of sample weight ignorability \n\n")
+  cat("\nPfeffermann-Sverchkov test of sample weight ignorability \n\n")
   cat("Residual correlation = ", round(x$r1, x$digits), ", p = ",
       round(x$p1, x$digits), "\n", sep = "")
   cat("Squared residual correlation = ", round(x$r2, x$digits), ", p = ",
@@ -437,7 +437,7 @@ print.pf_sv_test <- function (x, ...) {
 
 #' Test whether sampling weights are needed
 #'
-#' Use the tests proposed in Pfefferman and Svervchkov (1999)
+#' Use the tests proposed in Pfeffermann and Sverchkov (1999)
 #' and DuMouchel and Duncan (1983) to check whether
 #' a regression model is specified correctly without weights.
 #'
@@ -472,7 +472,7 @@ print.pf_sv_test <- function (x, ...) {
 #' test whether your regression model is correctly specified. The first is
 #' \code{\link{wgttest}}, an R adaptation of the Stata macro of the same name.
 #' This test can otherwise be referred to as the DuMouchel-Duncan test. The
-#' other test is the Pfefferman-Svervchkov test, which can be accessed directly
+#' other test is the Pfeffermann-Sverchkov test, which can be accessed directly
 #' with \code{\link{pf_sv_test}}.
 #'
 #' For more details on each, visit the documentation on the respective functions.
@@ -487,7 +487,7 @@ print.pf_sv_test <- function (x, ...) {
 #' Nordberg, L. (1989). Generalized linear modeling of sample survey data.
 #'   \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
 #'
-#' Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
+#' Pfeffermannn, D., & Sverchkov, M. (1999). Parametric and semi-parametric
 #'  estimation of regression models fitted to survey data.
 #'  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
 #'

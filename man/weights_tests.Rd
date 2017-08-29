@@ -34,7 +34,7 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired number.}
 }
 \description{
-Use the tests proposed in Pfefferman and Svervchkov (1999)
+Use the tests proposed in Pfeffermann and Sverchkov (1999)
 and DuMouchel and Duncan (1983) to check whether
 a regression model is specified correctly without weights.
 }
@@ -43,7 +43,7 @@ This function is a wrapper for the two tests implemented in this package that
 test whether your regression model is correctly specified. The first is
 \code{\link{wgttest}}, an R adaptation of the Stata macro of the same name.
 This test can otherwise be referred to as the DuMouchel-Duncan test. The
-other test is the Pfefferman-Svervchkov test, which can be accessed directly
+other test is the Pfeffermann-Sverchkov test, which can be accessed directly
 with \code{\link{pf_sv_test}}.
 
 For more details on each, visit the documentation on the respective functions.
@@ -68,7 +68,7 @@ DuMouchel, W. H. & Duncan, D.J. (1983). Using sample survey weights in
 Nordberg, L. (1989). Generalized linear modeling of sample survey data.
   \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
 
-Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
+Pfeffermannn, D., & Sverchkov, M. (1999). Parametric and semi-parametric
  estimation of regression models fitted to survey data.
  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
 }

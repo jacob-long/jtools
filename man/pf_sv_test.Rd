@@ -26,11 +26,11 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired number.}
 }
 \description{
-Use the test proposed in Pfefferman and Svervchkov (1999) to check whether
+Use the test proposed in Pfeffermann and Sverchkov (1999) to check whether
 a regression model is specified correctly without weights.
 }
 \details{
-This is a test described by Pfefferman and Svervchkov (1999) that is
+This is a test described by Pfeffermann and Sverchkov (1999) that is
 designed to help analysts decide whether they need to use sample weights
 in their regressions to avoid biased parameter estimation.
 
@@ -55,7 +55,7 @@ pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
 
 }
 \references{
-Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
+Pfeffermannn, D., & Sverchkov, M. (1999). Parametric and semi-parametric
  estimation of regression models fitted to survey data.
  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
 }
