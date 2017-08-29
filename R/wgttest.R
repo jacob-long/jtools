@@ -115,7 +115,7 @@ wgttest <- function(model, weights, data = NULL, model_output = TRUE,
     }
   }
 
-  if (!is.null(data)) {
+  if (is.null(data)) {
 
     call <- getCall(model)
     if (!is.null(call$data)) {
