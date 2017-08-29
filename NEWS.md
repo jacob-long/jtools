@@ -1,3 +1,11 @@
+## jtools 0.6.1
+
+Bug fix release:
+
+* wgttest acted in a way that might be unexpected when providing a weights
+variable name but no data argument. Now it should work as expected by getting
+the data frame from the model call.
+
 ## jtools 0.6.0
 
 A lot of changes!

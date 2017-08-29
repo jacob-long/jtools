@@ -101,20 +101,6 @@ wgttest <- function(model, weights, data = NULL, model_output = TRUE,
                     test = NULL,
                     digits = getOption("jtools-digits", default = 3)) {
 
-  # Need to parse the arguments
-  # Need to parse the arguments
-  if (length(as.character(substitute(weights))) == 1 &&
-      as.character(substitute(weights)) %in% names(data)) {
-    wname <- as.character(substitute(weights))
-    numeric.input <- FALSE
-  } else {
-    if (is.numeric(weights)) {
-      numeric.input <- TRUE
-    } else {
-      stop("weights argument must be either the name of a column in the data frame or a numeric vector.")
-    }
-  }
-
   if (is.null(data)) {
 
     call <- getCall(model)
@@ -132,6 +118,19 @@ wgttest <- function(model, weights, data = NULL, model_output = TRUE,
 
     d <- data
 
+  }
+
+  # Need to parse the arguments
+  if (length(as.character(substitute(weights))) == 1 &&
+      as.character(substitute(weights)) %in% names(d)) {
+    wname <- as.character(substitute(weights))
+    numeric.input <- FALSE
+  } else {
+    if (is.numeric(weights)) {
+      numeric.input <- TRUE
+    } else {
+      stop("weights argument must be either the name of a column in the data frame or a numeric vector.")
+    }
   }
 
   # Save to d.f. and handle weights entered as numeric vector
