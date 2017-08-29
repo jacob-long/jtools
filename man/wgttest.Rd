@@ -77,7 +77,7 @@ y <- rbinom(100, 1, .5)
 fit <- glm(y ~ x, family = binomial)
 wgttest(fit, wts)
 ## Can specify test manually
-wgttest(fit, wts, test = "Rao")
+wgttest(fit, weights = wts, test = "Rao")
 
 # Quasi family is treated differently than likelihood-based
 ## Dobson (1990) Page 93: Randomized Controlled Trial (plus some extra values):
@@ -86,7 +86,7 @@ outcome <- gl(3,1,18)
 treatment <- gl(3,6)
 glm.D93 <- glm(counts ~ outcome + treatment, family = quasipoisson)
 wts <- runif(18, 0, 3)
-wgttest(glm.D93, wts)
+wgttest(glm.D93, weights = wts)
 
 }
 \references{
