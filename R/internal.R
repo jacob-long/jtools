@@ -18,19 +18,19 @@ pR2Work <- function(llh,llhNull,n){
 }
 
 ### Have to specify data differently than pscl to fix namespace issues
-pR2 <- function(object) {
-  llh <- suppressWarnings(logLik(object))
-  if (class(object)[1] %in% c("svyglm","svrepglm")) {
-    objectNull <- suppressWarnings(update(object, ~ 1,
-                                          design = object$survey.design))
-  } else {
-  objectNull <- suppressWarnings(update(object, ~ 1,
-                                        data = model.frame(object)))
-  }
-  llhNull <- logLik(objectNull)
-  n <- dim(object$model)[1]
-  pR2Work(llh,llhNull,n)
-}
+# pR2 <- function(object) {
+#   llh <- suppressWarnings(logLik(object))
+#   if (class(object)[1] %in% c("svyglm","svrepglm")) {
+#     objectNull <- suppressWarnings(update(object, ~ 1,
+#                                           design = object$survey.design))
+#   } else {
+#   objectNull <- suppressWarnings(update(object, ~ 1,
+#                                         data = model.frame(object)))
+#   }
+#   llhNull <- logLik(objectNull)
+#   n <- dim(object$model)[1]
+#   pR2Work(llh,llhNull,n)
+# }
 
 # Weighted std. dev. used in gscale
 wtd.sd <- function(x, w) {
