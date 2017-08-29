@@ -11,7 +11,7 @@ fit2 <- lm(Income ~ HSGrad*o70, data = states)
 fitw <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states, weights = wts)
 
 
-library(survey)
+library(survey, quietly = TRUE)
 data(api)
 dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 regmodel <- svyglm(api00~ell*meals*both,design=dstrat)
@@ -117,7 +117,7 @@ test_that("effect_plot works for svyglm", {
                               centered = "ell"))
 })
 
-library(lme4)
+library(lme4, quietly = TRUE)
 data(VerbAgg)
 mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
 

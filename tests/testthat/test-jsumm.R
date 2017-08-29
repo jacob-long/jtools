@@ -5,7 +5,7 @@ output <- rpois(100, 5)
 input <- log(output) + runif(100,0,1)
 fitgf <- glm(output ~ input, family = poisson)
 
-library(survey)
+library(survey, quietly = TRUE)
 data(api)
 dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 dstrat$variables$mealsdec <- dstrat$variables$meals/100
@@ -15,10 +15,9 @@ regmodell <- svyglm(mealsdec ~ ell + api00, design = dstrat)
 
 fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 
-library(lme4)
-data(VerbAgg)
-mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
-            control = glmerControl("bobyqa"))
+library(lme4, quietly = TRUE)
+data(sleepstudy)
+mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
 test_that("jsumm: non-linear models work", {
   expect_is(j_summ(fitgf), "j_summ.glm")
