@@ -88,7 +88,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
   # transformed data
   call <- getCall(model)
   if (!is.null(call$data)) {
-    d <- eval(call$data)
+    d <- eval(call$data, envir = environment(formula(model)))
     mframe <- FALSE # telling myself whether I use model.frame
   } else {
     d <- model.frame(model)
