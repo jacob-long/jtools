@@ -1,10 +1,12 @@
 library(jtools)
 
+# GLM test
 set.seed(1)
 output <- rpois(100, 5)
 input <- log(output) + runif(100,0,1)
 fitgf <- glm(output ~ input, family = poisson)
 
+# survey test
 library(survey, quietly = TRUE)
 data(api)
 dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
@@ -13,8 +15,15 @@ regmodel <- svyglm(mealsdec ~ ell + api00, design = dstrat,
                    family = quasibinomial)
 regmodell <- svyglm(mealsdec ~ ell + api00, design = dstrat)
 
-fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
+# lm tests (OLS and WLS)
+states <- as.data.frame(state.x77)
+states$HSGrad <- states$`HS Grad`
+set.seed(3)
+states$wts <- runif(50, 0, 3)
+fit <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states)
+fitw <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states, weights = wts)
 
+# merMod test
 library(lme4, quietly = TRUE)
 data(sleepstudy)
 mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
@@ -57,6 +66,11 @@ test_that("jsumm and merMod objects: everything works", {
   expect_is(suppressWarnings(j_summ(mv, center = TRUE, n.sd = 2)), "j_summ.merMod")
   expect_is(j_summ(mv, standardize = TRUE, n.sd = 2), "j_summ.merMod")
   expect_warning(j_summ(mv, robust = TRUE))
+})
+
+test_that("jsumm can standardize weighted lms", {
+  expect_is(j_summ(fitw, standardize = T, n.sd = 2, robust = TRUE), "j_summ.lm")
+  expect_is(j_summ(fitw, center = T, robust = TRUE), "j_summ.lm")
 })
 
 test_that("jsumm: Printing isn't borked", {

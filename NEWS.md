@@ -5,6 +5,10 @@ Bug fix release:
 * wgttest acted in a way that might be unexpected when providing a weights
 variable name but no data argument. Now it should work as expected by getting
 the data frame from the model call.
+* gscale had a few situations in which it choked on missing data, especially
+when weights were used. This in turn affected j_summ, scale_lm, and center_lm,
+which each rely on gscale for standardization and mean-centering. That's fixed 
+now.
 
 ## jtools 0.6.0
 

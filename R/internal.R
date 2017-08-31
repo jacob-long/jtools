@@ -34,10 +34,14 @@ pR2Work <- function(llh,llhNull,n){
 
 # Weighted std. dev. used in gscale
 wtd.sd <- function(x, w) {
-  xm <- weighted.mean(x, w)
-  out <- sum((w * (x - xm)^2)/(sum(w)-1))
-  out <- sqrt(out)
-  return(out)
+  # Get the mean
+  xm <- weighted.mean(x, w, na.rm = TRUE)
+  # Squaring the weighted deviations and dividing by weighted N - 1
+  variance <- sum((w * (x - xm)^2)/(sum(w)-1), na.rm = TRUE)
+  # Standard deviation is sqrt(variance)
+  sd <- sqrt(variance)
+  # Return the SD
+  return(sd)
 }
 
 # Stolen from sjstats so I don't have to list it as import
