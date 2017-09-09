@@ -422,17 +422,45 @@ j_summ.glm <- function(
   pR2 <- function(object) {
     llh <- suppressWarnings(logLik(object))
     if (is.null(attr(terms(formula(object)),"offset"))) {
-      objectNull <- suppressWarnings(update(object, ~ 1))
+
+      if (is.null(model.weights(model.frame(object)))) {
+
+        objectNull <- suppressWarnings(update(object, ~ 1,
+                                      data = model.frame(object)))
+
+      } else {
+        `(weights)` <- model.frame(object)["(weights)"] # appeasing CRAN
+
+        objectNull <- suppressWarnings(update(object, ~ 1,
+                                              data = model.frame(object),
+                                              weights = `(weights)`))
+
+      }
+
     } else {
+
       offs <- model.offset(model.frame(object))
       frame <- model.frame(object)
       frame$jtools_offs <- offs
-      objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
-                                            data = frame))
+      if (is.null(model.weights(frame))) {
+
+        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+                                              data = frame))
+
+      } else {
+
+        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+                                              data = frame,
+                                              weights = `(weights)`))
+
+      }
+
     }
+
     llhNull <- logLik(objectNull)
     n <- dim(object$model)[1]
     pR2Work(llh,llhNull,n)
+
   }
 
   if (model.fit == TRUE) {
