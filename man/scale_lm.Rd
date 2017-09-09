@@ -19,7 +19,7 @@ like other continuous variables.}
 \item{n.sd}{How many standard deviations should you divide by for
 standardization? Default is 1, though some prefer 2.}
 
-\item{center}{Default is \code{FALSE}. If \code{TRUE}, the predictors are also
+\item{center}{Default is \code{TRUE}. If \code{TRUE}, the predictors are also
 mean-centered. For binary predictors, the \code{binary.inputs} argument
 supersedes this one.}
 
