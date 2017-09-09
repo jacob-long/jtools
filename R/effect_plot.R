@@ -88,6 +88,9 @@
 #'   effects are plotted. \code{lme4} does not provide confidence intervals,
 #'   so they are not supported with this function either.
 #'
+#'   Note: to use transformed predictors, e.g., \code{log(variable)},
+#'   put its name in quotes or backticks in the argument.
+#'
 #' @return The functions returns a \code{ggplot} object, which can be treated like
 #'   a user-created plot and expanded upon as such.
 #'
@@ -156,6 +159,7 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
     fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
 
     facvars <- c()
     for (v in fvars) {
@@ -181,6 +185,7 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
     fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
 
     facvars <- c()
     for (v in fvars) {
@@ -396,6 +401,16 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
     message(msg)
   }
 
+  # Back-ticking variable names in formula to prevent problems with transformed preds
+  formc <- as.character(deparse(formula(model)))
+  for (var in all.vars) {
+
+    bt_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(var, bt_name, formc, fixed = TRUE)
+
+  }
+  form <- as.formula(formc)
+
   # Create predicted values based on specified levels of the focal predictor
 
   ## Don't update model if no vars were centered
@@ -404,15 +419,15 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
   } else {
     if (survey == FALSE) {
       if (mixed == FALSE) {
-        modelu <- update(model, data = d)
+        modelu <- update(model, formula = form, data = d)
       } else {
         optimiz <- model@optinfo$optimizer
         if (class(model) == "glmerMod") {
-          modelu <- update(model, data = d,
+          modelu <- update(model, formula = form, data = d,
                            control = lme4::glmerControl(optimizer = optimiz,
                                                         calc.derivs = FALSE))
         } else {
-          modelu <- update(model, data = d,
+          modelu <- update(model, formula = form, data = d,
                            control = lme4::lmerControl(optimizer = optimiz,
                                                        calc.derivs = FALSE))
         }
@@ -421,19 +436,22 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
       # Have to do all this to avoid adding survey to dependencies
       call <- getCall(model)
       call$design <- design
+      call$formula <- form
       call[[1]] <- survey::svyglm
       modelu <- eval(call)
+      interval <- TRUE # predict.svyglm doesn't like se.fit = FALSE
     }
   }
 
   if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(modelu, pm,
+    predicted <- as.data.frame(predict(modelu, newdata = pm,
                                        type = outcome.scale,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(modelu, pm, se.fit=T,
-                                       interval=int.type[1],
+    predicted <- as.data.frame(predict(modelu, newdata = pm,
+                                       se.fit = interval,
+                                       interval = int.type[1],
                                        type = outcome.scale))
   }
   pm[,resp] <- predicted[,1] # this is the actual values

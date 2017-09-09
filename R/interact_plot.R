@@ -124,6 +124,9 @@
 #'   effects are plotted. \code{lme4} does not provide confidence intervals,
 #'   so they are not supported with this function either.
 #'
+#'   Note: to use transformed predictors, e.g., \code{log(variable)},
+#'   put its name in quotes or backticks in the argument.
+#'
 #' @return The functions returns a \code{ggplot} object, which can be treated like
 #'   a user-created plot and expanded upon as such.
 #'
@@ -225,6 +228,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
 
     facvars <- c()
     for (v in fvars) {
@@ -250,6 +254,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
 
     facvars <- c()
     for (v in fvars) {
@@ -734,6 +739,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Create predicted values based on specified levels of the moderator, focal predictor
+  ## This is passed to predict(), but for svyglm needs to be TRUE always
+  interval_arg <- interval
+
+  # Back-ticking variable names in formula to prevent problems with transformed preds
+  formc <- as.character(deparse(formula(model)))
+  for (var in all.vars) {
+
+    bt_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(var, bt_name, formc, fixed = TRUE)
+
+  }
+  form <- as.formula(formc)
 
   ## Don't update model if no vars were centered
   if (!is.null(centered) && centered == "none") {
@@ -741,36 +758,39 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   } else {
     if (survey == FALSE) {
       if (mixed == FALSE) {
-        modelu <- update(model, data = d)
+        modelu <- update(model, formula = form, data = d)
       } else {
         optimiz <- model@optinfo$optimizer
         if (class(model) == "glmerMod") {
-          modelu <- update(model, data = d,
+          modelu <- update(model, formula = form, data = d,
                            control = lme4::glmerControl(optimizer = optimiz,
                                                         calc.derivs = FALSE))
         } else {
-          modelu <- update(model, data = d,
+          modelu <- update(model, formula = form, data = d,
                            control = lme4::lmerControl(optimizer = optimiz,
                                                         calc.derivs = FALSE))
         }
       }
     } else {
       # Have to do all this to avoid adding survey to dependencies
+      interval_arg <- TRUE
       call <- getCall(model)
       call$design <- design
+      call$formula <- form
       call[[1]] <- survey::svyglm
       modelu <- eval(call)
     }
   }
 
   if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(modelu, pm,
+    predicted <- as.data.frame(predict(modelu, newdata = pm,
                                        type = outcome.scale,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(modelu, pm, se.fit=T,
-                                       interval=int.type[1],
+    predicted <- as.data.frame(predict(modelu, newdata = pm,
+                                       se.fit = interval_arg,
+                                       interval = int.type[1],
                                        type = outcome.scale))
   }
   pm[,resp] <- predicted[,1] # this is the actual values

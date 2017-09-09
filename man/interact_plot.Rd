@@ -142,6 +142,9 @@ This function provides a means for plotting conditional effects for the
   While mixed effects models from \code{lme4} are supported, only the fixed
   effects are plotted. \code{lme4} does not provide confidence intervals,
   so they are not supported with this function either.
+
+  Note: to use transformed predictors, e.g., \code{log(variable)},
+  put its name in quotes or backticks in the argument.
 }
 \examples{
 # Using a fitted lm model
