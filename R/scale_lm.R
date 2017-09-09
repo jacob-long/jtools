@@ -14,7 +14,7 @@
 #' @param n.sd How many standard deviations should you divide by for
 #'   standardization? Default is 1, though some prefer 2.
 #'
-#' @param center Default is \code{FALSE}. If \code{TRUE}, the predictors are also
+#' @param center Default is \code{TRUE}. If \code{TRUE}, the predictors are also
 #'   mean-centered. For binary predictors, the \code{binary.inputs} argument
 #'   supersedes this one.
 #'
@@ -87,23 +87,68 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
   call <- getCall(model)
-  if (!is.null(call$data)) {
-    d <- eval(call$data, envir = environment(formula(model)))
-    mframe <- FALSE # telling myself whether I use model.frame
+
+  mm <- model.matrix(model)
+  mf <- model.frame(model)
+  form <- formula(model)
+  formc <- as.character(deparse(formula(model)))
+
+  # Detect presence of offset, save the vector
+  if (!is.null(model.offset(mf))) {
+
+    offset <- TRUE
+    the_offset <- model.offset(mf)
+
   } else {
-    d <- model.frame(model)
-    mframe <- TRUE
+
+    offset <- FALSE
+    the_offset <- NULL
+
   }
 
   # Save response variable
   resp <- as.character(formula(model)[2])
 
   # Save list of terms
-  vars <- attributes(model$terms)$variables
+  vars <- attributes(terms(model))$variables
   vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
 
+  # If offset supplied in the formula, detect it, delete it
+  if (!is.null(attr(terms(form), "offset"))) {
+
+    off_pos <- attr(terms(form), "offset") # Get index of offset in terms list
+    offname <- attr(terms(form), "variables")[off_pos] # Get its name in list
+    formc <- gsub(offname, "", formc)
+
+  }
+
+  # Now I'm quoting all the names so there's no choking on vars with functions
+  # applied. I save the backticked names
+  for (var in vars) {
+
+    backtick_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(var, backtick_name, formc, fixed = TRUE)
+
+  }
+
   # svyglm?
-  if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {survey <- TRUE} else {survey <- FALSE}
+  if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {
+    survey <- TRUE
+  } else {
+    survey <- FALSE
+  }
+
+  if (!is.null(model.weights(mf)) && survey == FALSE) {
+
+    weights <- TRUE
+    the_weights <- model.weights(mf)
+
+  } else {
+
+    weights <- FALSE
+    the_weights <- NULL
+
+  }
 
   # things are different for these svyglm objects...
   if (survey == TRUE) {
@@ -115,62 +160,101 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
     vars <- attributes(model$terms)$variables
     vars <- as.character(vars)[2:length(vars)]
 
+    # Add vars to design if they aren't already there (fixes issues with functions)
+    adds <- which(!(vars %in% names(design$variables)))
+    for (var in vars[adds]) {
+
+      design[,var] <- mf[,var]
+
+    }
+
     if (scale.response == FALSE) {
       vars <- vars[!(vars %in% resp)]
     }
 
     # Call gscale()
-    if (center == FALSE) {
-      design <- gscale(x = vars, data = design, scale.only = TRUE, n.sd = n.sd)
-    } else if (center == TRUE) {
-      design <- gscale(x = vars, data = design, n.sd = n.sd)
-    }
-
+    design <- gscale(x = vars, data = design, n.sd = n.sd, scale.only = !center)
 
     call$design <- design
     call[[1]] <- survey::svyglm
     new <- eval(call)
-  }
 
+  }
 
   # weights?
   if (survey == FALSE && !is.null(call$weights)) {
+
     weights <- TRUE
-    wname <- as.character(call$weights)
-    if (mframe == TRUE) {
-      colnames(d)[which(colnames(d) == "(weights)")] <- wname
-    }
+    mf <- mf[,names(mf) != "(weights)"] # just getting rid of the column
+
   } else {
+
     weights <- FALSE
+
   }
 
   # calling gscale(), incorporating the weights
   if (weights == TRUE) {
-    vars <- vars[!(vars %in% wname)]
 
     if (scale.response == FALSE) {
+
       vars <- vars[!(vars %in% resp)]
+
     }
 
-    d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
-                scale.only = !center, weights = wname, n.sd = n.sd)
+    mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
+                 n.sd = n.sd, weights = the_weights, scale.only = !center)
+
+    mf$the_weights <- the_weights
 
   } else {
+
     if (scale.response == FALSE) {
       # Now we need to know the variables of interest
       vars <- vars[!(vars %in% resp)]
-      d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
-                  scale.only = !center, n.sd = n.sd)
+      mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
+                   n.sd = n.sd, scale.only = !center)
+
     } else {
-      d <- gscale(x = vars, data = d, binary.inputs = binary.inputs,
-                scale.only = !center, n.sd = n.sd)
+
+      mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
+                   n.sd = n.sd, scale.only = !center)
+
     }
+
   }
 
 
   if (survey == FALSE) {
-    new <- update(model, data = d)
-  }
-  return(new)
-}
 
+    if (offset == TRUE && weights == FALSE) {
+
+      mf$the_offset <- the_offset
+
+      new <- update(model, formula = as.formula(formc),
+                    offset = the_offset, data = mf)
+
+    } else if (weights == TRUE && offset == FALSE) {
+
+      new <- update(model, formula = as.formula(formc),
+                    weights = the_weights, data = mf)
+
+    } else if (weights == TRUE && offset == TRUE) {
+
+      mf$the_offset <- the_offset
+
+      new <- update(model, formula = as.formula(formc),
+                    weights = the_weights, offset = the_offset, data = mf)
+
+    } else {
+
+      new <- update(model, formula = as.formula(formc), data = mf)
+
+    }
+
+  }
+
+
+  return(new)
+
+}
