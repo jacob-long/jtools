@@ -87,7 +87,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   modxt <- as.character(substitute(modx))
 
   # Doing a check so it works when called from inside a function
-  if (!(predt %in% names(coef(model)))) {
+  if (!(predt %in% as.character(attr(terms(model), "variables")))) {
     pred <- as.character(eval(pred))
     modx <- as.character(eval(modx))
   } else {
