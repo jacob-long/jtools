@@ -610,22 +610,23 @@ if (is.numeric(x)) {
 
           d[[i]] <- (d[[i]] - min(d[[i]])) / (max(d[[i]]) - min(d[[i]]))
 
-        } else if (binary.inputs=="-0.5/0.5") {
+        } else if (binary.inputs == "-0.5/0.5") {
 
+          d[[i]] <- (d[[i]] - min(d[[i]])) / (max(d[[i]]) - min(d[[i]]))
           d[[i]] <- d[[i]] - 0.5
 
         } else if (binary.inputs == "center") {
 
           d[[i]] <- d[[i]] - survey::svymean(as.formula(paste("~", i, sep = "")),
-                                            design = design, na.rm = TRUE)
+                                            design = design, na.rm = TRUE)[1]
 
-        } else if (binary.inputs=="full") {
+        } else if (binary.inputs == "full") {
 
           numerator <- d[[i]] - survey::svymean(as.formula(paste("~", i, sep = "")),
-                                               design = design, na.rm = TRUE)
+                                               design = design, na.rm = TRUE)[1]
 
           denominator <- n.sd * svysd(as.formula(paste("~",  i, sep = "")),
-                                                    design = design, na.rm = TRUE)
+                                                    design = design, na.rm = TRUE)[1]
 
           if (center.only == FALSE && scale.only == FALSE) {
 
@@ -743,14 +744,14 @@ if (is.numeric(x)) {
             } else if (binary.inputs=="center") {
 
               d[[i]] <- d[[i]] - survey::svymean(as.formula(paste("~", i, sep = "")),
-                                                design = design, na.rm = TRUE)
+                                                design = design, na.rm = TRUE)[1]
 
             } else if (binary.inputs=="full") {
 
               numerator <- d[[i]] - survey::svymean(as.formula(paste("~", i, sep = "")),
-                                                   design = design, na.rm = TRUE)
+                                                   design = design, na.rm = TRUE)[1]
               denominator <- n.sd * svysd(as.formula(paste("~",  i, sep = "")),
-                                                        design = design, na.rm = TRUE)
+                                                        design = design, na.rm = TRUE)[1]
 
               if (center.only == FALSE && scale.only == FALSE) {
 
