@@ -11,24 +11,28 @@
 j_summ(model, ...)
 
 \method{j_summ}{lm}(model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3", digits = getOption("jtools-digits",
-  default = 3), model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, ...)
+  confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
+  cluster = NULL, digits = getOption("jtools-digits", default = 3),
+  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  pvals = TRUE, n.sd = 1, center = FALSE, standardize.response = FALSE,
+  ...)
 
 \method{j_summ}{glm}(model, standardize = FALSE, vifs = FALSE,
-  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, odds.ratio = FALSE, ...)
+  confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
+  cluster = NULL, digits = getOption("jtools-digits", default = 3),
+  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, ...)
 
 \method{j_summ}{svyglm}(model, standardize = FALSE, vifs = FALSE,
-  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, odds.ratio = FALSE, ...)
+  confint = FALSE, ci.width = 0.95, digits = getOption("jtools-digits",
+  default = 3), model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  pvals = TRUE, n.sd = 1, center = FALSE, standardize.response = FALSE,
+  odds.ratio = FALSE, ...)
 
-\method{j_summ}{merMod}(model, standardize = FALSE,
-  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, odds.ratio = F, ...)
+\method{j_summ}{merMod}(model, standardize = FALSE, confint = FALSE,
+  ci.width = 0.95, digits = getOption("jtools-digits", default = 3),
+  model.info = TRUE, model.fit = TRUE, pvals = FALSE, n.sd = 1,
+  center = FALSE, standardize.response = FALSE, odds.ratio = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
@@ -40,8 +44,15 @@ types of models.}
 \item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
 coefficients. Default is \code{FALSE}.}
 
-\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation factors
-(VIF). Default is \code{FALSE}.}
+\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
+factors (VIF). Default is \code{FALSE}.}
+
+\item{confint}{Show confidence intervals instead of standard errors? Default
+is \code{FALSE}.}
+
+\item{ci.width}{A number between 0 and 1 that signifies the width of the
+desired confidence interval. Default is \code{.95}, which corresponds
+to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard errors
   instead of conventional SEs. These are also known as Huber-White standard
@@ -53,10 +64,15 @@ coefficients. Default is \code{FALSE}.}
    standard errors.}
 
 \item{robust.type}{Only used if \code{robust=TRUE}. Specifies the type of
-robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
-. See details for more on options.}
+robust standard errors to be used by \code{sandwich}. By default, set to
+\code{"HC3"}. See details for more on options.}
 
-\item{digits}{An integer specifying the number of digits past the decimal to report in
+\item{cluster}{For clustered standard errors, provide the column name of
+the cluster variable in the input data frame (as a string). Alternately,
+provide a vector of clusters.}
+
+\item{digits}{An integer specifying the number of digits past the decimal to
+report in
 the output. Default is 3. You can change the default number of digits for
 all jtools functions with \code{options("jtools-digits" = digits)} where
 digits is the desired number.}
@@ -69,6 +85,10 @@ and AIC (when applicable).}
 
 \item{model.check}{Toggles whether to perform Breusch-Pagan test for heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
+
+\item{pvals}{Show p-values and significance stars? If \code{FALSE}, these
+are not printed. Default is \code{TRUE}, except for merMod objects (see
+details).}
 
 \item{n.sd}{If \code{standardize = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
@@ -103,8 +123,8 @@ By default, this function will print the following items to the console:
 \itemize{
   \item The sample size
   \item The name of the outcome variable
-  \item The number of predictors used
   \item The (Pseudo-)R-squared value (plus adjusted R-squared if OLS regression).
+  There are only AIC values for model fit for merMod objects.
   \item A table with regression coefficients, standard errors, t-values, and
    p-values.
 }
@@ -115,7 +135,9 @@ By default, this function will print the following items to the console:
  recommendation of the developers of \pkg{sandwich}, the default is set to
  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
  if the goal is to replicate Stata's output. Any option that is understood by
- \code{vcovHC} will be accepted.
+ \code{vcovHC} will be accepted. Cluster-robust standard errors are computed
+ if \code{cluster} is set to the name of the input data's cluster variable
+ or is a vector of clusters.
 
  The \code{standardize} and \code{center} options are performed via refitting
  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
@@ -125,6 +147,8 @@ By default, this function will print the following items to the console:
  standard deviations. Weights are not altered. The fact that the model is
  refit means the runtime will be similar to the original time it took to fit
  the model.
+
+ \code{lm}-only info:
 
  There are two pieces of information given for \code{model.check}, provided that
  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
@@ -145,6 +169,23 @@ By default, this function will print the following items to the console:
  included in the count. Again, this is not a recommendation to locate and
  remove such observations, but rather to look more closely with graphical and
  other methods.
+
+ \code{merMod}-only info:
+
+ \code{merMod} models are a bit different than the others. The \code{lme4}
+ package developers have, for instance, made a decision not to report or
+ compute p-values with their functions. There are good reasons for this,
+ most notably that the t-values produced are not "accurate" in the sense of
+ the Type I error rate. For larger samples, this is no big deal. What's
+ a "big" or "small" sample? Good luck getting a statistician to tell you.
+ Some simulation studies have been done on fewer than 100 observations, so
+ for sure if your sample is around 100 or fewer you should not interpret
+ the t-values. A large number of groups is also crucial for avoiding bias
+ using t-values.
+
+ See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
+ If you're looking for a simple test, it is better to use the confidence
+ intervals and check to see if they exclude zero than use the t-test.
 }
 \examples{
 # Create lm object

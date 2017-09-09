@@ -7,8 +7,13 @@
 #'   \code{\link[lme4]{merMod}} object.
 #' @param standardize If \code{TRUE}, adds a column to output with standardized regression
 #'   coefficients. Default is \code{FALSE}.
-#' @param vifs If \code{TRUE}, adds a column to output with variance inflation factors
-#'   (VIF). Default is \code{FALSE}.
+#' @param vifs If \code{TRUE}, adds a column to output with variance inflation
+#'   factors (VIF). Default is \code{FALSE}.
+#' @param confint Show confidence intervals instead of standard errors? Default
+#'   is \code{FALSE}.
+#' @param ci.width A number between 0 and 1 that signifies the width of the
+#'   desired confidence interval. Default is \code{.95}, which corresponds
+#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
 #' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors
 #'   instead of conventional SEs. These are also known as Huber-White standard
 #'   errors.
@@ -18,9 +23,13 @@
 #'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
 #'    standard errors.
 #' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
-#'   robust standard errors to be used by \code{sandwich}. By default, set to \code{"HC3"}
-#'   . See details for more on options.
-#' @param digits An integer specifying the number of digits past the decimal to report in
+#'   robust standard errors to be used by \code{sandwich}. By default, set to
+#'   \code{"HC3"}. See details for more on options.
+#' @param cluster For clustered standard errors, provide the column name of
+#'   the cluster variable in the input data frame (as a string). Alternately,
+#'   provide a vector of clusters.
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in
 #'   the output. Default is 3. You can change the default number of digits for
 #'   all jtools functions with \code{options("jtools-digits" = digits)} where
 #'   digits is the desired number.
@@ -30,6 +39,9 @@
 #'  and AIC (when applicable).
 #' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
 #'  and print number of high-leverage observations. See details for more info.
+#' @param pvals Show p-values and significance stars? If \code{FALSE}, these
+#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
+#'  details).
 #' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
 #'  predictors be divided by? Default is 1, though some suggest 2.
 #' @param center If you want coefficients for mean-centered variables but don't
@@ -47,8 +59,8 @@
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
-#'   \item The number of predictors used
 #'   \item The (Pseudo-)R-squared value (plus adjusted R-squared if OLS regression).
+#'   There are only AIC values for model fit for merMod objects.
 #'   \item A table with regression coefficients, standard errors, t-values, and
 #'    p-values.
 #' }
@@ -59,7 +71,9 @@
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
 #'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
 #'  if the goal is to replicate Stata's output. Any option that is understood by
-#'  \code{vcovHC} will be accepted.
+#'  \code{vcovHC} will be accepted. Cluster-robust standard errors are computed
+#'  if \code{cluster} is set to the name of the input data's cluster variable
+#'  or is a vector of clusters.
 #'
 #'  The \code{standardize} and \code{center} options are performed via refitting
 #'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
@@ -69,6 +83,8 @@
 #'  standard deviations. Weights are not altered. The fact that the model is
 #'  refit means the runtime will be similar to the original time it took to fit
 #'  the model.
+#'
+#'  \code{lm}-only info:
 #'
 #'  There are two pieces of information given for \code{model.check}, provided that
 #'  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
@@ -89,6 +105,23 @@
 #'  included in the count. Again, this is not a recommendation to locate and
 #'  remove such observations, but rather to look more closely with graphical and
 #'  other methods.
+#'
+#'  \code{merMod}-only info:
+#'
+#'  \code{merMod} models are a bit different than the others. The \code{lme4}
+#'  package developers have, for instance, made a decision not to report or
+#'  compute p-values with their functions. There are good reasons for this,
+#'  most notably that the t-values produced are not "accurate" in the sense of
+#'  the Type I error rate. For larger samples, this is no big deal. What's
+#'  a "big" or "small" sample? Good luck getting a statistician to tell you.
+#'  Some simulation studies have been done on fewer than 100 observations, so
+#'  for sure if your sample is around 100 or fewer you should not interpret
+#'  the t-values. A large number of groups is also crucial for avoiding bias
+#'  using t-values.
+#'
+#'  See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
+#'  If you're looking for a simple test, it is better to use the confidence
+#'  intervals and check to see if they exclude zero than use the t-test.
 #'
 #' @return If saved, users can access most of the items that are returned in the
 #'   output (and without rounding).
@@ -136,7 +169,7 @@
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
-#'  extractAIC family fitted pt residuals terms
+#'  extractAIC family fitted pt residuals terms model.weights
 #' @export
 #'
 #'
@@ -150,28 +183,39 @@ j_summ <- function(model, ...) {
 #' @export
 
 j_summ.lm <- function(
-  model, standardize = FALSE, vifs = FALSE,
-  robust = FALSE, robust.type = "HC3",
+  model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
+  robust = FALSE, robust.type = "HC3", cluster = NULL,
   digits = getOption("jtools-digits", default = 3),
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  model.info = TRUE, model.fit = TRUE, model.check = FALSE, pvals = TRUE,
   n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
 
   j <- list()
 
+  # Using information from summary()
+  sum <- summary(model)
+
+  # Check missing obs
+  missing <- length(sum$na.action)
+
   # Standardized betas
   if (standardize == TRUE) {
-    model <- scale_lm(model, n.sd = n.sd, center = TRUE, scale.response = standardize.response)
+
+    model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+    # Using information from summary()
+    sum <- summary(model)
+
   } else if (center == TRUE && standardize == FALSE) {
+
     model <- center_lm(model)
+    # Using information from summary()
+    sum <- summary(model)
+
   }
 
   j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
                         robust.type = robust.type, digits = digits,
                         model.info = model.info, model.fit = model.fit,
                         model.check = model.check, n.sd = n.sd, center = center)
-
-  # Using information from summary()
-  sum <- summary(model)
 
   if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
@@ -231,19 +275,82 @@ j_summ.lm <- function(
            call. = FALSE)
     }
 
-    coefs <- sandwich::vcovHC(model, type=robust.type)
+    if (is.character(cluster)) {
+
+      call <- getCall(model)
+      d <- eval(call$data, envir = environment(formula(model)))
+
+      cluster <- d[,cluster]
+      use_cluster <- TRUE
+
+    } else if (length(cluster) > 1) {
+
+      if (!is.factor(cluster) & !is.numeric(cluster)) {
+
+        warning("Invalid cluster input. Either use the name of the variable in the input data frame or provide a numeric/factor vector. Cluster is not being used in the reported SEs.")
+        cluster <- NULL
+        use_cluster <- FALSE
+
+      }
+
+      use_cluster <- TRUE
+
+    } else {
+
+      use_cluster <- FALSE
+
+    }
+
+    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
+      # vcovCL only goes up to HC3
+      coefs <- sandwich::vcovHC(model, type = robust.type)
+
+    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
+
+      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
+
+    } else if (robust == TRUE) {
+
+      coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust.type)
+
+    }
+
     coefs <- lmtest::coeftest(model,coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
-    pvals <- coefs[,4]
+    ps <- coefs[,4]
+
   } else {
+
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
-    pvals <- coef(sum)[,4]
+    ps <- coef(sum)[,4]
+    use_cluster <- FALSE
+
   }
 
-  params <- list(ucoefs, ses, ts, pvals)
-  namevec <- c("Est.", "S.E.", "t val.", "p")
+  if (confint == TRUE) {
+
+    alpha <- (1 - ci.width)/2
+    tcrit <- abs(qnorm(alpha))
+
+    lci_lab <- 0 + alpha
+    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+
+    uci_lab <- 1 - alpha
+    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+
+    lci <- ucoefs - (ses*tcrit)
+    uci <- ucoefs + (ses*tcrit)
+    params <- list(ucoefs, lci, uci, ts, ps)
+    namevec <- c("Est.", lci_lab, uci_lab, "t val.", "p")
+
+  } else {
+
+    params <- list(ucoefs, ses, ts, ps)
+    namevec <- c("Est.", "S.E.", "t val.", "p")
+
+  }
 
   if (vifs == TRUE) {
     params[length(params)+1] <- list(tvifs)
@@ -262,6 +369,13 @@ j_summ.lm <- function(
     }
   }
 
+  # Drop p-vals if user requests
+  if (pvals == FALSE) {
+
+    mat <- mat[,1:ncol(mat)-1]
+
+  }
+
   # Implement model checking features
   if (model.check == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
@@ -270,7 +384,7 @@ j_summ.lm <- function(
            to FALSE.", call. = FALSE)
     }
 
-    homoskedp <- car::ncvTest(model)$p
+    homoskedp <- ncvTest(model)$p
     j <- structure(j, homoskedp = homoskedp)
 
     cd <- table(cooks.distance(model) > 4/n)
@@ -279,7 +393,9 @@ j_summ.lm <- function(
   }
 
   j <- structure(j, rsq = rsq, arsq = arsq, dv = names(model$model[1]),
-                        npreds = model$rank-df.int, lmClass = class(model))
+                        npreds = model$rank-df.int, lmClass = class(model),
+                 missing = missing, use_cluster = use_cluster,
+                 confint = confint, ci.width = ci.width, pvals = pvals)
 
   modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
   j <- structure(j, modpval = modpval)
@@ -295,18 +411,21 @@ j_summ.lm <- function(
 #' @export
 
 j_summ.glm <- function(
-  model, standardize = FALSE, vifs = FALSE,
-  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, n.sd = 1,
-  center = FALSE, standardize.response = FALSE, odds.ratio = FALSE, ...) {
+  model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
+  robust = FALSE, robust.type = "HC3",
+  cluster = NULL, digits = getOption("jtools-digits", default = 3),
+  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
 
   j <- list()
 
   ell <- list(...)
 
-  if ("robust" %in% names(ell) && ell$robust == TRUE) {
-    warning("Robust standard errors are not supported for GLMs.")
-  }
+  # Using information from summary()
+  sum <- summary(model)
+
+  # Check missing obs
+  missing <- length(sum$na.action)
 
   if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
     warning("Model checking is not currently implemented for GLMs")
@@ -314,72 +433,23 @@ j_summ.glm <- function(
 
   # Standardized betas
   if (standardize == TRUE) {
-    # Save data --- using the call to access the data to avoid problems w/
-    # transformed data
-    call <- getCall(model)
-    if (!is.null(call$data)) {
-      d <- eval(call$data)
-      mframe <- FALSE # telling myself whether I use model.frame
-    } else {
-      d <- model.frame(model)
-      mframe <- TRUE
-    }
-    form <- update(formula(model),
-                   as.formula(formula(model)))
 
-    # Save response variable
-    resp <- as.character(formula(model)[2])
+    model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+    # Using information from summary()
+    sum <- summary(model)
 
-    # Save list of terms
-    vars <- attributes(model$terms)$variables
-    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
-
-    # calling gscale(), incorporating the weights
-    if (standardize.response == FALSE) {
-      # Now we need to know the variables of interest
-      vars <- vars[!(vars %in% resp)]
-      d <- gscale(x = vars, data = d, n.sd = n.sd)
-    } else {
-      d <- gscale(x = vars, data = d, n.sd = n.sd)
-    }
-    model <- update(model, formula = form, data = d)
   } else if (center == TRUE && standardize == FALSE) {
-    call <- getCall(model)
-    if (!is.null(call$data)) {
-      d <- eval(call$data)
-      mframe <- FALSE # telling myself whether I use model.frame
-    } else {
-      d <- model.frame(model)
-      mframe <- TRUE
-    }
-    form <- update(formula(model),
-                   as.formula(formula(model)))
 
-    # Save response variable
-    resp <- as.character(formula(model)[2])
+    model <- center_lm(model)
+    # Using information from summary()
+    sum <- summary(model)
 
-    # Save list of terms
-    vars <- attributes(model$terms)$variables
-    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
-
-    # calling gscale(), incorporating the weights
-    if (standardize.response == FALSE) {
-      # Now we need to know the variables of interest
-      vars <- vars[!(vars %in% resp)]
-      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
-    } else {
-      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
-    }
-    model <- update(model, formula = form, data = d)
   }
 
 
   j <- structure(j, standardize = standardize, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
                  center = center)
-
-  # Using information from summary()
-  sum <- summary(model)
 
   if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
@@ -494,27 +564,115 @@ j_summ.glm <- function(
   }
 
   # Standard errors and t-statistics
-  ses <- coef(sum)[,2]
-  ts <- coef(sum)[,3]
-  pvals <- coef(sum)[,4]
+  if (robust == TRUE) {
+
+    if (!requireNamespace("sandwich", quietly = TRUE)) {
+      stop("When robust is set to TRUE, you need to have the \'sandwich\' package
+           for robust standard errors. Please install it or set robust to FALSE.",
+           call. = FALSE)
+    }
+
+    if (!requireNamespace("lmtest", quietly = TRUE)) {
+      stop("When robust is set to TRUE, you need to have the \'lmtest\' package
+           for robust standard errors. Please install it or set robust to FALSE.",
+           call. = FALSE)
+    }
+
+    if (is.character(cluster)) {
+
+      call <- getCall(model)
+      d <- eval(call$data, envir = environment(formula(model)))
+
+      cluster <- d[,cluster]
+      use_cluster <- TRUE
+
+    } else if (length(cluster) > 1) {
+
+      if (!is.factor(cluster) & !is.numeric(cluster)) {
+
+        warning("Invalid cluster input. Either use the name of the variable in the input data frame or provide a numeric/factor vector. Cluster is not being used in the reported SEs.")
+        cluster <- NULL
+        use_cluster <- FALSE
+
+      }
+
+      use_cluster <- TRUE
+
+    } else {
+
+      use_cluster <- FALSE
+
+    }
+
+    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
+      # vcovCL only goes up to HC3
+      coefs <- sandwich::vcovHC(model, type = robust.type)
+
+    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
+
+      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
+
+    } else if (robust == TRUE) {
+
+      coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust.type)
+
+    }
+
+    coefs <- lmtest::coeftest(model,coefs)
+    ses <- coefs[,2]
+    ts <- coefs[,3]
+    ps <- coefs[,4]
+
+  } else {
+
+    ses <- coef(sum)[,2]
+    ts <- coef(sum)[,3]
+    ps <- coef(sum)[,4]
+    use_cluster <- FALSE
+
+  }
 
   # Need proper name for test statistic
   tcol <- colnames(coef(sum))[3]
   tcol <- gsub("value", "val.", tcol)
 
-  # Put things together
+  if (confint == TRUE | odds.ratio == TRUE) {
+
+    alpha <- (1 - ci.width)/2
+    tcrit <- abs(qnorm(alpha))
+
+    lci_lab <- 0 + alpha
+    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+
+    uci_lab <- 1 - alpha
+    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+
+  }
 
   # Report odds ratios instead, with conf. intervals
   if (odds.ratio == TRUE) {
+
     ecoefs <- exp(ucoefs)
-    l95 <- exp(ucoefs - (ses*1.96))
-    u95 <- exp(ucoefs + (ses*1.96))
-    params <- list(ecoefs, l95, u95, ts, pvals)
-    namevec <- c("Odds Ratio", "2.5%", "97.5%", tcol, "p")
+    lci <- exp(ucoefs - (ses*tcrit))
+    uci <- exp(ucoefs + (ses*tcrit))
+    params <- list(ecoefs, lci, uci, ts, ps)
+    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+
+  } else if (odds.ratio == FALSE & confint == TRUE) {
+
+    lci <- ucoefs - (ses*tcrit)
+    uci <- ucoefs + (ses*tcrit)
+    params <- list(ucoefs, lci, uci, ts, ps)
+    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
+
   } else {
-    params <- list(ucoefs, ses, ts, pvals)
+
+    params <- list(ucoefs, ses, ts, ps)
     namevec <- c("Est.", "S.E.", tcol, "p")
+
   }
+
+  # Put things together
 
   # Calculate vifs
   if (vifs == TRUE) {
@@ -534,11 +692,21 @@ j_summ.glm <- function(
     }
   }
 
+  # Drop p-vals if user requests
+  if (pvals == FALSE) {
+
+    mat <- mat[,1:ncol(mat)-1]
+
+  }
+
   # Extract dispersion parameter
   dispersion <- sum$dispersion
 
   j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(model$model[1]),
-                 npreds = model$rank-df.int, dispersion = dispersion)
+                 npreds = model$rank-df.int, dispersion = dispersion,
+                 missing = missing, pvals = pvals, robust = robust,
+                 robust.type = robust.type, use_cluster = use_cluster,
+                 confint = confint, ci.width = ci.width, pvals = pvals)
 
   j <- structure(j, lmFamily = model$family)
 
@@ -554,13 +722,20 @@ j_summ.glm <- function(
 
 j_summ.svyglm <- function(
   model, standardize = FALSE, vifs = FALSE,
+  confint = FALSE, ci.width = .95,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, n.sd = 1, center = FALSE,
+  model.fit = TRUE, model.check = FALSE, pvals = TRUE, n.sd = 1, center = FALSE,
   standardize.response = FALSE, odds.ratio = FALSE, ...) {
 
   j <- list()
 
   ell <- list(...)
+
+  # Using information from summary()
+  sum <- summary(model)
+
+  # Check missing obs
+  missing <- length(sum$na.action)
 
   if ("robust" %in% names(ell) && ell$robust == TRUE) {
     warning("Robust standard errors are reported by default in the survey package.")
@@ -568,60 +743,31 @@ j_summ.svyglm <- function(
 
   # Standardized betas
   if (standardize == TRUE || center == TRUE) {
-    # Save data --- using the call to access the data to avoid problems w/
-    # transformed data
-    call <- getCall(model)
-    if (!is.null(call$data)) {
-      d <- eval(call$data)
-      mframe <- FALSE # telling myself whether I use model.frame
-    } else {
-      d <- model.frame(model)
-      mframe <- TRUE
-    }
-
-    form <- update(formula(model), as.formula(formula(model)))
-    call$formula <- as.call(as.formula(call$formula))
-
-    # Save response variable
-    resp <- as.character(formula(model)[2])
-
-    # Save list of terms
-    vars <- attributes(model$terms)$variables
-    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
-
-    # Get the survey design object
-    design <- model$survey.design
-
-    # Now we need to know the variables of interest
-    vars <- attributes(model$terms)$variables
-    vars <- as.character(vars)[2:length(vars)]
-
-    if (standardize.response == FALSE) {
-      vars <- vars[!(vars %in% resp)]
-    }
-
-    # Call gscale()
+    # Standardized betas
     if (standardize == TRUE) {
-      design <- gscale(x = vars, data = design, n.sd = n.sd)
-    } else if (standardize == FALSE && center == TRUE) {
-      design <- gscale(x = vars, data = design, n.sd = n.sd,
-                       center.only = TRUE)
-    }
 
-    # this weirdness is all to deal with namespace issues with update
-    call$design <- design
-    call[[1]] <- survey::svyglm
-    model <- eval(call)
+      model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+      # Using information from summary()
+      sum <- summary(model)
+
+    } else if (center == TRUE && standardize == FALSE) {
+
+      model <- center_lm(model)
+      # Using information from summary()
+      sum <- summary(model)
+
+    }
   } else {
+
     design <- model$survey.design
+
   }
 
   j <- structure(j, standardize = standardize, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd, center = center)
 
-  # Using information from summary()
-  sum <- summary(model)
+
 
   # Check if linear model
   if (model$family[1] == "gaussian" && model$family[2] == "identity") {
@@ -726,28 +872,50 @@ j_summ.svyglm <- function(
   # Standard errors and t-statistics
   ses <- coef(sum)[,2]
   ts <- coef(sum)[,3]
-  pvals <- coef(sum)[,4]
+  ps <- coef(sum)[,4]
 
   # Need proper name for test statistic
   tcol <- colnames(coef(sum))[3]
   tcol <- gsub("value", "val.", tcol)
 
-  # Put things together
+  # Groundwork for CIs and ORs
+  if (confint == TRUE | odds.ratio == TRUE) {
+
+    alpha <- (1 - ci.width)/2
+    tcrit <- abs(qnorm(alpha))
+
+    lci_lab <- 0 + alpha
+    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+
+    uci_lab <- 1 - alpha
+    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+
+  }
 
   # Report odds ratios instead, with conf. intervals
   if (odds.ratio == TRUE) {
+
     ecoefs <- exp(ucoefs)
-    l95 <- exp(ucoefs - (ses*1.96))
-    u95 <- exp(ucoefs + (ses*1.96))
-    params <- list(ecoefs, l95, u95, ts, pvals)
-    namevec <- c("Odds Ratio", "2.5%", "97.5%", tcol, "p")
+    lci <- exp(ucoefs - (ses*tcrit))
+    uci <- exp(ucoefs + (ses*tcrit))
+    params <- list(ecoefs, lci, uci, ts, ps)
+    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+
+  } else if (odds.ratio == FALSE & confint == TRUE) { # regular CIs
+
+    lci <- ucoefs - (ses*tcrit)
+    uci <- ucoefs + (ses*tcrit)
+    params <- list(ucoefs, lci, uci, ts, ps)
+    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
+
   } else {
-    params <- list(ucoefs, ses, ts, pvals)
+
+    params <- list(ucoefs, ses, ts, ps)
     namevec <- c("Est.", "S.E.", tcol, "p")
+
   }
 
-  params <- list(ucoefs, ses, ts, pvals)
-  namevec <- c("Est.", "S.E.", tcol, "p")
+  # Put things together
 
   if (vifs == TRUE) {
     params[length(params)+1] <- list(tvifs)
@@ -766,6 +934,13 @@ j_summ.svyglm <- function(
     }
   }
 
+  # Dropping p-vals if requested by user
+  if (pvals == FALSE) {
+
+    mat <- mat[,1:ncol(mat)-1]
+
+  }
+
   if (model.check == TRUE && linear == TRUE) {
     cd <- table(cooks.distance(model) > 4/n)
     j <- structure(j, cooksdf = cd[2])
@@ -779,7 +954,8 @@ j_summ.svyglm <- function(
   dispersion <- sum$dispersion
 
   j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int,
-                 dispersion = dispersion)
+                 dispersion = dispersion, missing = missing,
+                 confint = confint, ci.width = ci.width, pvals = pvals)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -794,10 +970,10 @@ j_summ.svyglm <- function(
 #' @export
 
 j_summ.merMod <- function(
-  model, standardize = FALSE,
+  model, standardize = FALSE, confint = FALSE, ci.width = .95,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, odds.ratio = F, ...) {
+  model.fit = TRUE, pvals = FALSE, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, odds.ratio = FALSE, ...) {
 
   j <- list()
 
@@ -819,65 +995,14 @@ j_summ.merMod <- function(
 
   # Standardized betas
   if (standardize == TRUE) {
-    # Save data --- using the call to access the data to avoid problems w/
-    # transformed data
-    call <- getCall(model)
-    if (!is.null(call$data)) {
-      d <- eval(call$data)
-      mframe <- FALSE # telling myself whether I use model.frame
-    } else {
-      d <- model.frame(model)
-      mframe <- TRUE
-    }
-    form <- update(formula(model),
-                   as.formula(formula(model)))
 
-    # Save response variable
-    resp <- as.character(formula(model)[2])
+    model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
 
-    # Save list of terms
-    vars <- attributes(terms(model))$variables
-    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
-
-    # calling gscale(), incorporating the weights
-    if (standardize.response == FALSE) {
-      # Now we need to know the variables of interest
-      vars <- vars[!(vars %in% resp)]
-      d <- gscale(x = vars, data = d, n.sd = n.sd)
-    } else {
-      d <- gscale(x = vars, data = d, n.sd = n.sd)
-    }
-    model <- update(model, formula = form, data = d)
   } else if (center == TRUE && standardize == FALSE) {
-    call <- getCall(model)
-    if (!is.null(call$data)) {
-      d <- eval(call$data)
-      mframe <- FALSE # telling myself whether I use model.frame
-    } else {
-      d <- model.frame(model)
-      mframe <- TRUE
-    }
-    form <- update(formula(model),
-                   as.formula(formula(model)))
 
-    # Save response variable
-    resp <- as.character(formula(model)[2])
+    model <- center_lm(model)
 
-    # Save list of terms
-    vars <- attributes(terms(model))$variables
-    vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
-
-    # calling gscale(), incorporating the weights
-    if (standardize.response == FALSE) {
-      # Now we need to know the variables of interest
-      vars <- vars[!(vars %in% resp)]
-      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
-    } else {
-      d <- gscale(x = vars, data = d, n.sd = n.sd, center.only = TRUE)
-    }
-    model <- update(model, formula = form, data = d)
   }
-
 
   j <- structure(j, standardize = standardize, digits = digits,
                  model.info = model.info, model.fit = model.fit,
@@ -954,7 +1079,7 @@ j_summ.merMod <- function(
 
   # lmerMod doesn't have p-values, so
   if (!sum$isLmer) {
-    pvals <- sum$coefficients[,4]
+    ps <- sum$coefficients[,4]
   } else {
     df <- n - length(ivs) - 1
     vec <- rep(NA, times = length(ts))
@@ -963,29 +1088,54 @@ j_summ.merMod <- function(
       p <- p*2
       vec[i] <- p
     }
-    pvals <- vec
+    ps <- vec
   }
 
   # Need proper name for test statistic
   tcol <- colnames(sum$coefficients)[3]
   tcol <- gsub("value", "val.", tcol)
 
-  # Put things together
+  if (confint == TRUE | odds.ratio == TRUE) {
+
+    alpha <- (1-ci.width)/2
+    tcrit <- qnorm(alpha)
+
+    lci_lab <- 0 + alpha
+    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+
+    uci_lab <- 1 - alpha
+    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+
+  }
 
   # Report odds ratios instead, with conf. intervals
   if (odds.ratio == TRUE) {
+
+    the_cis <- confint(model)
+    the_cis <- the_cis[rownames(sum$coefficients),]
     ecoefs <- exp(ucoefs)
-    l95 <- exp(ucoefs - (ses*1.96))
-    u95 <- exp(ucoefs + (ses*1.96))
-    params <- list(ecoefs, l95, u95, ts, pvals)
-    namevec <- c("Odds Ratio", "2.5%", "97.5%", tcol, "p")
+    lci <- exp(the_cis[,1])
+    uci <- exp(the_cis[,2])
+    params <- list(ecoefs, lci, uci, ts, ps)
+    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+
+  } else if (odds.ratio == FALSE & confint == TRUE) {
+
+    the_cis <- confint(model)
+    the_cis <- the_cis[rownames(sum$coefficients),]
+    lci <- the_cis[,1]
+    uci <- the_cis[,2]
+    params <- list(ucoefs, lci, uci, ts, ps)
+    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
+
   } else {
-    params <- list(ucoefs, ses, ts, pvals)
+
+    params <- list(ucoefs, ses, ts, ps)
     namevec <- c("Est.", "S.E.", tcol, "p")
+
   }
 
-  params <- list(ucoefs, ses, ts, pvals)
-  namevec <- c("Est.", "S.E.", tcol, "p")
+  # Put things together
 
   mat <- matrix(nrow=length(ivs), ncol=length(params))
   rownames(mat) <- ivs
@@ -997,6 +1147,12 @@ j_summ.merMod <- function(
     } else {
       mat[,i] <- params[[i]]
     }
+  }
+
+  if (pvals == FALSE) {
+
+    mat <- mat[,1:ncol(mat)-1]
+
   }
 
   # Dealing with random effects
@@ -1026,7 +1182,8 @@ j_summ.merMod <- function(
 
   j <- structure(j, groups = groups, ngroups = ngroups, iccs = iccs,
                  vcnames = names(iccs), dv = names(model.frame(model)[1]),
-                 npreds = nrow(mat))
+                 npreds = nrow(mat),
+                 confint = confint, ci.width = ci.width, pvals = pvals)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -1057,7 +1214,9 @@ print.j_summ.lm <- function(x, ...) {
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
   # Saving non-round p values
-  pvals <- j$coeftable[,"p"]
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
@@ -1069,36 +1228,51 @@ print.j_summ.lm <- function(x, ...) {
   }
 
   # Making a vector of p-value significance indicators
-  sigstars <- c()
-  for (y in 1:height) {
-    if (pvals[y] > 0.1) {
-      sigstars[y] <- ""
-    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-      sigstars[y] <- "."
-    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-      sigstars[y] <- "*"
-    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-      sigstars[y] <- "**"
-    } else if (pvals[y] <= 0.001) {
-      sigstars[y] <- "***"
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
     }
+
   }
 
   onames <- colnames(ctable)
-  if (x$vifs) {
+  if (x$vifs == TRUE & x$pvals == TRUE) {
     ctable <- cbind(ctable, sigstars, vifvec)
     colnames(ctable) <- c(onames, "", "VIF")
-  } else {
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
     ctable <- cbind(ctable, sigstars)
     colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
   }
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
-        "Dependent Variable: ",
-        x$dv, "\n", sep="")
-    cat("\n")
+    if (x$missing == 0) {
+      cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep="")
+      cat("\n")
+    } else {
+      cat("MODEL INFO:", "\n", "Observations: ", x$n, " (", x$missing,
+          " missing obs. deleted)", "\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep="")
+      cat("\n")
     }
+  }
 
   if (x$model.fit==T) {
     cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
@@ -1125,10 +1299,24 @@ print.j_summ.lm <- function(x, ...) {
   }
 
   if (x$robust == FALSE) {
+
     cat("Standard errors: OLS", "\n")
+
   } else if (x$robust == TRUE) {
-    cat("Standard errors: Robust, type = ", x$robust.type, "\n", sep="")
-   }
+
+      cat("Standard errors:", sep = "")
+
+    if (x$use_cluster == FALSE) {
+
+      cat(" Robust, type = ", x$robust.type, "\n", sep="")
+
+    } else if (x$use_cluster == TRUE) {
+
+      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep="")
+
+    }
+
+  }
 
   print(as.table(ctable))
 
@@ -1159,7 +1347,9 @@ print.j_summ.glm <- function(x, ...) {
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
   # Saving non-round p values
-  pvals <- j$coeftable[,"p"]
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
@@ -1171,34 +1361,46 @@ print.j_summ.glm <- function(x, ...) {
   }
 
   # Making a vector of p-value significance indicators
-  sigstars <- c()
-  for (y in 1:height) {
-    if (pvals[y] > 0.1) {
-      sigstars[y] <- ""
-    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-      sigstars[y] <- "."
-    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-      sigstars[y] <- "*"
-    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-      sigstars[y] <- "**"
-    } else if (pvals[y] <= 0.001) {
-      sigstars[y] <- "***"
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
     }
+
   }
 
   onames <- colnames(ctable)
-  if (x$vifs) {
+  if (x$vifs == TRUE & x$pvals == TRUE) {
     ctable <- cbind(ctable, sigstars, vifvec)
     colnames(ctable) <- c(onames, "", "VIF")
-  } else {
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
     ctable <- cbind(ctable, sigstars)
     colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
   }
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
-        "Dependent Variable: ",
-        x$dv, "\n", sep="")
+    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
+    if (x$missing == 0) {
+      cat("\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep="")
+    } else {
+      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
+    }
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
       cat("Type: Linear regression", "\n\n")
     } else {
@@ -1216,11 +1418,29 @@ print.j_summ.glm <- function(x, ...) {
         "\n", "AIC = ", x$aic, "\n\n", sep="")
   }
 
+  if (x$robust == FALSE) {
+    cat("Standard errors: MLE", "\n")
+  } else if (x$robust == TRUE) {
+
+    cat("Standard errors:", sep = "")
+
+    if (x$use_cluster == FALSE) {
+
+      cat(" Robust, type = ", x$robust.type, "\n", sep="")
+
+    } else if (x$use_cluster == TRUE) {
+
+      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep="")
+
+    }
+
+  }
+
   print(as.table(ctable))
 
   if (x$dispersion != 1) {
     cat("\n")
-    cat("Dispersion parameter estimate =", round(x$dispersion, x$digits))
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
   }
 
   # Notifying user if variables altered from original fit
@@ -1250,7 +1470,9 @@ print.j_summ.svyglm <- function(x, ...) {
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
   # Saving non-round p values
-  pvals <- j$coeftable[,"p"]
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
@@ -1262,34 +1484,47 @@ print.j_summ.svyglm <- function(x, ...) {
   }
 
   # Making a vector of p-value significance indicators
-  sigstars <- c()
-  for (y in 1:height) {
-    if (pvals[y] > 0.1) {
-      sigstars[y] <- ""
-    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-      sigstars[y] <- "."
-    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-      sigstars[y] <- "*"
-    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-      sigstars[y] <- "**"
-    } else if (pvals[y] <= 0.001) {
-      sigstars[y] <- "***"
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
     }
+
   }
 
   onames <- colnames(ctable)
-  if (x$vifs) {
+  if (x$vifs == TRUE & x$pvals == TRUE) {
     ctable <- cbind(ctable, sigstars, vifvec)
     colnames(ctable) <- c(onames, "", "VIF")
-  } else {
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
     ctable <- cbind(ctable, sigstars)
     colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
   }
 
   if (x$model.info == TRUE) {
     # Always showing this
-    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n", "Dependent Variable: ",
-        x$dv, "\n", sep = "")
+    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
+    if (x$missing == 0) {
+      cat("\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep="")
+    } else {
+      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
+    }
     cat("\n", "Analysis of complex survey design", "\n", sep = "")
     # If it's linear...
     if (as.character(x$lmFamily[1]) == "gaussian" &&
@@ -1334,7 +1569,7 @@ print.j_summ.svyglm <- function(x, ...) {
 
   if (x$dispersion != 1) {
     cat("\n")
-    cat("Dispersion parameter estimate =", round(x$dispersion, x$digits))
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
   }
 
   # Notifying user if variables altered from original fit
@@ -1364,32 +1599,38 @@ print.j_summ.merMod <- function(x, ...) {
   # Saving number of coefficients in output table
   height <- dim(j$coeftable)[1]
   # Saving non-round p values
-  pvals <- j$coeftable[,"p"]
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
   # Making a vector of p-value significance indicators
-  sigstars <- c()
-  for (y in 1:height) {
-    if (pvals[y] > 0.1) {
-      sigstars[y] <- ""
-    } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-      sigstars[y] <- "."
-    } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-      sigstars[y] <- "*"
-    } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-      sigstars[y] <- "**"
-    } else if (pvals[y] <= 0.001) {
-      sigstars[y] <- "***"
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
     }
-  }
 
   onames <- colnames(ctable)
   ctable <- cbind(ctable, sigstars)
   colnames(ctable) <- c(onames, "")
 
+  }
+
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Sample Size: ", x$n, "\n",
+    cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
         "Dependent Variable: ",
         x$dv, "\n", sep="")
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -1409,6 +1650,10 @@ print.j_summ.merMod <- function(x, ...) {
 
   cat("FIXED EFFECTS:\n")
   print(as.table(ctable))
+  if (x$pvals == TRUE) {
+    cat("\nNote: p-values calculated based on t statistics.\n")
+    cat("Type I error rate may be inflated in small samples.\n")
+  }
 
   cat("\nRANDOM EFFECTS:\n")
   rtable <- j$rcoeftable
