@@ -1,3 +1,27 @@
+## jtools 0.7.0
+
+New features:
+
+* j_summ can now provide cluster-robust standard errors for lm models.
+* j_summ output now gives info about missing observations for supported models.
+* At long last, j_summ/scale_lm/center_lm can standardize/center models with
+logged terms and other functions applied.
+* interact_plot and effect_plot will now also support predictors that have
+functions applied to them.
+* j_summ now supports confidence intervals at user-specified widths.
+* j_summ now allows users to not display p-values if requested.
+* I've added a warning to j_summ output with merMod objects, since it provides
+p-values calculated on the basis of the estimated t-values. These are not to
+be interpreted in the same way that OLS and GLM p-values are, since with 
+smaller samples mixed model t-values will give inflated Type I error rates.
+* By default, j_summ will not show p-values for merMod objects.
+
+Bug fix:
+
+* scale_lm did not have its center argument implemented and did not 
+explain the option well in its documentation.
+* johnson_neyman got confused when a factor variable was given as a predictor
+
 ## jtools 0.6.1
 
 Bug fix release:
@@ -9,6 +33,9 @@ the data frame from the model call.
 when weights were used. This in turn affected j_summ, scale_lm, and center_lm,
 which each rely on gscale for standardization and mean-centering. That's fixed 
 now.
+* gscale wasn't playing nicely with binary factors in survey designs, rendering
+the scaling incorrect. If you saw a warning, re-check your outputs after this
+update.
 
 ## jtools 0.6.0
 

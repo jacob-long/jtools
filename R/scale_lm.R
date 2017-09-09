@@ -78,6 +78,8 @@
 #' regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
 #'
 #' @importFrom stats weighted.mean as.formula getCall formula
+#' @importFrom stats model.matrix model.weights
+#'
 #' @export scale_lm
 #'
 

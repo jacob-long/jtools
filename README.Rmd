@@ -54,7 +54,7 @@ devtools::install_github("jacob-long/jtools")
 
 Here's a brief synopsis of the current functions in the package:
 
-#### `j_summ()` 
+#### `j_summ` 
 
 This is a replacement for `summary.lm` that provides the user several options for formatting regression summaries. It supports `glm` and `svyglm` objects as input as well, but it is not tested with nonlinear models. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
 
@@ -76,7 +76,7 @@ j_summ(fit2, standardize = TRUE, n.sd = 2, vifs = TRUE, robust = TRUE,
 ```
 
 
-#### `sim_slopes()`
+#### `sim_slopes`
 
 This is an interface for simple slopes analysis for 2- and 3-way interactions.
 Users can specify values of the moderator to test or use the default +/- 1 SD values.
@@ -89,7 +89,7 @@ sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 ```
 
 
-#### `interact_plot()`
+#### `interact_plot`
 
 This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes()` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
 
@@ -104,7 +104,7 @@ fitiris <- lm(Petal.Length ~ Petal.Width*Species, data = iris)
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
 ```
 
-#### `probe_interaction()`
+#### `probe_interaction`
 
 This function allows you to use the two above functions simultaneously, owing to
 their common syntax. Here is an example, which can also serve to show off how the
@@ -116,7 +116,7 @@ probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
 ```
 
 
-#### `svycor()`
+#### `svycor`
 
 This function extends the `survey` package by calculating correlations with complex survey designs, a 
 feature absent from `survey`. Users may request significance tests, which are calculated 
@@ -130,7 +130,7 @@ dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat, fpc
 svycor(~api00+api99+dnum, design = dstrat, digits = 3, sig.stats = T, bootn = 2000)
 ```
 
-#### `theme_apa()` 
+#### `theme_apa` 
 
 This will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications.
 There's no drop-in, perfect way to get plots into APA format sight unseen, but this 

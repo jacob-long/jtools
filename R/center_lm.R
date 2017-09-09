@@ -69,6 +69,8 @@
 #' regmodel_center <- center_lm(regmodel)
 #'
 #' @importFrom stats weighted.mean as.formula getCall formula
+#' @importFrom stats model.matrix model.weights
+#'
 #' @export center_lm
 #'
 
