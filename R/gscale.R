@@ -277,7 +277,7 @@ if (is.numeric(x)) {
       wname <- as.character(substitute(weights))
       wname2 <- weights
 
-      if (wname %in% names(d)) {
+      suppressWarnings({if (wname %in% names(d)) {
 
         weights <- d[[wname]]
 
@@ -286,6 +286,7 @@ if (is.numeric(x)) {
         weights <- d[[wname2]]
 
       }
+      })
 
     }
 
@@ -427,7 +428,7 @@ if (is.numeric(x)) {
       wname <- as.character(substitute(weights))
       wname2 <- weights
 
-      if (wname %in% names(d)) {
+      suppressWarnings({if (wname %in% names(d)) {
 
         weights <- d[[wname]]
 
@@ -436,6 +437,7 @@ if (is.numeric(x)) {
         weights <- d[[wname2]]
 
       }
+      })
     }
 
     # Looping through every column with rescale
