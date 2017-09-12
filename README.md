@@ -36,7 +36,7 @@ Here's a brief synopsis of the current functions in the package:
 
 #### `j_summ`
 
-This is a replacement for `summary.lm` that provides the user several options for formatting regression summaries. It supports `glm` and `svyglm` objects as input as well, but it is not tested with nonlinear models. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
+This is a replacement for `summary` that provides the user several options for formatting regression summaries. It supports `glm`, `svyglm`, and `merMod` objects as input as well. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
 
 ``` r
 fit <- lm(mpg ~ hp*wt, data=mtcars)
@@ -97,8 +97,14 @@ fiti <- lm(Murder ~ Assault*UrbanPop, data = USArrests)
 sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 ```
 
-    #> The Johnson-Neyman interval could not be found. Is your interaction term significant?
+    #> JOHNSON-NEYMAN INTERVAL
     #> 
+    #> The slope of UrbanPop is p < .05 when Assault is INSIDE this interval:
+    #> [193.5072, 363.9215]
+    #> Note: The range of observed values of Assault is [45, 337]
+
+![](tools/README-j-n-plot-1.png)
+
     #> SIMPLE SLOPES ANALYSIS
     #> 
     #> Slope of UrbanPop when Assault = 254.098 (+1 SD): 
@@ -115,7 +121,7 @@ sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 
 #### `interact_plot`
 
-This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes()` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
+This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
 
 ``` r
 interact_plot(fit, pred="wt", modx = "hp", interval = T, int.width = .95)
@@ -145,7 +151,11 @@ probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
     #> While privileges (2nd moderator) = 40.898 (Mean of privileges -1 SD)
     #> #######################################################
     #> 
-    #> The Johnson-Neyman interval could not be found. Is your interaction term significant?
+    #> JOHNSON-NEYMAN INTERVAL
+    #> 
+    #> The slope of critical is p < .05 when learning is INSIDE this interval:
+    #> [52.8623, 73.5881]
+    #> Note: The range of observed values of learning is [34, 75]
     #> 
     #> SIMPLE SLOPES ANALYSIS
     #> 
@@ -224,7 +234,7 @@ svycor(~api00+api99+dnum, design = dstrat, digits = 3, sig.stats = T, bootn = 20
 
 This will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications. There's no drop-in, perfect way to get plots into APA format sight unseen, but this gets you close and returns a `ggplot` object that can be further tweaked to your specification. The plots produced by other functions in this package use `theme_apa`, but use its options to position the plots and alter other details to make them more in line with `ggplot2` defaults than APA norms.
 
-You might start with something like the above interaction plots and then use `theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
+You might start with something like the above interaction plots and then use `theme_apa` to tune it to APA specification. Note the `legend.pos` option:
 
 ``` r
 p <- interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
@@ -245,9 +255,19 @@ p2 + theme_apa(legend.pos = "topmiddle")
 
 You may need to make further changes to please your publisher, of course. Since these are regular `ggplot` theme changes, it shouldn't be a problem.
 
+#### Tests for survey weight ignorability
+
+In keeping with the package's attention to users of survey data, I've implemented a couple of tests that help to check whether your model is specified correctly without survey weights. It goes without saying that you shouldn't let statistical tests do your thinking for you, but they can provide useful info.
+
+The first is `wgttest`, which implements the DuMouchel-Duncan (1983) procedure and is meant in part to duplicate the user-written Stata procedure of the same name. It can both test whether the model fit overall is changed with the addition of weights as well as show you which coefficients are most affected.
+
+The next is `pf_sv_test`, short for Pfeffermann-Sverchkov (1999) test, which focuses on residual correlation with weights. You'll need the `boot` package for this one.
+
+To run both at once, you can use `weights_tests`.
+
 #### Others
 
-`gscale()`, `center_lm()`, `scale_lm()`, and `svysd()` each do some of the behind the scenes computation in the above functions, but could do well for end users as well. See the documentation for more.
+`gscale`, `center_lm`, `scale_lm`, and `svysd` each do some of the behind the scenes computation in the above functions, but could do well for end users as well. See the documentation for more.
 
 Details on the arguments can be accessed via the R documentation (`?functionname`). There are now vignettes documenting just about everything you can do as well.
 

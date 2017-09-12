@@ -56,7 +56,10 @@ Here's a brief synopsis of the current functions in the package:
 
 #### `j_summ` 
 
-This is a replacement for `summary.lm` that provides the user several options for formatting regression summaries. It supports `glm` and `svyglm` objects as input as well, but it is not tested with nonlinear models. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
+This is a replacement for `summary` that provides the user several options for
+formatting regression summaries. It supports `glm`, `svyglm`, and `merMod`
+objects as input as well. It supports calculation and reporting of
+robust standard errors via the `sandwich` and `lmtest` packages.
 
 ```{r}
 fit <- lm(mpg ~ hp*wt, data=mtcars)
@@ -91,7 +94,7 @@ sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 
 #### `interact_plot`
 
-This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes()` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
+This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
 
 ```{r interact_plot_continuous}
 interact_plot(fit, pred="wt", modx = "hp", interval = T, int.width = .95)
@@ -114,7 +117,6 @@ their common syntax. Here is an example, which can also serve to show off how th
 fita3 <- lm(rating ~ privileges*critical*learning, data = attitude)
 probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
 ```
-
 
 #### `svycor`
 
@@ -140,7 +142,7 @@ options to position the plots and alter other details to make them more in line
 with `ggplot2` defaults than APA norms.
 
 You might start with something like the above interaction plots and then use
-`theme_apa()` to tune it to APA specification. Note the `legend.pos` option:
+`theme_apa` to tune it to APA specification. Note the `legend.pos` option:
 
 ```{r theme_apa_ex}
 p <- interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
@@ -161,9 +163,27 @@ p2 + theme_apa(legend.pos = "topmiddle")
 You may need to make further changes to please your publisher, of course. Since
 these are regular `ggplot` theme changes, it shouldn't be a problem.
 
+#### Tests for survey weight ignorability
+
+In keeping with the package's attention to users of survey data, I've 
+implemented a couple of tests that help to check whether your model is specified
+correctly without survey weights. It goes without saying that you shouldn't let
+statistical tests do your thinking for you, but they can provide useful info.
+
+The first is `wgttest`, which implements the DuMouchel-Duncan (1983) procedure
+and is meant in part to duplicate the user-written Stata procedure of the same
+name. It can both test whether the model fit overall is changed with the 
+addition of weights as well as show you which coefficients are most affected.
+
+The next is `pf_sv_test`, short for Pfeffermann-Sverchkov (1999) test, which
+focuses on residual correlation with weights. You'll need the `boot` package
+for this one.
+
+To run both at once, you can use `weights_tests`.
+
 #### Others 
 
-`gscale()`, `center_lm()`, `scale_lm()`, and `svysd()` each do some of the behind
+`gscale`, `center_lm`, `scale_lm`, and `svysd` each do some of the behind
 the scenes computation in the above functions, but could do well for end users 
 as well. See the documentation for more.
 

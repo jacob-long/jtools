@@ -68,7 +68,7 @@ DuMouchel, W. H. & Duncan, D.J. (1983). Using sample survey weights in
 Nordberg, L. (1989). Generalized linear modeling of sample survey data.
   \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
 
-Pfeffermannn, D., & Sverchkov, M. (1999). Parametric and semi-parametric
+Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
  estimation of regression models fitted to survey data.
  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
 }

@@ -19,7 +19,6 @@ Suggests:
   ggplot2,
   lmtest,
   sandwich,
-  car,
   survey,
   weights,
   RColorBrewer,

@@ -55,7 +55,7 @@ pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
 
 }
 \references{
-Pfeffermannn, D., & Sverchkov, M. (1999). Parametric and semi-parametric
+Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
  estimation of regression models fitted to survey data.
  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
 }
