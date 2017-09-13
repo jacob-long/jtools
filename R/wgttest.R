@@ -315,7 +315,7 @@ print.wgttest <- function(x, ...) {
 #'
 #' Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
 #'  estimation of regression models fitted to survey data.
-#'  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
+#'  \emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
 #'
 #' @family survey tools
 #'
@@ -484,11 +484,11 @@ print.pf_sv_test <- function (x, ...) {
 #'   American Statistical Association}, \emph{78}. 535-543.
 #'
 #' Nordberg, L. (1989). Generalized linear modeling of sample survey data.
-#'   \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
+#'   \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223-239.
 #'
 #' Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
 #'  estimation of regression models fitted to survey data.
-#'  \emph{Sankhyā: The Indian Journal of Statistics}, \emph{61}. 166–186.
+#'  \emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
 #'
 #' @family survey tools
 #'
