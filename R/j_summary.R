@@ -191,6 +191,14 @@ j_summ.lm <- function(
 
   j <- list()
 
+  # Checking for required package for VIFs to avoid problems
+  if (vifs == TRUE) {
+    if (!requireNamespace("car", quietly = TRUE)) {
+      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
+      vifs <- FALSE
+    }
+  }
+
   # Using information from summary()
   sum <- summary(model)
 
@@ -378,11 +386,6 @@ j_summ.lm <- function(
 
   # Implement model checking features
   if (model.check == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      stop("When model.check is set to TRUE, you need to have the \'car\' package
-           for model checking functionality. Please install it or set model.check
-           to FALSE.", call. = FALSE)
-    }
 
     homoskedp <- ncvTest(model)$p
     j <- structure(j, homoskedp = homoskedp)
@@ -418,6 +421,14 @@ j_summ.glm <- function(
   n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
 
   j <- list()
+
+  # Checking for required package for VIFs to avoid problems
+  if (vifs == TRUE) {
+    if (!requireNamespace("car", quietly = TRUE)) {
+      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
+      vifs <- FALSE
+    }
+  }
 
   ell <- list(...)
 
@@ -728,6 +739,14 @@ j_summ.svyglm <- function(
   standardize.response = FALSE, odds.ratio = FALSE, ...) {
 
   j <- list()
+
+  # Checking for required package for VIFs to avoid problems
+  if (vifs == TRUE) {
+    if (!requireNamespace("car", quietly = TRUE)) {
+      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
+      vifs <- FALSE
+    }
+  }
 
   ell <- list(...)
 
