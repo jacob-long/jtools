@@ -1,3 +1,16 @@
+## jtools 0.7.1
+
+Returning to CRAN!
+
+A very strange bug on CRAN's servers was causing jtools updates to silently fail
+when I submitted updates; I'd get a confirmation that it passed all tests, but
+a LaTeX error related to an Indian journal I cited was torpedoing it before
+it reached CRAN servers.
+
+The only change from 0.7.0 is fixing that problem, but if you're a CRAN user
+you will want to flip through the past several releases as well to see what 
+you've missed.
+
 ## jtools 0.7.0
 
 New features:
