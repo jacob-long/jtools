@@ -220,7 +220,7 @@ j_summ(fit, model.info = FALSE)
 ```
 
 ```{r echo = F}
-options("jtools-digits" = NA)
+options("jtools-digits" = NULL)
 ```
 
 Note that the return object has non-rounded values if you wish to use them later.
