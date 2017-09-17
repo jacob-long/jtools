@@ -59,7 +59,7 @@ options("jtools-digits" = 2)
 j_summ(fit, model.info = FALSE)
 
 ## ----echo = F------------------------------------------------------------
-options("jtools-digits" = NA)
+options("jtools-digits" = NULL)
 
 ## ------------------------------------------------------------------------
 j <- j_summ(fit, digits = 3)
