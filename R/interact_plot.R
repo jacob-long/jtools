@@ -929,7 +929,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
   } else { # make better use of space by putting legend on bottom for facet plots
     p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
-                       facet.title.size = 8)
+                       facet.title.size = 10)
   }
   p <- p + ggplot2::labs(x = x.label, y = y.label) # better labels for axes
 
