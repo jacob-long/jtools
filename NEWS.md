@@ -1,3 +1,19 @@
+## jtools 0.7.2
+
+The documentation for j_tools_summ has been reorganized such that each supported
+model type has its own, separate documentation. `?j_summ` will now just give you
+links to each supported model type.
+
+More importantly, j_summ will from now on be referred to as, simply, summ. 
+Your old code is fine; j_summ will now be an alias for summ and will run the 
+same underlying code. Documentation will refer to the summ function, though.
+That includes the updated vignette.
+
+One new feature for summ.lm:
+
+* With the `part.corr = TRUE` argument for a linear model, partial and 
+semipartial correlations for each variable are reported.
+
 ## jtools 0.7.1
 
 Returning to CRAN!
