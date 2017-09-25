@@ -25,6 +25,8 @@ j_summ <- function(model, ...) {
   UseMethod("j_summ")
 }
 
+#### lm ########################################################################
+
 #' Regression summaries with options
 #'
 #' \code{j_summ} prints output for a regression model in a fashion similar to
@@ -442,6 +444,143 @@ partial and semipartial correlations alongside robust standard errors.")
   return(j)
 
 }
+
+### PRINT METHOD
+
+#' @export
+
+print.j_summ.lm <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
+  if (x$vifs) {
+    vifvec <- round(ctable[,width], x$digits)
+    ctable <- ctable[,1:width - 1]
+    width <- width - 1
+  }
+
+  # Making a vector of p value significance indicators
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
+    }
+
+  }
+
+  onames <- colnames(ctable)
+  if (x$vifs == TRUE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars, vifvec)
+    colnames(ctable) <- c(onames, "", "VIF")
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars)
+    colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
+  }
+
+  if (x$model.info == TRUE) {
+    if (x$missing == 0) {
+      cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep = "")
+      cat("\n")
+    } else {
+      cat("MODEL INFO:", "\n", "Observations: ", x$n, " (", x$missing,
+          " missing obs. deleted)", "\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep = "")
+      cat("\n")
+    }
+  }
+
+  if (x$model.fit == T) {
+    cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
+        round(x$fstat, digits = x$digits), ", p = ",
+        round(x$modpval, digits = x$digits),
+        "\n", "R-squared = ", round(x$rsq, digits = x$digits), "\n",
+        "Adj. R-squared = ",
+        round(x$arsq, digits=x$digits), "\n", "\n", sep = "")
+  }
+
+  if (x$model.check == TRUE) {
+    # Since it's lm, we can do Breusch-Pagan test
+    if (x$homoskedp < .05) {
+      homoskedtf <- paste("Assumption violated (p = ",
+                          round(x$homoskedp,digits = x$digits), ")", sep = "")
+    } else {
+      homoskedtf <- paste("Assumption not violated (p = ",
+                          round(x$homoskedp, digits = x$digits), ")", sep = "")
+    }
+    cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ",
+        homoskedtf,
+        "\n", "Number of high-leverage observations = ", x$cooksdf,
+        "\n\n", sep = "")
+  }
+
+  if (x$robust == FALSE) {
+
+    cat("Standard errors: OLS", "\n")
+
+  } else if (x$robust == TRUE) {
+
+    cat("Standard errors:", sep = "")
+
+    if (x$use_cluster == FALSE) {
+
+      cat(" Robust, type = ", x$robust.type, "\n", sep = "")
+
+    } else if (x$use_cluster == TRUE) {
+
+      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
+
+    }
+
+  }
+
+  print(as.table(ctable))
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}
+
+###### glm #####################################################################
 
 #' Generalized linear regression summaries with options
 #'
@@ -867,7 +1006,7 @@ j_summ.glm <- function(
   dispersion <- sum$dispersion
 
   j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(model$model[1]),
-                 npreds = model$rank-df.int, dispersion = dispersion,
+                 npreds = model$rank - df.int, dispersion = dispersion,
                  missing = missing, pvals = pvals, robust = robust,
                  robust.type = robust.type, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals)
@@ -880,6 +1019,134 @@ j_summ.glm <- function(
   return(j)
 
 }
+
+### PRINT METHOD ###
+
+#' @export
+
+print.j_summ.glm <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
+  if (x$vifs) {
+    vifvec <- round(ctable[,width], x$digits)
+    ctable <- ctable[,1:width - 1]
+    width <- width - 1
+  }
+
+  # Making a vector of p value significance indicators
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
+    }
+
+  }
+
+  onames <- colnames(ctable)
+  if (x$vifs == TRUE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars, vifvec)
+    colnames(ctable) <- c(onames, "", "VIF")
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars)
+    colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
+  }
+
+  if (x$model.info == TRUE) {
+    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
+    if (x$missing == 0) {
+      cat("\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep = "")
+    } else {
+      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
+    }
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      cat("Type: Linear regression", "\n\n")
+    } else {
+      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
+          "Link function: ",
+          as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+    }
+  }
+
+  if (x$model.fit==T) {
+    cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
+        round(x$rsq, digits = x$digits), "\n",
+        "Pseudo R-squared (McFadden) = ",
+        round(x$rsqmc, digits = x$digits),
+        "\n", "AIC = ", round(x$aic, x$digits), ", BIC = ",
+        round(x$bic, x$digits), "\n\n", sep = "")
+  }
+
+  if (x$robust == FALSE) {
+    cat("Standard errors: MLE", "\n")
+  } else if (x$robust == TRUE) {
+
+    cat("Standard errors:", sep = "")
+
+    if (x$use_cluster == FALSE) {
+
+      cat(" Robust, type = ", x$robust.type, "\n", sep = "")
+
+    } else if (x$use_cluster == TRUE) {
+
+      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
+
+    }
+
+  }
+
+  print(as.table(ctable))
+
+  if (x$dispersion != 1) {
+    cat("\n")
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
+  }
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}
+
+##### svyglm ###################################################################
 
 #' Complex survey regression summaries with options
 #'
@@ -1222,6 +1489,141 @@ j_summ.svyglm <- function(
   return(j)
 
 }
+
+### PRINT METHOD ###
+
+
+
+#' @export
+
+print.j_summ.svyglm <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
+  if (x$vifs) {
+    vifvec <- round(ctable[,width], x$digits)
+    ctable <- ctable[,1:width-1]
+    width <- width - 1
+  }
+
+  # Making a vector of p value significance indicators
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
+    }
+
+  }
+
+  onames <- colnames(ctable)
+  if (x$vifs == TRUE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars, vifvec)
+    colnames(ctable) <- c(onames, "", "VIF")
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars)
+    colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
+  }
+
+  if (x$model.info == TRUE) {
+    # Always showing this
+    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
+    if (x$missing == 0) {
+      cat("\n",
+          "Dependent Variable: ",
+          x$dv, "\n", sep = "")
+    } else {
+      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
+    }
+    cat("\n", "Analysis of complex survey design", "\n", sep = "")
+    # If it's linear...
+    if (as.character(x$lmFamily[1]) == "gaussian" &&
+        as.character(x$lmFamily[2]) == "identity") {
+      # Just call it linear
+      cat("Survey-weighted linear regression", "\n", "\n", sep = "")
+    } else {
+      # Otherwise just treat it like glm
+      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
+          "Link function: ", as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+    }
+  }
+
+  if (x$model.fit == TRUE) { # Show fit statistics
+    if (as.character(x$lmFamily[1]) == "gaussian" &&
+        as.character(x$lmFamily[2]) == "identity") {
+      # If it's a linear model, show regular lm fit stats
+      cat("MODEL FIT: ", "\n", "R-squared = ", round(x$rsq, digits = x$digits),
+          "\n", "Adj. R-squared = ", round(x$arsq, digits = x$digits), "\n",
+          "\n", sep = "")
+    } else {
+      # If it isn't linear, show GLM fit stats
+      cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
+          round(x$rsq, digits = x$digits), "\n",
+          "Pseudo R-squared (McFadden) = ",
+          round(x$rsqmc, digits = x$digits),
+          "\n", "AIC = ", round(x$aic, x$digits), "\n\n", sep = "")
+    }
+  }
+
+  if (x$model.check == TRUE && x$linear == TRUE) {
+    # Just check outliers
+    cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
+        x$cooksdf, "\n\n", sep = "")
+  }
+
+  if (x$linear == TRUE) {
+    cat("Standard errors: Robust\n")
+  }
+
+  print(as.table(ctable))
+
+  if (x$dispersion != 1) {
+    cat("\n")
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
+  }
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}
+
+##### merMod ###################################################################
 
 #' Mixed effects regression summaries with options
 #'
@@ -1651,395 +2053,7 @@ j_summ.merMod <- function(
 
 }
 
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
-
-#' @export
-
-print.j_summ.lm <- function(x, ...) {
-
-  # saving input object as j
-  j <- x
-  # saving attributes as x (this was to make a refactoring easier)
-  x <- attributes(j)
-
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width-1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
-
-  if (x$model.info == TRUE) {
-    if (x$missing == 0) {
-      cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep="")
-      cat("\n")
-    } else {
-      cat("MODEL INFO:", "\n", "Observations: ", x$n, " (", x$missing,
-          " missing obs. deleted)", "\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep="")
-      cat("\n")
-    }
-  }
-
-  if (x$model.fit==T) {
-    cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
-        round(x$fstat, digits=x$digits), ", p = ",
-        round(x$modpval, digits=x$digits),
-        "\n", "R-squared = ", round(x$rsq, digits=x$digits), "\n",
-        "Adj. R-squared = ",
-        round(x$arsq, digits=x$digits), "\n", "\n", sep="")
-  }
-
-  if (x$model.check == TRUE) {
-    # Since it's lm, we can do Breusch-Pagan test
-    if (x$homoskedp < .05) {
-      homoskedtf <- paste("Assumption violated (p = ",
-                          round(x$homoskedp,digits=x$digits), ")", sep="")
-    } else {
-      homoskedtf <- paste("Assumption not violated (p = ",
-                          round(x$homoskedp, digits=x$digits), ")", sep="")
-    }
-    cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ",
-        homoskedtf,
-        "\n", "Number of high-leverage observations = ", x$cooksdf,
-        "\n\n", sep="")
-  }
-
-  if (x$robust == FALSE) {
-
-    cat("Standard errors: OLS", "\n")
-
-  } else if (x$robust == TRUE) {
-
-      cat("Standard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-      cat(" Robust, type = ", x$robust.type, "\n", sep="")
-
-    } else if (x$use_cluster == TRUE) {
-
-      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep="")
-
-    }
-
-  }
-
-  print(as.table(ctable))
-
-  # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered.")
-  }
-  cat("\n")
-
-}
-
-#' @export
-
-print.j_summ.glm <- function(x, ...) {
-
-  # saving input object as j
-  j <- x
-  # saving attributes as x (this was to make a refactoring easier)
-  x <- attributes(j)
-
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width-1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
-
-  if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
-    if (x$missing == 0) {
-      cat("\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep="")
-    } else {
-      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
-    }
-    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
-      cat("Type: Linear regression", "\n\n")
-    } else {
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep="")
-    }
-  }
-
-  if (x$model.fit==T) {
-    cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-        round(x$rsq, digits = x$digits), "\n",
-        "Pseudo R-squared (McFadden) = ",
-        round(x$rsqmc, digits = x$digits),
-        "\n", "AIC = ", round(x$aic, x$digits), ", BIC = ",
-        round(x$bic, x$digits), "\n\n", sep = "")
-  }
-
-  if (x$robust == FALSE) {
-    cat("Standard errors: MLE", "\n")
-  } else if (x$robust == TRUE) {
-
-    cat("Standard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-      cat(" Robust, type = ", x$robust.type, "\n", sep="")
-
-    } else if (x$use_cluster == TRUE) {
-
-      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep="")
-
-    }
-
-  }
-
-  print(as.table(ctable))
-
-  if (x$dispersion != 1) {
-    cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
-  }
-
-  # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered.")
-  }
-  cat("\n")
-
-}
-
-#' @export
-
-print.j_summ.svyglm <- function(x, ...) {
-
-  # saving input object as j
-  j <- x
-  # saving attributes as x (this was to make a refactoring easier)
-  x <- attributes(j)
-
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width-1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
-
-  if (x$model.info == TRUE) {
-    # Always showing this
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
-    if (x$missing == 0) {
-      cat("\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep="")
-    } else {
-      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
-    }
-    cat("\n", "Analysis of complex survey design", "\n", sep = "")
-    # If it's linear...
-    if (as.character(x$lmFamily[1]) == "gaussian" &&
-        as.character(x$lmFamily[2]) == "identity") {
-      # Just call it linear
-      cat("Survey-weighted linear regression", "\n", "\n", sep = "")
-    } else {
-      # Otherwise just treat it like glm
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ", as.character(x$lmFamily[2]), "\n", "\n", sep = "")
-    }
-  }
-
-  if (x$model.fit == TRUE) { # Show fit statistics
-    if (as.character(x$lmFamily[1]) == "gaussian" &&
-        as.character(x$lmFamily[2]) == "identity") {
-      # If it's a linear model, show regular lm fit stats
-      cat("MODEL FIT: ", "\n", "R-squared = ", round(x$rsq, digits = x$digits),
-          "\n", "Adj. R-squared = ", round(x$arsq, digits = x$digits), "\n",
-          "\n", sep = "")
-    } else {
-      # If it isn't linear, show GLM fit stats
-      cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-          round(x$rsq, digits = x$digits), "\n",
-          "Pseudo R-squared (McFadden) = ",
-          round(x$rsqmc, digits = x$digits),
-          "\n", "AIC = ", round(x$aic, x$digits), "\n\n", sep = "")
-    }
-  }
-
-  if (x$model.check == TRUE && x$linear == TRUE) {
-    # Just check outliers
-    cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
-        x$cooksdf, "\n\n", sep = "")
-  }
-
-  if (x$linear == TRUE) {
-    cat("Standard errors: Robust\n")
-  }
-
-  print(as.table(ctable))
-
-  if (x$dispersion != 1) {
-    cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
-  }
-
-  # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered.")
-  }
-  cat("\n")
-
-}
+### PRINT METHOD ###
 
 #' @export
 
@@ -2088,21 +2102,21 @@ print.j_summ.merMod <- function(x, ...) {
   if (x$model.info == TRUE) {
     cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
         "Dependent Variable: ",
-        x$dv, "\n", sep="")
+        x$dv, "\n", sep = "")
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
       cat("Type: Mixed effects linear regression", "\n\n")
     } else {
       cat("\nType: Mixed effects generalized linear regression", "\n",
           "Error Distribution: ", as.character(x$lmFamily[1]), "\n",
           "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep="")
+          as.character(x$lmFamily[2]), "\n", "\n", sep = "")
     }
   }
 
   if (x$model.fit == T) {
     cat("MODEL FIT: ",
         "\n", "AIC = ", round(x$aic, x$digits),
-        ", BIC = ", round(x$bic, x$digits), "\n", sep="")
+        ", BIC = ", round(x$bic, x$digits), "\n", sep = "")
     cat("Pseudo R-squared (fixed effects) = ", round(x$rsq[1],x$digits),
         "\n", sep = "")
     cat("Pseudo R-squared (total) = ", round(x$rsq[2], x$digits),
@@ -2168,3 +2182,6 @@ package \"pbkrtest\" to get more accurate p values.")
   cat("\n")
 
 }
+
+
+
