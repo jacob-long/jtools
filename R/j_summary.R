@@ -5,10 +5,10 @@
 #'
 #' \itemize{
 #'
-#'   \item \code{\link{j_summ.lm}}
-#'   \item \code{\link{j_summ.glm}}
-#'   \item \code{\link{j_summ.svyglm}}
-#'   \item \code{\link{j_summ.merMod}}
+#'   \item \code{\link{summ.lm}}
+#'   \item \code{\link{summ.glm}}
+#'   \item \code{\link{summ.svyglm}}
+#'   \item \code{\link{summ.merMod}}
 #'
 #' }
 #'
@@ -19,17 +19,42 @@
 #'
 #' @export
 #'
+
+
+summ <- function(model, ...) {
+  UseMethod("summ")
+}
+
+#' Regression summaries with options
+#'
+#' \code{j_summ} is an alias for \code{summ}.
+#' To get specific documentation, choose the appropriate link to the
+#' type of model that you want to summarize from the details section.
+#'
+#' \itemize{
+#'
+#'   \item \code{\link{summ.lm}}
+#'   \item \code{\link{summ.glm}}
+#'   \item \code{\link{summ.svyglm}}
+#'   \item \code{\link{summ.merMod}}
+#'
+#' }
+#'
+#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
+#'   \code{\link[lme4]{merMod}} object.
+#' @param ... Other arguments to be passed to the model.specific function.
+#'
+#'
+#' @export
 #'
 
-j_summ <- function(model, ...) {
-  UseMethod("j_summ")
-}
+j_summ <- summ
 
 #### lm ########################################################################
 
 #' Regression summaries with options
 #'
-#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A \code{lm} object.
@@ -162,7 +187,7 @@ j_summ <- function(model, ...) {
 #' fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 #'
 #' # Print the output with standardized coefficients and 2 digits past the decimal
-#' j_summ(fit, standardize = TRUE, digits = 2)
+#' summ(fit, standardize = TRUE, digits = 2)
 #'
 #' @references
 #'
@@ -182,8 +207,9 @@ j_summ <- function(model, ...) {
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #'  extractAIC family fitted pt residuals terms model.weights
 #' @export
+#' @aliases j_summ.lm
 
-j_summ.lm <- function(
+summ.lm <- function(
   model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
   robust = FALSE, robust.type = "HC3", cluster = NULL,
   digits = getOption("jtools-digits", default = 3), pvals = TRUE,
@@ -393,7 +419,7 @@ j_summ.lm <- function(
     if (robust == TRUE) {
 
       warning("Partial/semipartial correlations calculated based on robust
-t-statistics. See j_summ.lm documentation for cautions on interpreting
+t-statistics. See summ.lm documentation for cautions on interpreting
 partial and semipartial correlations alongside robust standard errors.")
 
     }
@@ -440,7 +466,7 @@ partial and semipartial correlations alongside robust standard errors.")
 
   j$coeftable <- mat
   j$model <- model
-  class(j) <- c("j_summ.lm", "j_summ")
+  class(j) <- c("summ.lm", "summ")
   return(j)
 
 }
@@ -449,7 +475,7 @@ partial and semipartial correlations alongside robust standard errors.")
 
 #' @export
 
-print.j_summ.lm <- function(x, ...) {
+print.summ.lm <- function(x, ...) {
 
   # saving input object as j
   j <- x
@@ -584,7 +610,7 @@ print.j_summ.lm <- function(x, ...) {
 
 #' Generalized linear regression summaries with options
 #'
-#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A \code{glm} object.
@@ -683,7 +709,7 @@ print.j_summ.lm <- function(x, ...) {
 #'  data = as.data.frame(state.x77))
 #'
 #' # Print the output with standardized coefficients and 2 digits past the decimal
-#' j_summ(fit, standardize = TRUE, digits = 2)
+#' summ(fit, standardize = TRUE, digits = 2)
 #'
 #'
 #' @references
@@ -702,10 +728,10 @@ print.j_summ.lm <- function(x, ...) {
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #'  extractAIC family fitted pt residuals terms model.weights
 #' @export
-#'
+#' @aliases j_summ.glm
 #'
 
-j_summ.glm <- function(
+summ.glm <- function(
   model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
   robust = FALSE, robust.type = "HC3",
   cluster = NULL, digits = getOption("jtools-digits", default = 3),
@@ -1015,7 +1041,7 @@ j_summ.glm <- function(
 
   j$coeftable <- mat
   j$model <- model
-  class(j) <- c("j_summ.glm", "j_summ")
+  class(j) <- c("summ.glm", "summ")
   return(j)
 
 }
@@ -1024,7 +1050,7 @@ j_summ.glm <- function(
 
 #' @export
 
-print.j_summ.glm <- function(x, ...) {
+print.summ.glm <- function(x, ...) {
 
   # saving input object as j
   j <- x
@@ -1150,7 +1176,7 @@ print.j_summ.glm <- function(x, ...) {
 
 #' Complex survey regression summaries with options
 #'
-#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A \code{\link[survey]{svyglm}} object.
@@ -1229,14 +1255,14 @@ print.j_summ.glm <- function(x, ...) {
 #' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw, data = apistrat,
 #'  fpc =~ fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
-#' j_summ(regmodel)
+#' summ(regmodel)
 #
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #'  extractAIC family fitted pt residuals terms model.weights
 #' @export
-#'
+#' @aliases j_summ.svyglm
 
-j_summ.svyglm <- function(
+summ.svyglm <- function(
   model, standardize = FALSE, vifs = FALSE,
   confint = FALSE, ci.width = .95,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
@@ -1485,7 +1511,7 @@ j_summ.svyglm <- function(
 
   j$coeftable <- mat
   j$model <- model
-  class(j) <- c("j_summ.svyglm", "j_summ")
+  class(j) <- c("summ.svyglm", "summ")
   return(j)
 
 }
@@ -1496,7 +1522,7 @@ j_summ.svyglm <- function(
 
 #' @export
 
-print.j_summ.svyglm <- function(x, ...) {
+print.summ.svyglm <- function(x, ...) {
 
   # saving input object as j
   j <- x
@@ -1627,7 +1653,7 @@ print.j_summ.svyglm <- function(x, ...) {
 
 #' Mixed effects regression summaries with options
 #'
-#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A \code{\link[lme4]{merMod}} object.
@@ -1704,7 +1730,7 @@ print.j_summ.svyglm <- function(x, ...) {
 #'  it is better to use the confidence
 #'  intervals and check to see if they exclude zero than use the t-test.
 #'  For users of \code{glmer}, see some of the advice there as well. While
-#'  \code{lme4} and by association \code{j_summ} does as well, they are
+#'  \code{lme4} and by association \code{summ} does as well, they are
 #'  still imperfect.
 #'
 #'  You have some options to customize the output in this regard with the
@@ -1746,16 +1772,16 @@ print.j_summ.svyglm <- function(x, ...) {
 #' data(sleepstudy)
 #' mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 #'
-#' j_summ(mv) # Note lack of p values
+#' summ(mv) # Note lack of p values
 #'
 #' # Without pbkrtest, you'll get message about Type 1 errors
-#' j_summ(mv, pvals = TRUE)
+#' summ(mv, pvals = TRUE)
 #'
 #' # To suppress message, manually specify t.df argument
-#' j_summ(mv, t.df = "residual")
+#' summ(mv, t.df = "residual")
 #'
 #' # Confidence intervals may be better alternative in absence of pbkrtest
-#' j_summ(mv, confint = TRUE)
+#' summ(mv, confint = TRUE)
 #'
 #' @references
 #'
@@ -1783,10 +1809,10 @@ print.j_summ.svyglm <- function(x, ...) {
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #'  extractAIC family fitted pt residuals terms model.weights
 #' @export
-#'
+#' @aliases j_summ.merMod
 #'
 
-j_summ.merMod <- function(
+summ.merMod <- function(
   model, standardize = FALSE, confint = FALSE, ci.width = .95,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
   model.fit = TRUE, pvals = NULL, n.sd = 1, center = FALSE,
@@ -2048,7 +2074,7 @@ j_summ.merMod <- function(
   j$rcoeftable <- rcmat # Random effects table
   j$gvars <- gvmat # Grouping variables table
   j$model <- model
-  class(j) <- c("j_summ.merMod", "j_summ")
+  class(j) <- c("summ.merMod", "summ")
   return(j)
 
 }
@@ -2057,7 +2083,7 @@ j_summ.merMod <- function(
 
 #' @export
 
-print.j_summ.merMod <- function(x, ...) {
+print.summ.merMod <- function(x, ...) {
 
   # saving input object as j
   j <- x
