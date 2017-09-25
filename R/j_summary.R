@@ -1,10 +1,36 @@
 #' Regression summaries with options
 #'
-#' \code{j_summ()} prints output for a regression model in a fashion similar to
-#' \code{summary()}, but formatted differently with more options.
+#' To get specific documentation, choose the appropriate link to the
+#' type of model that you want to summarize from the details section.
+#'
+#' \itemize{
+#'
+#'   \item \code{\link{j_summ.lm}}
+#'   \item \code{\link{j_summ.glm}}
+#'   \item \code{\link{j_summ.svyglm}}
+#'   \item \code{\link{j_summ.merMod}}
+#'
+#' }
 #'
 #' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
 #'   \code{\link[lme4]{merMod}} object.
+#' @param ... Other arguments to be passed to the model.specific function.
+#'
+#'
+#' @export
+#'
+#'
+
+j_summ <- function(model, ...) {
+  UseMethod("j_summ")
+}
+
+#' Regression summaries with options
+#'
+#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summary}, but formatted differently with more options.
+#'
+#' @param model A \code{lm} object.
 #' @param standardize If \code{TRUE}, adds a column to output with standardized regression
 #'   coefficients. Default is \code{FALSE}.
 #' @param vifs If \code{TRUE}, adds a column to output with variance inflation
@@ -33,13 +59,7 @@
 #'   the output. Default is 3. You can change the default number of digits for
 #'   all jtools functions with \code{options("jtools-digits" = digits)} where
 #'   digits is the desired number.
-#' @param model.info Toggles printing of basic information on sample size, name of
-#'   DV, and number of predictors.
-#' @param model.fit Toggles printing of R-squared, Adjusted R-squared, Pseudo-R-squared,
-#'  and AIC (when applicable).
-#' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
-#'  and print number of high-leverage observations. See details for more info.
-#' @param pvals Show p-values and significance stars? If \code{FALSE}, these
+#' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
 #' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
@@ -48,10 +68,15 @@
 #'  want to standardize, set this to \code{TRUE}.
 #' @param standardize.response Should standardization apply to response variable?
 #'  Default is \code{FALSE}.
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
-#'  confidence intervals for exponential models like logit and Poisson models.
-#'  This quantity is known as an odds ratio for binary outcomes and incidence
-#'  rate ratio for count models.
+#' @param part.corr Print partial (labeled "partial.r") and semipartial (labeled
+#'  "part.r") correlations with the table?
+#'  Default is \code{FALSE}. See details about these quantities when robust
+#'  standard errors are used.
+#' @param model.info Toggles printing of basic information on sample size, name of
+#'   DV, and number of predictors.
+#' @param model.fit Toggles printing of R-squared and adjusted R-squared.
+#' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
+#'  and print number of high-leverage observations. See details for more info.
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
 #'
@@ -59,10 +84,9 @@
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
-#'   \item The (Pseudo-)R-squared value (plus adjusted R-squared if OLS regression).
-#'   There are only AIC values for model fit for merMod objects.
+#'   \item The R-squared value plus adjusted R-squared
 #'   \item A table with regression coefficients, standard errors, t-values, and
-#'    p-values.
+#'    p values.
 #' }
 #'
 #'  There are several options available for \code{robust.type}. The heavy lifting
@@ -78,17 +102,24 @@
 #'  The \code{standardize} and \code{center} options are performed via refitting
 #'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
-#'  mean-centering and scaling. These functions can handle \code{svyglm} objects
-#'  correctly by calling \code{svymean} and \code{svyvar} to compute means and
-#'  standard deviations. Weights are not altered. The fact that the model is
-#'  refit means the runtime will be similar to the original time it took to fit
-#'  the model.
+#'  mean-centering and scaling.
 #'
-#'  \code{lm}-only info:
+#'  If using \code{part.corr = TRUE}, then you will get these two common
+#'  effect size metrics on the far right two columns of the output table.
+#'  However, it should be noted that these do not go hand in hand with
+#'  robust standard error estimators. The standard error of the coefficient
+#'  doesn't change the point estimate, just the uncertainty. However,
+#'  this function uses \emph{t}-statistics in its calculation of the
+#'  partial and semipartial correlation. This provides what amounts to a
+#'  heteroskedasticity-adjusted set of estimates, but I am unaware of any
+#'  statistical publication that validates this type of use. Please
+#'  use these as a heuristic when used alongside robust standard errors; do
+#'  not report the "robust" partial and semipartial correlations in
+#'  publications.
 #'
 #'  There are two pieces of information given for \code{model.check}, provided that
 #'  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
-#'  \code{\link[car]{ncvTest}}, which requires the \code{car} package. This is a
+#'  \code{\link[car]{ncvTest}}. This is a
 #'  hypothesis test for which the alternative hypothesis is heteroskedastic errors.
 #'  The test becomes much more likely to be statistically significant as the sample
 #'  size increases; however, the homoskedasticity assumption becomes less important
@@ -106,22 +137,6 @@
 #'  remove such observations, but rather to look more closely with graphical and
 #'  other methods.
 #'
-#'  \code{merMod}-only info:
-#'
-#'  \code{merMod} models are a bit different than the others. The \code{lme4}
-#'  package developers have, for instance, made a decision not to report or
-#'  compute p-values with their functions. There are good reasons for this,
-#'  most notably that the t-values produced are not "accurate" in the sense of
-#'  the Type I error rate. For larger samples, this is no big deal. What's
-#'  a "big" or "small" sample? Good luck getting a statistician to tell you.
-#'  Some simulation studies have been done on fewer than 100 observations, so
-#'  for sure if your sample is around 100 or fewer you should not interpret
-#'  the t-values. A large number of groups is also crucial for avoiding bias
-#'  using t-values.
-#'
-#'  See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
-#'  If you're looking for a simple test, it is better to use the confidence
-#'  intervals and check to see if they exclude zero than use the t-test.
 #'
 #' @return If saved, users can access most of the items that are returned in the
 #'   output (and without rounding).
@@ -147,47 +162,32 @@
 #' # Print the output with standardized coefficients and 2 digits past the decimal
 #' j_summ(fit, standardize = TRUE, digits = 2)
 #'
-#' # With svyglm
-#' library(survey)
-#' data(api)
-#' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw, data = apistrat,
-#'  fpc =~ fpc)
-#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
-#' j_summ(regmodel)
-#'
 #' @references
 #'
-#' King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
-#'  problems they do not fix, and what to do about it. \emph{Political Analysis},
+#' King, G., & Roberts, M. E. (2015). How robust standard errors expose
+#'  methodological
+#'  problems they do not fix, and what to do about it. \emph{Political
+#'   Analysis},
 #'   \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
 #'
 #' Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
-#' Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
+#' Normality Assumption in Large Public Health Data Sets.
+#'  \emph{Annual Review of
 #'  Public Health}, \emph{23}, 151–169.
 #'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
-#'
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #'  extractAIC family fitted pt residuals terms model.weights
 #' @export
-#'
-#'
-
-j_summ <- function(model, ...) {
-  UseMethod("j_summ")
-}
-
-
-#' @rdname j_summ
-#' @export
 
 j_summ.lm <- function(
   model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
   robust = FALSE, robust.type = "HC3", cluster = NULL,
-  digits = getOption("jtools-digits", default = 3),
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE, pvals = TRUE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
+  digits = getOption("jtools-digits", default = 3), pvals = TRUE,
+  n.sd = 1, center = FALSE, standardize.response = FALSE, part.corr = FALSE,
+  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  ...) {
 
   j <- list()
 
@@ -361,8 +361,41 @@ j_summ.lm <- function(
   }
 
   if (vifs == TRUE) {
+
     params[length(params)+1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
+
+  }
+
+  if (part.corr == TRUE) {
+    # Need df
+    ## Using length of t-value vector to get the p for DF calculation
+    p.df <- length(ts) - df.int # If intercept, don't include it
+    df.resid <- n - p.df - 1
+
+    partial_corrs <- ts/sqrt(ts^2 + df.resid)
+    if (df.int == 1) {
+      partial_corrs[1] <- NA # Intercept partial corr. isn't interpretable
+    }
+
+    semipart_corrs <- (ts * sqrt(1 - rsq))/sqrt(df.resid)
+    if (df.int == 1) {
+      semipart_corrs[1] <- NA # Intercept partial corr. isn't interpretable
+    }
+
+    namevec <- c(namevec, "partial.r", "part.r")
+    pl <- length(params)
+    params[(pl+1)] <- list(partial_corrs)
+    params[(pl+2)] <- list(semipart_corrs)
+
+    if (robust == TRUE) {
+
+      warning("Partial/semipartial correlations calculated based on robust
+t-statistics. See j_summ.lm documentation for cautions on interpreting
+partial and semipartial correlations alongside robust standard errors.")
+
+    }
+
   }
 
   mat <- matrix(nrow=length(ivs), ncol=length(params))
@@ -380,7 +413,7 @@ j_summ.lm <- function(
   # Drop p-vals if user requests
   if (pvals == FALSE) {
 
-    mat <- mat[,1:ncol(mat)-1]
+    mat <- mat[,!(colnames(mat) == "p")]
 
   }
 
@@ -410,8 +443,128 @@ j_summ.lm <- function(
 
 }
 
-#' @rdname j_summ
+#' Generalized linear regression summaries with options
+#'
+#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summary}, but formatted differently with more options.
+#'
+#' @param model A \code{glm} object.
+#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
+#'   coefficients. Default is \code{FALSE}.
+#' @param vifs If \code{TRUE}, adds a column to output with variance inflation
+#'   factors (VIF). Default is \code{FALSE}.
+#' @param confint Show confidence intervals instead of standard errors? Default
+#'   is \code{FALSE}.
+#' @param ci.width A number between 0 and 1 that signifies the width of the
+#'   desired confidence interval. Default is \code{.95}, which corresponds
+#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
+#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors
+#'   instead of conventional SEs. These are also known as Huber-White standard
+#'   errors.
+#'
+#'   Default is \code{FALSE}.
+#'
+#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
+#'    standard errors.
+#' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
+#'   robust standard errors to be used by \code{sandwich}. By default, set to
+#'   \code{"HC3"}. See details for more on options.
+#' @param cluster For clustered standard errors, provide the column name of
+#'   the cluster variable in the input data frame (as a string). Alternately,
+#'   provide a vector of clusters.
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in
+#'   the output. Default is 3. You can change the default number of digits for
+#'   all jtools functions with \code{options("jtools-digits" = digits)} where
+#'   digits is the desired number.
+#' @param model.info Toggles printing of basic information on sample size, name o
+#'   DV, and number of predictors.
+#' @param model.fit Toggles printing of Pseudo-R-squared and AIC/BIC
+#'   (when applicable).
+#' @param pvals Show p values and significance stars? If \code{FALSE}, these
+#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
+#'  details).
+#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
+#'  predictors be divided by? Default is 1, though some suggest 2.
+#' @param center If you want coefficients for mean-centered variables but don't
+#'  want to standardize, set this to \code{TRUE}.
+#' @param standardize.response Should standardization apply to response variable?
+#'  Default is \code{FALSE}.
+#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#'  confidence intervals for exponential models like logit and Poisson models.
+#'  This quantity is known as an odds ratio for binary outcomes and incidence
+#'  rate ratio for count models.
+#' @param ... This just captures extra arguments that may only work for other
+#'  types of models.
+#'
+#' @details By default, this function will print the following items to the console:
+#' \itemize{
+#'   \item The sample size
+#'   \item The name of the outcome variable
+#'   \item The (Pseudo-)R-squared value and AIC/BIC.
+#'   \item A table with regression coefficients, standard errors, t-values, and
+#'    p values.
+#' }
+#'
+#'  There are several options available for \code{robust.type}. The heavy lifting
+#'  is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+#'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
+#'  recommendation of the developers of \pkg{sandwich}, the default is set to
+#'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
+#'  if the goal is to replicate Stata's output. Any option that is understood by
+#'  \code{vcovHC} will be accepted. Cluster-robust standard errors are computed
+#'  if \code{cluster} is set to the name of the input data's cluster variable
+#'  or is a vector of clusters.
+#'
+#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  mean-centering and scaling.
+#'
+#' @return If saved, users can access most of the items that are returned in the
+#'   output (and without rounding).
+#'
+#'  \item{coeftable}{The outputted table of variables and coefficients}
+#'  \item{model}{The model for which statistics are displayed. This would be
+#'    most useful in cases in which \code{standardize = TRUE}.}
+#'
+#'  Much other information can be accessed as attributes.
+#'
+#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#'  preferred.
+#'
+#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  behind the scenes.
+#'
+#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#'
+#' @examples
+#' # Create lm object
+#' fit <- lm(Income ~ Frost + Illiteracy + Murder,
+#'  data = as.data.frame(state.x77))
+#'
+#' # Print the output with standardized coefficients and 2 digits past the decimal
+#' j_summ(fit, standardize = TRUE, digits = 2)
+#'
+#'
+#' @references
+#'
+#' King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
+#'  problems they do not fix, and what to do about it. \emph{Political Analysis},
+#'   \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
+#'
+#' Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
+#' Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
+#'  Public Health}, \emph{23}, 151–169.
+#'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
+#'
+#'
+#'
+#' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
+#'  extractAIC family fitted pt residuals terms model.weights
 #' @export
+#'
+#'
 
 j_summ.glm <- function(
   model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
@@ -556,7 +709,7 @@ j_summ.glm <- function(
   }
 
   # AIC for GLMs
-  j <- structure(j, aic = model$aic)
+  j <- structure(j, aic = AIC(model), bic = BIC(model))
 
   # List of names of predictors
   ivs <- names(coefficients(model))
@@ -706,7 +859,7 @@ j_summ.glm <- function(
   # Drop p-vals if user requests
   if (pvals == FALSE) {
 
-    mat <- mat[,1:ncol(mat)-1]
+    mat <- mat[,!(colnames(mat) == "p")]
 
   }
 
@@ -728,8 +881,93 @@ j_summ.glm <- function(
 
 }
 
-#' @rdname j_summ
+#' Complex survey regression summaries with options
+#'
+#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summary}, but formatted differently with more options.
+#'
+#' @param model A \code{\link[survey]{svyglm}} object.
+#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
+#'   coefficients. Default is \code{FALSE}.
+#' @param vifs If \code{TRUE}, adds a column to output with variance inflation
+#'   factors (VIF). Default is \code{FALSE}.
+#' @param confint Show confidence intervals instead of standard errors? Default
+#'   is \code{FALSE}.
+#' @param ci.width A number between 0 and 1 that signifies the width of the
+#'   desired confidence interval. Default is \code{.95}, which corresponds
+#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in
+#'   the output. Default is 3. You can change the default number of digits for
+#'   all jtools functions with \code{options("jtools-digits" = digits)} where
+#'   digits is the desired number.
+#' @param model.info Toggles printing of basic information on sample size, name of
+#'   DV, and number of predictors.
+#' @param model.fit Toggles printing of R-squared, Pseudo-R-squared,
+#'  and AIC (when applicable).
+#' @param pvals Show p values and significance stars? If \code{FALSE}, these
+#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
+#'  details).
+#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
+#'  predictors be divided by? Default is 1, though some suggest 2.
+#' @param center If you want coefficients for mean-centered variables but don't
+#'  want to standardize, set this to \code{TRUE}.
+#' @param standardize.response Should standardization apply to response variable?
+#'  Default is \code{FALSE}.
+#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#'  confidence intervals for exponential models like logit and Poisson models.
+#'  This quantity is known as an odds ratio for binary outcomes and incidence
+#'  rate ratio for count models.
+#' @param ... This just captures extra arguments that may only work for other
+#'  types of models.
+#'
+#' @details By default, this function will print the following items to the console:
+#' \itemize{
+#'   \item The sample size
+#'   \item The name of the outcome variable
+#'   \item The (Pseudo-)R-squared value and AIC.
+#'   \item A table with regression coefficients, standard errors, t-values, and
+#'    p values.
+#' }
+#'
+#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  mean-centering and scaling. These functions can handle \code{svyglm} objects
+#'  correctly by calling \code{svymean} and \code{svyvar} to compute means and
+#'  standard deviations. Weights are not altered. The fact that the model is
+#'  refit means the runtime will be similar to the original time it took to fit
+#'  the model.
+#'
+#' @return If saved, users can access most of the items that are returned in the
+#'   output (and without rounding).
+#'
+#'  \item{coeftable}{The outputted table of variables and coefficients}
+#'  \item{model}{The model for which statistics are displayed. This would be
+#'    most useful in cases in which \code{standardize = TRUE}.}
+#'
+#'  Much other information can be accessed as attributes.
+#'
+#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#'  preferred.
+#'
+#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  behind the scenes.
+#'
+#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#'
+#' @examples
+#' library(survey)
+#' data(api)
+#' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw, data = apistrat,
+#'  fpc =~ fpc)
+#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
+#' j_summ(regmodel)
+#
+#' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
+#'  extractAIC family fitted pt residuals terms model.weights
 #' @export
+#'
 
 j_summ.svyglm <- function(
   model, standardize = FALSE, vifs = FALSE,
@@ -956,7 +1194,7 @@ j_summ.svyglm <- function(
   # Dropping p-vals if requested by user
   if (pvals == FALSE) {
 
-    mat <- mat[,1:ncol(mat)-1]
+    mat <- mat[,!(colnames(mat) == "p")]
 
   }
 
@@ -985,14 +1223,172 @@ j_summ.svyglm <- function(
 
 }
 
-#' @rdname j_summ
+#' Mixed effects regression summaries with options
+#'
+#' \code{j_summ} prints output for a regression model in a fashion similar to
+#' \code{summary}, but formatted differently with more options.
+#'
+#' @param model A \code{\link[lme4]{merMod}} object.
+#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
+#'   coefficients. Default is \code{FALSE}.
+#' @param confint Show confidence intervals instead of standard errors? Default
+#'   is \code{FALSE}.
+#' @param ci.width A number between 0 and 1 that signifies the width of the
+#'   desired confidence interval. Default is \code{.95}, which corresponds
+#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
+#' @param digits An integer specifying the number of digits past the decimal to
+#'   report in
+#'   the output. Default is 3. You can change the default number of digits for
+#'   all jtools functions with \code{options("jtools-digits" = digits)} where
+#'   digits is the desired number.
+#' @param model.info Toggles printing of basic information on sample size, name of
+#'   DV, and number of predictors.
+#' @param model.fit Toggles printing of pseudo-R-squared and AIC/BIC
+#'  (when applicable).
+#' @param pvals Show p values and significance stars? If \code{FALSE}, these
+#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
+#'  details).
+#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
+#'  predictors be divided by? Default is 1, though some suggest 2.
+#' @param center If you want coefficients for mean-centered variables but don't
+#'  want to standardize, set this to \code{TRUE}.
+#' @param standardize.response Should standardization apply to response variable?
+#'  Default is \code{FALSE}.
+#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#'  confidence intervals for exponential models like logit and Poisson models.
+#'  This quantity is known as an odds ratio for binary outcomes and incidence
+#'  rate ratio for count models.
+#' @param t.df For \code{lmerMod} models only. User may set the degrees of
+#'  freedom used in conducting t-tests. See details for options.
+#' @param ... This just captures extra arguments that may only work for other
+#'  types of models.
+#'
+#' @details By default, this function will print the following items to the console:
+#' \itemize{
+#'   \item The sample size
+#'   \item The name of the outcome variable
+#'   \item The (Pseudo-)R-squared value and AIC/BIC.
+#'   \item A table with regression coefficients, standard errors, and t-values.
+#' }
+#'
+#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  mean-centering and scaling.
+#'
+#'  \code{merMod} models are a bit different than the others. The \code{lme4}
+#'  package developers have, for instance, made a decision not to report or
+#'  compute p values for \code{lmer} models. There are good reasons for this,
+#'  most notably that the t-values produced are not "accurate" in the sense of
+#'  the Type I error rate. For certain large, balanced samples with many
+#'  groups, this is no big deal. What's
+#'  a "big" or "small" sample? How much balance is necessary? What type of
+#'  random effects structure is okay? Good luck getting a statistician to
+#'  give you any clear guidelines on this.
+#'  Some simulation studies have been done on fewer than 100 observations, so
+#'  for sure if your sample is around 100 or fewer you should not interpret
+#'  the t-values. A large number of groups is also crucial for avoiding bias
+#'  using t-values. If groups are nested or crossed in a linear model,
+#'  it is best to just get the \pkg{pbkrtest} package.
+#'
+#'  By default, this function follows \code{lme4}'s lead and does not report
+#'  the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
+#'  installed, however, p values are reported using the Kenward-Roger
+#'  d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
+#'  set to something other than \code{NULL}.
+#'
+#'  See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
+#'  If you're looking for a simple test with no extra packages installed,
+#'  it is better to use the confidence
+#'  intervals and check to see if they exclude zero than use the t-test.
+#'  For users of \code{glmer}, see some of the advice there as well. While
+#'  \code{lme4} and by association \code{j_summ} does as well, they are
+#'  still imperfect.
+#'
+#'  You have some options to customize the output in this regard with the
+#'  \code{t.df} argument. If \code{NULL}, the default, the
+#'  degrees of freedom used depends on whether the user has \pkg{pbkrtest}
+#'  installed. If installed, the Kenward-Roger approximation is used. If not,
+#'  and user sets \code{pvals = TRUE}, then the residual degrees of freedom
+#'  is used. If \code{t.df = "residual"}, then the residual d.f. is used
+#'  without a message. If the user prefers to use some other method to
+#'  determine the d.f., then any number provided as the argument will be
+#'  used.
+#'
+#' @return If saved, users can access most of the items that are returned in the
+#'   output (and without rounding).
+#'
+#'  \item{coeftable}{The outputted table of variables and coefficients}
+#'  \item{model}{The model for which statistics are displayed. This would be
+#'    most useful in cases in which \code{standardize = TRUE}.}
+#'
+#'  Much other information can be accessed as attributes.
+#'
+#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#'  preferred.
+#'
+#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  behind the scenes.
+#'
+#'  \code{\link[pbkrtest]{get_dff_Lb}} gets the Kenward-Roger degrees of
+#'  freedom if you have \pkg{pbkrtest} installed.
+#'
+#'  A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
+#'  generate the pseudo-R-squared estimates for linear models.
+#'
+#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#'
+#' @examples
+#'
+#' library(lme4, quietly = TRUE)
+#' data(sleepstudy)
+#' mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+#'
+#' j_summ(mv) # Note lack of p values
+#'
+#' # Without pbkrtest, you'll get message about Type 1 errors
+#' j_summ(mv, pvals = TRUE)
+#'
+#' # To suppress message, manually specify t.df argument
+#' j_summ(mv, t.df = "residual")
+#'
+#' # Confidence intervals may be better alternative in absence of pbkrtest
+#' j_summ(mv, confint = TRUE)
+#'
+#' @references
+#'
+#' Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth’s
+#'  $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
+#'  Evolution}, \emph{5}, 944–946. https://doi.org/10.1111/2041-210X.12225
+#'
+#' Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
+#'  effects from restricted maximum likelihood. \emph{Biometrics},
+#'  \emph{53}, 983.
+#'  https://doi.org/10.2307/2533558
+#'
+#' Luke, S. G. (2017). Evaluating significance in linear mixed-effects models in
+#' R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
+#'  https://doi.org/10.3758/s13428-016-0809-y
+#'
+#' Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
+#'  obtaining $R^2$ from generalized linear mixed-effects models.
+#'  \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
+#'  https://doi.org/10.1111/j.2041-210x.2012.00261.x
+#'
+#'
+#'
+#'
+#' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
+#'  extractAIC family fitted pt residuals terms model.weights
 #' @export
+#'
+#'
 
 j_summ.merMod <- function(
   model, standardize = FALSE, confint = FALSE, ci.width = .95,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, pvals = FALSE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, odds.ratio = FALSE, ...) {
+  model.fit = TRUE, pvals = NULL, n.sd = 1, center = FALSE,
+  standardize.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...) {
 
   j <- list()
 
@@ -1012,6 +1408,36 @@ j_summ.merMod <- function(
     warning("VIFs are not supported for mixed models.")
   }
 
+  # If pbkrtest is installed, using the Kenward-Roger approximation
+  if (requireNamespace("pbkrtest", quietly = TRUE)) {
+
+    if (is.null(pvals)) {
+
+      pvals <- TRUE
+
+    }
+
+    pbkr <- TRUE
+
+  } else {
+
+    pbkr <- FALSE
+
+  }
+
+  if (lme4::isGLMM(model)) {
+
+    if (is.null(pvals)) {
+
+      pvals <- TRUE
+
+    }
+
+    # Using pbkr as a stand-in for whether to calculate t-vals myself
+    pbkr <- FALSE
+
+  }
+
   # Standardized betas
   if (standardize == TRUE) {
 
@@ -1026,7 +1452,7 @@ j_summ.merMod <- function(
   j <- structure(j, standardize = standardize, digits = digits,
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd,
-                 center = center)
+                 center = center, t.df = t.df)
 
   # Using information from summary()
   sum <- summary(model)
@@ -1069,22 +1495,11 @@ j_summ.merMod <- function(
   }
 
   # TODO: Figure out model fit indices for MLMs
-  # Final calculations (linear pseudo-rsq)
-  ## Need to define this here because of glm's weird namespace behavior
-  # pR2 <- function(object){
-  #   llh <- suppressWarnings(logLik(object))
-  #   objectNull <- suppressWarnings(update(object, ~ 1))
-  #   llhNull <- logLik(objectNull)
-  #   n <- dim(model.frame(model))[1]
-  #   pR2Work(llh,llhNull,n)
-  # }
-  # ## Cragg-Uhler
-  # rsq <- pR2(model)$r2CU
-  # ## McFadden
-  # rsqmc <- pR2(model)$McFadden
+  ## This is a start
+  rsqs <- r.squaredGLMM(model)
 
   # AIC for GLMs
-  j <- structure(j, aic = extractAIC(model))
+  j <- structure(j, aic = AIC(model), bic = BIC(model), rsqs = rsqs)
 
   # List of names of predictors
   ivs <- rownames(sum$coefficients)
@@ -1096,18 +1511,38 @@ j_summ.merMod <- function(
   ses <- sum$coefficients[,2]
   ts <- sum$coefficients[,3]
 
-  # lmerMod doesn't have p-values, so
+  # lmerMod doesn't have p values, so
   if (!sum$isLmer) {
     ps <- sum$coefficients[,4]
   } else {
-    df <- n - length(ivs) - 1
+    # Use Kenward-Roger if available
+    if (pbkr == FALSE & is.null(t.df)) { # If not, do it like any lm
+
+      df <- n - length(ivs) - 1
+
+    } else if (pbkr == TRUE & is.null(t.df)) {
+
+      df <- pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
+
+    } else if (!is.null(t.df)) {
+
+      if (is.numeric(t.df)) {
+        df <- t.df
+      } else if (t.df %in% c("residual","resid")) {
+        df <- n - length(ivs) - 1
+      }
+
+    }
+
     vec <- rep(NA, times = length(ts))
     for (i in 1:length(ts)) {
       p <- pt(abs(ts[i]), lower.tail = F, df)
       p <- p*2
       vec[i] <- p
     }
+
     ps <- vec
+
   }
 
   # Need proper name for test statistic
@@ -1202,7 +1637,8 @@ j_summ.merMod <- function(
   j <- structure(j, groups = groups, ngroups = ngroups, iccs = iccs,
                  vcnames = names(iccs), dv = names(model.frame(model)[1]),
                  npreds = nrow(mat),
-                 confint = confint, ci.width = ci.width, pvals = pvals)
+                 confint = confint, ci.width = ci.width, pvals = pvals,
+                 df = df, pbkr = pbkr)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -1246,7 +1682,7 @@ print.j_summ.lm <- function(x, ...) {
     width <- width - 1
   }
 
-  # Making a vector of p-value significance indicators
+  # Making a vector of p value significance indicators
   if (x$pvals == TRUE) {
     sigstars <- c()
 
@@ -1379,7 +1815,7 @@ print.j_summ.glm <- function(x, ...) {
     width <- width - 1
   }
 
-  # Making a vector of p-value significance indicators
+  # Making a vector of p value significance indicators
   if (x$pvals == TRUE) {
     sigstars <- c()
 
@@ -1431,10 +1867,11 @@ print.j_summ.glm <- function(x, ...) {
 
   if (x$model.fit==T) {
     cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-        round(x$rsq, digits=x$digits), "\n",
+        round(x$rsq, digits = x$digits), "\n",
         "Pseudo R-squared (McFadden) = ",
-        round(x$rsqmc, digits=x$digits),
-        "\n", "AIC = ", x$aic, "\n\n", sep="")
+        round(x$rsqmc, digits = x$digits),
+        "\n", "AIC = ", round(x$aic, x$digits), ", BIC = ",
+        round(x$bic, x$digits), "\n\n", sep = "")
   }
 
   if (x$robust == FALSE) {
@@ -1502,7 +1939,7 @@ print.j_summ.svyglm <- function(x, ...) {
     width <- width - 1
   }
 
-  # Making a vector of p-value significance indicators
+  # Making a vector of p value significance indicators
   if (x$pvals == TRUE) {
     sigstars <- c()
 
@@ -1570,7 +2007,7 @@ print.j_summ.svyglm <- function(x, ...) {
           round(x$rsq, digits = x$digits), "\n",
           "Pseudo R-squared (McFadden) = ",
           round(x$rsqmc, digits = x$digits),
-          "\n", "AIC = ", x$aic, "\n\n", sep = "")
+          "\n", "AIC = ", round(x$aic, x$digits), "\n\n", sep = "")
     }
   }
 
@@ -1624,7 +2061,7 @@ print.j_summ.merMod <- function(x, ...) {
   # Saving table to separate object
   ctable <- round(j$coeftable, x$digits)
 
-  # Making a vector of p-value significance indicators
+  # Making a vector of p value significance indicators
   if (x$pvals == TRUE) {
     sigstars <- c()
 
@@ -1662,16 +2099,47 @@ print.j_summ.merMod <- function(x, ...) {
     }
   }
 
-  if (x$model.fit==T) {
+  if (x$model.fit == T) {
     cat("MODEL FIT: ",
-        "\n", "AIC = ", x$aic, "\n\n", sep="")
+        "\n", "AIC = ", round(x$aic, x$digits),
+        ", BIC = ", round(x$bic, x$digits), "\n", sep="")
+    cat("Pseudo R-squared (fixed effects) = ", round(x$rsq[1],x$digits),
+        "\n", sep = "")
+    cat("Pseudo R-squared (total) = ", round(x$rsq[2], x$digits),
+        "\n\n", sep = "")
   }
 
   cat("FIXED EFFECTS:\n")
   print(as.table(ctable))
-  if (x$pvals == TRUE) {
-    cat("\nNote: p-values calculated based on t statistics.\n")
-    cat("Type I error rate may be inflated in small samples.\n")
+  ## Explaining the origin of the p values if they were used
+  if (x$pvals == TRUE & lme4::isLMM(j$model)) {
+
+    if (x$pbkr == FALSE & is.null(x$t.df)) {
+
+      cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
+
+      message("Using p values with lmer based on residual d.f. may inflate the
+Type I error rate in many common study designs. Install
+package \"pbkrtest\" to get more accurate p values.")
+
+    } else if (x$pbkr == TRUE & is.null(x$t.df)) {
+
+      cat("\np values calculated using Kenward-Roger d.f. =", round(x$df, x$digits), "\n")
+
+    } else if (!is.null(x$t.df)) {
+
+      if (x$t.df %in% c("residual","resid")) {
+
+        cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
+
+      } else {
+
+        cat("\nNote: p values calculated based on user-defined d.f. =", x$df, "\n")
+
+      }
+
+    }
+
   }
 
   cat("\nRANDOM EFFECTS:\n")
