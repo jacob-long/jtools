@@ -8,7 +8,7 @@ fitgf <- glm(output ~ input, family = poisson)
 clusters <- sample(1:5, size = 100, replace = TRUE)
 
 # survey test
-library(survey, quietly = TRUE)
+suppressMessages(library(survey, quietly = TRUE))
 data(api)
 dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 dstrat$variables$mealsdec <- dstrat$variables$meals/100
@@ -34,6 +34,12 @@ test_that("jsumm: non-linear models work", {
   expect_is(j_summ(fitgf, standardize = TRUE), "j_summ.glm")
   expect_is(j_summ(fitgf, center = TRUE), "j_summ.glm")
   # expect_warning(j_summ(fitgf, robust = TRUE))
+})
+
+test_that("jsumm: partial correlations work", {
+  expect_is(j_summ(fit, part.corr = TRUE), "j_summ.lm")
+  expect_output(print(j_summ(fit, part.corr = TRUE)))
+  expect_warning(j_summ(fit, part.corr = TRUE, robust = TRUE))
 })
 
 test_that("jsumm: non-linear svyglm models work", {

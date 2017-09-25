@@ -60,7 +60,7 @@ test_that("gscale: selected vars in dataframes are centered without scaling", {
                 length(mtcars))
 })
 
-library(survey, quietly = TRUE)
+suppressMessages(library(survey, quietly = TRUE))
 data(api)
 ## Create survey design object
 dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
