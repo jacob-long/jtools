@@ -1,10 +1,10 @@
 ---
-title: "j_summ --- An alternative to summary for regression models"
+title: "`summ` --- An alternative to `summary` for regression models"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{j_summ() — An alternative to summary() for regression models}
+  %\VignetteIndexEntry{summ — An alternative to summary for regression models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -24,35 +24,35 @@ don't append them to a typical regression table. After creating output tables
 "by hand" on multiple occasions, I thought it best to pack things into a
 reusable function.
 
-With no user-specified arguments except a fitted model, the output of `j_summ()` looks
-like this:
+With no user-specified arguments except a fitted model, the output of `summ`
+looks like this:
 
 ```{r}
 # Fit model
 fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
-j_summ(fit)
+summ(fit)
 ```
 
 Like any output, this one is somewhat opinionated—some information is shown that
 perhaps not everyone would be interested in, some may be missing. That,
 of course, was the motivation behind the creation of the function; the author
-was no fan of `summary()` and its lack of configurability. 
+was no fan of `summary` and its lack of configurability. 
 
 ## Adding and removing written output
 
-Much of the output with `j_summ()` can be removed while there are several other pieces
+Much of the output with `summ` can be removed while there are several other pieces
 of information under the hood that users can ask for. 
 
 To remove the written output at the beginning, set `model.info = FALSE` and/or 
 `model.fit = FALSE`.
 
 ```{r}
-j_summ(fit, model.info = FALSE, model.fit = FALSE)
+summ(fit, model.info = FALSE, model.fit = FALSE)
 ```
 
 Another, related bit of information available before the coefficient table relates
 to model assumptions (for OLS linear regression). When `model.check = TRUE`,
-`j_summ()` will report (with the help fo the `car` package) two quantities
+`summ` will report (with the help of the `car` package) two quantities
 related to linear regression assumptions:
 
 * The result of the Breusch-Pagan test for heteroskedasticity. A low *p* value
@@ -65,7 +65,7 @@ a lack of meaningful problems), but instead as a heuristic for more probing with
 graphical analyses.
 
 ```{r}
-j_summ(fit, model.check = TRUE)
+summ(fit, model.check = TRUE)
 ```
 
 ## Report robust standard errors
@@ -85,7 +85,7 @@ default is "HC3". Stata's default is "HC1", so you may want to use that if your 
 is to replicate Stata analyses.
 
 ```{r}
-j_summ(fit, robust = TRUE, robust.type = "HC3")
+summ(fit, robust = TRUE, robust.type = "HC3")
 ```
 
 Robust standard errors can also be calculated for generalized linear models
@@ -104,10 +104,12 @@ Some prefer to use standardized coefficients in order to avoid dismissing an eff
 as "small" when it is just the units of measure that are small. Standardized betas
 are used instead when `standardize = TRUE`. To be clear, since the meaning of
 "standardized beta" can vary depending on who you talk to, this option mean-centers
-the variables too.
+the predictors as well but does not alter the dependent variable whatsoever. 
+If you want to standardize the dependent variable too, just add the 
+`standardize.response = TRUE` argument.
 
 ```{r}
-j_summ(fit, standardize = TRUE)
+summ(fit, standardize = TRUE)
 ```
 
 You can also choose a different number of standard deviations to divide by for
@@ -115,7 +117,7 @@ standardization. Andrew Gelman has been a proponent of dividing by 2 standard
 deviations; if you want to do things that way, give the argument `n.sd = 2`. 
 
 ```{r}
-j_summ(fit, standardize = TRUE, n.sd = 2)
+summ(fit, standardize = TRUE, n.sd = 2)
 ```
 
 Note that this is achieved by refitting the model. If the model took a long time
@@ -127,50 +129,51 @@ In the same vein as the standardization feature, you can keep the original scale
 while still mean-centering the predictors with the `center = TRUE` argument.
 
 ```{r}
-j_summ(fit, center = TRUE)
+summ(fit, center = TRUE)
 ```
 
 ## Confidence intervals
 
 In many cases, you'll learn more by looking at confidence intervals than 
-p-values. You can request them from `j_summ`.
+p-values. You can request them from `summ`.
 
 ```{r}
-j_summ(fit, confint = TRUE, digits = 2)
+summ(fit, confint = TRUE, digits = 2)
 ```
 
 You can adjust the width of the confidence intervals, which are by default
 95% CIs.
 
 ```{r}
-j_summ(fit, confint = TRUE, ci.width = .5, digits = 2)
+summ(fit, confint = TRUE, ci.width = .5, digits = 2)
 ```
 
 You might also want to drop the p-values altogether.
 
 ```{r}
-j_summ(fit, confint = TRUE, pvals = FALSE, digits = 2)
+summ(fit, confint = TRUE, pvals = FALSE, digits = 2)
 ```
 
-Note that you can omit p-values without using confidence intervals.
+Note that you can omit p-values regardless of whether you have requested 
+confidence intervals.
 
 ## Generalized and Mixed models
 
-`j_summ` has been expanding its range of supported model types. `glm` was a
+`summ` has been expanding its range of supported model types. `glm` was a
 natural extension and will cover most use cases.
 
 ```{r}
 fitg <- glm(vs ~ drat + mpg, data = mtcars, family = binomial)
 
-j_summ(fitg)
+summ(fitg)
 ```
 
 For exponential family models, especially logit and Poisson, you may be
 interested in getting odds ratios rather than the linear beta estimates. 
-`j_summ` can handle that!
+`summ` can handle that!
 
 ```{r}
-j_summ(fitg, odds.ratio = TRUE)
+summ(fitg, odds.ratio = TRUE)
 ```
 
 Standard errors are omitted for odds ratio estimates since the confidence
@@ -183,13 +186,24 @@ You can also get summaries of `merMod` objects, the mixed models from the
 library(lme4)
 fm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-j_summ(fm1)
+summ(fm1)
 ```
 
-Note the omission of p-values by default. There's no clear-cut way to derive
-p-values with mixed models, since relying on the t statistics can be misleading
-unless the number of subjects and groups is large. Confidence interval are 
-better, but not perfect. See lme4's documentation for more info.
+Note that the summary omits p-values by default
+unless the \code{pbkrtest} package is installed for linear models. 
+There's no clear-cut way to derive p-values with linear mixed models and
+treating the t-values like you would for OLS models will lead to 
+inflated Type 1 error rates. Confidence intervals are 
+better, but not perfect. Kenward-Roger calculated degrees of freedom are 
+fairly good under many circumstances and those are used by default when
+\code{pbkrtest} package is installed.
+See the documentation (`?summ.merMod`) for more info.
+
+### svyglm
+
+I won't run through any examples here, but `svyglm` models are supported and
+provide near-equivalent output to what you see here depending on whether they
+are linear models or generalized linear models.
 
 ## Other options
 
@@ -204,11 +218,11 @@ digits due to the way measures are calculated.
 The default argument is `digits = 3`.
 
 ```{r}
-j_summ(fit, model.info = FALSE, digits = 5)
+summ(fit, model.info = FALSE, digits = 5)
 ```
 
 ```{r}
-j_summ(fit, model.info = FALSE, digits = 1)
+summ(fit, model.info = FALSE, digits = 1)
 ```
 
 You can pre-set the number of digits you want printed for all `jtools` functions
@@ -216,7 +230,7 @@ with the `jtools-digits` option.
 
 ```{r}
 options("jtools-digits" = 2)
-j_summ(fit, model.info = FALSE)
+summ(fit, model.info = FALSE)
 ```
 
 ```{r echo = F}
@@ -226,7 +240,7 @@ options("jtools-digits" = NULL)
 Note that the return object has non-rounded values if you wish to use them later.
 
 ```{r}
-j <- j_summ(fit, digits = 3)
+j <- summ(fit, digits = 3)
 
 j$coeftable
 ```
@@ -241,7 +255,7 @@ set `vifs = TRUE`.
 Note that the `car` package is needed to calculate VIFs.
 
 ```{r}
-j_summ(fit, vifs = TRUE)
+summ(fit, vifs = TRUE)
 ```
 
 There are many standards researchers apply for deciding whether a VIF is too large.
