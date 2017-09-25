@@ -34,13 +34,13 @@ Usage
 
 Here's a brief synopsis of the current functions in the package:
 
-#### `j_summ`
+#### `summ`
 
 This is a replacement for `summary` that provides the user several options for formatting regression summaries. It supports `glm`, `svyglm`, and `merMod` objects as input as well. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
 
 ``` r
 fit <- lm(mpg ~ hp*wt, data=mtcars)
-j_summ(fit)
+summ(fit)
 ```
 
     #> MODEL INFO:
@@ -63,7 +63,7 @@ It has some other conveniences as well, like re-fitting your model with standard
 
 ``` r
 fit2 <- lm(Murder ~ Assault + UrbanPop, data = USArrests)
-j_summ(fit2, standardize = TRUE, n.sd = 2, vifs = TRUE, robust = TRUE,
+summ(fit2, standardize = TRUE, n.sd = 2, vifs = TRUE, robust = TRUE,
        model.check = TRUE)
 ```
 
