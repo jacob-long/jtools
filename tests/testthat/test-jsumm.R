@@ -121,6 +121,15 @@ test_that("jsumm: lm robust SEs work", {
   expect_output(print(summ(fit, robust = T, robust.type = "HC4m")))
 })
 
+test_that("jsumm: lm partial corrs works", {
+  expect_is(summ(fit, part.corr = T), "summ.lm")
+  expect_output(print(summ(fit, part.corr = T)))
+})
+
+test_that("jsumm: warn with partial corrs and robust SEs", {
+  expect_warning(summ(fit, robust = T, part.corr = T))
+})
+
 test_that("jsumm: glm robust SEs work", {
   expect_is(summ(fitgf, robust = T), "summ.glm")
   expect_is(summ(fitgf, robust = T, robust.type = "HC4m"), "summ.glm")
