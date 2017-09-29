@@ -1198,6 +1198,9 @@ print.summ.glm <- function(x, ...) {
 #'   DV, and number of predictors.
 #' @param model.fit Toggles printing of R-squared, Pseudo-R-squared,
 #'  and AIC (when applicable).
+#' @param model.check Only for linear mdoels. Toggles whether to perform
+#'  Breusch-Pagan test for heteroskedasticity
+#'  and print number of high-leverage observations.
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
