@@ -726,7 +726,7 @@ print.summ.lm <- function(x, ...) {
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
-#'  extractAIC family fitted pt residuals terms model.weights
+#'  AIC BIC family fitted pt residuals terms model.weights
 #' @export
 #' @aliases j_summ.glm
 #'
@@ -1125,7 +1125,7 @@ print.summ.glm <- function(x, ...) {
     }
   }
 
-  if (x$model.fit==T) {
+  if (x$model.fit == T) {
     cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
         round(x$rsq, digits = x$digits), "\n",
         "Pseudo R-squared (McFadden) = ",
@@ -1671,8 +1671,10 @@ print.summ.svyglm <- function(x, ...) {
 #'   digits is the desired number.
 #' @param model.info Toggles printing of basic information on sample size, name of
 #'   DV, and number of predictors.
-#' @param model.fit Toggles printing of pseudo-R-squared and AIC/BIC
+#' @param model.fit Toggles printing of AIC/BIC
 #'  (when applicable).
+#' @param r.squared Calculate an r-squared model fit statistic? Default is
+#'  \code{FALSE} because it seems to have convergence problems too often.
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
@@ -1807,7 +1809,7 @@ print.summ.svyglm <- function(x, ...) {
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
-#'  extractAIC family fitted pt residuals terms model.weights
+#'  AIC BIC family fitted pt residuals terms model.weights
 #' @export
 #' @aliases j_summ.merMod
 #'
@@ -1815,7 +1817,8 @@ print.summ.svyglm <- function(x, ...) {
 summ.merMod <- function(
   model, standardize = FALSE, confint = FALSE, ci.width = .95,
   digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, pvals = NULL, n.sd = 1, center = FALSE,
+  model.fit = TRUE, r.squared = FALSE, pvals = NULL, n.sd = 1,
+  center = FALSE,
   standardize.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...) {
 
   j <- list()
@@ -1924,7 +1927,25 @@ summ.merMod <- function(
 
   # TODO: Figure out model fit indices for MLMs
   ## This is a start
-  rsqs <- r.squaredGLMM(model)
+  failed.rsq <- FALSE
+  timer <- system.time(tryo <-
+                         try({rsqs <- suppressWarnings(r.squaredGLMM(model))},
+                             silent = TRUE))
+
+  if (class(tryo) == "try-error") {
+
+    rsqs <- NA
+    failed.rsq <- TRUE
+    r.squared <- FALSE
+    warning("Could not calculate r-squared. Try removing missing data before fitting the model.\n")
+
+  }
+
+  if (failed.rsq <- FALSE & timer["elapsed"] > 5) {
+
+    message("If summ is taking too long to run, try setting r.squared = FALSE.")
+
+  }
 
   # AIC for GLMs
   j <- structure(j, aic = AIC(model), bic = BIC(model), rsqs = rsqs)
@@ -2066,7 +2087,8 @@ summ.merMod <- function(
                  vcnames = names(iccs), dv = names(model.frame(model)[1]),
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 df = df, pbkr = pbkr)
+                 df = df, pbkr = pbkr, r.squared = r.squared,
+                 failed.rsq = failed.rsq)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -2143,10 +2165,14 @@ print.summ.merMod <- function(x, ...) {
     cat("MODEL FIT: ",
         "\n", "AIC = ", round(x$aic, x$digits),
         ", BIC = ", round(x$bic, x$digits), "\n", sep = "")
-    cat("Pseudo R-squared (fixed effects) = ", round(x$rsq[1],x$digits),
-        "\n", sep = "")
-    cat("Pseudo R-squared (total) = ", round(x$rsq[2], x$digits),
-        "\n\n", sep = "")
+    if (x$r.squared == TRUE) {
+      cat("Pseudo R-squared (fixed effects) = ", round(x$rsq[1],x$digits),
+          "\n", sep = "")
+      cat("Pseudo R-squared (total) = ", round(x$rsq[2], x$digits),
+          "\n\n", sep = "")
+    } else {
+      cat("\n")
+    }
   }
 
   cat("FIXED EFFECTS:\n")

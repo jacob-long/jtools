@@ -7,9 +7,9 @@
 \usage{
 \method{summ}{merMod}(model, standardize = FALSE, confint = FALSE,
   ci.width = 0.95, digits = getOption("jtools-digits", default = 3),
-  model.info = TRUE, model.fit = TRUE, pvals = NULL, n.sd = 1,
-  center = FALSE, standardize.response = FALSE, odds.ratio = FALSE,
-  t.df = NULL, ...)
+  model.info = TRUE, model.fit = TRUE, r.squared = FALSE, pvals = NULL,
+  n.sd = 1, center = FALSE, standardize.response = FALSE,
+  odds.ratio = FALSE, t.df = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
@@ -33,8 +33,11 @@ digits is the desired number.}
 \item{model.info}{Toggles printing of basic information on sample size, name of
 DV, and number of predictors.}
 
-\item{model.fit}{Toggles printing of pseudo-R-squared and AIC/BIC
+\item{model.fit}{Toggles printing of AIC/BIC
 (when applicable).}
+
+\item{r.squared}{Calculate an r-squared model fit statistic? Default is
+\code{FALSE} because it seems to have convergence problems too often.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
