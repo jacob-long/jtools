@@ -101,12 +101,17 @@ icc <- function(fit, obj.name) {
 # GLMM r-squared -- lifted from MuMIN package to avoid dependency
 ##################################################################
 
+
+#' @importFrom methods slot
+
 `r.squaredGLMM` <-
   function(x)
     UseMethod("r.squaredGLMM")
 
 `r.squaredGLMM.default` <-
   function(x) .NotYetImplemented()
+
+#' @importFrom stats var
 
 `r.squaredGLMM.lme` <-
   function(x) {
@@ -137,6 +142,8 @@ icc <- function(fit, obj.name) {
     res
   }
 
+#' @importFrom stats update.formula
+
 ## extracts random effect formula. e.g:
 ## ~ ... + (a | ...) + (b + c | ...) --> ~ a + b + c
 ranform <- function (form) {
@@ -166,6 +173,8 @@ matmultdiag <-
     if(nrow(x) != nrow(ty)) stop('result is not a square matrix')
     return(rowSums(x * ty))
   }
+
+#' @importFrom stats var nobs
 
 `r.squaredGLMM.merMod` <-
   function(x) {
@@ -232,6 +241,8 @@ matmultdiag <-
              varResid = varResid, beta0 = beta0)
   }
 
+#' @importFrom stats var
+
 `r.squaredGLMM.glmmML` <-
   function(x) {
     if(is.null(x$x))
@@ -246,6 +257,8 @@ matmultdiag <-
     .rsqGLMM(family(x), varFx = var(fxpred), varRe = x$sigma^2, varResid = NULL,
              beta0 = mean(fxpred))
   }
+
+#' @importFrom stats var model.response model.frame df.residual
 
 `r.squaredGLMM.lm` <-
   function(x) {
@@ -301,7 +314,7 @@ matmultdiag <-
   rval <-
     if(isS4(x)) {
       if(any(i <- (sln <- c("call", "CALL", "Call")) %in% methods::slotNames(x)))
-        slot(x, sln[i][1L]) else
+        methods::slot(x, sln[i][1L]) else
           if(!is.null(attr(x, "call")))
             attr(x, "call") else NULL
     } else {

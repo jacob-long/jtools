@@ -14,7 +14,8 @@ BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: boot
+Imports: boot,
+  methods
 Suggests:
   ggplot2,
   lmtest,
@@ -25,6 +26,8 @@ Suggests:
   RColorBrewer,
   cowplot,
   lme4,
+  pbkrtest,
+  nlme,
     knitr,
     rmarkdown,
     testthat
