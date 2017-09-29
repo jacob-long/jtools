@@ -1763,7 +1763,7 @@ print.summ.svyglm <- function(x, ...) {
 #'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
-#'  \code{\link[pbkrtest]{get_dff_Lb}} gets the Kenward-Roger degrees of
+#'  \code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
 #'  freedom if you have \pkg{pbkrtest} installed.
 #'
 #'  A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
