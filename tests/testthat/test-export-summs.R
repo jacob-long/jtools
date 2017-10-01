@@ -71,7 +71,7 @@ test_that("Export accepts huxreg and summ args with glm", {
 })
 
 test_that("Export doesn't fail with svyglm", {
-  expect_is(export_summs(regmodel), "huxtable")
+  expect_is(export_summs(regmodel, statistics = c(N = "nobs")), "huxtable")
 })
 
 test_that("Export accepts summ args with svyglm", {
@@ -80,7 +80,8 @@ test_that("Export accepts summ args with svyglm", {
 })
 
 test_that("Export accepts huxreg args with svyglm", {
-  expect_is(export_summs(regmodel, pad_decimal = ","),
+  expect_is(export_summs(regmodel, pad_decimal = ",",
+                         statistics = c(N = "nobs")),
             "huxtable")
 })
 
