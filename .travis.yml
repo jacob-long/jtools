@@ -6,7 +6,7 @@ cache: packages
 
 r:
 - release
-- oldrelease
+- oldrel
 - devel
 
 before_install:
