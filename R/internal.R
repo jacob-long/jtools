@@ -113,8 +113,10 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
   if (!is.null(formula)) call$formula <- update.formula(call$formula, formula)
   env <- attr(term, ".Environment")
   # Jacob add
-  if (!is.null(offset)) call$offset <- offset
-  if (!is.null(weights)) call$weights <- weights
+  # if (!is.null(offset))
+    call$offset <- offset
+  # if (!is.null(weights))
+    call$weights <- weights
 
   eval(call, env, parent.frame())
 }
