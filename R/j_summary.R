@@ -824,13 +824,13 @@ summ.glm <- function(
 
       if (is.null(model.weights(model.frame(object)))) {
 
-        objectNull <- suppressWarnings(update(object, ~ 1,
+        objectNull <- suppressWarnings(j_update(object, ~ 1,
                                       data = model.frame(object)))
 
       } else {
         `(weights)` <- model.frame(object)["(weights)"] # appeasing CRAN
 
-        objectNull <- suppressWarnings(update(object, ~ 1,
+        objectNull <- suppressWarnings(j_update(object, ~ 1,
                                               data = model.frame(object),
                                               weights = `(weights)`))
 
@@ -843,12 +843,12 @@ summ.glm <- function(
       frame$jtools_offs <- offs
       if (is.null(model.weights(frame))) {
 
-        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+        objectNull <- suppressWarnings(j_update(object, ~ 1 + offset(jtools_offs),
                                               data = frame))
 
       } else {
 
-        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+        objectNull <- suppressWarnings(j_update(object, ~ 1 + offset(jtools_offs),
                                               data = frame,
                                               weights = `(weights)`))
 
@@ -1387,7 +1387,7 @@ summ.svyglm <- function(
         frame <- object$survey.design
         frame$variables$jtools_offs <- offs
         objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
-                                              data = frame))
+                                              design = frame))
       }
       llhNull <- logLik(objectNull)
       n <- dim(object$model)[1]
