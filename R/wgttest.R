@@ -331,9 +331,8 @@ print.wgttest <- function(x, ...) {
 #'
 #' @export
 #' @importFrom stats resid cor pt sd
-#' @importFrom boot boot
 
-pf_sv_test <- function (model, data, weights, sims = 1000,
+pf_sv_test <- function(model, data, weights, sims = 1000,
                         digits = getOption("jtools-digits", default = 3)) {
 
   if (!requireNamespace("boot", quietly = TRUE)) {
