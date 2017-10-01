@@ -1777,7 +1777,7 @@ print.summ.svyglm <- function(x, ...) {
 #' data(sleepstudy)
 #' mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 #'
-#' summ(mv) # Note lack of p values
+#' summ(mv) # Note lack of p values if you don't have pbkrtest
 #'
 #' # Without pbkrtest, you'll get message about Type 1 errors
 #' summ(mv, pvals = TRUE)
@@ -1785,8 +1785,10 @@ print.summ.svyglm <- function(x, ...) {
 #' # To suppress message, manually specify t.df argument
 #' summ(mv, t.df = "residual")
 #'
-#' # Confidence intervals may be better alternative in absence of pbkrtest
-#' summ(mv, confint = TRUE)
+#' \dontrun{
+#'  # Confidence intervals may be better alternative in absence of pbkrtest
+#'  summ(mv, confint = TRUE)
+#' }
 #'
 #' @references
 #'
@@ -1931,22 +1933,28 @@ summ.merMod <- function(
   # TODO: Figure out model fit indices for MLMs
   ## This is a start
   failed.rsq <- FALSE
-  timer <- system.time(tryo <-
-                         try({rsqs <- suppressWarnings(r.squaredGLMM(model))},
-                             silent = TRUE))
+  if (r.squared == TRUE) {
+    timer <- system.time(tryo <-
+                           try({rsqs <- suppressWarnings(r.squaredGLMM(model))},
+                               silent = TRUE))
 
-  if (class(tryo) == "try-error") {
+    if (class(tryo) == "try-error") {
+
+      rsqs <- NA
+      failed.rsq <- TRUE
+      r.squared <- FALSE
+      warning("Could not calculate r-squared. Try removing missing data before fitting the model.\n")
+
+    }
+
+    if (failed.rsq <- FALSE & timer["elapsed"] > 5) {
+
+      message("If summ is taking too long to run, try setting r.squared = FALSE.")
+
+    }
+  } else {
 
     rsqs <- NA
-    failed.rsq <- TRUE
-    r.squared <- FALSE
-    warning("Could not calculate r-squared. Try removing missing data before fitting the model.\n")
-
-  }
-
-  if (failed.rsq <- FALSE & timer["elapsed"] > 5) {
-
-    message("If summ is taking too long to run, try setting r.squared = FALSE.")
 
   }
 

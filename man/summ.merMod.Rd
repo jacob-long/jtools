@@ -136,7 +136,7 @@ library(lme4, quietly = TRUE)
 data(sleepstudy)
 mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-summ(mv) # Note lack of p values
+summ(mv) # Note lack of p values if you don't have pbkrtest
 
 # Without pbkrtest, you'll get message about Type 1 errors
 summ(mv, pvals = TRUE)
@@ -144,8 +144,10 @@ summ(mv, pvals = TRUE)
 # To suppress message, manually specify t.df argument
 summ(mv, t.df = "residual")
 
-# Confidence intervals may be better alternative in absence of pbkrtest
-summ(mv, confint = TRUE)
+\dontrun{
+ # Confidence intervals may be better alternative in absence of pbkrtest
+ summ(mv, confint = TRUE)
+}
 
 }
 \references{
