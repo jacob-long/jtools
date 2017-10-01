@@ -233,24 +233,24 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
       mf$the_offset <- the_offset
 
-      new <- update(model, formula = as.formula(formc),
+      new <- j_update(model, formula = as.formula(formc),
                     offset = the_offset, data = mf)
 
     } else if (weights == TRUE && offset == FALSE) {
 
-      new <- update(model, formula = as.formula(formc),
+      new <- j_update(model, formula = as.formula(formc),
                     weights = the_weights, data = mf)
 
     } else if (weights == TRUE && offset == TRUE) {
 
       mf$the_offset <- the_offset
 
-      new <- update(model, formula = as.formula(formc),
+      new <- j_update(model, formula = as.formula(formc),
                     weights = the_weights, offset = the_offset, data = mf)
 
     } else {
 
-      new <- update(model, formula = as.formula(formc), data = mf)
+      new <- j_update(model, formula = as.formula(formc), data = mf)
 
     }
 
