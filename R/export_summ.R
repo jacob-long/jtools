@@ -84,7 +84,13 @@ export_summs <- function(...,
 
   if (!requireNamespace("huxtable", quietly = TRUE)) {
 
-    stop("Install the huxtable package to use the reg_export function.")
+    stop("Install the huxtable package to use the export_summs function.")
+
+  }
+
+  if (!requireNamespace("broom", quietly = TRUE)) {
+
+    stop("Install the broom package to use the export_summs function.")
 
   }
 
@@ -306,8 +312,10 @@ glance.summ.svyglm <- function(x, ...) {
                      "r.squared")
   base <- as.data.frame(base)
 
+  try({
   base[["AIC"]] <- AIC(x$model)[2]
   base[["logLik"]] <- suppressWarnings(logLik(x$model))
+  }, silent = TRUE)
   base[["deviance"]] <- deviance(x$model)
   base[["df.residual"]] <- df.residual(x$model)
   base[["null.deviance"]] <- x$model$null.deviance
