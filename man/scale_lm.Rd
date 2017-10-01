@@ -4,7 +4,7 @@
 \alias{scale_lm}
 \title{Scale variables in fitted regression models}
 \usage{
-scale_lm(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
+scale_lm(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
   scale.response = TRUE)
 }
 \arguments{

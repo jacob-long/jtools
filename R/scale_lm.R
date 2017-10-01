@@ -83,7 +83,7 @@
 #' @export scale_lm
 #'
 
-scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = FALSE,
+scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
                      scale.response = TRUE) {
 
   # Save data --- using the call to access the data to avoid problems w/
