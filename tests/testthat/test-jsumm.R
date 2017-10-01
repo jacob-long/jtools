@@ -162,3 +162,9 @@ test_that("jsumm: Printing isn't borked", {
   expect_output(print(summ(mv, standardize = TRUE, n.sd = 2)))
 
 })
+
+test_that("summ.merMod: r.squared works", {
+  skip_on_cran()
+  expect_is(j <- summ(mv, r.squared = T), "summ.merMod")
+  expect_output(print(j))
+})
