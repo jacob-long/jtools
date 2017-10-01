@@ -126,7 +126,7 @@ export_summs <- function(...,
   # Since I'm looping, I'm creating the list before the loop
   jsumms <- as.list(rep(NA, length(mods)))
 
-  if (!is.null(names(dots)) > 0) {
+  if (!is.null(names(dots))) {
 
     summ_args <- dots[names(dots) %in% names(summ_formals)]
 
@@ -202,7 +202,7 @@ export_summs <- function(...,
 
       } else if (robust == TRUE & standardize == FALSE) {
 
-        note <- paste(note, "Standard errors are heteroskedasticity robust. %stars%.")
+        note <- paste("Standard errors are heteroskedasticity robust. %stars%.")
         hux_args$note <- note
 
       }
@@ -265,16 +265,26 @@ tidy.summ <- function(x, ...) {
 
   base <- broom::tidy(x$model, ...)
 
-  base[["std.error"]] <- x$coeftable[,"S.E."]
+  base$std.error[!is.na(base$std.error)] <- x$coeftable[,"S.E."]
 
   # Need to find the statistic column without knowing what it will be called
   stat_col <- which(colnames(x$coeftable) == "S.E.") + 1
 
-  base[["statistic"]] <- x$coeftable[,stat_col]
+  base$statistic[!is.na(base$statistic)] <- x$coeftable[,stat_col]
 
   if ("p" %in% colnames(x$coeftable)) {
 
-    base[["p.value"]] <- x$coeftable[,"p"]
+    base$p.value[!is.na(base$statistic)] <- x$coeftable[,"p"]
+
+  } else if (!("p.value" %in% names(base))) {
+
+    base$p.value <- NA
+
+  }
+
+  if (any(is.na(base[["statistic"]]))) {
+
+    base <- base[!is.na(base$statistic),]
 
   }
 
@@ -290,9 +300,10 @@ glance.summ.svyglm <- function(x, ...) {
 
   ## TODO: Provide more fit statistics here
 
-  base <- matrix(rep(NA, times = 7), ncol = 7)
+  base <- matrix(rep(NA, times = 8), ncol = 8)
   colnames(base) <- c("null.deviance", "df.null", "logLik",
-                     "AIC", "BIC", "deviance", "df.residual")
+                     "AIC", "BIC", "deviance", "df.residual",
+                     "r.squared")
   base <- as.data.frame(base)
 
   base[["AIC"]] <- AIC(x$model)[2]
@@ -302,15 +313,13 @@ glance.summ.svyglm <- function(x, ...) {
   base[["null.deviance"]] <- x$model$null.deviance
   base[["df.null"]] <- x$model$df.null
 
-  if ("summ.svyglm" %in% class(x) & attr(x, "linear") == TRUE) {
+  if (attr(x, "linear") == TRUE) {
 
     base$r.squared <- attr(x, "rsq")
 
-  }
+  } else {
 
-  if (!("summ.svyglm" %in% class(x))) {
-
-    base <- broom::glance(x$model)
+    base$r.squared <- NA
 
   }
 
@@ -356,6 +365,7 @@ glance.summ.glm <- function(x, ...) {
 glance.summ.merMod <- function(x, ...) {
 
   base <- broom::glance(x$model)
+  if (lme4::isLMM(x$model)) {base$p.value <- NA}
   return(base)
 
 }
