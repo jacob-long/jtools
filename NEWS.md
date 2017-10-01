@@ -6,6 +6,15 @@ Important bugfix:
 as the output stated. This has been fixed. I truly regret the error---double-check
 any analyses you may have run with this feature.
 
+New function: `export_summs`. 
+
+This function outputs regression models supported
+by summ in table formats useful for RMarkdown output as well as specific options
+for exporting to Microsoft Word files. This is particularly helpful for those
+wanting an efficient way to export regressions that are standardized and/or use
+robust standard errors. 
+
+
 ## jtools 0.7.2
 
 The documentation for j_summ has been reorganized such that each supported
