@@ -5,8 +5,8 @@
 \title{Export regression summaries to tables}
 \usage{
 export_summs(..., error_style = c("stderr", "ci", "statistic", "pvalue"),
-  error_pos = c("below", "right", "same"), statistics = c(N = "nobs", R2 =
-  "r.squared"), model.names = NULL, to.word = FALSE, word.file = NULL)
+  error_pos = c("below", "right", "same"), statistics = NULL,
+  model.names = NULL, to.word = FALSE, word.file = NULL)
 }
 \arguments{
 \item{...}{At minimum, a regression object(s). See details for more arguments.}
@@ -20,8 +20,9 @@ for regression coefficients? Default: "stderr"}
 Default: "below"}
 
 \item{statistics}{Which model summary statistics should be included?
-See \code{\link[huxtable]{huxreg}} for more on usage.
-Default: c(N = "nobs", R2 = "r.squared")}
+See \code{\link[huxtable]{huxreg}} for more on usage. The default
+for this function depends on the model type. See details for more on
+the defaults by model type.}
 
 \item{model.names}{If you want to give your model(s) names at the top
 of each column, provide them here as a character vector.
@@ -52,6 +53,15 @@ There are many optional parameters not documented above. Any
   will be used. Of particular interest may be the robust and standardize
   arguments. Note that some \code{summ} arguments may not have any bearing
   on the table output.
+
+  The default model summary statistics reporting follows this logic:
+
+  \itemize{
+    \item summ.lm = c(N = "nobs", R2 = "r.squared"),
+    \item summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
+    \item summ.svyglm = c(N = "nobs", R2 = "r.squared"),
+    \item summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+  }
 
   You can also pass any argument accepted by the
   \code{\link[huxtable]{huxreg}} function. A few that are likely to be

@@ -15,8 +15,9 @@
 #'   \code{error_style} be placed relative to the coefficient estimate?
 #'   Default: "below"
 #' @param statistics Which model summary statistics should be included?
-#'   See \code{\link[huxtable]{huxreg}} for more on usage.
-#'   Default: c(N = "nobs", R2 = "r.squared")
+#'   See \code{\link[huxtable]{huxreg}} for more on usage. The default
+#'   for this function depends on the model type. See details for more on
+#'   the defaults by model type.
 #' @param model.names If you want to give your model(s) names at the top
 #'   of each column, provide them here as a character vector.
 #'   Otherwise, they will just be labeled by number. Default: NULL
@@ -34,6 +35,15 @@
 #'   will be used. Of particular interest may be the robust and standardize
 #'   arguments. Note that some \code{summ} arguments may not have any bearing
 #'   on the table output.
+#'
+#'   The default model summary statistics reporting follows this logic:
+#'
+#'   \itemize{
+#'     \item summ.lm = c(N = "nobs", R2 = "r.squared"),
+#'     \item summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
+#'     \item summ.svyglm = c(N = "nobs", R2 = "r.squared"),
+#'     \item summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+#'   }
 #'
 #'   You can also pass any argument accepted by the
 #'   \code{\link[huxtable]{huxreg}} function. A few that are likely to be
@@ -68,7 +78,7 @@
 export_summs <- function(...,
                          error_style = c("stderr", "ci", "statistic", "pvalue"),
                          error_pos = c("below", "right", "same"),
-                         statistics = c(N = "nobs", R2 = "r.squared"),
+                         statistics = NULL,
                          model.names = NULL, to.word = FALSE,
                          word.file = NULL) {
 
@@ -149,7 +159,19 @@ export_summs <- function(...,
 
   }
 
-  if (!is.null(names(dots)) > 0) {
+  ## Setting statistics option
+  if (is.null(statistics)) {
+
+    statistics <- switch(mod_type,
+           summ.lm = c(N = "nobs", R2 = "r.squared"),
+           summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
+           summ.svyglm = c(N = "nobs", R2 = "r.squared"),
+           summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+    )
+
+  }
+
+  if (!is.null(names(dots))) {
 
     hux_formals <- formals(huxtable::huxreg)
 
