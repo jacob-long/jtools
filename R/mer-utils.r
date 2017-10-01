@@ -101,9 +101,6 @@ icc <- function(fit, obj.name) {
 # GLMM r-squared -- lifted from MuMIN package to avoid dependency
 ##################################################################
 
-
-#' @importFrom methods slot
-
 `r.squaredGLMM` <-
   function(x)
     UseMethod("r.squaredGLMM")

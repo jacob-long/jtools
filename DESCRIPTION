@@ -28,6 +28,7 @@ Suggests:
   pbkrtest,
   nlme,
   boot,
+  methods,
     knitr,
     rmarkdown,
     testthat
