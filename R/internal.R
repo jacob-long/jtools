@@ -44,6 +44,11 @@ wtd.sd <- function(x, w) {
   return(sd)
 }
 
+# Taken from Hmisc
+escapeRegex <- function(string) {
+  gsub('([.|()\\^{}+$*?]|\\[|\\])', '\\\\\\1', string)
+}
+
 ## Taken from car package with modifications so it doesn't break j_summ
 ncvTest <- function(model, ...){
   UseMethod("ncvTest")
