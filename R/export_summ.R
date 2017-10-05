@@ -188,7 +188,7 @@ export_summs <- function(...,
                           error_style = error_style[1],
                           statistics = list(statistics)))
 
-    if (!("note" %in% hux_args)) {
+    if (!("note" %in% names(hux_args))) {
 
       if (standardize == TRUE) {
 
@@ -215,7 +215,7 @@ export_summs <- function(...,
 
     }
 
-    if (!("number_format" %in% hux_args)) {
+    if (!("number_format" %in% names(hux_args))) {
 
       hux_args$number_format <- paste("%.", digits, "f", sep = "")
 
