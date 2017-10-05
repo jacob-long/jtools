@@ -1,3 +1,24 @@
+## jtools 0.7.4
+
+Bugfixes:
+
+* interact_plot and effect_plot would trip up when one of the focal predictors
+had a name that was a subset of a covariate (e.g., pred = "var" but a covariate
+is called "var_2"). That's fixed.
+* Confidence intervals for merMod objects were not respecting the user-requested
+confidence level and that has been fixed.
+* Confidence intervals for merMod objects were throwing a
+spurious warning on R 3.4.2.
+* interact_plot was mis-ordering secondary moderators. That has been fixed.
+* export_summs had a major performance problem when providing extra arguments
+which may have also caused it to wrongly ignore some arguments. That has been 
+fixed and it is much faster.
+
+Enhancements:
+* interact_plot now gives more informative labels for secondary moderators when
+the user has defined the values but not the labels.
+* 
+
 ## jtools 0.7.3
 
 Important bugfix:
