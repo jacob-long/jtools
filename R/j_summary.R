@@ -2012,7 +2012,6 @@ summ.merMod <- function(
   if (confint == TRUE | odds.ratio == TRUE) {
 
     alpha <- (1-ci.width)/2
-    tcrit <- qnorm(alpha)
 
     lci_lab <- 0 + alpha
     lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
@@ -2024,8 +2023,10 @@ summ.merMod <- function(
 
   # Report odds ratios instead, with conf. intervals
   if (odds.ratio == TRUE) {
-
-    the_cis <- confint(model)
+  # TODO: revisit after lme4 bug fixed
+    the_cis <-
+      suppressWarnings(confint(model, parm = "beta_", method = "profile",
+                       level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
     ecoefs <- exp(ucoefs)
     lci <- exp(the_cis[,1])
@@ -2035,7 +2036,9 @@ summ.merMod <- function(
 
   } else if (odds.ratio == FALSE & confint == TRUE) {
 
-    the_cis <- confint(model)
+    the_cis <-
+      suppressWarnings(confint(model, parm = "beta_", method = "profile",
+                       level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
     lci <- the_cis[,1]
     uci <- the_cis[,2]
