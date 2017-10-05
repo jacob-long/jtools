@@ -547,7 +547,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   if (is.null(modx.labels)) {
-    # Name the modx.labels object with mod2vals2 names
+    # Name the modx.labels object with modxvals2 names
 
     modx.labels <- names(modxvals2)
 
@@ -899,13 +899,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Labels for values of moderator
-  pm[,modx] <- factor(pm[,modx], labels = modx.labels)
+  pm[,modx] <- factor(pm[,modx], levels = modxvals2, labels = modx.labels)
 
 
   # Setting labels for second moderator
   if (!is.null(mod2)) {
 
-    pm[,mod2] <- factor(pm[,mod2], labels = mod2.labels)
+    pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2, labels = mod2.labels)
 
   }
 
@@ -919,7 +919,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Get palette from RColorBrewer myself so I can use darker values
   colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
-  colors <- rev(colors)
+  colors <- colors[-1]
+
+  if (is.null(mod2)) {
+    colors <- rev(colors)
+  }
+
   names(colors) <- modx.labels
 
   # Defining linetype here
