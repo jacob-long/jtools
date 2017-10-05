@@ -128,8 +128,10 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
   # applied. I save the backticked names
   for (var in vars) {
 
+    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
+                           "(?=($|~|\\s|\\*|\\+))", sep = "")
     backtick_name <- paste("`", var, "`", sep = "")
-    formc <- gsub(var, backtick_name, formc, fixed = TRUE)
+    formc <- gsub(regex_pattern, backtick_name, formc, perl = T)
 
   }
 

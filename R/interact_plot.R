@@ -742,12 +742,16 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   ## This is passed to predict(), but for svyglm needs to be TRUE always
   interval_arg <- interval
 
-  # Back-ticking variable names in formula to prevent problems with transformed preds
+  # Back-ticking variable names in formula to prevent problems with
+  # transformed preds
   formc <- as.character(deparse(formula(model)))
   for (var in all.vars) {
 
+    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
+                             "(?=($|~|\\s|\\*|\\+))", sep = "")
+
     bt_name <- paste("`", var, "`", sep = "")
-    formc <- gsub(var, bt_name, formc, fixed = TRUE)
+    formc <- gsub(regex_pattern, bt_name, formc, perl = TRUE)
 
   }
   form <- as.formula(formc)
