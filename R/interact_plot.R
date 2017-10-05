@@ -313,8 +313,11 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
   resp <- trimws(resp)
 
+### Centering ##################################################################
+
   # Update facvars by pulling out all non-focals
-  facvars <- facvars[!(facvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]
+  facvars <- facvars[!(facvars %in%
+                         c(pred, resp, modx, mod2, wname, "(offset)"))]
 
   # Handling user-requested centered vars
   if (!is.null(centered) && centered != "all" && centered != "none") {
@@ -324,7 +327,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                     n.sd = n.sd)
 
         # Dealing with two-level factors that aren't part of an interaction/focal pred
-        for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
+        for (v in fvars[!(fvars %in%
+                          c(pred, resp, modx, mod2, wname, "(offset)"))]) {
           if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
               !(v %in% centered)) {
 
@@ -423,6 +427,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Fixes a data type error with predict() later
   d <- as.data.frame(d)
 
+### Setting moderator values (mod 1) ##########################################
+
   # Default to +/- 1 SD unless modx is factor
   if (is.null(modxvals) && !is.factor(d[,modx]) &&
       length(unique(d[,modx])) > 2) {
@@ -504,10 +510,26 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
              length(unique(d[,modx])) == 2) {
 
     modxvals2 <- as.numeric(levels(factor(d[,modx])))
+    if (!is.null(modx.labels)) {
+
+      names(modxvals2) <- modx.labels
+
+    } else {
+
+      names(modxvals2) <- modxvals2
+
+    }
+
 
   } else if (is.null(modxvals) && is.factor(d[,modx])){
 
     modxvals2 <- levels(d[,modx])
+    if (is.null(modx.labels)) {
+
+      modx.labels <- levels(d[,modx])
+
+    }
+    names(modxvals2) <- modx.labels
 
   } else { # Use user-supplied values otherwise
 
@@ -517,10 +539,21 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       modxvals2 <- sort(modxvals, decreasing = T)
       modx.labels <- names(modxvals2)
     } else {
+      names(modxvals) <- modxvals
       modxvals2 <- sort(modxvals, decreasing = T)
+      modx.labels <- names(modxvals2)
     }
 
   }
+
+  if (is.null(modx.labels)) {
+    # Name the modx.labels object with mod2vals2 names
+
+    modx.labels <- names(modxvals2)
+
+  }
+
+#### Setting moderator values (mod 2) #########################################
 
   # Same process for second moderator
   if (!is.null(mod2)) {
@@ -609,25 +642,55 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                length(unique(d[,mod2])) == 2) {
 
       mod2vals2 <- as.numeric(levels(factor(d[,mod2])))
+      if (!is.null(mod2.labels)) {
+
+        names(mod2vals2) <- mod2.labels
+
+      } else {
+
+        names(mod2vals2) <- mod2vals2
+
+      }
 
     } else if (is.null(mod2vals) && is.factor(d[,mod2])) {
 
       mod2vals2 <- levels(d[,mod2])
+      if (is.null(mod2.labels)) {
+
+        mod2.labels <- levels(d[,mod2])
+
+      }
+      names(mod2vals2) <- mod2.labels
 
     } else { # Use user-supplied values otherwise
 
       if (!is.null(mod2.labels)) {
         # What I'm doing here is preserving the label order
         names(mod2vals) <- mod2.labels
-        mod2vals2 <- sort(mod2vals, decreasing = T)
+        mod2vals2 <- sort(mod2vals, decreasing = F)
         mod2.labels <- names(mod2vals2)
       } else {
-        mod2vals2 <- sort(mod2vals, decreasing = T)
+        names(mod2vals) <- paste(mod2, "=", mod2vals)
+        mod2vals2 <- sort(mod2vals, decreasing = F)
+        mod2.labels <- names(mod2vals2)
       }
 
     }
 
+    if (is.null(mod2.labels)) {
+      # Name the mod2.labels object with mod2vals2 names
+
+      mod2.labels <- names(mod2vals2)
+
+    }
+
+    ## Last thing: re-ordering primary moderator so it looks good from L2R
+    modxvals2 <- sort(modxvals2, decreasing = F)
+    modx.labels <- names(modxvals2)
+
   }
+
+### 2-level factor as predictor ###############################################
 
   # Support for factor input for pred term, but only if it has two levels
   if (is.factor(d[,pred]) & length(unique(d[,pred] == 2))) {
@@ -645,6 +708,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     predfac <- FALSE
   }
 
+#### Creating predicted frame #################################################
 
   # Creating a set of dummy values of the focal predictor for use in predict()
   xpreds <- seq(from = range(d[!is.na(d[,pred]),pred])[1],
@@ -655,8 +719,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Create values of moderator for use in predict()
   facs <- rep(modxvals2[1],100)
 
-  # Looping here allows for a theoretically limitless amount of moderator values
-  for (i in 2:length(modxvals2)){
+  # Looping here allows for a theoretically limitless amount of
+  # moderator values
+  for (i in 2:length(modxvals2)) {
     facs <- c(facs, rep(modxvals2[i], 100))
   }
 
@@ -683,15 +748,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Creating matrix for use in predict()
   if (interval == TRUE) { # Only create SE columns if intervals needed
     if (is.null(mod2)) {
-      pm <- matrix(rep(0, 100*(nc+2)*length(modxvals2)), ncol=(nc+2))
+      pm <- matrix(rep(0, 100*(nc + 2)*length(modxvals2)), ncol = (nc + 2))
     } else {
-      pm <- matrix(rep(0, (nc+2)*length(facs)), ncol=(nc+2))
+      pm <- matrix(rep(0, (nc + 2)*length(facs)), ncol = (nc + 2))
     }
   } else {
     if (is.null(mod2)) {
-      pm <- matrix(rep(0, 100*(nc)*length(modxvals2)), ncol=(nc))
+      pm <- matrix(rep(0, 100*(nc)*length(modxvals2)), ncol = nc)
     } else {
-      pm <- matrix(rep(0, (nc)*length(facs)), ncol=(nc))
+      pm <- matrix(rep(0, (nc)*length(facs)), ncol = nc)
     }
   }
 
@@ -712,7 +777,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   pm <- as.data.frame(pm)
   # Add values of moderator to df
   pm[,modx] <- facs
-  if (!is.null(mod2)){ # if second moderator
+  if (!is.null(mod2)) { # if second moderator
     pm[,mod2] <- facs2
   }
 
@@ -738,7 +803,11 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     message(msg)
   }
 
-  # Create predicted values based on specified levels of the moderator, focal predictor
+#### Predicting with update models ############################################
+
+  # Create predicted values based on specified levels of the moderator,
+  # focal predictor
+
   ## This is passed to predict(), but for svyglm needs to be TRUE always
   interval_arg <- interval
 
@@ -820,65 +889,38 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Saving x-axis label
-  if (is.null(x.label)){
+  if (is.null(x.label)) {
     x.label <- pred
   }
 
   # Saving y-axis label
-  if (is.null(y.label)){
+  if (is.null(y.label)) {
     y.label <- resp
   }
 
   # Labels for values of moderator
-  if (is.null(modx.labels)) {
-    if (exists("modxvalssd") && length(modxvalssd) == 2){
-      pm[,modx] <- factor(pm[,modx], labels=names(sort(modxvals2, decreasing = F)))
-    } else if (exists("modxvalssd") && length(modxvalssd) == 3){
-      pm[,modx] <- factor(pm[,modx], labels=names(sort(modxvals2, decreasing = F)))
-    } else if (!is.factor(d[,modx])) {
-      labs <- as.character(modxvals2)
-      names(modxvals2) <- labs
-      pm[,modx] <- factor(pm[,modx], labels = names(sort(modxvals2, decreasing = F)))
-    } else if (is.factor(d[,modx])) {
-      pm[,modx] <- factor(pm[,modx], levels = modxvals2)
-    }
-  } else if (length(modx.labels) == length(modxvals2)) {
-
-    pm[,modx] <- factor(pm[,modx], levels = modxvals2, labels = modx.labels)
-
-  } else {warning("modx.labels argument was not the same length as modxvals. Ignoring...")}
+  pm[,modx] <- factor(pm[,modx], labels = modx.labels)
 
 
   # Setting labels for second moderator
   if (!is.null(mod2)) {
-    if (is.null(mod2.labels)) {
-      if (exists("mod2valssd") && length(mod2valssd) == 2){
-        pm[,mod2] <- factor(pm[,mod2], labels=names(sort(mod2vals2, decreasing = F)))
-      } else if (exists("mod2valssd") && length(mod2valssd) == 3){
-        pm[,mod2] <- factor(pm[,mod2], labels=names(sort(mod2vals2, decreasing = F)))
-      } else if (!is.factor(d[,mod2])) {
-        labs <- as.character(mod2vals2)
-        names(mod2vals2) <- labs
-        pm[,mod2] <- factor(pm[,mod2], labels = names(sort(mod2vals2, decreasing = F)))
-      } else if (is.factor(d[,mod2])) {
-        pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2)
-      }
-    } else if (length(mod2.labels) == length(mod2vals2)) {
 
-      pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2, labels = mod2.labels)
+    pm[,mod2] <- factor(pm[,mod2], labels = mod2.labels)
 
-    } else {warning("mod2.labels argument was not the same length as mod2vals. Ignoring...")}
   }
 
+
+#### Plotting #################################################################
+
   # If no user-supplied legend title, set it to name of moderator
-  if (is.null(legend.main)){
+  if (is.null(legend.main)) {
     legend.main <- modx
   }
 
   # Get palette from RColorBrewer myself so I can use darker values
-  colors <- RColorBrewer::brewer.pal((length(modxvals2)+1), color.class)
+  colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
   colors <- rev(colors)
-  names(colors) <- c(names(modxvals2))
+  names(colors) <- modx.labels
 
   # Defining linetype here
   if (vary.lty == TRUE) {
@@ -896,7 +938,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   p <- p + ggplot2::geom_path(size = line.thickness)
 
   # Plot intervals if requested
-  if (interval==TRUE) {
+  if (interval == TRUE) {
     p <- p + ggplot2::geom_ribbon(data = pm, ggplot2::aes(ymin = pm[,"ymin"],
                                                         ymax = pm[,"ymax"],
                                                         fill = pm[,modx],
@@ -918,20 +960,26 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     p <- p + ggplot2::facet_grid(. ~ pm[,mod2])
   }
 
-  # For factor vars, plotting the observed points and coloring them by factor looks great
+  # For factor vars, plotting the observed points
+  # and coloring them by factor looks great
   if (plot.points==TRUE && is.factor(d[,modx])) {
-    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x = d[,pred], y = d[,resp],
+    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x = d[,pred],
+                                                      y = d[,resp],
                                                       colour = d[,modx]),
-                                 position = "jitter", inherit.aes = F, show.legend = F)
-  } else if (plot.points == TRUE && !is.factor(d[,modx])) { # otherwise just black points
-    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x = d[,pred], y = d[,resp]),
+                                 position = "jitter", inherit.aes = F,
+                                 show.legend = F)
+  } else if (plot.points == TRUE && !is.factor(d[,modx])) {
+    # otherwise just black points
+    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x = d[,pred],
+                                                      y = d[,resp]),
                                  inherit.aes = F, position = "jitter")
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
   if (is.null(mod2)) {
     p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
-  } else { # make better use of space by putting legend on bottom for facet plots
+  } else {
+    # make better use of space by putting legend on bottom for facet plots
     p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
                        facet.title.size = 10)
   }
@@ -942,16 +990,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     if (is.null(pred.labels)) { # Let pred.labels override factor labels
       p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = predlabs)
     } else { # Use the factor labels
-      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = pred.labels)
+      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1),
+                                           labels = pred.labels)
     }
-  } else if (length(unique(d[,pred])) == 2) { # Predictor has only two unique values
+  } else if (length(unique(d[,pred])) == 2) {
+    # Predictor has only two unique values
     # Make sure those values are in increasing order
     brks <- sort(unique(d[,pred]), decreasing = F)
     if (is.null(pred.labels)) {
       p <- p + ggplot2::scale_x_continuous(breaks = brks)
     } else {
       if (length(pred.labels) == 2) { # Make sure pred.labels has right length
-        p <- p + ggplot2::scale_x_continuous(breaks = brks, labels = pred.labels)
+        p <- p + ggplot2::scale_x_continuous(breaks = brks,
+                                             labels = pred.labels)
       } else {
         warning("pred.labels argument has the wrong length. It won't be used")
         p <- p + ggplot2::scale_x_continuous(breaks = brks)
@@ -961,14 +1012,17 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Get scale colors, provide better legend title
   if (facmod == TRUE) {
-    p <- p + ggplot2::scale_colour_brewer(name = legend.main, palette = color.class)
+    p <- p + ggplot2::scale_colour_brewer(name = legend.main,
+                                          palette = color.class)
   } else {
-    p <- p + ggplot2::scale_colour_manual(name = legend.main, values = colors, breaks = pm[,modx])
+    p <- p + ggplot2::scale_colour_manual(name = legend.main,
+                                          values = colors, breaks = pm[,modx])
   }
 
   if (vary.lty == TRUE) {# Add line-specific changes
     if (facmod == FALSE) {
-      p <- p + ggplot2::scale_linetype_discrete(name = legend.main, breaks = pm[,modx])
+      p <- p + ggplot2::scale_linetype_discrete(name = legend.main,
+                                                breaks = pm[,modx])
     } else {
       p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
     }
