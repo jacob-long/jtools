@@ -82,7 +82,7 @@ summ(fit2, standardize = TRUE, n.sd = 2, vifs = TRUE, robust = TRUE,
     #> 
     #> Standard errors: Robust, type = HC3
     #>             Est.   S.E.  t val. p         VIF  
-    #> (Intercept) 3.207  1.625 1.974  0.054 .        
+    #> (Intercept) 7.788  0.376 20.719 0     ***      
     #> Assault     7.319  0.815 8.982  0     *** 1.072
     #> UrbanPop    -1.289 0.802 -1.608 0.115     1.072
     #> 
