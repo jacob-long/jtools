@@ -8,12 +8,16 @@
 #'   the results of multiple models into a single table.
 #'
 #' @param ... At minimum, a regression object(s). See details for more arguments.
-#' @param error_style Which of standard error, confidence intervals, test
+#' @param error_format Which of standard error, confidence intervals, test
 #'   statistics, or p values should be used to express uncertainty of estimates
-#'   for regression coefficients? Default: "stderr"
+#'   for regression coefficients? See details for more info.
+#'   Default: "({std.error})"
 #' @param error_pos Where should the error statistic defined in
 #'   \code{error_style} be placed relative to the coefficient estimate?
 #'   Default: "below"
+#' @param ci_level If reporting confidence intervals, what should the
+#'   confidence level be? By default, it is .95 (95% interval) if
+#'   confidence intervals are requested in \code{error_format}.
 #' @param statistics Which model summary statistics should be included?
 #'   See \code{\link[huxtable]{huxreg}} for more on usage. The default
 #'   for this function depends on the model type. See details for more on
@@ -22,7 +26,8 @@
 #'   of each column, provide them here as a character vector.
 #'   Otherwise, they will just be labeled by number. Default: NULL
 #' @param to.word Export the table to a Microsoft Word document?
-#'   This functionality relies on the \pkg{ReporteRs} package. Default: FALSE
+#'   This functionality relies on the \pkg{officer}
+#'   and \pkg{flextable} packages. Default: FALSE
 #' @param word.file File name with (optionally) file path to save the Word
 #'   file. Ignored if \code{to.word} is FALSE. Default: NULL
 #'
@@ -43,6 +48,41 @@
 #'     \item summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
 #'     \item summ.svyglm = c(N = "nobs", R2 = "r.squared"),
 #'     \item summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+#'   }
+#'
+#'   If you set \code{statistics = "all"}, then the statistics argument
+#'   passed to \code{huxreg} will be \code{NULL}, which reports whichever
+#'   model statistics are available via \code{glance}. If you want no
+#'   model summary statistics, set the argument to \code{character(0)}.
+#'
+#'   You have a few options for the \code{error_format} argument.
+#'   You can include anything returned by \code{\link[broom]{tidy}}
+#'   (see also \code{\link{tidy.summ}}). For the most part, you will
+#'   be interested in \code{std.error} (standard error), \code{statistic}
+#'   (test statistic, e.g. t-value or z-value), \code{p.value}, or
+#'   \code{conf.high} and \code{conf.low}, which correspond to the
+#'   upper and lower bounds of the confidence interval for the estimate.
+#'   Note that the default \code{ci_level} argument is .95, but you
+#'   can alter that as desired.
+#'
+#'   To format the error statistics, simply put the statistics desired in
+#'   curly braces wherever you want them in a character string. For example,
+#'   if you want the standard error in parentheses, the argument would be
+#'   \code{"({std.error})"}, which is the default. Some other ideas:
+#'
+#'   \itemize{
+#'
+#'     \item \code{"({statistic})"}, which gives you the test statistic in
+#'     parentheses.
+#'     \item \code{"({statistic}, p = {p.value})"}, which gives the test
+#'     statistic followed by a "p =" p value all in parentheses. Note that
+#'     you'll have to pay special attention to rounding if you do this to keep
+#'     cells sufficiently narrow.
+#'     \item \code{"[{conf.low}, {conf.high}]"}, which gives the confidence
+#'     interval in the standard bracket notation. You could also explicitly
+#'     write the confidence level, e.g.,
+#'      \code{"95\% CI [{conf.low}, {conf.high}]"}.
+#'
 #'   }
 #'
 #'   You can also pass any argument accepted by the
@@ -76,9 +116,9 @@
 #' @importFrom utils getFromNamespace
 #'
 export_summs <- function(...,
-                         error_style = c("stderr", "ci", "statistic", "pvalue"),
+                         error_format = "({std.error})",
                          error_pos = c("below", "right", "same"),
-                         statistics = NULL,
+                         ci_level = .95, statistics = NULL,
                          model.names = NULL, to.word = FALSE,
                          word.file = NULL) {
 
@@ -91,6 +131,10 @@ export_summs <- function(...,
   if (!requireNamespace("broom", quietly = TRUE)) {
 
     stop("Install the broom package to use the export_summs function.")
+
+  } else {
+
+    library(broom)
 
   }
 
@@ -128,6 +172,19 @@ export_summs <- function(...,
   standardize <- FALSE
   n.sd <- 1
   digits <- getOption("jtools-digits", 3)
+
+  # Check for need to fit confidence intervals
+  if (!grepl("conf.low", error_format, fixed = TRUE) &
+    !grepl("conf.high", error_format, fixed = TRUE)) {
+
+    ci_level <- NULL
+
+  } else {
+
+    dots$confint <- TRUE
+    dots$ci.width <- ci_level
+
+  }
 
   # Since I'm looping, I'm creating the list before the loop
   jsumms <- as.list(rep(NA, length(mods)))
@@ -175,6 +232,10 @@ export_summs <- function(...,
            summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
     )
 
+  } else if (statistics == "all") {
+
+    statistics <- NULL
+
   }
 
   if (!is.null(names(dots))) {
@@ -185,8 +246,9 @@ export_summs <- function(...,
 
     hux_args <- as.list(c(jsumms, unlist(hux_args),
                           error_pos = error_pos[1],
-                          error_style = error_style[1],
-                          statistics = list(statistics)))
+                          error_format = error_format,
+                          statistics = list(statistics),
+                          ci_level = ci_level))
 
     if (!("note" %in% names(hux_args))) {
 
@@ -200,7 +262,7 @@ export_summs <- function(...,
 
         } else {
 
-          note <- paste(note, "%stars%.")
+          note <- paste(note, "{stars}.")
 
         }
 
@@ -227,19 +289,23 @@ export_summs <- function(...,
   } else {
 
     out <- huxtable::huxreg(jsumms, error_pos = error_pos[1],
-                            error_style = error_style[1],
-                            statistics = statistics)
+                            error_format = error_format,
+                            statistics = statistics,
+                            ci_level = ci_level)
 
   }
 
-  # I like the article theme better
-  # out <- huxtable::theme_article(out, header_col = F, header_row = F)
-
   if (to.word == TRUE) {
 
-    if (!requireNamespace("ReporteRs", quietly = TRUE)) {
+    if (!requireNamespace("officer", quietly = TRUE)) {
 
-      stop("Install the ReporteRs package to use the to.word functionality.")
+      stop("Install the officer package to use the to.word functionality.")
+
+    }
+
+    if (!requireNamespace("flextable", quietly = TRUE)) {
+
+      stop("Install the flextable package to use the to.word functionality.")
 
     }
 
@@ -250,13 +316,14 @@ export_summs <- function(...,
 
     }
 
-    wout <- huxtable::as_FlexTable(out)
+    wout <- huxtable::as_flextable(out)
+    wout$header <- NULL
 
-    doc <- ReporteRs::docx(title = word.file)
+    doc <- officer::read_docx()
 
-    doc <- ReporteRs::addFlexTable(doc = doc, flextable = wout)
+    doc <- flextable::body_add_flextable(doc, wout)
 
-    ReporteRs::writeDoc(doc = doc, file = word.file)
+    print(doc, target = word.file)
 
   }
 
@@ -264,18 +331,24 @@ export_summs <- function(...,
 
 }
 
-#' @export
+#' @export tidy.summ
 #' @rdname glance.summ
 
-tidy.summ <- function(x, ...) {
+tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
-  base <- broom::tidy(x$model, ...)
+  base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level, ...)
 
-  base$std.error[!is.na(base$std.error)] <- x$coeftable[,"S.E."]
+  if (conf.int == FALSE) {
+    # If conf.int == TRUE, summ does not have a S.E. column
+    base$std.error[!is.na(base$std.error)] <- x$coeftable[,"S.E."]
+
+  }
 
   # Need to find the statistic column without knowing what it will be called
-  stat_col <- which(colnames(x$coeftable) == "S.E.") + 1
+  stat_col <- attributes(x)$test.stat
 
+  # Filtering to not NA avoids issues with NAs being filled with
+  # repetitive values due to replacement being multiple of its length
   base$statistic[!is.na(base$statistic)] <- x$coeftable[,stat_col]
 
   if ("p" %in% colnames(x$coeftable)) {
@@ -294,11 +367,62 @@ tidy.summ <- function(x, ...) {
 
   }
 
+  if (conf.int == TRUE) {
+
+    # Need to use this to get the right coeftable colnames
+    alpha <- (1 - conf.level)/2
+
+    lci_lab <- 0 + alpha
+    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+
+    uci_lab <- 1 - alpha
+    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+
+    base$conf.low[!is.na(base$conf.low)] <- x$coeftable[,lci_lab]
+    base$conf.high[!is.na(base$conf.high)] <- x$coeftable[,uci_lab]
+
+  }
+
   return(base)
 
 }
 
-#' @export
+#' @title Broom extensions for summ objects
+#' @description These are functions used for compatibility with broom's tidying
+#' functions to facilitate use with huxreg, thereby making
+#' \code{\link{export_summs}} works.
+#' @param x The \code{summ} object.
+#' @param conf.int Include confidence intervals? Default is FALSE.
+#' @param conf.level How wide confidence intervals should be, if requested.
+#'   Default is .95.
+#' @param ... Other arguments (usually ignored)
+#' @return A data.frame with columns matching those appropriate for the model
+#' type per \code{glance} documentation.
+#'
+#' @seealso
+#'  \code{\link[broom]{glance}}
+#'
+#' @rdname glance.summ
+#' @export glance.summ.lm
+
+glance.summ.lm <- function(x, ...) {
+
+  base <- broom::glance(x$model)
+  return(base)
+
+}
+
+#' @export glance.summ.glm
+#' @rdname glance.summ
+
+glance.summ.glm <- function(x, ...) {
+
+  base <- broom::glance(x$model)
+  return(base)
+
+}
+
+#' @export glance.summ.svyglm
 #' @importFrom stats deviance
 #' @rdname glance.summ
 
@@ -308,13 +432,13 @@ glance.summ.svyglm <- function(x, ...) {
 
   base <- matrix(rep(NA, times = 8), ncol = 8)
   colnames(base) <- c("null.deviance", "df.null", "logLik",
-                     "AIC", "BIC", "deviance", "df.residual",
-                     "r.squared")
+                      "AIC", "BIC", "deviance", "df.residual",
+                      "r.squared")
   base <- as.data.frame(base)
 
   try({
-  base[["AIC"]] <- AIC(x$model)[2]
-  base[["logLik"]] <- suppressWarnings(logLik(x$model))
+    base[["AIC"]] <- AIC(x$model)[2]
+    base[["logLik"]] <- suppressWarnings(logLik(x$model))
   }, silent = TRUE)
   base[["deviance"]] <- deviance(x$model)
   base[["df.residual"]] <- df.residual(x$model)
@@ -335,39 +459,7 @@ glance.summ.svyglm <- function(x, ...) {
 
 }
 
-#' @title Broom extensions for summ objects
-#' @description These are functions used for compatibility with broom's tidying
-#' functions to facilitate use with huxreg, thereby making
-#' \code{\link{export_summs}} works.
-#' @param x The \code{summ} object.
-#' @param ... Other arguments (usually ignored)
-#' @return A data.frame with columns matching those appropriate for the model
-#' type per \code{glance} documentation.
-#'
-#' @seealso
-#'  \code{\link[broom]{glance}}
-#'
-#' @rdname glance.summ
-#' @export
-
-glance.summ.lm <- function(x, ...) {
-
-  base <- broom::glance(x$model)
-  return(base)
-
-}
-
-#' @export
-#' @rdname glance.summ
-
-glance.summ.glm <- function(x, ...) {
-
-  base <- broom::glance(x$model)
-  return(base)
-
-}
-
-#' @export
+#' @export glance.summ.merMod
 #' @rdname glance.summ
 
 glance.summ.merMod <- function(x, ...) {

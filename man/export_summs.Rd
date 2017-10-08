@@ -4,20 +4,25 @@
 \alias{export_summs}
 \title{Export regression summaries to tables}
 \usage{
-export_summs(..., error_style = c("stderr", "ci", "statistic", "pvalue"),
-  error_pos = c("below", "right", "same"), statistics = NULL,
+export_summs(..., error_format = "({std.error})", error_pos = c("below",
+  "right", "same"), ci_level = 0.95, statistics = NULL,
   model.names = NULL, to.word = FALSE, word.file = NULL)
 }
 \arguments{
 \item{...}{At minimum, a regression object(s). See details for more arguments.}
 
-\item{error_style}{Which of standard error, confidence intervals, test
+\item{error_format}{Which of standard error, confidence intervals, test
 statistics, or p values should be used to express uncertainty of estimates
-for regression coefficients? Default: "stderr"}
+for regression coefficients? See details for more info.
+Default: "({std.error})"}
 
 \item{error_pos}{Where should the error statistic defined in
 \code{error_style} be placed relative to the coefficient estimate?
 Default: "below"}
+
+\item{ci_level}{If reporting confidence intervals, what should the
+confidence level be? By default, it is .95 (95% interval) if
+confidence intervals are requested in \code{error_format}.}
 
 \item{statistics}{Which model summary statistics should be included?
 See \code{\link[huxtable]{huxreg}} for more on usage. The default
@@ -29,7 +34,8 @@ of each column, provide them here as a character vector.
 Otherwise, they will just be labeled by number. Default: NULL}
 
 \item{to.word}{Export the table to a Microsoft Word document?
-This functionality relies on the \pkg{ReporteRs} package. Default: FALSE}
+This functionality relies on the \pkg{officer}
+and \pkg{flextable} packages. Default: FALSE}
 
 \item{word.file}{File name with (optionally) file path to save the Word
 file. Ignored if \code{to.word} is FALSE. Default: NULL}
@@ -61,6 +67,41 @@ There are many optional parameters not documented above. Any
     \item summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
     \item summ.svyglm = c(N = "nobs", R2 = "r.squared"),
     \item summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+  }
+
+  If you set \code{statistics = "all"}, then the statistics argument
+  passed to \code{huxreg} will be \code{NULL}, which reports whichever
+  model statistics are available via \code{glance}. If you want no
+  model summary statistics, set the argument to \code{character(0)}.
+
+  You have a few options for the \code{error_format} argument.
+  You can include anything returned by \code{\link[broom]{tidy}}
+  (see also \code{\link{tidy.summ}}). For the most part, you will
+  be interested in \code{std.error} (standard error), \code{statistic}
+  (test statistic, e.g. t-value or z-value), \code{p.value}, or
+  \code{conf.high} and \code{conf.low}, which correspond to the
+  upper and lower bounds of the confidence interval for the estimate.
+  Note that the default \code{ci_level} argument is .95, but you
+  can alter that as desired.
+
+  To format the error statistics, simply put the statistics desired in
+  curly braces wherever you want them in a character string. For example,
+  if you want the standard error in parentheses, the argument would be
+  \code{"({std.error})"}, which is the default. Some other ideas:
+
+  \itemize{
+
+    \item \code{"({statistic})"}, which gives you the test statistic in
+    parentheses.
+    \item \code{"({statistic}, p = {p.value})"}, which gives the test
+    statistic followed by a "p =" p value all in parentheses. Note that
+    you'll have to pay special attention to rounding if you do this to keep
+    cells sufficiently narrow.
+    \item \code{"[{conf.low}, {conf.high}]"}, which gives the confidence
+    interval in the standard bracket notation. You could also explicitly
+    write the confidence level, e.g.,
+     \code{"95\% CI [{conf.low}, {conf.high}]"}.
+
   }
 
   You can also pass any argument accepted by the

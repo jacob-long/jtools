@@ -2,24 +2,29 @@
 % Please edit documentation in R/export_summ.R
 \name{tidy.summ}
 \alias{tidy.summ}
-\alias{glance.summ.svyglm}
 \alias{glance.summ.lm}
 \alias{glance.summ.glm}
+\alias{glance.summ.svyglm}
 \alias{glance.summ.merMod}
 \title{Broom extensions for summ objects}
 \usage{
-tidy.summ(x, ...)
-
-glance.summ.svyglm(x, ...)
+tidy.summ(x, conf.int = FALSE, conf.level = 0.95, ...)
 
 glance.summ.lm(x, ...)
 
 glance.summ.glm(x, ...)
 
+glance.summ.svyglm(x, ...)
+
 glance.summ.merMod(x, ...)
 }
 \arguments{
 \item{x}{The \code{summ} object.}
+
+\item{conf.int}{Include confidence intervals? Default is FALSE.}
+
+\item{conf.level}{How wide confidence intervals should be, if requested.
+Default is .95.}
 
 \item{...}{Other arguments (usually ignored)}
 }

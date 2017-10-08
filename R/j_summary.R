@@ -459,7 +459,8 @@ partial and semipartial correlations alongside robust standard errors.")
   j <- structure(j, rsq = rsq, arsq = arsq, dv = names(model$model[1]),
                         npreds = model$rank-df.int, lmClass = class(model),
                  missing = missing, use_cluster = use_cluster,
-                 confint = confint, ci.width = ci.width, pvals = pvals)
+                 confint = confint, ci.width = ci.width, pvals = pvals,
+                 test.stat = "t val.")
 
   modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
   j <- structure(j, modpval = modpval)
@@ -1035,7 +1036,8 @@ summ.glm <- function(
                  npreds = model$rank - df.int, dispersion = dispersion,
                  missing = missing, pvals = pvals, robust = robust,
                  robust.type = robust.type, use_cluster = use_cluster,
-                 confint = confint, ci.width = ci.width, pvals = pvals)
+                 confint = confint, ci.width = ci.width, pvals = pvals,
+                 test.stat = tcol)
 
   j <- structure(j, lmFamily = model$family)
 
@@ -1508,7 +1510,8 @@ summ.svyglm <- function(
 
   j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int,
                  dispersion = dispersion, missing = missing,
-                 confint = confint, ci.width = ci.width, pvals = pvals)
+                 confint = confint, ci.width = ci.width, pvals = pvals,
+                 test.stat = tcol)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -1850,10 +1853,17 @@ summ.merMod <- function(
     if (is.null(pvals)) {
 
       pvals <- TRUE
+      pbkr <- TRUE
+
+    } else if (pvals == TRUE) {
+
+      pbkr <- TRUE
+
+    } else if (pvals == FALSE) {
+
+      pbkr <- FALSE
 
     }
-
-    pbkr <- TRUE
 
   } else {
 
@@ -2102,7 +2112,7 @@ summ.merMod <- function(
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  df = df, pbkr = pbkr, r.squared = r.squared,
-                 failed.rsq = failed.rsq)
+                 failed.rsq = failed.rsq, test.stat = tcol)
 
   j <- structure(j, lmFamily = family(model))
 
