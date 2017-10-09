@@ -6,7 +6,8 @@
 #' @param model The unweighted linear model (must be \code{lm},
 #' \code{glm}, see details for other types) you want to check.
 #'
-#' @param data The data frame with the data fed to the fitted model and the weights
+#' @param data The data frame with the data fed to the fitted model and the
+#'   weights
 #'
 #' @param weights The name of the weights column in \code{model}'s data frame
 #'   or a vector of weights equal in length to the number of observations
@@ -223,9 +224,6 @@ wgttest <- function(model, weights, data = NULL, model_output = TRUE,
 
 }
 
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
 
 #' @export
 
@@ -273,6 +271,8 @@ print.wgttest <- function(x, ...) {
   }
 
 }
+
+#### pf_sv_test ###############################################################
 
 #' Test whether sampling weights are needed
 #'
@@ -412,9 +412,6 @@ pf_sv_test <- function(model, data, weights, sims = 1000,
 
 }
 
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
 
 #' @export
 
@@ -432,6 +429,8 @@ print.pf_sv_test <- function (x, ...) {
       "the unweighted model.\n")
 
 }
+
+#### weights_tests ############################################################
 
 #' Test whether sampling weights are needed
 #'
@@ -532,9 +531,6 @@ weights_tests <- function(model, weights, data, model_output = TRUE,
 
 }
 
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
 
 #' @export
 
@@ -544,6 +540,8 @@ print.weights_tests <- function(x, ...) {
   print(x$pf)
 
 }
+
+#### svycor ###################################################################
 
 #' Calculate Pearson correlations with complex survey data
 #'
@@ -600,7 +598,7 @@ print.weights_tests <- function(x, ...) {
 #'  \item{cors}{The correlation matrix (without rounding)}
 #'
 #'  If significance tests are requested, the following are also returned:
-
+#'
 #'  \item{p.values}{A matrix of p values}
 #'  \item{t.values}{A matrix of t values}
 #'  \item{std.err}{A matrix of standard errors}
@@ -634,9 +632,6 @@ print.weights_tests <- function(x, ...) {
 #' @importFrom stats cov2cor model.frame na.pass weights
 #' @export
 #'
-
-
-
 
 svycor <- function(formula, design, na.rm = FALSE,
                    digits = getOption("jtools-digits", default = 2),
@@ -694,12 +689,9 @@ svycor <- function(formula, design, na.rm = FALSE,
 
   }
 
-  }
+}
 
 
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
 
 #' @export
 
@@ -743,6 +735,7 @@ print.svycor <- function(x, ...) {
 
 }
 
+#### svysd ###################################################################
 
 #' Calculate standard deviations with complex survey data
 #'
@@ -825,10 +818,6 @@ svysd <- function(formula, design, na.rm = FALSE,
 
 }
 
-
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
 
 #' @export
 
