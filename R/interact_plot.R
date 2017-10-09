@@ -69,7 +69,7 @@
 #' @param set.offset For models with an offset (e.g., Poisson models), sets a
 #'   offset for the predicted values. All predicted values will have the same
 #'   offset. By default, this is set to 1, which makes the predicted values a
-#'   proportion.
+#'   proportion. See details for more about offset support.
 #'
 #' @param x.label A character object specifying the desired x-axis label. If \code{NULL},
 #'   the variable name is used.
@@ -126,6 +126,23 @@
 #'
 #'   Note: to use transformed predictors, e.g., \code{log(variable)},
 #'   put its name in quotes or backticks in the argument.
+#'
+#'   \emph{Info about offsets:}
+#'
+#'   Offsets are partially supported by this function with important
+#'   limitations. First of all, only a single offset per model is supported.
+#'   Second, it is best in general to specify offsets with the offset argument
+#'   of the model fitting function rather than in the formula. If it is
+#'   specified in the formula with a svyglm, this function will stop with an
+#'   error message.
+#'
+#'   It is also advised not to do any transformations to the offset other than
+#'   the common log transformation. If you apply a log transform, this function
+#'   will deal with it sensibly. So if your offset is a logged count, the
+#'   exposure you set will be the non-logged version, which is much easeir to
+#'   wrap one's head around. For any other transformation you may apply, or
+#'   if you apply no transformation at all, the exposures used will be the
+#'   post-tranformation number (which is by default 1).
 #'
 #' @return The functions returns a \code{ggplot} object, which can be treated like
 #'   a user-created plot and expanded upon as such.
@@ -266,22 +283,70 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # weights?
-  if (survey == FALSE && "(weights)" %in% names(d)) {
+  if (survey == FALSE && ("(weights)" %in% names(d) |
+                          !is.null(getCall(model)$weights))) {
     weights <- TRUE
-    wname <- as.character(model$call["weights"])
-    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    wname <- as.character(getCall(model)["weights"])
+    if (any(colnames(d) == "(weights)")) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
+    wts <- d[,wname]
+
   } else {
+
     weights <- FALSE
     wname <- NULL
+    wts <- rep(1, times = nrow(d))
+
   }
 
   # offset?
   if (!is.null(model.offset(model.frame(model)))) {
+
     off <- TRUE
-    offname <- as.character(model$call$offset[-1])
+    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare varname
+
+    # Getting/setting offset name depending on whether it was specified in
+    # argument or formula
+    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
+      colnames(d)[which(colnames(d) == "(offset)")] <- offname
+    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
+
+      offname <- "(offset)"
+
+      # This strategy won't work for svyglm
+      if (survey == TRUE) {
+
+        stop("For svyglm with offsets, please specify the offset with the
+'offset =' argument rather than in the model formula.")
+
+      }
+
+    }
+
+    # See if offset term was logged
+    if (offname == "(offset)") {
+      offterm <- regmatches(as.character(formula(model)),
+                            regexpr("(?<=(offset\\()).*(?=(\\)))",
+                            as.character(formula(model)), perl = TRUE))
+      if (grepl("log(", offterm, fixed = TRUE)) {
+
+        d[,offname] <- exp(d[,offname])
+
+      }
+
+    }
+
+    # Exponentiate offset if it was logged
+    if ("log" %in% as.character(getCall(model)$offset)) {
+      d[,offname] <- exp(d[,offname])
+    }
+
   } else {
+
     off <- FALSE
     offname <- NULL
+
   }
 
   # Setting default for colors
@@ -307,138 +372,32 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Get the formula from lm object if given
   formula <- formula(model)
-  formula <- paste(formula[2],formula[1],formula[3])
+  formula <- paste(formula[2], formula[1], formula[3])
 
   # Pulling the name of the response variable for labeling
-  resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
+  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
   resp <- trimws(resp)
 
 ### Centering ##################################################################
 
   # Update facvars by pulling out all non-focals
-  facvars <- facvars[!(facvars %in%
-                         c(pred, resp, modx, mod2, wname, "(offset)"))]
+  facvars <-
+    facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
 
-  # Handling user-requested centered vars
-  if (!is.null(centered) && centered != "all" && centered != "none") {
-    if (survey == FALSE) {
-      if (weights == FALSE) {
-        d <- gscale(x = centered, data = d, center.only = !standardize,
-                    n.sd = n.sd)
+  # Use utility function shared by all interaction functions
+  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
+                       fvars = fvars, pred = pred,
+                       resp = resp, modx = modx, survey = survey,
+                       design = design, mod2 = mod2, wname = wname,
+                       offname = offname, centered = centered,
+                       standardize = standardize, n.sd = n.sd)
 
-        # Dealing with two-level factors that aren't part of an interaction/focal pred
-        for (v in fvars[!(fvars %in%
-                          c(pred, resp, modx, mod2, wname, "(offset)"))]) {
-          if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
-              !(v %in% centered)) {
-
-            facvars <- c(facvars, v)
-
-          }
-        }
-
-      } else {
-        d <- gscale(x = centered, data = d, center.only = !standardize,
-                    weights = wname, n.sd = n.sd)
-
-        # Dealing with two-level factors that aren't part of an interaction
-        # /focal pred
-        for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
-          if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
-              !(v %in% centered)) {
-
-            facvars <- c(facvars, v)
-
-          }
-        }
-
-      }
-    } else if (survey == TRUE) {
-      design <- gscale(x = centered, data = design, center.only = !standardize,
-                       n.sd = n.sd)
-      d <- design$variables
-
-      # Dealing with two-level factors that aren't part of an
-      # interaction/focal pred
-      for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
-        if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
-            !(v %in% centered)) {
-
-          facvars <- c(facvars, v)
-
-        }
-      }
-
-    }
-  } else if (!is.null(centered) && centered == "all") {
-    # Need to handle surveys differently within this condition
-    # saving all vars expect response
-    vars <- names(d)[!(names(d) %in% c(resp, wname, "(offset)"))]
-    if (survey == FALSE) {
-      if (weights == FALSE) {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    n.sd = n.sd)
-      } else {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    weights = wname, n.sd = n.sd)
-      }
-    } else {
-      # Need a different strategy for not iterating over unimportant vars for
-      # survey designs
-      ndfvars <- fvars[!(fvars %in% c(resp, wname, "(offset)"))]
-      if (length(ndfvars) > 0) {
-        design <- gscale(x = ndfvars, data = design, center.only = !standardize,
-                         n.sd = n.sd)
-        d <- design$variables
-      }
-    }
-  } else if (!is.null(centered) && centered == "none") {
-
-    # Dealing with two-level factors that aren't part of an interaction/focal pred
-    for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
-      if (is.factor(d[,v]) && length(unique(d[,v])) == 2) {
-
-        facvars <- c(facvars, v)
-
-      }
-    }
-
-  } else { # Center all non-focal
-    # Centering the non-focal variables to make the slopes more interpretable
-    vars <- names(d)[!(names(d) %in% c(pred, resp, modx, mod2, wname, "(offset)"))]
-    # Need to handle surveys differently within this condition
-    if (survey == FALSE) {
-      if (weights == FALSE) {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    n.sd = n.sd)
-      } else {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    weights = wname, n.sd = n.sd)
-      }
-    } else {
-      # Need a different strategy for not iterating over unimportant vars for
-      # survey designs
-      nfvars <- fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]
-      if (length(nfvars) > 0) {
-        design <- gscale(x = nfvars, data = design, center.only = !standardize,
-                         n.sd = n.sd)
-        d <- design$variables
-      }
-    }
-  }
-
-  # Fixes a data type error with predict() later
-  d <- as.data.frame(d)
+  design <- c_out$design
+  d <- c_out$d
+  fvars <- c_out$fvars
+  facvars <- c_out$facvars
 
 ### Getting moderator values ##################################################
-
-  # for simpler compatibility with utility function
-  if (survey == FALSE) {design <- NULL}
-  if (weights == FALSE) {
-    wts <- rep(1, times = nrow(d))
-  } else {
-    wts <- d[,wname]
-  }
 
   modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
                         modx.labels, any.mod2 = !is.null(mod2))
@@ -521,13 +480,6 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     } else {
       pm <- matrix(rep(0, (nc)*length(facs)), ncol = nc)
     }
-  }
-
-  # Change name of offset column to its original
-  if (off == TRUE) {
-    # Avoiding the variable not found stuff
-    colnames(d)[colnames(d) %in% "(offset)"] <- offname
-    d[,offname] <- exp(d[,offname])
   }
 
   # Naming columns

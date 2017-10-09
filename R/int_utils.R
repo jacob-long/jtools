@@ -1,3 +1,6 @@
+## Utility function for getting values of moderator values for interaction
+## functions
+
 mod_vals <- function(d, modx, modxvals, survey, weights,
                      design = design, modx.labels = NULL,
                      any.mod2 = FALSE, is.mod2 = FALSE, sims = FALSE) {
@@ -94,6 +97,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
 
 }
 
+## Gets the preset values, e.g., mean plus/minus 1 SD
 
 auto_mod_vals <-
   function(d, modx, modxvals, modmean, modsd, modx.labels = NULL,
@@ -113,7 +117,7 @@ auto_mod_vals <-
                             paste("Mean of", modx, "- 1 SD"))
     }
 
-  } else if (modxvals == "plus-minus") { # No mean
+  } else if (!is.null(modxvals) && modxvals == "plus-minus") { # No mean
 
       modxvals2 <- c(modmean + modsd, modmean - modsd)
       if (mod2 == FALSE) {
@@ -134,7 +138,8 @@ auto_mod_vals <-
 
       if (mod2 == TRUE & sims == FALSE) {
       names(modxvals2) <-
-        sapply(as.character(modxvals2), FUN = function(x) {paste(modx, "=", x)})
+        sapply(as.character(modxvals2),
+               FUN = function(x) {paste(modx, "=", round(x,3))})
       } else {
         names(modxvals2) <- modxvals2
       }
@@ -148,4 +153,165 @@ auto_mod_vals <-
 }
 
 
+## Centering
 
+center_vals <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
+                        survey, design = NULL, mod2, wname, offname, centered,
+                        standardize, n.sd) {
+
+  # Just need to pick a helper function based on survey vs no survey
+  if (survey == TRUE) {
+
+    out <- center_vals_survey(d, weights, facvars, fvars, pred, resp, modx,
+                              survey, design, mod2, wname, offname, centered,
+                              standardize, n.sd)
+
+  } else {
+
+    out <- center_vals_non_survey(d, weights, facvars, fvars, pred, resp, modx,
+                                  mod2, wname, offname, centered,
+                                  standardize, n.sd)
+
+  }
+
+  return(out)
+
+
+}
+
+## If not svydesign, centering is fairly straightforward
+
+center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
+                                   resp, modx, mod2, wname, offname, centered,
+                                   standardize, n.sd) {
+
+  omitvars <- c(pred, resp, modx, mod2, wname, offname)
+  all_omitvars <- c(resp, wname, offname)
+
+  # Dealing with two-level factors that aren't part of an interaction
+  # /focal pred
+  fv2 <- fvars[fvars %nin% omitvars]
+
+  # Handling user-requested centered vars
+  if (!is.null(centered) && centered != "all" && centered != "none") {
+
+    d <- gscale(x = centered, data = d, center.only = !standardize,
+                  weights = weights, n.sd = n.sd)
+
+    for (v in fv2) {
+
+      if (is.factor(d[,v]) && length(unique(d[,v])) == 2 && v %nin% centered) {
+
+        facvars <- c(facvars, v)
+
+      }
+
+    }
+
+  } else if (!is.null(centered) && centered == "all") {
+
+    # saving all vars except response
+    vars <- names(d)[names(d) %nin% all_omitvars]
+
+    d <- gscale(x = vars, data = d, center.only = !standardize,
+                weights = weights, n.sd = n.sd)
+
+  } else if (!is.null(centered) && centered == "none") {
+
+    # Dealing with two-level factors that aren't part
+    # of an interaction/focal pred
+    for (v in fv2) {
+      if (is.factor(d[,v]) & length(unique(d[,v])) == 2) {
+
+        facvars <- c(facvars, v)
+
+      }
+    }
+
+  } else {
+    # Centering the non-focal variables to make the slopes more interpretable
+    vars <- names(d)[names(d) %nin% omitvars]
+
+    d <- gscale(x = vars, data = d, center.only = !standardize, weights = wname,
+                n.sd = n.sd)
+
+  }
+
+  # Fixes a data type error with predict() later
+  d <- as.data.frame(d)
+
+  out <- list(d = d, facvars = facvars, fvars = fvars, design = NULL)
+
+  return(out)
+
+}
+
+## Svydesigns get their own function to make control flow easier to follow
+
+center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
+                               modx, survey, design, mod2, wname, offname,
+                               centered,
+                               standardize, n.sd) {
+
+  omitvars <- c(pred, resp, modx, mod2, wname, offname)
+  all_omitvars <- c(resp, wname, offname)
+
+  # Dealing with two-level factors that aren't part of an interaction
+  # /focal pred
+  fv2 <- fvars[fvars %nin% omitvars]
+
+  # Handling user-requested centered vars
+  if (!is.null(centered) && centered != "all" && centered != "none") {
+
+      design <- gscale(x = centered, data = design, center.only = !standardize,
+                       n.sd = n.sd)
+      d <- design$variables
+
+      # Dealing with two-level factors that aren't part
+      # of an interaction/focal pred
+      for (v in fv2) {
+        if (is.factor(d[,v]) && length(unique(d[,v])) == 2 && v %nin% centered) {
+
+          facvars <- c(facvars, v)
+
+        }
+      }
+
+  } else if (!is.null(centered) && centered == "none") {
+
+    # Dealing with two-level factors that aren't part
+    # of an interaction/focal pred
+    for (v in fv2) {
+      if (is.factor(d[,v]) && length(unique(d[,v])) == 2) {
+
+        facvars <- c(facvars, v)
+
+      }
+    }
+
+  } else if (!is.null(centered) && centered == "all") {
+
+    ndfvars <- fvars[fvars %nin% all_omitvars]
+
+    if (length(ndfvars) > 0) {
+      design <- gscale(x = ndfvars, data = design, center.only = !standardize,
+                       n.sd = n.sd)
+      d <- design$variables
+    }
+
+  } else {
+    # Center all non-focal
+    nfvars <- fvars[fvars %nin% omitvars]
+
+    if (length(nfvars) > 0) {
+      design <- gscale(x = nfvars, data = design, center.only = !standardize,
+                       n.sd = n.sd)
+      d <- design$variables
+    }
+  }
+
+  out <- list(d = d, design = design, facvars = facvars, fvars = fvars)
+
+  return(out)
+
+}

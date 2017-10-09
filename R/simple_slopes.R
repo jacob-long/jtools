@@ -176,114 +176,143 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   # Save data from model object
   d <- model.frame(model)
 
-  # Deal with svyglm objects
+  # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
-    survey <- TRUE
 
+    survey <- TRUE
     design <- model$survey.design
     d <- design$variables
 
     # Focal vars so the weights don't get centered
-    fvars <- as.character(attributes(model$terms)$variables)
+    fvars <- as.character(attributes(terms(model))$variables)
     # for some reason I can't get rid of the "list" as first element
     fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
+
+    facvars <- c()
+    for (v in fvars) {
+      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
+        facvars <- c(facvars, v)
+      }
+    }
 
   } else {
+
     survey <- FALSE
+    design <- NULL
+
+    fvars <- as.character(attributes(terms(model))$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
+
+    facvars <- c()
+    for (v in fvars) {
+      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
+        facvars <- c(facvars, v)
+      }
+    }
+
   }
 
   # weights?
-  if (survey == FALSE && "(weights)" %in% names(d)) {
+  if (survey == FALSE && ("(weights)" %in% names(d) |
+                          !is.null(getCall(model)$weights))) {
     weights <- TRUE
-    wname <- as.character(model$call["weights"])
-    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    wname <- as.character(getCall(model)["weights"])
+    if (any(colnames(d) == "(weights)")) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
+    wts <- d[,wname]
+
   } else {
+
     weights <- FALSE
     wname <- NULL
+    wts <- rep(1, times = nrow(d))
+
+  }
+
+  # offset?
+  if (!is.null(model.offset(model.frame(model)))) {
+
+    off <- TRUE
+    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare varname
+
+    # Getting/setting offset name depending on whether it was specified in
+    # argument or formula
+    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
+      colnames(d)[which(colnames(d) == "(offset)")] <- offname
+    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
+
+      offname <- "(offset)"
+
+      # This strategy won't work for svyglm
+      if (survey == TRUE) {
+
+        stop("For svyglm with offsets, please specify the offset with the
+             'offset =' argument rather than in the model formula.")
+
+      }
+
+    }
+
+    # See if offset term was logged
+    if (offname == "(offset)") {
+      offterm <- regmatches(as.character(formula(model)),
+                            regexpr("(?<=(offset\\()).*(?=(\\)))",
+                                    as.character(formula(model)), perl = TRUE))
+      if (grepl("log(", offterm, fixed = TRUE)) {
+
+        d[,offname] <- exp(d[,offname])
+
+      }
+
+    }
+
+    # Exponentiate offset if it was logged
+    if ("log" %in% as.character(getCall(model)$offset)) {
+      d[,offname] <- exp(d[,offname])
+    }
+
+  } else {
+
+      off <- FALSE
+      offname <- NULL
+
   }
 
   # Pulling the name of the response variable for labeling
   formula <- formula(model)
   formula <- paste(formula[2],formula[1],formula[3])
 
-  resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
+  resp <- sub("(.*)(?=~).*", x = formula, perl = T, replacement = "\\1")
   resp <- trimws(resp)
 
   # Saving key arguments as attributes of return object
   ss <- structure(ss, resp = resp, modx = modx, mod2 = mod2, pred = pred,
                   cond.int = cond.int)
 
-  # weights?
-  if (survey == FALSE && ("(weights)" %in% names(d) |
-                          !is.null(model$call$weights))) {
-    weights <- TRUE
-    wname <- as.character(model$call["weights"])
-    if (any(colnames(d) == "(weights)")) {
-      colnames(d)[which(colnames(d) == "(weights)")] <- wname
-    }
-  } else {
-    weights <- FALSE
-    wname <- NULL
-  }
+### Centering #################################################################
 
-  # Handling user-requested centered vars
-  if (!is.null(centered) && centered != "all" && centered != "none"){
-    # Need to handle surveys differently within this condition
-    if (survey == FALSE) {
-      d <- gscale(x = centered, data = d, center.only = !standardize,
-                  n.sd = n.sd)
-    } else {
-      design <- gscale(x = centered, data = design, center.only = !standardize,
-                       n.sd = n.sd)
-      d <- design$variables
-    }
+  # Update facvars by pulling out all non-focals
+  facvars <-
+    facvars[!(facvars %in% c(pred, resp, modx, mod2, wname, offname))]
 
-  } else if (!is.null(centered) && centered == "none") {
+  # Use utility function shared by all interaction functions
+  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
+              fvars = fvars, pred = pred,
+              resp = resp, modx = modx, survey = survey,
+              design = design, mod2 = mod2, wname = wname,
+              offname = offname, centered = centered,
+              standardize = standardize, n.sd = n.sd)
 
-  } else if (!is.null(centered) && centered == "all") {
-    # Need to handle surveys differently within this condition
-    # saving all vars expect response
-    vars <- names(d)[!(names(d) %in% c(resp, wname))]
-    if (survey == FALSE) {
-      d <- gscale(x = vars, data = d, center.only = !standardize, n.sd = n.sd)
-    } else {
-      # Need a different strategy for not iterating over unimportant vars for
-      # survey designs
-      ndfvars <- fvars[!(fvars %in% c(resp, wname))]
-      if (length(ndfvars) > 0) {
-        design <- gscale(x = ndfvars, data = design, center.only = !standardize,
-                         n.sd = n.sd)
-        d <- design$variables
-      }
-    }
-
-  } else { # Center all non-focal
-    # Centering the non-focal variables to make the slopes more interpretable
-    vars <- names(d)[!(names(d) %in% c(pred, resp, modx, mod2, wname))]
-    # Need to handle surveys differently within this condition
-    if (survey == FALSE) {
-      d <- gscale(x = vars, data = d, center.only = !standardize, n.sd = n.sd)
-    } else {
-      # Need a different strategy for not iterating over unimportant vars for
-      # survey designs
-      nfvars <- fvars[!(fvars %in% c(pred, resp, modx, mod2, wname))]
-      if (length(nfvars) > 0) {
-        design <- gscale(x = nfvars, data = design, center.only = !standardize,
-                         n.sd = n.sd)
-        d <- design$variables
-      }
-    }
-  }
+  design <- c_out$design
+  d <- c_out$d
+  fvars <- c_out$fvars
+  facvars <- c_out$facvars
 
 ### Getting moderator values ##################################################
-
-  # for simpler compatibility with utility function
-  if (survey == FALSE) {design <- NULL}
-  if (weights == FALSE) {
-    wts <- rep(1, times = nrow(d))
-  } else {
-    wts <- d[,wname]
-  }
 
   modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
                         modx.labels = NULL, any.mod2 = !is.null(mod2),

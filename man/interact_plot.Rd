@@ -79,7 +79,7 @@ scale, which will show straight lines rather than curves, use
 \item{set.offset}{For models with an offset (e.g., Poisson models), sets a
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
-proportion.}
+proportion. See details for more about offset support.}
 
 \item{x.label}{A character object specifying the desired x-axis label. If \code{NULL},
 the variable name is used.}
@@ -145,6 +145,23 @@ This function provides a means for plotting conditional effects for the
 
   Note: to use transformed predictors, e.g., \code{log(variable)},
   put its name in quotes or backticks in the argument.
+
+  \emph{Info about offsets:}
+
+  Offsets are partially supported by this function with important
+  limitations. First of all, only a single offset per model is supported.
+  Second, it is best in general to specify offsets with the offset argument
+  of the model fitting function rather than in the formula. If it is
+  specified in the formula with a svyglm, this function will stop with an
+  error message.
+
+  It is also advised not to do any transformations to the offset other than
+  the common log transformation. If you apply a log transform, this function
+  will deal with it sensibly. So if your offset is a logged count, the
+  exposure you set will be the non-logged version, which is much easeir to
+  wrap one's head around. For any other transformation you may apply, or
+  if you apply no transformation at all, the exposures used will be the
+  post-tranformation number (which is by default 1).
 }
 \examples{
 # Using a fitted lm model
