@@ -73,7 +73,7 @@ j_summ <- summ
 #'
 #'   Default is \code{FALSE}.
 #'
-#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
+#'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
 #' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
 #'   robust standard errors to be used by \code{sandwich}. By default, set to
@@ -305,12 +305,6 @@ summ.lm <- function(
            call. = FALSE)
     }
 
-    if (!requireNamespace("lmtest", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'lmtest\' package
-           for robust standard errors. Please install it or set robust to FALSE.",
-           call. = FALSE)
-    }
-
     if (is.character(cluster)) {
 
       call <- getCall(model)
@@ -351,7 +345,7 @@ summ.lm <- function(
 
     }
 
-    coefs <- lmtest::coeftest(model,coefs)
+    coefs <- coeftest(model,coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     ps <- coefs[,4]
@@ -630,7 +624,7 @@ print.summ.lm <- function(x, ...) {
 #'
 #'   Default is \code{FALSE}.
 #'
-#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
+#'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
 #' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
 #'   robust standard errors to be used by \code{sandwich}. By default, set to
@@ -902,12 +896,6 @@ summ.glm <- function(
            call. = FALSE)
     }
 
-    if (!requireNamespace("lmtest", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'lmtest\' package
-           for robust standard errors. Please install it or set robust to FALSE.",
-           call. = FALSE)
-    }
-
     if (is.character(cluster)) {
 
       call <- getCall(model)
@@ -948,7 +936,7 @@ summ.glm <- function(
 
     }
 
-    coefs <- lmtest::coeftest(model,coefs)
+    coefs <- coeftest(model,coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     ps <- coefs[,4]

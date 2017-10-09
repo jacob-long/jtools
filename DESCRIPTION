@@ -23,7 +23,6 @@ Suggests:
   ggplot2,
   huxtable (>= 1.0.0),
   lme4,
-  lmtest,
   methods,
   nlme,
   officer,
