@@ -1,3 +1,6 @@
+## Making a "opposite of %in%" or "not %in%" function to simplify code
+`%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
+
 #### Internal function
 ### This is taken from pscl package, I don't want to list it as import for
 ### this alone. The return object needs tweaking for me anyway
