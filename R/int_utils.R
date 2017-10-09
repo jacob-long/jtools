@@ -137,9 +137,8 @@ auto_mod_vals <-
     } else {
 
       if (mod2 == TRUE & sims == FALSE) {
-      names(modxvals2) <-
-        sapply(as.character(modxvals2),
-               FUN = function(x) {paste(modx, "=", round(x,3))})
+        names(modxvals2) <-
+          sapply(modxvals2, FUN = function(x) {paste(modx, "=", round(x,3))})
       } else {
         names(modxvals2) <- modxvals2
       }

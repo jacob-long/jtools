@@ -197,22 +197,71 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
   }
 
   # weights?
-  if (survey == FALSE && "(weights)" %in% names(d)) {
+  if (survey == FALSE && ("(weights)" %in% names(d) |
+                          !is.null(getCall(model)$weights))) {
     weights <- TRUE
-    wname <- as.character(model$call["weights"])
-    colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    wname <- as.character(getCall(model)["weights"])
+    if (any(colnames(d) == "(weights)")) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
+    wts <- d[,wname]
+
   } else {
+
     weights <- FALSE
     wname <- NULL
+    wts <- rep(1, times = nrow(d))
+
   }
 
   # offset?
   if (!is.null(model.offset(model.frame(model)))) {
+
     off <- TRUE
-    offname <- as.character(model$call$offset[-1])
+    # subset gives bare varname
+    offname <- as.character(getCall(model)$offset[-1])
+
+    # Getting/setting offset name depending on whether it was specified in
+    # argument or formula
+    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
+      colnames(d)[which(colnames(d) == "(offset)")] <- offname
+    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
+
+      offname <- "(offset)"
+
+      # This strategy won't work for svyglm
+      if (survey == TRUE) {
+
+        stop("For svyglm with offsets, please specify the offset with the
+             'offset =' argument rather than in the model formula.")
+
+      }
+
+    }
+
+    # See if offset term was logged
+    if (offname == "(offset)") {
+      offterm <- regmatches(as.character(formula(model)),
+                            regexpr("(?<=(offset\\()).*(?=(\\)))",
+                                    as.character(formula(model)), perl = TRUE))
+      if (grepl("log(", offterm, fixed = TRUE)) {
+
+        d[,offname] <- exp(d[,offname])
+
+      }
+
+    }
+
+    # Exponentiate offset if it was logged
+    if ("log" %in% as.character(getCall(model)$offset)) {
+      d[,offname] <- exp(d[,offname])
+    }
+
   } else {
-    off <- FALSE
-    offname <- NULL
+
+      off <- FALSE
+      offname <- NULL
+
   }
 
   # For setting dimensions correctly later
@@ -220,115 +269,30 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
 
   # Get the formula from lm object if given
   formula <- formula(model)
-  formula <- paste(formula[2],formula[1],formula[3])
+  formula <- paste(formula[2], formula[1], formula[3])
 
   # Pulling the name of the response variable for labeling
-  resp <- sub("(.*)(?=~).*", x=formula, perl=T, replacement="\\1")
+  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
   resp <- trimws(resp)
 
+### Centering ##################################################################
+
   # Update facvars by pulling out all non-focals
-  facvars <- facvars[!(facvars %in% c(pred, resp, wname, "(offset)"))]
+  facvars <-
+    facvars[facvars %nin% c(pred, resp, wname, offname)]
 
-  # Handling user-requested centered vars
-  if (!is.null(centered) && centered != "all" && centered != "none") {
-    if (survey == FALSE) {
-      if (weights == FALSE) {
-        d <- gscale(x = centered, data = d, center.only = !standardize,
-                    n.sd = n.sd)
-        # Dealing with two-level factors that aren't part of an interaction/focal pred
-        for (v in fvars[!(fvars %in% c(pred, resp, wname, "(offset)"))]) {
-          if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
-              !(v %in% centered)) {
+  # Use utility function shared by all interaction functions
+  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
+                       fvars = fvars, pred = pred,
+                       resp = resp, modx = NULL, survey = survey,
+                       design = design, mod2 = NULL, wname = wname,
+                       offname = offname, centered = centered,
+                       standardize = standardize, n.sd = n.sd)
 
-            facvars <- c(facvars, v)
-
-          }
-        }
-      } else {
-        d <- gscale(x = centered, data = d, center.only = !standardize,
-                    weights = wname, n.sd = n.sd)
-        # Dealing with two-level factors that aren't part of an interaction/focal pred
-        for (v in fvars[!(fvars %in% c(pred, resp, wname, "(offset)"))]) {
-          if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
-              !(v %in% centered)) {
-
-            facvars <- c(facvars, v)
-
-          }
-        }
-      }
-    } else if (survey == TRUE) {
-      design <- gscale(x = centered, data = design, center.only = !standardize,
-                       n.sd = n.sd)
-      # Dealing with two-level factors that aren't part of an interaction/focal pred
-      for (v in fvars[!(fvars %in% c(pred, resp, wname, "(offset)"))]) {
-        if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
-          !(v %in% centered)) {
-
-          facvars <- c(facvars, v)
-
-        }
-      }
-      d <- design$variables
-    }
-  } else if (!is.null(centered) && centered == "all") {
-    # Need to handle surveys differently within this condition
-    vars <- names(d)[!(names(d) %in% c(resp, wname, "(offset)"))] # saving all vars expect response
-    if (survey == FALSE) {
-      if (weights == FALSE) {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    n.sd = n.sd)
-      } else {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    weights = wname, n.sd = n.sd)
-      }
-    } else {
-      # Need a different strategy for not iterating over unimportant vars for
-      # survey designs
-      ndfvars <- fvars[!(fvars %in% c(resp, wname, "(offset)"))]
-      if (length(ndfvars) > 0) {
-        design <- gscale(x = ndfvars, data = design, center.only = !standardize,
-                         n.sd = n.sd)
-        d <- design$variables
-      }
-    }
-  } else if (!is.null(centered) && centered == "none") {
-
-    # Dealing with two-level factors that aren't part of an interaction/focal pred
-    for (v in fvars[!(fvars %in% c(pred, resp, wname, "(offset)"))]) {
-      if (is.factor(d[,v]) && length(unique(d[,v])) == 2) {
-
-        facvars <- c(facvars, v)
-
-      }
-    }
-
-  } else { # Center all non-focal
-    # Centering the non-focal variables to make the slopes more interpretable
-    vars <- names(d)[!(names(d) %in% c(pred, resp, wname, "(offset)"))]
-    # Need to handle surveys differently within this condition
-    if (survey == FALSE) {
-      if (weights == FALSE) {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    n.sd = n.sd)
-      } else {
-        d <- gscale(x = vars, data = d, center.only = !standardize,
-                    weights = wname, n.sd = n.sd)
-      }
-    } else {
-      # Need a different strategy for not iterating over unimportant vars for
-      # survey designs
-      nfvars <- fvars[!(fvars %in% c(pred, resp, wname, "(offset)"))]
-      if (length(nfvars) > 0) {
-        design <- gscale(x = nfvars, data = design, center.only = !standardize,
-                         n.sd = n.sd)
-        d <- design$variables
-      }
-    }
-  }
-
-  # Fixes a data type error with predict() later
-  d <- as.data.frame(d)
+  design <- c_out$design
+  d <- c_out$d
+  fvars <- c_out$fvars
+  facvars <- c_out$facvars
 
   # Support for factor input for pred term, but only if it has two levels
   if (is.factor(d[,pred]) & length(unique(d[,pred] == 2))) {
@@ -348,18 +312,18 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
 
 
   # Creating a set of dummy values of the focal predictor for use in predict()
-  xpreds <- seq(from=range(d[!is.na(d[,pred]),pred])[1],
-                to=range(d[!is.na(d[,pred]),pred])[2],
-                length.out=1000)
+  xpreds <- seq(from = range(d[!is.na(d[,pred]),pred])[1],
+                to = range(d[!is.na(d[,pred]),pred])[2],
+                length.out = 1000)
 
   # Creating matrix for use in predict()
   if (interval == TRUE) { # Only create SE columns if intervals needed
 
-    pm <- matrix(rep(0, 1000*(nc+2)), ncol=(nc+2))
+    pm <- matrix(rep(0, 1000*(nc + 2)), ncol = (nc + 2))
 
   } else {
 
-    pm <- matrix(rep(0, 1000*(nc)), ncol=(nc))
+    pm <- matrix(rep(0, 1000*(nc)), ncol = (nc))
 
   }
 
@@ -536,7 +500,7 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
   }
 
   # Give the plot the user-specified title if there is one
-  if (!is.null(main.title)){
+  if (!is.null(main.title)) {
     p <- p + ggplot2::ggtitle(main.title)
   }
 
