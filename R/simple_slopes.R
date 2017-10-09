@@ -230,7 +230,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (!is.null(centered) && centered != "all" && centered != "none"){
     # Need to handle surveys differently within this condition
     if (survey == FALSE) {
-      d <- gscale(x = centered, data = d, center.only = !standardize, n.sd = n.sd)
+      d <- gscale(x = centered, data = d, center.only = !standardize,
+                  n.sd = n.sd)
     } else {
       design <- gscale(x = centered, data = design, center.only = !standardize,
                        n.sd = n.sd)
@@ -241,7 +242,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   } else if (!is.null(centered) && centered == "all") {
     # Need to handle surveys differently within this condition
-    vars <- names(d)[!(names(d) %in% c(resp, wname))] # saving all vars expect response
+    # saving all vars expect response
+    vars <- names(d)[!(names(d) %in% c(resp, wname))]
     if (survey == FALSE) {
       d <- gscale(x = vars, data = d, center.only = !standardize, n.sd = n.sd)
     } else {
@@ -531,19 +533,24 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
   colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
 
+  mod2val_len <- length(mod2vals2)
+  if (mod2val_len == 0) {mod2val_len <- 1}
+  modxval_len <- length(modxvals2)
+
   # Make empty list to put actual models into
-  mods <- list()
+  mods <- rep(list(NA), times = mod2val_len)
 
   # Make empty list to hold above list if 2nd mod used
   if (!is.null(mod2)) {
 
     # Make empty list to put each matrix into
-    mats <- list()
-    imats <- list()
+    mats <- rep(list(NA), times = mod2val_len)
+    imats <- rep(list(NA), times = mod2val_len)
+
   }
 
   # Looping through (perhaps non-existent)
-  for (j in 1:length(mod2vals2)) {
+  for (j in seq_len(mod2val_len)) {
 
     # We don't want to do the J-N interval with the 1st moderator adjusted,
     # so we do it here. Requires an extra model fit.
@@ -562,10 +569,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
         }
 
         # Creating the model
-        newmod <- update(model, data=dt)
+        newmod <- update(model, data = dt)
 
         # Getting SEs, robust or otherwise
-        if (robust==TRUE) {
+        if (robust == TRUE) {
 
           # For J-N
           covmat <- sandwich::vcovHC(newmod, type = robust.type)
@@ -618,7 +625,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     }
 
   # Looping so any amount of moderator values can be used
-  for (i in 1:length(modxvals2)) {
+  for (i in seq_len(length(modxvals2))) {
 
     # Update works differently for svyglm objects, so needs to be done separately
     if (survey == FALSE) {
@@ -638,10 +645,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       }
 
       # Creating the model
-      newmod <- update(model, data=dt)
+      newmod <- update(model, data = dt)
 
       # Getting SEs, robust or otherwise
-      if (robust==TRUE) {
+      if (robust == TRUE) {
 
         # Use j_summ to get the coefficients
         sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type,
@@ -716,7 +723,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     }
 
-    mods <- list(mods, newmod)
+    mods[[i + (j-1)*modxval_len]] <- newmod
 
   }
 
@@ -909,7 +916,7 @@ print.sim_slopes <- function(x, ...) {
     # Clearly label simple slopes
     cat("SIMPLE SLOPES ANALYSIS\n\n")
 
-  for (i in 1:length(x$modxvals)) {
+  for (i in seq_len(length(x$modxvals))) {
 
     # Use the labels for the automatic +/- 1 SD, factors
     if (x$def == TRUE) {

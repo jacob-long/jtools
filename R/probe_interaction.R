@@ -88,8 +88,8 @@ probe_interaction <- function(model, pred, modx, mod2 = NULL, ...) {
   args <- match.call()
 
   # Add the actual arguments
-  dots <- list(unlist(dots), model = args$model, modx = args$modx, pred = args$pred,
-               mod2 = args$mod2)
+  dots <- list(unlist(dots), model = args$model, modx = args$modx,
+               pred = args$pred, mod2 = args$mod2)
   dots <- unlist(dots)
 
   # Create list of arguments accepted by sim_slopes

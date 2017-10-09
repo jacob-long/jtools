@@ -108,36 +108,36 @@ icc <- function(fit, obj.name) {
 `r.squaredGLMM.default` <-
   function(x) .NotYetImplemented()
 
-#' @importFrom stats var
+##' @importFrom stats var
 
-`r.squaredGLMM.lme` <-
-  function(x) {
-    VarFx <- var(fitted(x, level = 0L))
-    mmRE <- model.matrix(x$modelStruct$reStruct,
-                         data = x$data[rownames(x$fitted), , drop = FALSE])
-    n <- nrow(mmRE)
-
-    sigma2 <- x$sigma^2
-    reStruct <- x$modelStruct$reStruct
-    if((m <- length(reStruct)) > 1L) {
-      nams <- names(reStruct)
-      for(i in seq.int(m))
-        attr(reStruct[[i]], "Dimnames")[[2L]] <-
-          paste(nams[[i]], attr(reStruct[[i]], "Dimnames")[[2L]], sep = ".")
-    }
-
-    varRe <- sum(sapply(reStruct, function(z) {
-      sig <- nlme::pdMatrix(z) * sigma2
-      mm1 <-  mmRE[, rownames(sig), drop = FALSE]
-      #sum(diag(mm1 %*% sig %*% t(mm1))) / n
-      sum(matmultdiag(mm1 %*% sig, ty = mm1)) / n
-    }))
-
-    varTot <- sum(VarFx, varRe)
-    res <- c(VarFx, varTot) / (varTot + sigma2)
-    names(res) <- c("R2m", "R2c")
-    res
-  }
+# `r.squaredGLMM.lme` <-
+#   function(x) {
+#     VarFx <- var(fitted(x, level = 0L))
+#     mmRE <- model.matrix(x$modelStruct$reStruct,
+#                          data = x$data[rownames(x$fitted), , drop = FALSE])
+#     n <- nrow(mmRE)
+#
+#     sigma2 <- x$sigma^2
+#     reStruct <- x$modelStruct$reStruct
+#     if((m <- length(reStruct)) > 1L) {
+#       nams <- names(reStruct)
+#       for(i in seq.int(m))
+#         attr(reStruct[[i]], "Dimnames")[[2L]] <-
+#           paste(nams[[i]], attr(reStruct[[i]], "Dimnames")[[2L]], sep = ".")
+#     }
+#
+#     varRe <- sum(sapply(reStruct, function(z) {
+#       sig <- nlme::pdMatrix(z) * sigma2
+#       mm1 <-  mmRE[, rownames(sig), drop = FALSE]
+#       #sum(diag(mm1 %*% sig %*% t(mm1))) / n
+#       sum(matmultdiag(mm1 %*% sig, ty = mm1)) / n
+#     }))
+#
+#     varTot <- sum(VarFx, varRe)
+#     res <- c(VarFx, varTot) / (varTot + sigma2)
+#     names(res) <- c("R2m", "R2c")
+#     res
+#   }
 
 #' @importFrom stats update.formula
 
@@ -238,39 +238,39 @@ matmultdiag <-
              varResid = varResid, beta0 = beta0)
   }
 
-#' @importFrom stats var
+# #' @importFrom stats var
 
-`r.squaredGLMM.glmmML` <-
-  function(x) {
-    if(is.null(x$x))
-      stop("glmmML must be fitted with 'x = TRUE'")
+# `r.squaredGLMM.glmmML` <-
+#   function(x) {
+#     if(is.null(x$x))
+#       stop("glmmML must be fitted with 'x = TRUE'")
+#
+#     fam <- family(x)
+#     useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
+#     if(useObsLevVar) {
+#       cry(, "cannot calculate 'unit variance' in glmmML")
+#     }
+#     fxpred <- as.vector(x$x %*% coef(x))
+#     .rsqGLMM(family(x), varFx = var(fxpred), varRe = x$sigma^2, varResid = NULL,
+#              beta0 = mean(fxpred))
+#   }
 
-    fam <- family(x)
-    useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
-    if(useObsLevVar) {
-      cry(, "cannot calculate 'unit variance' in glmmML")
-    }
-    fxpred <- as.vector(x$x %*% coef(x))
-    .rsqGLMM(family(x), varFx = var(fxpred), varRe = x$sigma^2, varResid = NULL,
-             beta0 = mean(fxpred))
-  }
+# #' @importFrom stats var model.response model.frame df.residual
 
-#' @importFrom stats var model.response model.frame df.residual
-
-`r.squaredGLMM.lm` <-
-  function(x) {
-    fam <- family(x)
-    .rsqGLMM(fam,
-             varFx = var(as.vector(model.matrix(x) %*% coef(x))),
-             #varFx = var(fitted(x)),
-             varRe = 0,
-             varResid = sum(if(is.null(x$weights)) resid(x)^2 else
-               resid(x)^2 * x$weights) / df.residual(x),
-             beta0 = if(fam$family == "poisson" && fam$link == "log")
-               log(mean(model.response(model.frame(x)))) else
-                 NULL
-    )
-  }
+# `r.squaredGLMM.lm` <-
+#   function(x) {
+#     fam <- family(x)
+#     .rsqGLMM(fam,
+#              varFx = var(as.vector(model.matrix(x) %*% coef(x))),
+#              #varFx = var(fitted(x)),
+#              varRe = 0,
+#              varResid = sum(if(is.null(x$weights)) resid(x)^2 else
+#                resid(x)^2 * x$weights) / df.residual(x),
+#              beta0 = if(fam$family == "poisson" && fam$link == "log")
+#                log(mean(model.response(model.frame(x)))) else
+#                  NULL
+#     )
+#   }
 
 `.rsqGLMM` <-
   function (fam, varFx, varRe, varResid, beta0) {

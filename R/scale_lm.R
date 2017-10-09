@@ -164,7 +164,8 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
     vars <- attributes(model$terms)$variables
     vars <- as.character(vars)[2:length(vars)]
 
-    # Add vars to design if they aren't already there (fixes issues with functions)
+    # Add vars to design if they aren't already there
+    # (fixes issues with functions)
     adds <- which(!(vars %in% names(design$variables)))
     for (var in vars[adds]) {
 

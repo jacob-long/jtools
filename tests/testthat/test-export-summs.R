@@ -116,15 +116,18 @@ test_that("Export can do confidence intervals (merMod)", {
 
 test_that("Export can do confidence intervals (lm)", {
   expect_is(export_summs(fit, fitw,
-                         error_format = "95% CI [{conf.low}, {conf.high}]"), "huxtable")
+                         error_format = "95% CI [{conf.low}, {conf.high}]"),
+            "huxtable")
 })
 
 test_that("Export can do confidence intervals (glm)", {
   expect_is(export_summs(pmod,
-                         error_format = "95% CI [{conf.low}, {conf.high}]"), "huxtable")
+                         error_format = "95% CI [{conf.low}, {conf.high}]"),
+            "huxtable")
 })
 
 test_that("Export can do confidence intervals (svyglm)", {
   expect_is(export_summs(regmodel,
-                         error_format = "95% CI [{conf.low}, {conf.high}]"), "huxtable")
+                         error_format = "95% CI [{conf.low}, {conf.high}]"),
+            "huxtable")
 })

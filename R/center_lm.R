@@ -126,7 +126,7 @@ center_lm <- function(model, binary.inputs = "0/1", center.response = FALSE) {
   }
 
   # svyglm?
-  if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {
+  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
     survey <- TRUE
   } else {
     survey <- FALSE

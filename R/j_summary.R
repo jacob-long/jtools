@@ -430,7 +430,7 @@ partial and semipartial correlations alongside robust standard errors.")
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
-  for (i in 1:length(params)) {
+  for (i in seq_len(length(params))) {
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
@@ -1014,7 +1014,7 @@ summ.glm <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
-  for (i in 1:length(params)) {
+  for (i in seq_len(length(params))) {
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
@@ -1481,7 +1481,7 @@ summ.svyglm <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
-  for (i in 1:length(params)) {
+  for (i in seq_len(length(params))) {
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
@@ -2005,7 +2005,7 @@ summ.merMod <- function(
     }
 
     vec <- rep(NA, times = length(ts))
-    for (i in 1:length(ts)) {
+    for (i in seq_len(length(ts))) {
       p <- pt(abs(ts[i]), lower.tail = F, df)
       p <- p*2
       vec[i] <- p
@@ -2068,7 +2068,7 @@ summ.merMod <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
-  for (i in 1:length(params)) {
+  for (i in seq_len(length(params))) {
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
@@ -2078,7 +2078,7 @@ summ.merMod <- function(
 
   if (pvals == FALSE) {
 
-    mat <- mat[,1:ncol(mat)-1]
+    mat <- mat[,seq_len(ncol(mat)-1)]
 
   }
 
@@ -2093,7 +2093,7 @@ summ.merMod <- function(
   ## Make a table summarizing grouping vars
   gvmat <- matrix(ncol = 3, nrow = length(ngroups))
   colnames(gvmat) <- c("Group","# groups","ICC")
-  for (i in 1:length(ngroups)) {
+  for (i in seq_len(length(ngroups))) {
     gvmat[i,1] <- groups[i]
     gvmat[i,2] <- ngroups[i]
     gvmat[i,3] <- iccs[i]

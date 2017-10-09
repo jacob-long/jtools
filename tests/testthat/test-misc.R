@@ -4,17 +4,19 @@ states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
 states$o70[states$`Life Exp` > 70] <- 1
+states$o70 <- factor(states$o70)
 set.seed(3)
 states$wts <- runif(50, 0, 3)
-fit <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states)
+fit <- lm(Income ~ HSGrad*Murder*Illiteracy + o70, data = states)
 fit2 <- lm(Income ~ HSGrad*o70, data = states)
-fitw <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states, weights = wts)
+fitw <- lm(Income ~ HSGrad*Murder*Illiteracy + o70, data = states, weights = wts)
 
 
 suppressMessages(library(survey, quietly = TRUE))
 data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-regmodel <- svyglm(api00~ell*meals*both,design=dstrat)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat,
+                    fpc = ~fpc)
+regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide, design = dstrat)
 
 test_that("interact_plot works for lm", {
   expect_silent(interact_plot(model = fit,

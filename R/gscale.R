@@ -441,7 +441,7 @@ if (is.numeric(x)) {
     }
 
     # Looping through every column with rescale
-    for (i in 1:ncol(d)) {
+    for (i in seq_len(ncol(d))) {
 
       skip <- FALSE # For weights handling
       if (!is.null(weights)) {
@@ -705,7 +705,7 @@ if (is.numeric(x)) {
 
     }
 
-    for (i in 1:ncol(d)) {
+    for (i in seq_len(ncol(d))) {
 
       if (!(names(d)[i] %in% ws)) { # stepping around weight variables
 

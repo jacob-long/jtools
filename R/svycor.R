@@ -96,11 +96,12 @@ svycor <- function(formula, design, na.rm = FALSE,
                    sig.stats = FALSE,
                    bootn = 1000, mean1 = TRUE, ... ) {
 
-  # If sig.stats == T, Need to get the data in a data.frame-esque format to pass to wtd.cor
+  # If sig.stats == T, Need to get the data in a data.frame-esque format
+  # to pass to wtd.cor
   if (inherits(formula,"formula") && sig.stats == TRUE) {
 
     # A data frame with the selected variables and their non-weighted values
-    mf <- model.frame(formula, model.frame(design),na.action=na.pass)
+    mf <- model.frame(formula, model.frame(design),na.action = na.pass)
 
     # Extract the weights for use with wtd.cor
     wts <- weights(design, "sampling")
@@ -118,7 +119,7 @@ svycor <- function(formula, design, na.rm = FALSE,
 
   # Get correlation matrix (plus some)
   corv <- cov2cor(v)
-  corv <- corv[1:nrow(corv), 1:nrow(corv)]
+  corv <- corv[seq_len(nrow(corv)), seq_len(nrow(corv))]
 
   # Creating return object
   c <- NULL
@@ -178,8 +179,8 @@ print.svycor <- function(x, ...) {
 
     # Create a matrix of significance stars
     pm <- x$p.values
-    for (i in 1:nrow(pm)) {
-      for (j in 1:ncol(pm)) {
+    for (i in seq_len(nrow(pm))) {
+      for (j in seq_len(ncol(pm))) {
         pm[i,j] <- star(pm[i,j])
       }
     }

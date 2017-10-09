@@ -341,7 +341,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
         d <- gscale(x = centered, data = d, center.only = !standardize,
                     weights = wname, n.sd = n.sd)
 
-        # Dealing with two-level factors that aren't part of an interaction/focal pred
+        # Dealing with two-level factors that aren't part of an interaction
+        # /focal pred
         for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
           if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
               !(v %in% centered)) {
@@ -357,7 +358,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                        n.sd = n.sd)
       d <- design$variables
 
-      # Dealing with two-level factors that aren't part of an interaction/focal pred
+      # Dealing with two-level factors that aren't part of an
+      # interaction/focal pred
       for (v in fvars[!(fvars %in% c(pred, resp, modx, mod2, wname, "(offset)"))]) {
         if (is.factor(d[,v]) && length(unique(d[,v])) == 2 &&
             !(v %in% centered)) {
@@ -370,7 +372,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     }
   } else if (!is.null(centered) && centered == "all") {
     # Need to handle surveys differently within this condition
-    vars <- names(d)[!(names(d) %in% c(resp, wname, "(offset)"))] # saving all vars expect response
+    # saving all vars expect response
+    vars <- names(d)[!(names(d) %in% c(resp, wname, "(offset)"))]
     if (survey == FALSE) {
       if (weights == FALSE) {
         d <- gscale(x = vars, data = d, center.only = !standardize,

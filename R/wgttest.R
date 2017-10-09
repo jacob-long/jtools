@@ -526,7 +526,7 @@ weights_tests <- function(model, weights, data, model_output = TRUE,
 
   # Save both to output object
   out <- list(wt = wt, pf = pf)
-  class(out) = "weights_tests"
+  class(out) <- "weights_tests"
 
   return(out)
 

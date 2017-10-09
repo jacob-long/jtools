@@ -196,7 +196,7 @@ export_summs <- function(...,
     if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
     if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
 
-    for (i in 1:length(mods)) {
+    for (i in seq_len(length(mods))) {
 
       the_args <- summ_args
       the_args$model <- mods[[i]]
@@ -419,7 +419,7 @@ glance.summ.glm <- function(x, ...) {
 }
 
 #' @export glance.summ.svyglm
-#' @importFrom stats deviance
+#' @importFrom stats deviance df.residual
 #' @rdname glance.summ
 
 glance.summ.svyglm <- function(x, ...) {
