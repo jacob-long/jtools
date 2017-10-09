@@ -21,7 +21,7 @@ Suggests:
   cowplot,
   flextable,
   ggplot2,
-  huxtable,
+  huxtable (>= 1.0.0),
   lme4,
   lmtest,
   methods,

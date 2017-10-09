@@ -114,7 +114,7 @@
 #'
 #' @export
 #' @importFrom utils getFromNamespace
-#'
+
 export_summs <- function(...,
                          error_format = "({std.error})",
                          error_pos = c("below", "right", "same"),
@@ -131,10 +131,6 @@ export_summs <- function(...,
   if (!requireNamespace("broom", quietly = TRUE)) {
 
     stop("Install the broom package to use the export_summs function.")
-
-  } else {
-
-    library(broom)
 
   }
 
@@ -338,7 +334,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level, ...)
 
-  if (conf.int == FALSE) {
+  if ("S.E." %in% colnames(x$coeftable)) {
     # If conf.int == TRUE, summ does not have a S.E. column
     base$std.error[!is.na(base$std.error)] <- x$coeftable[,"S.E."]
 
@@ -367,7 +363,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
-  if (conf.int == TRUE) {
+  if (attributes(x)$confint == TRUE) {
 
     # Need to use this to get the right coeftable colnames
     alpha <- (1 - conf.level)/2
@@ -378,8 +374,8 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     uci_lab <- 1 - alpha
     uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
 
-    base$conf.low[!is.na(base$conf.low)] <- x$coeftable[,lci_lab]
-    base$conf.high[!is.na(base$conf.high)] <- x$coeftable[,uci_lab]
+    base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
+    base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
 
   }
 

@@ -29,7 +29,7 @@ library(lme4, quietly = TRUE)
 data(VerbAgg)
 mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-library(broom)
+# library(broom)
 # library(huxtable)
 
 test_that("Export doesn't fail with lm", {
