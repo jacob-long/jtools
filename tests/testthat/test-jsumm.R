@@ -168,3 +168,13 @@ test_that("summ.merMod: r.squared works", {
   expect_is(j <- summ(mv, r.squared = T), "summ.merMod")
   expect_output(print(j))
 })
+
+test_that("jsumm: summ.default", {
+  expect_is(jtools:::summ.default(fit), "summ.default")
+  expect_is(jtools:::summ.default(fit, robust = T, standardize = T),
+            "summ.default")
+  expect_is(jtools:::summ.default(regmodel, center = T), "summ.default")
+  expect_output(print(jtools:::summ.default(fit)))
+  expect_output(print(jtools:::summ.default(fit, robust = T, standardize = T)))
+  expect_output(print(jtools:::summ.default(regmodel, center = T)))
+})
