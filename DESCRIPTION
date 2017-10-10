@@ -29,6 +29,7 @@ Suggests:
   pbkrtest,
   RColorBrewer,
   sandwich,
+  stats4,
   survey,
   weights,
     knitr,

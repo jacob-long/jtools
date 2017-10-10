@@ -137,10 +137,17 @@ coeftest <- function(x, vcov. = NULL, df = NULL, ...) {
   UseMethod("coeftest")
 }
 
+#' @importFrom stats pnorm
+
 coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
   ## use S4 methods if loaded
-  coef0 <- if("stats4" %in% loadedNamespaces()) stats4::coef else coef
-  vcov0 <- if("stats4" %in% loadedNamespaces()) stats4::vcov else vcov
+  if (requireNamespace("stats4", quietly = TRUE)) {
+    coef0 <- stats4::coef
+    vcov0 <- stats4::vcov
+  } else {
+    coef0 <- coef
+    vcov0 <- vcov
+  }
 
   ## extract coefficients and standard errors
   est <- coef0(x)
@@ -182,13 +189,13 @@ coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
   if (is.finite(df) && df > 0) {
 
     pval <- 2 * pt(abs(tval), df = df, lower.tail = FALSE)
-    cnames <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
+    cnames <- c("Est.", "S.E.", "t value", "p")
     mthd <- "t"
 
   } else {
 
     pval <- 2 * pnorm(abs(tval), lower.tail = FALSE)
-    cnames <- c("Estimate", "Std. Error", "z value", "Pr(>|z|)")
+    cnames <- c("Est.", "S.E.", "z value", "p")
     mthd <- "z"
 
   }
