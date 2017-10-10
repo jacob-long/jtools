@@ -7,6 +7,18 @@ input <- log(output) + runif(100,0,1)
 fitgf <- glm(output ~ input, family = poisson)
 clusters <- sample(1:5, size = 100, replace = TRUE)
 
+# Offset test
+set.seed(100)
+exposures <- rpois(50, 50)
+counts <- exposures - rpois(50, 25)
+money <- (counts/exposures) + rnorm(50, sd = 1)
+talent <- counts*.5 + rnorm(50, sd = 3)
+poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
+pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
+            family = poisson)
+pmod2 <- glm(counts ~ talent*money + offset(log(exposures)), data = poisdat,
+            family = poisson)
+
 # survey test
 suppressMessages(library(survey, quietly = TRUE))
 data(api)
@@ -33,6 +45,20 @@ test_that("jsumm: non-linear models work", {
   expect_is(summ(fitgf), "summ.glm")
   expect_is(summ(fitgf, standardize = TRUE), "summ.glm")
   expect_is(summ(fitgf, center = TRUE), "summ.glm")
+  # expect_warning(summ(fitgf, robust = TRUE))
+})
+
+test_that("jsumm: non-linear models w/ offsets work (arg)", {
+  expect_is(summ(pmod), "summ.glm")
+  expect_is(summ(pmod, standardize = TRUE), "summ.glm")
+  expect_is(summ(pmod, center = TRUE), "summ.glm")
+  # expect_warning(summ(fitgf, robust = TRUE))
+})
+
+test_that("jsumm: non-linear models w/ offsets work (formula)", {
+  expect_is(summ(pmod2), "summ.glm")
+  expect_is(summ(pmod2, standardize = TRUE), "summ.glm")
+  expect_is(summ(pmod2, center = TRUE), "summ.glm")
   # expect_warning(summ(fitgf, robust = TRUE))
 })
 
@@ -130,6 +156,11 @@ test_that("jsumm: warn with partial corrs and robust SEs", {
   expect_warning(summ(fit, robust = T, part.corr = T))
 })
 
+test_that("jsumm: svyglm odds ratios", {
+  expect_is(summ(regmodel, odds.ratio = T), "summ.svyglm")
+  expect_output(print(summ(regmodel, odds.ratio = T)))
+})
+
 test_that("jsumm: glm robust SEs work", {
   expect_is(summ(fitgf, robust = T), "summ.glm")
   expect_is(summ(fitgf, robust = T, robust.type = "HC4m"), "summ.glm")
@@ -174,7 +205,9 @@ test_that("jsumm: summ.default", {
   expect_is(jtools:::summ.default(fit, robust = T, standardize = T),
             "summ.default")
   expect_is(jtools:::summ.default(regmodel, center = T), "summ.default")
+  expect_is(jtools:::summ.default(regmodel, confint = T), "summ.default")
   expect_output(print(jtools:::summ.default(fit)))
   expect_output(print(jtools:::summ.default(fit, robust = T, standardize = T)))
   expect_output(print(jtools:::summ.default(regmodel, center = T)))
+  expect_output(print(jtools:::summ.default(regmodel, confint = T)))
 })

@@ -213,40 +213,40 @@ coeftest.glm <- function(x, vcov. = NULL, df = Inf, ...) {
   coeftest.default(x, vcov. = vcov., df = df, ...)
 }
 
-coeftest.mlm <- function(x, vcov. = NULL, df = NULL, ...) {
-  ## obtain vcov
-  v <- if (is.null(vcov.)) {
-    vcov(x)
-  } else if (is.function(vcov.)) {
-    vcov.(x)
-  } else {
-    vcov.
-  }
-
-  ## nasty hack: replace coefficients so that their names match the vcov() method
-  x$coefficients <- structure(as.vector(x$coefficients),
-                              .Names = colnames(vcov(x)))
-
-  ## call default method
-  coeftest.default(x, vcov. = v, df = df, ...)
-}
-
-coeftest.survreg <- function(x, vcov. = NULL, df = Inf, ...) {
-
-  if (is.null(vcov.)) {
-    v <- vcov(x)
-  } else {
-    if (is.function(vcov.)) {
-      v <- vcov.(x)
-    } else {
-      v <- vcov.
-    }
-  }
-
-  if (length(x$coefficients) < NROW(x$var)) {
-    x$coefficients <- c(x$coefficients, "Log(scale)" = log(x$scale))
-  }
-
-  coeftest.default(x, vcov. = v, df = df, ...)
-
-}
+# coeftest.mlm <- function(x, vcov. = NULL, df = NULL, ...) {
+#   ## obtain vcov
+#   v <- if (is.null(vcov.)) {
+#     vcov(x)
+#   } else if (is.function(vcov.)) {
+#     vcov.(x)
+#   } else {
+#     vcov.
+#   }
+#
+#   ## nasty hack: replace coefficients so that their names match the vcov() method
+#   x$coefficients <- structure(as.vector(x$coefficients),
+#                               .Names = colnames(vcov(x)))
+#
+#   ## call default method
+#   coeftest.default(x, vcov. = v, df = df, ...)
+# }
+#
+# coeftest.survreg <- function(x, vcov. = NULL, df = Inf, ...) {
+#
+#   if (is.null(vcov.)) {
+#     v <- vcov(x)
+#   } else {
+#     if (is.function(vcov.)) {
+#       v <- vcov.(x)
+#     } else {
+#       v <- vcov.
+#     }
+#   }
+#
+#   if (length(x$coefficients) < NROW(x$var)) {
+#     x$coefficients <- c(x$coefficients, "Log(scale)" = log(x$scale))
+#   }
+#
+#   coeftest.default(x, vcov. = v, df = df, ...)
+#
+# }
