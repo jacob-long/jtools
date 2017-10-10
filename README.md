@@ -107,7 +107,7 @@ sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
 
     #> SIMPLE SLOPES ANALYSIS
     #> 
-    #> Slope of UrbanPop when Assault = 254.098 (+1 SD): 
+    #> Slope of UrbanPop when Assault = 254.098 (+ 1 SD): 
     #>   Est.   S.E.      p 
     #> -0.075  0.035  0.035 
     #> 
@@ -115,7 +115,7 @@ sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
     #>   Est.   S.E.      p 
     #> -0.044  0.026  0.100 
     #> 
-    #> Slope of UrbanPop when Assault = 87.422 (-1 SD): 
+    #> Slope of UrbanPop when Assault = 87.422 (- 1 SD): 
     #>   Est.   S.E.      p 
     #> -0.012  0.035  0.730
 
@@ -148,7 +148,7 @@ probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
 ```
 
     #> #######################################################
-    #> While privileges (2nd moderator) = 40.898 (Mean of privileges -1 SD)
+    #> While privileges (2nd moderator) = 40.898 (Mean of privileges - 1 SD)
     #> #######################################################
     #> 
     #> JOHNSON-NEYMAN INTERVAL
@@ -159,17 +159,17 @@ probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
     #> 
     #> SIMPLE SLOPES ANALYSIS
     #> 
-    #> Slope of critical when learning = 68.104 (+1 SD): 
+    #> Slope of critical when learning = 44.63 (- 1 SD): 
     #>  Est.  S.E.     p 
-    #> 1.109 0.553 0.057 
+    #> 0.242 0.237 0.318 
     #> 
     #> Slope of critical when learning = 56.367 (Mean): 
     #>  Est.  S.E.     p 
     #> 0.675 0.329 0.052 
     #> 
-    #> Slope of critical when learning = 44.63 (-1 SD): 
+    #> Slope of critical when learning = 68.104 (+ 1 SD): 
     #>  Est.  S.E.     p 
-    #> 0.242 0.237 0.318 
+    #> 1.109 0.553 0.057 
     #> 
     #> #######################################################
     #> While privileges (2nd moderator) = 53.133 (Mean of privileges)
@@ -179,37 +179,37 @@ probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
     #> 
     #> SIMPLE SLOPES ANALYSIS
     #> 
-    #> Slope of critical when learning = 68.104 (+1 SD): 
+    #> Slope of critical when learning = 44.63 (- 1 SD): 
     #>  Est.  S.E.     p 
-    #> 0.023 0.330 0.946 
+    #> 0.093 0.340 0.788 
     #> 
     #> Slope of critical when learning = 56.367 (Mean): 
     #>  Est.  S.E.     p 
     #> 0.058 0.239 0.811 
     #> 
-    #> Slope of critical when learning = 44.63 (-1 SD): 
+    #> Slope of critical when learning = 68.104 (+ 1 SD): 
     #>  Est.  S.E.     p 
-    #> 0.093 0.340 0.788 
+    #> 0.023 0.330 0.946 
     #> 
     #> #######################################################
-    #> While privileges (2nd moderator) = 65.369 (Mean of privileges +1 SD)
+    #> While privileges (2nd moderator) = 65.369 (Mean of privileges + 1 SD)
     #> #######################################################
     #> 
     #> The Johnson-Neyman interval could not be found. Is your interaction term significant?
     #> 
     #> SIMPLE SLOPES ANALYSIS
     #> 
-    #> Slope of critical when learning = 68.104 (+1 SD): 
+    #> Slope of critical when learning = 44.63 (- 1 SD): 
     #>   Est.   S.E.      p 
-    #> -1.063  0.658  0.120 
+    #> -0.057  0.614  0.927 
     #> 
     #> Slope of critical when learning = 56.367 (Mean): 
     #>   Est.   S.E.      p 
     #> -0.560  0.502  0.276 
     #> 
-    #> Slope of critical when learning = 44.63 (-1 SD): 
+    #> Slope of critical when learning = 68.104 (+ 1 SD): 
     #>   Est.   S.E.      p 
-    #> -0.057  0.614  0.927
+    #> -1.063  0.658  0.120
 
 ![](tools/README-probe_interaction_ex-1.png)
 

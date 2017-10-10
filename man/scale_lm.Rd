@@ -5,7 +5,7 @@
 \title{Scale variables in fitted regression models}
 \usage{
 scale_lm(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
-  scale.response = TRUE)
+  scale.response = TRUE, center.only = FALSE)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -25,6 +25,9 @@ supersedes this one.}
 
 \item{scale.response}{Should the response variable also be rescaled? Default
 is \code{TRUE}.}
+
+\item{center.only}{Rather than actually scale predictors, just mean-center
+them.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting from

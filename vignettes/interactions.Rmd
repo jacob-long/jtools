@@ -34,7 +34,7 @@ nature of the interaction, simple slopes analysis allows the researcher to speci
 meaningful values at which to hold the moderator value.
 
 While the computation behind doing so isn't exactly rocket science, it is inconvenient 
-and prone to error. The `sim_slopes()` function from `jtools` accepts a regression model
+and prone to error. The `sim_slopes` function from `jtools` accepts a regression model
 (with an interaction term) as an input and automates the simple slopes procedure. The 
 function will, by default, do the following:
 
@@ -51,11 +51,11 @@ argument for `pred =`, and the name of the moderator in quotations as the argume
 for `modx =`. Let's go through an example.
 
 First, we use example data from `state.x77` that is built into R. Let's look at 
-the interaction model output with `j_summ()` as a starting point.
+the interaction model output with `summ` as a starting point.
 
 ```{r}
 fiti <- lm(Income ~ Illiteracy*Murder, data = as.data.frame(state.x77))
-j_summ(fiti)
+summ(fiti)
 ```
 So we see a significant main effect of `Murder` on `Income` in the presence of a 
 significant interaction between `Murder` and `Illiteracy`. The positive estimate 
@@ -63,10 +63,10 @@ for `Illiteracy` does not differ significantly from zero. With that said, you
 shouldn't focus too much on the main effects of terms included in the interaction.
 
 Note that if you would like to see the output if the input variables were 
-mean-centered and/or standardized, `j_summ()` can do that for you.
+mean-centered and/or standardized, `summ` can do that for you.
 
 ```{r}
-j_summ(fiti, standardize = TRUE)
+summ(fiti, standardize = TRUE)
 ```
 
 
@@ -82,7 +82,7 @@ sim_slopes(fiti, pred = Illiteracy, modx = Murder, johnson_neyman = FALSE)
 So what we see in this example is that when the value of `Murder` is high, the
 slope of `Illiteracy` is negative and significantly different from zero. The value
 for `Illiteracy` when `Murder` is high is in the opposite direction from its coefficient
-estimate for the first version of the model fit with `lm()` but this result makes 
+estimate for the first version of the model fit with `lm` but this result makes 
 sense considering the interaction coefficient was negative; it means that as one 
 of the variables goes up, the other goes down. Now we know the effect of `Illiteracy` 
 only exists when `Murder` is high.
@@ -166,7 +166,7 @@ tend towards being equal on `Income` to observations with lower values of `Murde
 #### Robust standard errors
 
 Certain models require heteroskedasticity-robust standard errors. To be consistent 
-with the reporting of heteroskedasticity-robust standard errors offered by `j_summ()`,
+with the reporting of heteroskedasticity-robust standard errors offered by `summ()`,
 `sim_slopes()` will do the same with the use of the `robust = TRUE` option so you 
 can consistently report standard errors across models.
 
@@ -267,7 +267,7 @@ interact_plot(fiti, pred = "Illiteracy", modx = "Murder", x.label = "Custom X La
 ```
 
 Because the function uses `ggplot2`, it can be modified and extended like any other
-`ggplot2` object. For example, using the `theme_apa()` function from `jtools`:
+`ggplot2` object. For example, using the `theme_apa` function from `jtools`:
 
 ```{r}
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species") + theme_apa()
@@ -331,9 +331,9 @@ what your 2nd moderator is. So in the figure above, each panel represents a
 different level of the `privileges` variable from the `attitudes` built-in 
 dataset. 
 
-`interact_plot()` has a bit more flexibility here than `sim_slopes()`, allowing
+`interact_plot` has a bit more flexibility here than `sim_slopes`, allowing
 for factor moderators with greater than 2 levels. And don't forget that you can
-use `theme_apa()` to format for publications or just to make more economical
+use `theme_apa` to format for publications or just to make more economical
 use of space.
 
 ```{r}

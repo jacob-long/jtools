@@ -73,7 +73,7 @@ j_summ <- summ
 #'
 #'   Default is \code{FALSE}.
 #'
-#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
+#'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
 #' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
 #'   robust standard errors to be used by \code{sandwich}. By default, set to
@@ -222,7 +222,8 @@ summ.lm <- function(
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
+      warning("When vifs is set to TRUE, you need to have the 'car' package",
+              "installed. Proceeding without VIFs...")
       vifs <- FALSE
     }
   }
@@ -287,8 +288,8 @@ summ.lm <- function(
   j <- structure(j, fstat = fstat, fnum = fnum, fden = fden)
 
   # VIFs
-  if (vifs==T) {
-    if (model$rank==2 | (model$rank==1 & df.int==0L)) {
+  if (vifs == TRUE) {
+    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
@@ -300,14 +301,9 @@ summ.lm <- function(
   if (robust == TRUE) {
 
     if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\' package
-           for robust standard errors. Please install it or set robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (!requireNamespace("lmtest", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'lmtest\' package
-           for robust standard errors. Please install it or set robust to FALSE.",
+      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
+           " package for robust standard errors. Please install it or set",
+           " robust to FALSE.",
            call. = FALSE)
     }
 
@@ -323,13 +319,17 @@ summ.lm <- function(
 
       if (!is.factor(cluster) & !is.numeric(cluster)) {
 
-        warning("Invalid cluster input. Either use the name of the variable in the input data frame or provide a numeric/factor vector. Cluster is not being used in the reported SEs.")
+        warning("Invalid cluster input. Either use the name of the variable",
+                " in the input data frame or provide a numeric/factor vector.",
+                " Cluster is not being used in the reported SEs.")
         cluster <- NULL
         use_cluster <- FALSE
 
-      }
+      } else {
 
-      use_cluster <- TRUE
+        use_cluster <- TRUE
+
+      }
 
     } else {
 
@@ -351,7 +351,7 @@ summ.lm <- function(
 
     }
 
-    coefs <- lmtest::coeftest(model,coefs)
+    coefs <- coeftest(model,coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     ps <- coefs[,4]
@@ -390,7 +390,7 @@ summ.lm <- function(
 
   if (vifs == TRUE) {
 
-    params[length(params)+1] <- list(tvifs)
+    params[length(params) + 1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
 
   }
@@ -413,20 +413,21 @@ summ.lm <- function(
 
     namevec <- c(namevec, "partial.r", "part.r")
     pl <- length(params)
-    params[(pl+1)] <- list(partial_corrs)
-    params[(pl+2)] <- list(semipart_corrs)
+    params[(pl + 1)] <- list(partial_corrs)
+    params[(pl + 2)] <- list(semipart_corrs)
 
     if (robust == TRUE) {
 
-      warning("Partial/semipartial correlations calculated based on robust
-t-statistics. See summ.lm documentation for cautions on interpreting
-partial and semipartial correlations alongside robust standard errors.")
+      warning("Partial/semipartial correlations calculated based on robust",
+              " t-statistics. See summ.lm documentation for cautions on",
+              " interpreting partial and semipartial correlations alongside",
+              " robust standard errors.")
 
     }
 
   }
 
-  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  mat <- matrix(nrow = length(ivs), ncol = length(params))
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
@@ -630,7 +631,7 @@ print.summ.lm <- function(x, ...) {
 #'
 #'   Default is \code{FALSE}.
 #'
-#'   This requires the \code{sandwich} and \code{lmtest} packages to compute the
+#'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
 #' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
 #'   robust standard errors to be used by \code{sandwich}. By default, set to
@@ -744,7 +745,8 @@ summ.glm <- function(
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
+      warning("When vifs is set to TRUE, you need to have the 'car' package",
+              " installed. Proceeding without VIFs...")
       vifs <- FALSE
     }
   }
@@ -884,8 +886,8 @@ summ.glm <- function(
   ucoefs <- unname(coef(model))
 
   # VIFs
-  if (vifs==T) {
-    if (model$rank==2 | (model$rank==1 & df.int==0L)) {
+  if (vifs == TRUE) {
+    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
@@ -897,14 +899,9 @@ summ.glm <- function(
   if (robust == TRUE) {
 
     if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\' package
-           for robust standard errors. Please install it or set robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (!requireNamespace("lmtest", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'lmtest\' package
-           for robust standard errors. Please install it or set robust to FALSE.",
+      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
+           " package for robust standard errors. Please install it or set",
+           " robust to FALSE.",
            call. = FALSE)
     }
 
@@ -920,13 +917,17 @@ summ.glm <- function(
 
       if (!is.factor(cluster) & !is.numeric(cluster)) {
 
-        warning("Invalid cluster input. Either use the name of the variable in the input data frame or provide a numeric/factor vector. Cluster is not being used in the reported SEs.")
+        warning("Invalid cluster input. Either use the name of the variable",
+                " in the input data frame or provide a numeric/factor vector.",
+                " Cluster is not being used in the reported SEs.")
         cluster <- NULL
         use_cluster <- FALSE
 
-      }
+      } else {
 
-      use_cluster <- TRUE
+        use_cluster <- TRUE
+
+      }
 
     } else {
 
@@ -948,7 +949,7 @@ summ.glm <- function(
 
     }
 
-    coefs <- lmtest::coeftest(model,coefs)
+    coefs <- coeftest(model,coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     ps <- coefs[,4]
@@ -1006,11 +1007,11 @@ summ.glm <- function(
 
   # Calculate vifs
   if (vifs == TRUE) {
-    params[length(params)+1] <- list(tvifs)
+    params[length(params) + 1] <- list(tvifs)
     namevec <- c(namevec, "VIF")
   }
 
-  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  mat <- matrix(nrow = length(ivs), ncol = length(params))
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
@@ -1415,8 +1416,8 @@ summ.svyglm <- function(
   ucoefs <- unname(coef(model))
 
   # VIFs
-  if (vifs==T) {
-    if (model$rank==2 | (model$rank==1 & df.int==0L)) {
+  if (vifs == TRUE) {
+    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
@@ -2259,5 +2260,490 @@ package \"pbkrtest\" to get more accurate p values.")
 
 }
 
+### Default method ############################################################
+
+#' @rdname summ.lm
+#' @export
+#'
+
+summ.default <- function(model, standardize = FALSE, vifs = FALSE,
+                         confint = FALSE, ci.width = .95,
+                         robust = FALSE, robust.type = "HC3", cluster = NULL,
+                         digits = getOption("jtools-digits", default = 3),
+                         pvals = TRUE, n.sd = 1, center = FALSE,
+                         standardize.response = FALSE, model.info = TRUE,
+                         model.fit = TRUE, model.check = FALSE, ...) {
+
+  if (!requireNamespace("broom", quietly = TRUE)) {
+
+    stop("Install the broom package to use the summ function for",
+         " unsupported models.")
+
+  }
+
+  # Standardized betas
+  if (standardize == TRUE) {
+
+    model2 <-
+      try({scale_lm(model, n.sd = n.sd, scale.response = standardize.response)},
+          silent = TRUE)
+    if ("try-error" %in% class(model2)) {
+
+      warning("Could not standardize this type of model. Reporting",
+              " unstandardized estimates...")
+      standardize <- FALSE
+      center <- FALSE
+
+    } else {
+
+      model <- model2
+
+    }
+
+  } else if (center == TRUE && standardize == FALSE) {
+
+    model2 <-  try({center_lm(model)}, silent = TRUE)
+    if ("try-error" %in% class(model2)) {
+
+      warning("Could not center this type of model. Reporting",
+              " uncentered estimates...")
+      center <- FALSE
+
+    } else {
+
+      model <- model2
+
+    }
+
+  }
+
+  # Checking for required package for VIFs to avoid problems
+  if (vifs == TRUE) {
+    if (!requireNamespace("car", quietly = TRUE)) {
+      warning("When vifs is set to TRUE, you need to have the 'car' package",
+              "installed. Proceeding without VIFs...")
+      vifs <- FALSE
+    }
+  }
+
+  mod_class <- class(model)
+
+  t <- suppressWarnings(try({coefs <-
+    broom::tidy(model, conf.int = confint, conf.level = ci.width)},
+    silent = TRUE))
+
+  if ("try-error" %in% class(t)) {
 
 
+    t <-
+      suppressWarnings(try({coefs <- coeftest(model)}, silent = TRUE))
+
+
+    if (class(t) == "try-error") {
+      stop("Could not find a way to extract coefficients via broom::tidy",
+           " or coeftest.")
+    } else {
+      coefs <- as.table(coefs)
+    }
+
+
+  } else {
+
+    broom <- TRUE
+
+  }
+
+  t <- suppressWarnings(try({mod_info <- broom::glance(model)}, silent = TRUE))
+
+  if ("try-error" %in% class(t)) {
+
+    mod_info <- NULL
+
+    n_obs <- try({nobs(model)}, silent = TRUE)
+    if (class(n_obs) == "try-error") {n_obs <- NULL}
+
+    aic <- try({AIC(model)}, silent = TRUE)
+    if (class(aic) == "try-error") {aic <- NULL}
+
+    bic <- try({BIC(model)}, silent = TRUE)
+    if (class(bic) == "try-error") {bic <- NULL}
+
+    r.squared <- NULL
+
+    mod_info2 <- list(r.squared = r.squared, aic = aic, bic = bic)
+
+  } else {
+
+    if ("AIC" %in% names(mod_info)) {
+
+      aic <- mod_info$AIC
+
+    } else {
+
+      aic <- NULL
+
+    }
+
+    if ("BIC" %in% names(mod_info)) {
+
+      bic <- mod_info$BIC
+
+    } else {
+
+      bic <- NULL
+
+    }
+
+    if ("r.squared" %in% names(mod_info)) {
+
+      r.squared <- mod_info$r.squared
+
+    } else {
+
+      r.squared <- NULL
+
+    }
+
+    mod_info2 <- list(aic = aic, bic = bic, r.squared = r.squared)
+
+  }
+
+  if (!exists("n_obs") || is.null(n_obs)) {
+
+    n_obs <- nrow(model.frame(model))
+
+  }
+
+  if (confint == TRUE) {
+
+    alpha <- (1 - ci.width)/2
+
+    lci_lab <- 0 + alpha
+    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+
+    uci_lab <- 1 - alpha
+    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+
+    if (broom == TRUE) {
+
+      coeftable <- coefs[,c("estimate","conf.low","conf.high",
+                           "statistic","p.value")]
+
+      coeftable <- as.table(as.matrix(coeftable))
+      rownames(coeftable) <- coefs[,"term"]
+      colnames(coeftable) <- c("Est.", lci_lab, uci_lab, "test stat.", "p")
+      stat <- "test stat."
+
+    } else {
+
+      cis <- try({confint(model, level = ci.width)}, silent = TRUE)
+      if ("try-error" %in% class(cis)) {
+
+        warning("Could not compute CIs. Reporting without them...")
+        confint <- FALSE
+
+      } else {
+
+        ests <- coefs[,"Est."]
+        try({stats <- coefs[,"t val."]}, silent = TRUE)
+        if ("try-error" %in% class(stats)) {
+          stats <- coefs[,"z val."]
+          stat <- "z val."
+        } else {
+          stat <- "t val."
+        }
+        ps <- coefs[,"p"]
+
+        coefs <- cbind(ests, cis[1], cis[2], stats, ps)
+        colnames(coefs) <- c("Est.", lci_lab, uci_lab, stat, "p")
+
+      }
+
+    }
+
+  }
+
+  if (confint == FALSE) {
+
+    if (broom == TRUE) {
+
+      coeftable <- coefs[,c("estimate","std.error","statistic","p.value")]
+
+      coeftable <- as.table(as.matrix(coeftable))
+      rownames(coeftable) <- coefs[,"term"]
+      colnames(coeftable) <- c("Est.", "S.E.", "test stat.", "p")
+      stat <- "test stat."
+
+    } else {
+
+      coeftable <- as.table(coefs)
+
+    }
+
+  }
+
+  if (robust == TRUE & confint == FALSE) {
+
+    if (!requireNamespace("sandwich", quietly = TRUE)) {
+      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
+           " package for robust standard errors. Please install it or set",
+           " robust to FALSE.",
+           call. = FALSE)
+    }
+
+    if (is.character(cluster)) {
+
+      call <- getCall(model)
+      d <- eval(call$data, envir = environment(formula(model)))
+
+      cluster <- d[,cluster]
+      use_cluster <- TRUE
+
+    } else if (length(cluster) > 1) {
+
+      if (!is.factor(cluster) & !is.numeric(cluster)) {
+
+        warning("Invalid cluster input. Either use the name of the variable",
+                " in the input data frame or provide a numeric/factor vector.",
+                " Cluster is not being used in the reported SEs.")
+        cluster <- NULL
+        use_cluster <- FALSE
+
+      } else {
+
+        use_cluster <- TRUE
+
+      }
+
+    } else {
+
+      use_cluster <- FALSE
+
+    }
+
+    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
+      # vcovCL only goes up to HC3
+      tvcov <- try({sandwich::vcovHC(model, type = robust.type)},
+          silent = TRUE)
+      if ("try-error" %in% class(tvcov)) {
+
+        warning("Could not calculate robust standard errors for this model",
+                " type. Returning the non-robust statistics.")
+        robust <- FALSE
+
+      }
+
+    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
+
+      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
+
+    } else if (robust == TRUE) {
+
+      tvcov <-
+        try({sandwich::vcovCL(model, cluster = cluster, type = robust.type)},
+                   silent = TRUE)
+      if ("try-error" %in% class(tvcov)) {
+
+        warning("Could not calculate robust standard errors for this model",
+                " type. Returning the non-robust statistics.")
+        robust <- FALSE
+        use_cluster <- FALSE
+
+      }
+
+    }
+
+    new_coefs <- try({coeftest(model, tvcov)})
+    if ("try-error" %in% class(new_coefs)) {
+
+      warning("Could not calculate robust standard errors for this model",
+              " type. Returning the non-robust statistics.")
+      robust <- FALSE
+      use_cluster <- FALSE
+
+    } else {
+
+      new_ses <- coefs[,2]
+      new_ts <- coefs[,3]
+      new_ps <- coefs[,4]
+
+      coeftable[,stat] <- new_ts
+      coeftable[,"p"] <- new_ps
+      coeftable[,"S.E."] <- new_ses
+
+      use_cluster <- FALSE
+
+    }
+
+  } else if (robust == TRUE & confint == TRUE) {
+
+    warning("Robust statistics and confidence intervals cannot be combined",
+            " for this type of model. Reporting non-robust intervals...")
+    robust <- FALSE
+    use_cluster <- FALSE
+
+  } else {
+
+    use_cluster <- FALSE
+
+  }
+
+  if (vifs == TRUE) {
+
+    tvifs <- try({car::vif(model)}, silent = TRUE)
+    if ("try-error" %in% class(tvifs)) {
+
+      warning("VIFs could not be fitted for this type of model.")
+      vifs <- FALSE
+
+    } else {
+
+      coeftable[,"VIF"] <- rep(NA, times = nrow(coeftable))
+      if (length(tvifs) == nrow(coeftable)) {
+        coeftable[,"VIF"] <- tvifs
+      } else {
+        coeftable[-1,"VIF"] <- tvifs
+      }
+
+    }
+
+  }
+
+  if (pvals == FALSE) {
+
+    coeftable <- coeftable[,colnames(coeftable) %nin% "p"]
+
+  }
+
+  out <- list(coeftable = coeftable, model = model)
+  out <- structure(out, pvals = pvals, robust = robust, vifs = vifs,
+                   mod_class = mod_class, mod_info = mod_info,
+                   confint = confint, ci.width = ci.width, broom = broom,
+                   standardize = standardize, center = center,
+                   n.sd = n.sd, dv = names(model.frame(model)[1]),
+                   n = n_obs, mod_info2 = mod_info2, digits = digits,
+                   model.info = model.info, model.fit = model.fit,
+                   use_cluster = use_cluster, robust.type = robust.type)
+  class(out) <- c("summ.default","summ")
+  return(out)
+
+}
+
+
+#' @export
+
+print.summ.default <- function(x, ...) {
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Saving number of columns in output table
+  width <- dim(j$coeftable)[2]
+  # Saving number of coefficients in output table
+  height <- dim(j$coeftable)[1]
+  # Saving non-round p values
+  if (x$pvals == TRUE) {
+    pvals <- j$coeftable[,"p"]
+  }
+  # Saving table to separate object
+  ctable <- round(j$coeftable, x$digits)
+
+  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
+  if (x$vifs) {
+    vifvec <- round(ctable[,width], x$digits)
+    ctable <- ctable[,1:width - 1]
+    width <- width - 1
+  }
+
+  # Making a vector of p value significance indicators
+  if (x$pvals == TRUE) {
+    sigstars <- c()
+
+    for (y in 1:height) {
+      if (pvals[y] > 0.1) {
+        sigstars[y] <- ""
+      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
+        sigstars[y] <- "."
+      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
+        sigstars[y] <- "*"
+      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
+        sigstars[y] <- "**"
+      } else if (pvals[y] <= 0.001) {
+        sigstars[y] <- "***"
+      }
+    }
+
+  }
+
+  onames <- colnames(ctable)
+  if (x$vifs == TRUE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars, vifvec)
+    colnames(ctable) <- c(onames, "", "VIF")
+  } else if (x$vifs == FALSE & x$pvals == TRUE) {
+    ctable <- cbind(ctable, sigstars)
+    colnames(ctable) <- c(onames, "")
+  } else if (x$vifs == TRUE & x$pvals == FALSE) {
+    ctable <- cbind(ctable, vifvec)
+    colnames(ctable) <- c(onames, "VIF")
+  }
+
+  if (x$model.info == TRUE) {
+    cat("MODEL INFO:", "\n")
+    cat("Observations:", x$n, "\n")
+    if (!is.null(x$dv)) {
+      cat("Dependent Variable: ", x$dv, "\n", sep = "")
+    }
+    cat("Model type:", x$mod_class[1], "\n")
+  }
+
+  if (x$model.fit == T & !all(sapply(x$mod_info2, is.null))) {
+    cat("\nMODEL FIT: \n")
+    if (!is.null(x$mod_info2$r.squared)) {
+      cat("R-squared =", round(x$mod_info2$r.squared, x$digits), "\n")
+    }
+    if (!is.null(x$mod_info2$aic)) {
+      cat("AIC =", round(x$mod_info2$aic, x$digits), "\n")
+    }
+    if (!is.null(x$mod_info2$bic)) {
+      cat("BIC =", round(x$mod_info2$bic, x$digits), "\n")
+    }
+
+  }
+
+  cat("\n")
+  if (x$robust == TRUE) {
+
+    cat("\nStandard errors:", sep = "")
+
+    if (x$use_cluster == FALSE) {
+
+        cat(" Robust, type = ", x$robust.type, "\n", sep = "")
+
+    } else if (x$use_cluster == TRUE) {
+
+        cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
+
+    }
+
+  } else {
+
+    cat("\n")
+
+  }
+
+  print(as.table(ctable))
+
+  # Notifying user if variables altered from original fit
+  if (x$standardize == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered and scaled by",
+        x$n.sd, "s.d.", "\n")
+  } else if (x$center == TRUE) {
+    cat("\n")
+    cat("All continuous variables are mean-centered.")
+  }
+  cat("\n")
+
+}

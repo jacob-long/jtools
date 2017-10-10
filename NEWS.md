@@ -1,3 +1,8 @@
+## jtools 0.8.0 (CRAN release)
+
+Not many user-facing changes since 0.7.4, but major refactoring internally
+should speed things up and make future development smoother.
+
 ## jtools 0.7.4
 
 Bugfixes:
@@ -20,7 +25,7 @@ the user has defined the values but not the labels.
 * confidence intervals are now properly supported with export_summs
 * changes made to export_summs for compatibility with huxtable 1.0.0 changes
 
-## jtools 0.7.3
+## jtools 0.7.3 (CRAN release)
 
 Important bugfix:
 

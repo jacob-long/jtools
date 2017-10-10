@@ -5,3 +5,4 @@
 ^README\.Rmd$
 ^CONDUCT\.md$
 ^cran-comments\.md$
+^docs$
