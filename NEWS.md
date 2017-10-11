@@ -1,3 +1,23 @@
+## jtools 0.8.1
+
+Thanks to Kim Henry who reported a bug with `johnson_neyman` in the case that
+there is an interval, but the entire interval is outside of the plotted area:
+When that happened, the legend wrongly stated the plotted line was 
+non-significant.
+
+Besides that bugfix, some new features:
+
+* When `johnson_neyman` fails to find the interval (because it doesn't exist),
+it no longer quits with an error. The output will just state the interval was
+not found and the plot will still be created.
+* Much better support for plotting observed data in `interact_plot` has been 
+added. Previously, if the moderator was a factor, you would get very nicely
+colored plotted points when using `plot.points = TRUE`. But if the moderator
+was continuous, the points were just black and it wasn't very informative beyond
+examining the main effect of the focal predictor. With this update, the
+plotted points for continous moderators are shaded along a gradient that matches
+the colors used for the predicted lines and confidence intervals.
+
 ## jtools 0.8.0 (CRAN release)
 
 Not many user-facing changes since 0.7.4, but major refactoring internally
