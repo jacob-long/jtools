@@ -644,17 +644,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Defining linetype here
   if (vary.lty == TRUE) {
-    p <- ggplot2::ggplot(pm, ggplot2::aes(x = pm[,pred], y = pm[,resp],
+    p <- ggplot2::ggplot(pm, ggplot2::aes(x = pm[,pred],
+                                          y = pm[,resp],
                                           colour = pm[,modx],
                                           group = pm[,modx],
                                           linetype = pm[,modx]))
   } else {
-    p <- ggplot2::ggplot(pm, ggplot2::aes(x = pm[,pred], y = pm[,resp],
+    p <- ggplot2::ggplot(pm, ggplot2::aes(x = pm[,pred],
+                                          y = pm[,resp],
                                           colour = pm[,modx],
                                           group = pm[,modx]))
   }
 
-  # Define line thickness
   p <- p + ggplot2::geom_path(size = line.thickness)
 
   # Plot intervals if requested
@@ -664,8 +665,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                                                         fill = pm[,modx],
                                                         group = pm[,modx],
                                                         colour = pm[,modx],
-                                                        linetype = NA
-                                                        ),
+                                                        linetype = NA),
                                   alpha = 1/5, show.legend = FALSE)
     if (facmod == TRUE) {
       p <- p + ggplot2::scale_fill_brewer(palette = color.class)
@@ -682,17 +682,22 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # For factor vars, plotting the observed points
   # and coloring them by factor looks great
-  if (plot.points==TRUE && is.factor(d[,modx])) {
-    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x = d[,pred],
-                                                      y = d[,resp],
-                                                      colour = d[,modx]),
+  if (plot.points == TRUE && is.factor(d[,modx])) {
+    p <- p + ggplot2::geom_point(data = d, ggplot2::aes(x = d[,pred],
+                                                        y = d[,resp],
+                                                        colour = d[,modx]),
                                  position = "jitter", inherit.aes = F,
                                  show.legend = F)
   } else if (plot.points == TRUE && !is.factor(d[,modx])) {
     # otherwise just black points
-    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x = d[,pred],
-                                                      y = d[,resp]),
-                                 inherit.aes = F, position = "jitter")
+    p <- p + ggplot2::geom_point(data = d,
+                                 ggplot2::aes(x = d[,pred], y = d[,resp],
+                                              alpha = d[,modx]),
+                                 colour = first(colors),
+                                 inherit.aes = F, position = "jitter",
+                                 show.legend = F) +
+      ggplot2::scale_alpha_continuous(range = c(0.25, 1),
+                                      guide = "none")
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
@@ -736,7 +741,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                                           palette = color.class)
   } else {
     p <- p + ggplot2::scale_colour_manual(name = legend.main,
-                                          values = colors, breaks = pm[,modx])
+                                          values = colors,
+                                          breaks = pm[,modx])
   }
 
   if (vary.lty == TRUE) {# Add line-specific changes
@@ -751,7 +757,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Give the plot the user-specified title if there is one
-  if (!is.null(main.title)){
+  if (!is.null(main.title)) {
     p <- p + ggplot2::ggtitle(main.title)
   }
 
