@@ -468,7 +468,9 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
                                     vmat = covmat, plot = jnplot,
                                     alpha = jnalpha),
-                     error = function(e) {return("No values")})
+                     error = function(e) {return("No values")},
+                     warning = function(w) {return("No values")})
+
       if (j != 0) {
           jns[[j]] <- jn
       }
@@ -634,22 +636,6 @@ print.sim_slopes <- function(x, ...) {
   ss <- x
   x <- attributes(x)
 
-  # Is the plot wanted? Needed for 3-way interaction handling
-  wantplot <- FALSE
-  if (x$johnson_neyman == TRUE && !is.null(x$mod2)) {
-    value <- any(sapply(x$jns,FUN = function(x) {class(x) == "johnson_neyman"}))
-    if (value) {
-      # Find where the valid ones are
-      index <- which(sapply(x$jns,
-                            FUN = function(x) {class(x) == "johnson_neyman"}))
-      # Save the first one
-      index <- index[1]
-      wantplot <- attributes(x$jns[[index]])$plot
-    } else {
-      wantplot <- FALSE
-    }
-  }
-
   # This helps deal with the fact sometimes mod2vals has no length, so we want
   # to loop just once
   if (!is.null(x$mod2)) {
@@ -666,8 +652,10 @@ print.sim_slopes <- function(x, ...) {
   # Loop through each value of second moderator...if none, just one loop
   for (j in 1:length) {
 
-    # If we're using second moderator, need to make things make sense to inner loop
+    # If we're using second moderator, need to make things make sense
+    # to inner loop
     if (!is.null(x$mod2)) {
+
       m <- NULL
       m$slopes <- ss$slopes[[j]]
       m$ints <- ss$ints[[j]]
@@ -677,45 +665,39 @@ print.sim_slopes <- function(x, ...) {
       # Printing output to make it clear where each batch of second moderator
       # slopes begins
       if (x$def2 == FALSE) {
-        cat("#######################################################\n")
+        cat("############################################################\n")
         cat("While", x$mod2, "(2nd moderator)", "=", x$mod2vals[j], "\n")
-        cat("#######################################################\n\n")
+        cat("############################################################\n\n")
       } else {
         # If the user went with default +/- SD or used a factor variable,
         # we use the labels
-        cat("#######################################################\n")
+        cat("############################################################\n")
         cat("While ", x$mod2, " (2nd moderator)", " = ", x$mod2vals[j], " (",
             names(x$mod2vals)[j], ")", "\n", sep = "")
-        cat("#######################################################\n\n")
+        cat("############################################################\n\n")
       }
 
 
       if (x$johnson_neyman == TRUE) {
 
-        # Handling occasions when there is no solution for the J-N interval
-        if (x$jns[[j]][1] != "No values") {
-          # For 3-way interactions, we don't want each plot being printed
-          attributes(x$jns[[j]])$plot <- FALSE
-          print(x$jns[[j]])
-          skip <- FALSE # Giving a way to skip over instances with no J-N vals
-        } else {
-          cat("The Johnson-Neyman interval could not be found. Is your interaction term significant?\n\n")
-          skip <- TRUE # Giving a way to skip over instances with no J-N vals
-        }
+        # For 3-way interactions, we don't want each plot being printed
+        attributes(x$jns[[j]])$plot <- FALSE
+        print(x$jns[[j]])
 
         # Tell user we can't plot if they don't have cowplot installed
-        if (wantplot == TRUE && !requireNamespace("cowplot", quietly = TRUE)) {
+        if (x$jnplot == TRUE && !requireNamespace("cowplot", quietly = TRUE)) {
           msg <- "To plot Johnson-Neyman plots for 3-way interactions,
           you need the cowplot package."
           warning(msg)
-        } else if (wantplot == TRUE && requireNamespace("cowplot",
-                                                        quietly = TRUE)) {
+          x$jnplot <- FALSE # No more attempts at plotting
+        } else if (x$jnplot == TRUE) {
 
-          if (is.null(legend) && skip == FALSE) {
+          if (is.null(legend)) {
             # We save the legend the first time around to use w/ cowplot
-            legend <- cowplot::get_legend(x$jns[[j]]$plot +
-                                          theme_apa(legend.font.size = 8) +
-                                          ggplot2::theme(legend.position = "top"))
+            legend <-
+              cowplot::get_legend(x$jns[[j]]$plot +
+                 theme_apa(legend.font.size = 8) +
+                   ggplot2::theme(legend.position = "top"))
 
             # Now we get rid of it for the actual plotting of the first plot
             x$jns[[j]]$plot <- x$jns[[j]]$plot +
@@ -725,10 +707,10 @@ print.sim_slopes <- function(x, ...) {
             plots[[1]] <- legend
             # Since we have two columns, we reserve an empty spot in the short
             # first row by putting NULL in the second spot on the list
-            plots[[2]] <- ggplot2::ggplot() + ggplot2::theme_void() # white background
+            plots[[2]] <- ggplot2::ggplot() + ggplot2::theme_void() # white bg
             # We give these two plots empty labels
             labs <- c("","")
-          } else if (skip == FALSE) {
+          } else {
             # For each subsequent plot, we don't need to save the legend,
             # just need to get rid of it
             x$jns[[j]]$plot <- x$jns[[j]]$plot +
@@ -736,13 +718,11 @@ print.sim_slopes <- function(x, ...) {
           }
 
           # Add a label for cowplot
-          if (skip == FALSE) { # only if we aren't skipping it
-            labs <- c(labs, paste(x$mod2, "=", x$mod2vals[j]))
+          labs <- c(labs, paste(x$mod2, "=", x$mod2vals[j]))
 
-            # Add the plot to the plot list at whatever the current end is
-            index <- length(plots) + 1
-            plots[[index]] <- x$jns[[j]]$plot
-          }
+          # Add the plot to the plot list at whatever the current end is
+          index <- length(plots) + 1
+          plots[[index]] <- x$jns[[j]]$plot
 
         }
       }
@@ -750,78 +730,65 @@ print.sim_slopes <- function(x, ...) {
     } else {
       m <- ss
 
-      # If we don't have a three-way interaction, just do what the user asked
-      # with regard to J-N plots
       if (x$johnson_neyman == TRUE) {
-        if (x$jns[[j]][1] != "No values") {
-          print(x$jns[[j]])
-        } else {
-          cat("The Johnson-Neyman interval could not be found. Is your interaction term significant?\n\n")
-        }
+        print(x$jns[[j]])
       }
 
     }
 
-
-
     # Clearly label simple slopes
     cat("SIMPLE SLOPES ANALYSIS\n\n")
 
-  for (i in seq_len(length(x$modxvals))) {
+    for (i in seq_len(length(x$modxvals))) {
 
-    # Use the labels for the automatic +/- 1 SD, factors
-    if (x$def == TRUE) {
+      # Use the labels for the automatic +/- 1 SD, factors
+      if (x$def == TRUE) {
 
-      cat("Slope of ", x$pred, " when ", x$modx, " = ",
-          round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
-          ": \n", sep="")
-      print(round(m$slopes[i,2:4], x$digits))
-
-      # Print conditional intercept
-      if (x$cond.int == TRUE) {
-        cat("Conditional intercept"," when ", x$modx, " = ",
+        cat("Slope of ", x$pred, " when ", x$modx, " = ",
             round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
-            ": \n", sep="")
-        print(round(m$ints[i,2:4], x$digits))
-        cat("\n")
-      } else {cat("\n")}
+            ": \n", sep = "")
+        print(round(m$slopes[i,2:4], x$digits))
 
-    } else { # otherwise don't use labels
+        # Print conditional intercept
+        if (x$cond.int == TRUE) {
+          cat("Conditional intercept"," when ", x$modx, " = ",
+              round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
+              ": \n", sep = "")
+          print(round(m$ints[i,2:4], x$digits))
+          cat("\n")
+        } else {cat("\n")}
 
-      cat("Slope of ", x$pred, " when ", x$modx, " = ",
-          round(x$modxvals[i],x$digits),
-          ": \n", sep="")
-      print(round(m$slopes[i,2:4],x$digits))
+      } else { # otherwise don't use labels
 
-      # Print conditional intercept
-      if (x$cond.int == TRUE) {
-        cat("Conditional intercept", " when ", x$modx, " = ",
-            round(x$modxvals[i],x$digits), ": \n", sep="")
-        print(round(m$ints[i,2:4], x$digits))
-        cat("\n")
-      } else {cat("\n")}
+        cat("Slope of ", x$pred, " when ", x$modx, " = ",
+            round(x$modxvals[i],x$digits),
+            ": \n", sep = "")
+        print(round(m$slopes[i,2:4], x$digits))
 
+        # Print conditional intercept
+        if (x$cond.int == TRUE) {
+          cat("Conditional intercept", " when ", x$modx, " = ",
+              round(x$modxvals[i],x$digits), ": \n", sep = "")
+          print(round(m$ints[i,2:4], x$digits))
+          cat("\n")
+        } else {cat("\n")}
+
+      }
     }
-  }
   } # end mod2 loop
 
   # If 3-way interaction and the user has `cowplot`, here's where we make the
   # final output
-  if (wantplot == TRUE && !is.null(x$mod2) &&
-      requireNamespace("cowplot", quietly = TRUE) && length(plots) > 2) {
+  if (x$jnplot == TRUE && !is.null(x$mod2)) {
+
     # This makes the legend row smaller than the others
-    sizes <- c(0.2, rep(1, times = (length(plots)-1)))
+    sizes <- c(0.2, rep(1, times = (length(plots) - 1)))
+
     # Now we put it all together--vjust is at a non-default level
     print(cowplot::plot_grid(plotlist = plots, labels = labs, label_size = 10,
                                align = "auto", ncol = 2, rel_heights = sizes,
                              vjust = 0, scale = 1))
-  } else if (wantplot == TRUE && !is.null(x$mod2) && length(plots) == 2) {
-    # If only 1 of the values of the 2nd moderator had defined J-N values, then
-    # we don't want to use cowplot.
 
-    # We want to give it its legend back before printing
-    plots[[1]] <- plots[[1]] + ggplot2::theme(legend.position = "right")
-    print(plots[[1]])
   }
 
 }

@@ -158,42 +158,56 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   # Now we define a function to test for number of real solutions to it
   ## The discriminant can tell you how many there will be
   discriminant <- function(a,b,c) {
-    disc <- b^2-4*a*c
+    disc <- b^2 - 4 * a * c
 
     # If the discriminant is zero or something else, can't proceed.
     if (disc > 0) {
       out <- disc
     } else if (disc == 0) {
-      msg <- "There is only one real solution for the Johnson-Neyman interval.
-      Values cannot be supplied."
-      stop(msg)
+      # msg <- "There is only one real solution for the Johnson-Neyman interval.
+      # Values cannot be supplied."
+      # warning(msg)
+      return(NULL)
     } else {
-      msg <- "There are no real solutions for the Johnson-Neyman interval.
-      Values cannot be supplied."
-      stop(msg)
+      # msg <- "There are no real solutions for the Johnson-Neyman interval.
+      # Values cannot be supplied."
+      # warning(msg)
+      return(NULL)
     }
 
     return(out)
   }
 
   disc <- discriminant(a,b,c)
+  # Create value for attribute containing info on success/non-success of
+  # finding j-n interval analytically
+  if (is.null(disc)) {
+    failed <- TRUE
+  } else {
+    failed <- FALSE
+  }
+
 
   # As long as the above didn't error, let's solve the quadratic with this function
   quadsolve <- function(a,b,c, disc) {
     # first return value
-    x1 <- (-b+sqrt(disc))/(2*a)
+    x1 <- (-b + sqrt(disc)) / (2 * a)
     # second return value
-    x2 <- (-b-sqrt(disc))/(2*a)
+    x2 <- (-b - sqrt(disc)) / (2 * a)
     # return a vector of both values
-    result <- c(x1,x2)
+    result <- c(x1, x2)
     # make sure they are in increasing order
-    result <- sort(result, decreasing = F)
+    result <- sort(result, decreasing = FALSE)
 
     return(result)
 
   }
 
-  bounds <- quadsolve(a,b,c, disc)
+  if (!is.null(disc)) {
+    bounds <- quadsolve(a,b,c, disc)
+  } else {
+    bounds <- c(-Inf, Inf)
+  }
   names(bounds) <- c("Lower", "Higher")
 
   # Need to calculate confidence bands
@@ -256,11 +270,13 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   insigs <- setdiff(1:1000, sigs)
 
   # Create grouping variable in cbs
+  cbs$Significance <- rep(NA, nrow(cbs))
+  cbs$Significance <- factor(cbs$Significance, levels = c("Insignificant",
+                                                          "Significant"))
   index <- 1:1000 %in% insigs
   cbs$Significance[index] <- "Insignificant"
   index <- 1:1000 %in% sigs
   cbs$Significance[index] <- "Significant"
-  cbs$Significance <- factor(cbs$Significance)
 
   # Give user this little df
   out$cbands <- cbs
@@ -269,14 +285,24 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   ## Would like to find more elegant way to do it
   index <- which(cbs$Significance == "Significant")[1]
 
-  if (index != 0) {
+  if (!is.na(index) & index != 0) {
     inside <- (cbs[index,modx] > bounds[1] && cbs[index,modx] < bounds[2])
+    all_sig <- NULL # Indicator for whether all values are either T or F
+
+    # We don't know from this first test, so we do another check here
+    if (is.na(which(cbs$Significance == "Insignificant")[1])) {
+      all_sig <- TRUE
+    } else {
+      all_sig <- FALSE
+    }
+
   } else {
-    stop("No moderator values in the range of the observed data were associated with significant slopes of the predictor.")
+    inside <- FALSE
+    all_sig <- TRUE
   }
 
 
-  out <- structure(out, inside = inside)
+  out <- structure(out, inside = inside, failed = failed, all_sig = all_sig)
 
   # Splitting df into three pieces
   cbso1 <- cbs[cbs[,modx] < bounds[1],]
@@ -284,53 +310,70 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   cbsi <- cbs[(cbs[,modx] > bounds[1] & cbs[,modx] < bounds[2]),]
 
   # Create label based on alpha level
-  alpha <- alpha*2 # Undoing what I did earlier
+  alpha <- alpha * 2 # Undoing what I did earlier
   alpha <- gsub("0\\.", "\\.", as.character(alpha))
   pmsg <- paste("p <", alpha)
 
   # Let's make a J-N plot
   plot <- ggplot2::ggplot() +
+
     ggplot2::geom_path(data = cbso1, ggplot2::aes(x = cbso1[,modx],
                                     y = cbso1[,predl],
                                     color = cbso1[,"Significance"])) +
-    ggplot2::geom_path(data = cbsi, ggplot2::aes(x = cbsi[,modx],
-                                                  y = cbsi[,predl],
-                                                  color = cbsi[,"Significance"])) +
-    ggplot2::geom_path(data = cbso2, ggplot2::aes(x = cbso2[,modx],
-                                                  y = cbso2[,predl],
-                                                  color = cbso2[,"Significance"])) +
+
+    ggplot2::geom_path(data = cbsi,
+                       ggplot2::aes(x = cbsi[,modx], y = cbsi[,predl],
+                                    color = cbsi[,"Significance"])) +
+
+    ggplot2::geom_path(data = cbso2,
+                       ggplot2::aes(x = cbso2[,modx], y = cbso2[,predl],
+                                    color = cbso2[,"Significance"])) +
+
     ggplot2::geom_ribbon(data = cbso1,
                          ggplot2::aes(x = cbso1[,modx], ymin = cbso1[,"Lower"],
                                       ymax = cbso1[,"Upper"],
-                                      fill = cbso1[,"Significance"]), alpha = 0.2) +
+                                      fill = cbso1[,"Significance"]),
+                         alpha = 0.2) +
+
     ggplot2::geom_ribbon(data = cbsi,
                          ggplot2::aes(x = cbsi[,modx], ymin = cbsi[,"Lower"],
                                       ymax = cbsi[,"Upper"],
-                                      fill = cbsi[,"Significance"]), alpha = 0.2) +
+                                      fill = cbsi[,"Significance"]),
+                         alpha = 0.2) +
+
     ggplot2::geom_ribbon(data = cbso2,
                          ggplot2::aes(x = cbso2[,modx], ymin = cbso2[,"Lower"],
                                       ymax = cbso2[,"Upper"],
-                                      fill = cbso2[,"Significance"]), alpha = 0.2) +
+                                      fill = cbso2[,"Significance"]),
+                         alpha = 0.2) +
+
     ggplot2::scale_fill_manual(values = c("Significant" = "#00BFC4",
                                           "Insignificant" = "#F8766D"),
-                               labels = c("n.s.", pmsg)) +
+                               labels = c("n.s.", pmsg),
+                               breaks = c("Insignificant","Significant"),
+                               drop = FALSE,
+                               guide = ggplot2::guide_legend(order = 2)) +
+
     ggplot2::geom_hline(ggplot2::aes(yintercept = 0)) +
 
     ggplot2::geom_segment(ggplot2::aes(x = modrangeo[1], xend = modrangeo[2],
                                        y = 0, yend = 0,
                                        linetype = "Range of\nobserved\ndata"),
-                          lineend = "square", size = 1.25)
+                          lineend = "square", size = 1.25) +
+
+    # Adding this scale allows me to have consistent ordering
+    ggplot2::scale_linetype_discrete(guide = ggplot2::guide_legend(order = 1))
 
     if (out$bounds[1] < modrange[1]) {
       # warning("The lower bound is outside the range of the plotted data")
-    } else {
+    } else if (all_sig == FALSE) {
       plot <- plot + ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[1]),
                                          linetype = 2, color = "#00BFC4")
     }
 
     if (out$bounds[2] > modrange[2]) {
       # warning("The upper bound is outside the range of the plotted data")
-    } else {
+    } else if (all_sig == FALSE) {
       plot <- plot + ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[2]),
                                          linetype = 2, color = "#00BFC4")
     }
@@ -374,11 +417,17 @@ print.johnson_neyman <- function(x, ...) {
 
   # Print the output
   cat("JOHNSON-NEYMAN INTERVAL\n\n")
-  cat("The slope of", atts$pred, "is", pmsg, "when", atts$modx,
-      "is", inout, "this interval:\n")
-  cat("[", x$bounds[1], ", ", x$bounds[2], "]\n", sep = "")
-  cat("Note: The range of observed values of ", atts$modx, " is [", atts$modrange[1], ", ",
-      atts$modrange[2], "]\n\n", sep = "")
+  if (all(is.finite(x$bounds))) {
+    cat("The slope of", atts$pred, "is", pmsg, "when", atts$modx,
+        "is", inout, "this interval:\n")
+    cat("[", x$bounds[1], ", ", x$bounds[2], "]\n", sep = "")
+    cat("Note: The range of observed values of ", atts$modx,
+        " is [", atts$modrange[1], ", ",
+        atts$modrange[2], "]\n\n", sep = "")
+  } else {
+    cat("The Johnson-Neyman interval could not be found.",
+        "\nIs your interaction term significant?\n\n")
+  }
 
   # If requested, print the plot
   if (atts$plot == TRUE) {
