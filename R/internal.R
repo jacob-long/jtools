@@ -1,15 +1,20 @@
 ## Making a "opposite of %in%" or "not %in%" function to simplify code
 `%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
 
+## Quicker way to get last item of vector
+last <- function(x) {return(x[length(x)])}
+## Just so code reads more clearly when using last(x)
+first <- function(x) {return(x[1])}
+
 #### Internal function
 ### This is taken from pscl package, I don't want to list it as import for
 ### this alone. The return object needs tweaking for me anyway
-pR2Work <- function(llh,llhNull,n){
-  McFadden <- 1 - llh/llhNull
-  G2 <- -2*(llhNull-llh)
-  r2ML <- 1 - exp(-G2/n)
-  r2ML.max <- 1 - exp(llhNull*2/n)
-  r2CU <- r2ML/r2ML.max
+pR2Work <- function(llh, llhNull, n){
+  McFadden <- 1 - llh / llhNull
+  G2 <- -2 * (llhNull - llh)
+  r2ML <- 1 - exp(-G2 / n)
+  r2ML.max <- 1 - exp(llhNull * 2/ n)
+  r2CU <- r2ML / r2ML.max
   out <- NULL
   out$llh <- llh
   out$llhNull <- llhNull
