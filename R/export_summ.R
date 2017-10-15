@@ -353,6 +353,341 @@ export_summs <- function(...,
 
 }
 
+#' @title Plot Regression Summaries
+#' @description `plot_summs` and `plot_coefs` create regression coefficient
+#'   plots with ggplot2.
+#' @param ... regression model(s).
+#' @param ci_level The desired width of confidence intervals for the
+#'   coefficients. Default: 0.95
+#' @param model.names If plotting multiple models simultaneously, you can
+#'   provide a vector of names here. If NULL, they will be named sequentially
+#'   as "Model 1", "Model 2", and so on. Default: NULL
+#' @param coefs If you'd like to include only certain coefficients, provide
+#'   them as a vector. If it is a named vector, then the names will be used
+#'   in place of the variable names. See details for examples. Default: NULL
+#' @param omit.coefs If you'd like to specify some coefficients to not include
+#'   in the plot, provide them as a vector. This argument is overridden by
+#'   `coefs` if both are provided. Default: NULL
+#' @param color.class A color class understood by
+#'   [ggplot2::scale_colour_brewer()] for differentiating multiple models.
+#'   Not used if only one model is plotted. Default: 'Set2'
+#' @return A ggplot object.
+#' @details A note on the distinction between `plot_summs` and `plot_coefs`:
+#'   `plot_summs` only accepts models supported by [summ()] and allows users
+#'   to take advantage of the standardization and robust standard error features
+#'   (among others as may be relevant). `plot_coefs` supports any models that
+#'   have a [broom::tidy()] method defined in the broom package, but of course
+#'   lacks any additional features like robust standard errors. To get a mix
+#'   of the two, you can pass `summ` objects to `plot_coefs` too.
+#'
+#'   For \code{coefs}, if you provide a named vector of coefficients, then
+#'   the plot will refer to the selected coefficients by the names of the
+#'   vector rather than the coefficient names. For instance, if I want to
+#'   include only the coefficients for the \code{hp} and \code{mpg} but have
+#'   the plot refer to them as "Horsepower" and "Miles/gallon", I'd provide
+#'   the argument like this:
+#'   \code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
+#'
+#' @examples
+#' states <- as.data.frame(state.x77)
+#' fit1 <- lm(Income ~ Frost + Illiteracy + Murder +
+#'            Population + Area + `Life Exp` + `HS Grad`,
+#'            data = states, weights = runif(50, 0.1, 3))
+#' fit2 <- lm(Income ~ Frost + Illiteracy + Murder +
+#'            Population + Area + `Life Exp` + `HS Grad`,
+#'            data = states, weights = runif(50, 0.1, 3))
+#' fit3 <- lm(Income ~ Frost + Illiteracy + Murder +
+#'            Population + Area + `Life Exp` + `HS Grad`,
+#'            data = states, weights = runif(50, 0.1, 3))
+#'
+#' # Export all 3 regressions with "Model #" labels,
+#' # standardized coefficients, and robust standard errors
+#' export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
+#'              coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
+#'              "Murder Rate" = "Murder"),
+#'              standardize = TRUE, robust = TRUE)
+#'
+#' @rdname plot_coefs
+#' @export
+#' @importFrom ggplot2 ggplot aes_string geom_vline scale_colour_brewer theme
+#' @importFrom ggplot2 element_blank element_text ylab
+
+plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
+                       omit.coefs = NULL, color.class = "Set2") {
+
+  if (!requireNamespace("broom", quietly = TRUE)) {
+
+    stop("Install the broom package to use the plot_summs function.")
+
+  }
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+
+    stop("Install the plyr package to use the plot_summs function.")
+
+  }
+
+  # Capture arguments
+  dots <- list(...)
+
+  # If first element of list is a list, assume the list is a list of models
+  if (inherits(dots[[1]], 'list')) {
+
+    mods <- dots[[1]]
+
+  } else {
+    # Otherwise assume unnamed arguments are models and everything else is args
+
+    if (!is.null(names(dots))) {
+
+      mods <- dots[names(dots) == ""]
+
+    } else {
+
+      mods <- dots
+
+    }
+
+  }
+
+  if (!is.null(omit.coefs) & !is.null(coefs)) {
+    message("coefs argument overrides omit.coefs argument, displaying ",
+            "coefficients listed in coefs argument.")
+    omit.coefs <- NULL
+  }
+
+  # Assuming all models are the same type as first
+  mod_type <- class(j_summ(mods[[1]]))[1]
+
+  # Now get the argument names for that version of summ
+  summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
+
+  # Setting defaults for summ functions I want to add captions about
+  robust <- FALSE
+  standardize <- FALSE
+  n.sd <- 1
+  odds.ratio <- FALSE
+
+  dots$confint <- TRUE
+  dots$ci.width <- ci_level
+
+  # Since I'm looping, I'm creating the list before the loop
+  jsumms <- as.list(rep(NA, length(mods)))
+
+  if (!is.null(names(dots))) {
+
+    summ_args <- dots[names(dots) %in% names(summ_formals)]
+
+    # For those critical arguments that require a note, see if they were
+    # provided by the user and overwrite if so
+    if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
+    if ("standardize" %in% names(summ_args)) {standardize <- summ_args$standardize}
+    if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
+    if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
+    if ("odds.ratio" %in% names(summ_args)) {
+      odds.ratio <- summ_args$odds.ratio
+    }
+
+    for (i in seq_len(length(mods))) {
+
+      the_args <- summ_args
+      the_args$model <- mods[[i]]
+
+      jsumms[[i]] <- do.call(what = summ, args = the_args)
+      if (!is.null(coefs)) {
+        attr(jsumms[[i]], "coef_export") <- coefs
+      }
+
+    }
+
+  } else {
+
+    jsumms <- lapply(mods, FUN = summ)
+    if (!is.null(coefs)) {
+      for (i in 1:length(jsumms)) {
+        attr(jsumms[[i]], "coef_export") <- coefs
+      }
+    }
+
+  }
+
+  # If user gave model names, apply them now
+  if (!is.null(model.names)) {
+
+    names(jsumms) <- model.names
+
+  }
+
+  # Create empty list to hold tidy frames
+  tidies <- as.list(rep(NA, times = length(jsumms)))
+
+  for (i in 1:length(jsumms)) {
+
+    tidies[[i]] <- broom::tidy(jsumms[[i]], conf.int = TRUE,
+                               conf.level = ci_level)
+    if (!is.null(names(jsumms))) {
+      tidies[[i]]$model <- names(jsumms)[i]
+    } else {
+      modname <- paste("Model", i)
+      tidies[[i]]$model <- modname
+    }
+
+  }
+
+  tidies <- do.call(rbind, tidies)
+  tidies$model <- factor(tidies$model)
+  tidies$term <- factor(tidies$term)
+
+  if (!is.null(omit.coefs)) {
+
+    tidies <- tidies[tidies$term %nin% omit.coefs,]
+
+  }
+
+  p <- ggplot(data = tidies)
+
+  if (length(jsumms) > 1) {
+    p <- p + geom_pointrange_h( # jtools function
+        aes_string(y = "term", x = "estimate", xmin = "conf.low",
+                   xmax = "conf.high", colour = "model"),
+        position = position_dodgev(height = 0.5), # jtools function
+        shape = 21, fill = "white", fatten = 3, size = 0.8)
+  } else {
+    p <- p + geom_pointrange_h( # jtools function
+      aes_string(y = "term", x = "estimate", xmin = "conf.low",
+                 xmax = "conf.high"),
+      shape = 21, fill = "white", fatten = 3, size = 0.8)
+  }
+
+  p <- p +
+    scale_colour_brewer(palette = color.class) +
+    theme_apa(legend.pos = "right", legend.font.size = 9) +
+    theme(axis.title.y = element_blank(),
+                   axis.title.x = element_blank(),
+                   axis.text.y = element_text(size = 10)) +
+    ylab("Estimate")
+
+  # Dealing with exponentiated coefficients, where vline should be at 1
+  if (odds.ratio == FALSE) {
+    p <- p + geom_vline(xintercept = 0, linetype = 2, size = .25)
+  } else {
+    p <- p + geom_vline(xintercept = 1, linetype = 2, size = .25)
+  }
+
+  return(p)
+
+}
+
+#' @export
+#' @rdname plot_coefs
+#' @importFrom ggplot2 ggplot aes_string geom_vline scale_colour_brewer theme
+#' @importFrom ggplot2 element_blank element_text ylab
+
+plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
+                       omit.coefs = NULL, color.class = "Set2") {
+
+  if (!requireNamespace("broom", quietly = TRUE)) {
+
+    stop("Install the broom package to use the plot_summs function.")
+
+  }
+
+  if (!requireNamespace("plyr", quietly = TRUE)) {
+
+    stop("Install the plyr package to use the plot_summs function.")
+
+  }
+
+  # Capture arguments
+  dots <- list(...)
+
+  # If first element of list is a list, assume the list is a list of models
+  if (inherits(dots[[1]], 'list')) {
+
+    mods <- dots[[1]]
+
+  } else {
+    # Otherwise assume unnamed arguments are models and everything else is args
+
+    if (!is.null(names(dots))) {
+
+      mods <- dots[names(dots) == ""]
+
+    } else {
+
+      mods <- dots
+
+    }
+
+  }
+
+  if (!is.null(omit.coefs) & !is.null(coefs)) {
+    message("coefs argument overrides omit.coefs argument, displaying ",
+            "coefficients listed in coefs argument.")
+    omit.coefs <- NULL
+  }
+
+  # If user gave model names, apply them now
+  if (!is.null(model.names)) {
+
+    names(mods) <- model.names
+
+  }
+
+  # Create empty list to hold tidy frames
+  tidies <- as.list(rep(NA, times = length(mods)))
+
+  for (i in 1:length(mods)) {
+
+    tidies[[i]] <- broom::tidy(mods[[i]], conf.int = TRUE,
+                               conf.level = ci_level)
+    if (!is.null(names(mods))) {
+      tidies[[i]]$model <- names(mods)[i]
+    } else {
+      modname <- paste("Model", i)
+      tidies[[i]]$model <- modname
+    }
+
+  }
+
+  tidies <- do.call(rbind, tidies)
+  tidies$model <- factor(tidies$model)
+  tidies$term <- factor(tidies$term)
+
+  if (!is.null(omit.coefs)) {
+
+    tidies <- tidies[tidies$term %nin% omit.coefs,]
+
+  }
+
+  p <- ggplot(data = tidies)
+
+  if (length(mods) > 1) {
+    p <- p + geom_pointrange_h( # jtools function
+      aes_string(y = "term", x = "estimate", xmin = "conf.low",
+                 xmax = "conf.high", colour = "model"),
+      position = position_dodgev(height = 0.5), # jtools function
+      shape = 21, fill = "white", fatten = 3, size = 0.8)
+  } else {
+    p <- p + geom_pointrange_h( # jtools function
+      aes_string(y = "term", x = "estimate", xmin = "conf.low",
+                 xmax = "conf.high"),
+      shape = 21, fill = "white", fatten = 3, size = 0.8)
+  }
+
+  p <- p +
+    geom_vline(xintercept = 0, linetype = 2, size = .25) +
+    scale_colour_brewer(palette = color.class) +
+    theme_apa(legend.pos = "right", legend.font.size = 9) +
+    theme(axis.title.y = element_blank(),
+          axis.title.x = element_blank(),
+          axis.text.y = element_text(size = 10)) +
+    ylab("Estimate")
+
+  return(p)
+
+}
+
 #' @export tidy.summ
 #' @rdname glance.summ
 
@@ -520,4 +855,3 @@ nobs.summ <- function(object, ...) {
   return(nobs(object$model))
 
 }
-

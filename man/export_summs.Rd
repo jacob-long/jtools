@@ -6,7 +6,7 @@
 \usage{
 export_summs(..., error_format = "({std.error})", error_pos = c("below",
   "right", "same"), ci_level = 0.95, statistics = NULL,
-  model.names = NULL, to.word = FALSE, word.file = NULL)
+  model.names = NULL, coefs = NULL, to.word = FALSE, word.file = NULL)
 }
 \arguments{
 \item{...}{At minimum, a regression object(s). See details for more arguments.}
@@ -32,6 +32,11 @@ the defaults by model type.}
 \item{model.names}{If you want to give your model(s) names at the top
 of each column, provide them here as a character vector.
 Otherwise, they will just be labeled by number. Default: NULL}
+
+\item{coefs}{If you want to include only a subset of the coefficients in
+the table, specify them here in a character vector. If you want the
+table to show different names for the coefficients, give a named vector
+where the names are the preferred coefficient names. See details for more.}
 
 \item{to.word}{Export the table to a Microsoft Word document?
 This functionality relies on the \pkg{officer}
@@ -104,6 +109,15 @@ There are many optional parameters not documented above. Any
 
   }
 
+  For \code{coefs}, the argument is slightly different than what is default
+  in \code{huxreg}. If you provide a named vector of coefficients, then
+  the table will refer to the selected coefficients by the names of the
+  vector rather than the coefficient names. For instance, if I want to
+  include only the coefficients for the \code{hp} and \code{mpg} but have
+  the table refer to them as "Horsepower" and "Miles/gallon", I'd provide
+  the argument like this:
+  \code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
+
   You can also pass any argument accepted by the
   \code{\link[huxtable]{huxreg}} function. A few that are likely to be
   oft-used are documented above, but visit \code{huxreg}'s documentation
@@ -121,6 +135,8 @@ fit3 <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77)
 # Export all 3 regressions with "Model #" labels,
 # standardized coefficients, and robust standard errors
 export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
+             coefs = c("Frost Days" = "Frost", "\% Illiterate" = "Illiteracy",
+             "Murder Rate" = "Murder"),
              standardize = TRUE, robust = TRUE)
 
 }

@@ -3,7 +3,7 @@ Type: Package
 Title: Analysis and Presentation of Social Scientific Data
 Version: 0.8.1
 Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
-  role = c("aut", "cre"))
+  role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1582-6214"))
 Description: This is a collection of tools that the author (Jacob) has written
   for the purpose of more efficiently understanding and sharing the results of
   (primarily) regression analyses. There are a number of functions focused
@@ -14,19 +14,21 @@ BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports: ggplot2
 Suggests:
   boot,
   broom,
   car,
   cowplot,
   flextable,
-  ggplot2,
+  grid,
   huxtable (>= 1.0.0),
   lme4,
   methods,
   nlme,
   officer,
   pbkrtest,
+  plyr,
   RColorBrewer,
   sandwich,
   stats4,

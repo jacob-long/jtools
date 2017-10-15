@@ -24,6 +24,8 @@ talent <- counts*.5 + rnorm(50, sd = 3)
 poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
 pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
             family = poisson)
+pmod_a <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
+            family = poisson)
 
 library(lme4, quietly = TRUE)
 data(VerbAgg)
@@ -130,4 +132,74 @@ test_that("Export can do confidence intervals (svyglm)", {
   expect_is(export_summs(regmodel,
                          error_format = "95% CI [{conf.low}, {conf.high}]"),
             "huxtable")
+})
+
+test_that("Export can take manual coefficient names", {
+  expect_is(export_summs(fit,fit2,fitw,
+                         coefs = c("HS Grad %" = "HSGrad",
+                          "Murder Rate" = "Murder")), "huxtable")
+})
+
+#### plot_summs ############################################################
+
+test_that("plot_summs doesn't fail with lm", {
+  expect_is(plot_summs(fit,fit2,fitw), "ggplot")
+})
+
+test_that("plot_summs accepts summ args with lm", {
+  expect_is(plot_summs(fit,fit2,fitw, standardize = T, robust = T), "ggplot")
+})
+
+test_that("plot_summs works with glm", {
+  expect_is(plot_summs(pmod, pmod_a), "ggplot")
+})
+
+test_that("plot_summs accepts summ args with glm", {
+  expect_is(plot_summs(pmod, pmod_a, standardize = T, robust = T), "ggplot")
+})
+
+test_that("plot_summs accepts odds ratios with glm", {
+  expect_is(plot_summs(pmod, pmod_a, standardize = T, robust = T), "ggplot")
+})
+
+test_that("plot_summs works with svyglm", {
+  expect_is(plot_summs(regmodel), "ggplot")
+})
+
+test_that("plot_summs accepts summ args with svyglm", {
+  expect_is(plot_summs(regmodel, standardize = T), "ggplot")
+})
+
+test_that("plot_summs works with lmer", {
+  expect_is(plot_summs(mv), "ggplot")
+})
+
+test_that("plot_summs accepts summ args with lmer", {
+  expect_is(plot_summs(mv, standardize = T), "ggplot")
+})
+
+test_that("plot_summs can take manual coefficient names", {
+  expect_is(plot_summs(fit,fit2,fitw,
+                         coefs = c("HS Grad %" = "HSGrad",
+                          "Murder Rate" = "Murder")), "ggplot")
+})
+
+test_that("plot_summs can omit coefficients", {
+  expect_is(plot_summs(fit,fit2,fitw,
+                         coefs = c("HSGrad","Murder")), "ggplot")
+})
+
+test_that("plot_coefs can take manual coefficient names", {
+  expect_is(plot_coefs(fit,fit2,fitw,
+                         coefs = c("HS Grad %" = "HSGrad",
+                          "Murder Rate" = "Murder")), "ggplot")
+})
+
+test_that("plot_coefs can omit coefficients", {
+  expect_is(plot_coefs(fit,fit2,fitw,
+                         coefs = c("HSGrad","Murder")), "ggplot")
+})
+
+test_that("plot_coefs works", {
+  expect_is(plot_coefs(fit, pmod), "ggplot")
 })
