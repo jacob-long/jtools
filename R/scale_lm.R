@@ -138,8 +138,12 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
   }
 
+  formc <- paste0(formc, collapse = "")
+  formc <- gsub("``", "`", formc, fixed = TRUE)
+
+
   # svyglm?
-  if (class(model)[1]=="svyglm" || class(model)[1]=="svrepglm") {
+  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
     survey <- TRUE
   } else {
     survey <- FALSE
