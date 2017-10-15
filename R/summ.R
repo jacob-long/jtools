@@ -237,7 +237,8 @@ summ.lm <- function(
   # Standardized betas
   if (standardize == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+    model <- scale_lm(model, n.sd = n.sd,
+                      scale.response = standardize.response)
     # Using information from summary()
     sum <- summary(model)
 
@@ -337,11 +338,11 @@ summ.lm <- function(
 
     }
 
-    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
+    if (robust.type %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
       # vcovCL only goes up to HC3
       coefs <- sandwich::vcovHC(model, type = robust.type)
 
-    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
+    } else if (robust.type %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
 
       stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
 
@@ -367,7 +368,7 @@ summ.lm <- function(
 
   if (confint == TRUE) {
 
-    alpha <- (1 - ci.width)/2
+    alpha <- (1 - ci.width) / 2
     tcrit <- abs(qnorm(alpha))
 
     lci_lab <- 0 + alpha
@@ -442,7 +443,7 @@ summ.lm <- function(
   # Drop p-vals if user requests
   if (pvals == FALSE) {
 
-    mat <- mat[,!(colnames(mat) == "p")]
+    mat <- mat[,colnames(mat) %nin% "p"]
 
   }
 
@@ -458,10 +459,12 @@ summ.lm <- function(
   }
 
   j <- structure(j, rsq = rsq, arsq = arsq, dv = names(model$model[1]),
-                        npreds = model$rank-df.int, lmClass = class(model),
+                 npreds = model$rank - df.int, lmClass = class(model),
                  missing = missing, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = "t val.")
+                 test.stat = "t val.",
+                 standardize.response = standardize.response,
+                 odds.ratio = FALSE)
 
   modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
   j <- structure(j, modpval = modpval)
@@ -484,55 +487,8 @@ print.summ.lm <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width - 1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
     if (x$missing == 0) {
@@ -555,17 +511,17 @@ print.summ.lm <- function(x, ...) {
         round(x$modpval, digits = x$digits),
         "\n", "R-squared = ", round(x$rsq, digits = x$digits), "\n",
         "Adj. R-squared = ",
-        round(x$arsq, digits=x$digits), "\n", "\n", sep = "")
+        round(x$arsq, digits = x$digits), "\n", "\n", sep = "")
   }
 
   if (x$model.check == TRUE) {
     # Since it's lm, we can do Breusch-Pagan test
     if (x$homoskedp < .05) {
-      homoskedtf <- paste("Assumption violated (p = ",
-                          round(x$homoskedp,digits = x$digits), ")", sep = "")
+      homoskedtf <- paste0("Assumption violated (p = ",
+                          round(x$homoskedp,digits = x$digits), ")")
     } else {
-      homoskedtf <- paste("Assumption not violated (p = ",
-                          round(x$homoskedp, digits = x$digits), ")", sep = "")
+      homoskedtf <- paste0("Assumption not violated (p = ",
+                          round(x$homoskedp, digits = x$digits), ")")
     }
     cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ",
         homoskedtf,
@@ -593,16 +549,22 @@ print.summ.lm <- function(x, ...) {
 
   }
 
-  print(as.table(ctable))
+  print(ctable)
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
+    if (x$standardize.response == TRUE) {
+      cat("\n")
+      cat("All continuous variables are mean-centered and scaled by",
         x$n.sd, "s.d.", "\n")
+    } else {
+      cat("\n")
+      cat("All continuous predictors are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    }
   } else if (x$center == TRUE) {
     cat("\n")
-    cat("All continuous variables are mean-centered.")
+    cat("All continuous predictors are mean-centered.")
   }
   cat("\n")
 
@@ -625,9 +587,9 @@ print.summ.lm <- function(x, ...) {
 #' @param ci.width A number between 0 and 1 that signifies the width of the
 #'   desired confidence interval. Default is \code{.95}, which corresponds
 #'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
-#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors
-#'   instead of conventional SEs. These are also known as Huber-White standard
-#'   errors.
+#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard
+#'   errors instead of conventional SEs. These are also known as Huber-White
+#'   standard errors.
 #'
 #'   Default is \code{FALSE}.
 #'
@@ -949,7 +911,7 @@ summ.glm <- function(
 
     }
 
-    coefs <- coeftest(model,coefs)
+    coefs <- coeftest(model, coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     ps <- coefs[,4]
@@ -969,7 +931,7 @@ summ.glm <- function(
 
   if (confint == TRUE | odds.ratio == TRUE) {
 
-    alpha <- (1 - ci.width)/2
+    alpha <- (1 - ci.width) / 2
     tcrit <- abs(qnorm(alpha))
 
     lci_lab <- 0 + alpha
@@ -1026,7 +988,7 @@ summ.glm <- function(
   # Drop p-vals if user requests
   if (pvals == FALSE) {
 
-    mat <- mat[,!(colnames(mat) == "p")]
+    mat <- mat[, colnames(mat) %nin% "p"]
 
   }
 
@@ -1038,7 +1000,9 @@ summ.glm <- function(
                  missing = missing, pvals = pvals, robust = robust,
                  robust.type = robust.type, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = tcol)
+                 test.stat = tcol,
+                 standardize.response = standardize.response,
+                 odds.ratio = odds.ratio)
 
   j <- structure(j, lmFamily = model$family)
 
@@ -1060,55 +1024,8 @@ print.summ.glm <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width - 1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
+    # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
     cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
@@ -1164,12 +1081,18 @@ print.summ.glm <- function(x, ...) {
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
+    if (x$standardize.response == TRUE) {
+      cat("\n")
+      cat("All continuous variables are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    } else {
+      cat("\n")
+      cat("All continuous predictors are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    }
   } else if (x$center == TRUE) {
     cat("\n")
-    cat("All continuous variables are mean-centered.")
+    cat("All continuous predictors are mean-centered.")
   }
   cat("\n")
 
@@ -1441,10 +1364,10 @@ summ.svyglm <- function(
     tcrit <- abs(qnorm(alpha))
 
     lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+    lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
 
     uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+    uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
 
   }
 
@@ -1452,8 +1375,8 @@ summ.svyglm <- function(
   if (odds.ratio == TRUE) {
 
     ecoefs <- exp(ucoefs)
-    lci <- exp(ucoefs - (ses*tcrit))
-    uci <- exp(ucoefs + (ses*tcrit))
+    lci <- exp(ucoefs - (ses * tcrit))
+    uci <- exp(ucoefs + (ses * tcrit))
     params <- list(ecoefs, lci, uci, ts, ps)
     namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
 
@@ -1498,7 +1421,7 @@ summ.svyglm <- function(
   }
 
   if (model.check == TRUE && linear == TRUE) {
-    cd <- table(cooks.distance(model) > 4/n)
+    cd <- table(cooks.distance(model) > 4 / n)
     j <- structure(j, cooksdf = cd[2])
 
     if (model.check == TRUE && linear == FALSE) {
@@ -1512,7 +1435,9 @@ summ.svyglm <- function(
   j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int,
                  dispersion = dispersion, missing = missing,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = tcol)
+                 test.stat = tcol,
+                 standardize.response = standardize.response,
+                 odds.ratio = odds.ratio)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -1536,55 +1461,8 @@ print.summ.svyglm <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width-1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
+    # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
     # Always showing this
@@ -1645,18 +1523,24 @@ print.summ.svyglm <- function(x, ...) {
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
+    if (x$standardize.response == TRUE) {
+      cat("\n")
+      cat("All continuous variables are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    } else {
+      cat("\n")
+      cat("All continuous predictors are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    }
   } else if (x$center == TRUE) {
     cat("\n")
-    cat("All continuous variables are mean-centered.")
+    cat("All continuous predictors are mean-centered.")
   }
   cat("\n")
 
 }
 
-##### merMod ###################################################################
+##### merMod ##################################################################
 
 #' Mixed effects regression summaries with options
 #'
@@ -2113,7 +1997,9 @@ summ.merMod <- function(
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  df = df, pbkr = pbkr, r.squared = r.squared,
-                 failed.rsq = failed.rsq, test.stat = tcol)
+                 failed.rsq = failed.rsq, test.stat = tcol,
+                 standardize.response = standardize.response,
+                 odds.ratio = odds.ratio)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -2137,40 +2023,8 @@ print.summ.merMod <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  onames <- colnames(ctable)
-  ctable <- cbind(ctable, sigstars)
-  colnames(ctable) <- c(onames, "")
-
-  }
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
     cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
@@ -2249,12 +2103,18 @@ package \"pbkrtest\" to get more accurate p values.")
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
+    if (x$standardize.response == TRUE) {
+      cat("\n")
+      cat("All continuous variables are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    } else {
+      cat("\n")
+      cat("All continuous predictors are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    }
   } else if (x$center == TRUE) {
     cat("\n")
-    cat("All continuous variables are mean-centered.")
+    cat("All continuous predictors are mean-centered.")
   }
   cat("\n")
 
@@ -2332,8 +2192,13 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
     broom::tidy(model, conf.int = confint, conf.level = ci.width)},
     silent = TRUE))
 
-  if ("try-error" %in% class(t)) {
+  if ("try-error" %nin% class(t)) {
+    # Checking that broom can get the right info
+    t <- try({coefs[,c("std.error","statistic","p.value")]})
 
+  }
+
+  if ("try-error" %in% class(t)) {
 
     t <-
       suppressWarnings(try({coefs <- coeftest(model)}, silent = TRUE))
@@ -2345,6 +2210,8 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
     } else {
       coefs <- as.table(coefs)
     }
+
+    broom <- FALSE
 
 
   } else {
@@ -2504,7 +2371,7 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
       if (!is.factor(cluster) & !is.numeric(cluster)) {
 
         warning("Invalid cluster input. Either use the name of the variable",
-                " in the input data frame or provide a numeric/factor vector.",
+              " in the input data frame or provide a numeric/factor vector.",
                 " Cluster is not being used in the reported SEs.")
         cluster <- NULL
         use_cluster <- FALSE
@@ -2615,15 +2482,18 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
 
   }
 
+  dv <- as.character(attr(terms(formula(model)),"variables"))[2]
+
   out <- list(coeftable = coeftable, model = model)
   out <- structure(out, pvals = pvals, robust = robust, vifs = vifs,
                    mod_class = mod_class, mod_info = mod_info,
                    confint = confint, ci.width = ci.width, broom = broom,
                    standardize = standardize, center = center,
-                   n.sd = n.sd, dv = names(model.frame(model)[1]),
+                   n.sd = n.sd, dv = dv,
                    n = n_obs, mod_info2 = mod_info2, digits = digits,
                    model.info = model.info, model.fit = model.fit,
-                   use_cluster = use_cluster, robust.type = robust.type)
+                   use_cluster = use_cluster, robust.type = robust.type,
+                   standardize.response = standardize.response)
   class(out) <- c("summ.default","summ")
   return(out)
 
@@ -2639,55 +2509,8 @@ print.summ.default <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Saving number of columns in output table
-  width <- dim(j$coeftable)[2]
-  # Saving number of coefficients in output table
-  height <- dim(j$coeftable)[1]
-  # Saving non-round p values
-  if (x$pvals == TRUE) {
-    pvals <- j$coeftable[,"p"]
-  }
-  # Saving table to separate object
-  ctable <- round(j$coeftable, x$digits)
-
-  # Need to squeeze sigstars between p-vals and VIFs (if VIFs present)
-  if (x$vifs) {
-    vifvec <- round(ctable[,width], x$digits)
-    ctable <- ctable[,1:width - 1]
-    width <- width - 1
-  }
-
-  # Making a vector of p value significance indicators
-  if (x$pvals == TRUE) {
-    sigstars <- c()
-
-    for (y in 1:height) {
-      if (pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-    }
-
-  }
-
-  onames <- colnames(ctable)
-  if (x$vifs == TRUE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars, vifvec)
-    colnames(ctable) <- c(onames, "", "VIF")
-  } else if (x$vifs == FALSE & x$pvals == TRUE) {
-    ctable <- cbind(ctable, sigstars)
-    colnames(ctable) <- c(onames, "")
-  } else if (x$vifs == TRUE & x$pvals == FALSE) {
-    ctable <- cbind(ctable, vifvec)
-    colnames(ctable) <- c(onames, "VIF")
-  }
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
     cat("MODEL INFO:", "\n")
@@ -2737,12 +2560,18 @@ print.summ.default <- function(x, ...) {
 
   # Notifying user if variables altered from original fit
   if (x$standardize == TRUE) {
-    cat("\n")
-    cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
+    if (x$standardize.response == TRUE) {
+      cat("\n")
+      cat("All continuous variables are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    } else {
+      cat("\n")
+      cat("All continuous predictors are mean-centered and scaled by",
+          x$n.sd, "s.d.", "\n")
+    }
   } else if (x$center == TRUE) {
     cat("\n")
-    cat("All continuous variables are mean-centered.")
+    cat("All continuous predictors are mean-centered.")
   }
   cat("\n")
 
