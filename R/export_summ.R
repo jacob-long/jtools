@@ -7,7 +7,8 @@
 #'   to do the table formatting. This is particularly useful for putting
 #'   the results of multiple models into a single table.
 #'
-#' @param ... At minimum, a regression object(s). See details for more arguments.
+#' @param ... At minimum, a regression object(s). See details for more
+#'   arguments.
 #' @param error_format Which of standard error, confidence intervals, test
 #'   statistics, or p values should be used to express uncertainty of estimates
 #'   for regression coefficients? See details for more info.
@@ -25,6 +26,10 @@
 #' @param model.names If you want to give your model(s) names at the top
 #'   of each column, provide them here as a character vector.
 #'   Otherwise, they will just be labeled by number. Default: NULL
+#' @param coefs If you want to include only a subset of the coefficients in
+#'   the table, specify them here in a character vector. If you want the
+#'   table to show different names for the coefficients, give a named vector
+#'   where the names are the preferred coefficient names. See details for more.
 #' @param to.word Export the table to a Microsoft Word document?
 #'   This functionality relies on the \pkg{officer}
 #'   and \pkg{flextable} packages. Default: FALSE
@@ -85,6 +90,15 @@
 #'
 #'   }
 #'
+#'   For \code{coefs}, the argument is slightly different than what is default
+#'   in \code{huxreg}. If you provide a named vector of coefficients, then
+#'   the table will refer to the selected coefficients by the names of the
+#'   vector rather than the coefficient names. For instance, if I want to
+#'   include only the coefficients for the \code{hp} and \code{mpg} but have
+#'   the table refer to them as "Horsepower" and "Miles/gallon", I'd provide
+#'   the argument like this:
+#'   \code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
+#'
 #'   You can also pass any argument accepted by the
 #'   \code{\link[huxtable]{huxreg}} function. A few that are likely to be
 #'   oft-used are documented above, but visit \code{huxreg}'s documentation
@@ -102,6 +116,8 @@
 #' # Export all 3 regressions with "Model #" labels,
 #' # standardized coefficients, and robust standard errors
 #' export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
+#'              coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
+#'              "Murder Rate" = "Murder"),
 #'              standardize = TRUE, robust = TRUE)
 #'
 #' @seealso
@@ -119,7 +135,8 @@ export_summs <- function(...,
                          error_format = "({std.error})",
                          error_pos = c("below", "right", "same"),
                          ci_level = .95, statistics = NULL,
-                         model.names = NULL, to.word = FALSE,
+                         model.names = NULL, coefs = NULL,
+                         to.word = FALSE,
                          word.file = NULL) {
 
   if (!requireNamespace("huxtable", quietly = TRUE)) {
@@ -192,7 +209,8 @@ export_summs <- function(...,
     # For those critical arguments that require a note, see if they were
     # provided by the user and overwrite if so
     if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
-    if ("standardize" %in% names(summ_args)) {standardize <- summ_args$standardize}
+    if ("standardize" %in% names(summ_args)) {standardize <- 
+                                              summ_args$standardize}
     if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
     if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
 
@@ -202,12 +220,20 @@ export_summs <- function(...,
       the_args$model <- mods[[i]]
 
       jsumms[[i]] <- do.call(what = summ, args = the_args)
+      if (!is.null(coefs)) {
+        attr(jsumms[[i]], "coef_export") <- coefs
+      }
 
     }
 
   } else {
 
     jsumms <- lapply(mods, FUN = summ)
+    if (!is.null(coefs)) {
+      for (i in 1:length(jsumms)) {
+        attr(jsumms[[i]], "coef_export") <- coefs
+      }
+    }
 
   }
 
@@ -332,7 +358,8 @@ export_summs <- function(...,
 
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
-  base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level, ...)
+  base <-
+    broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level, ...)
 
   if ("S.E." %in% colnames(x$coeftable)) {
     # If conf.int == TRUE, summ does not have a S.E. column
@@ -363,6 +390,12 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
+  if (attr(x, "odds.ratio") == TRUE) {
+
+    base$estimate <- x$coeftable[,"Odds Ratio"]
+
+  }
+
   if (attributes(x)$confint == TRUE) {
 
     # Need to use this to get the right coeftable colnames
@@ -376,6 +409,20 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
     base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
     base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
+
+  }
+
+  if (!is.null(attr(x, "coef_export"))) {
+
+    the_coefs <- attr(x, "coef_export")
+    base <- base[base$term %in% the_coefs,]
+    if (!is.null(names(the_coefs))) {
+      for (i in 1:length(the_coefs)) { # seq_len fails with error here?
+        if (names(the_coefs[i]) != "") {
+          base$term[base$term == the_coefs[i]] <- names(the_coefs[i])
+        }
+      }
+    }
 
   }
 
