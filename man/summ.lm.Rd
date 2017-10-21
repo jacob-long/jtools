@@ -6,23 +6,22 @@
 \alias{summ.default}
 \title{Regression summaries with options}
 \usage{
-\method{summ}{lm}(model, standardize = FALSE, vifs = FALSE,
-  confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 3),
-  pvals = TRUE, n.sd = 1, center = FALSE, standardize.response = FALSE,
-  part.corr = FALSE, model.info = TRUE, model.fit = TRUE,
-  model.check = FALSE, ...)
+\method{summ}{lm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
+  ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,
+  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
+  n.sd = 1, center = FALSE, scale.response = FALSE, part.corr = FALSE,
+  model.info = TRUE, model.fit = TRUE, model.check = FALSE, ...)
 
-\method{summ}{default}(model, standardize = FALSE, vifs = FALSE,
+\method{summ}{default}(model, scale = FALSE, vifs = FALSE,
   confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 3),
-  pvals = TRUE, n.sd = 1, center = FALSE, standardize.response = FALSE,
+  cluster = NULL, digits = getOption("jtools-digits", default = 2),
+  pvals = TRUE, n.sd = 1, center = FALSE, scale.response = FALSE,
   model.info = TRUE, model.fit = TRUE, model.check = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{lm} object.}
 
-\item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
+\item{scale}{If \code{TRUE}, reports standardized regression 
 coefficients. Default is \code{FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
@@ -35,16 +34,16 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard errors
-  instead of conventional SEs. These are also known as Huber-White standard
-  errors.
+\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard 
+  errors instead of conventional SEs. These are also known as Huber-White 
+  standard errors.
 
   Default is \code{FALSE}.
 
   This requires the \code{sandwich} package to compute the
    standard errors.}
 
-\item{robust.type}{Only used if \code{robust=TRUE}. Specifies the type of
+\item{robust.type}{Only used if \code{robust = TRUE}. Specifies the type of
 robust standard errors to be used by \code{sandwich}. By default, set to
 \code{"HC3"}. See details for more on options.}
 
@@ -53,47 +52,48 @@ the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in
-the output. Default is 3. You can change the default number of digits for
-all jtools functions with \code{options("jtools-digits" = digits)} where
-digits is the desired number.}
+report in the output. Default is 2. You can change the default number of 
+digits for all jtools functions with 
+\code{options("jtools-digits" = digits)} where digits is the desired 
+number.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
 details).}
 
-\item{n.sd}{If \code{standardize = TRUE}, how many standard deviations should
+\item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
 
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{standardize.response}{Should standardization apply to response variable?
+\item{scale.response}{Should standardization apply to response variable?
 Default is \code{FALSE}.}
 
-\item{part.corr}{Print partial (labeled "partial.r") and semipartial (labeled
-"part.r") correlations with the table?
+\item{part.corr}{Print partial (labeled "partial.r") and 
+semipartial (labeled "part.r") correlations with the table?
 Default is \code{FALSE}. See details about these quantities when robust
 standard errors are used.}
 
-\item{model.info}{Toggles printing of basic information on sample size, name of
-DV, and number of predictors.}
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
-\item{model.check}{Toggles whether to perform Breusch-Pagan test for heteroskedasticity
+\item{model.check}{Toggles whether to perform Breusch-Pagan test for 
+heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
 }
 \value{
-If saved, users can access most of the items that are returned in the
-  output (and without rounding).
+If saved, users can access most of the items that are returned in 
+  the output (and without rounding).
 
  \item{coeftable}{The outputted table of variables and coefficients}
  \item{model}{The model for which statistics are displayed. This would be
-   most useful in cases in which \code{standardize = TRUE}.}
+   most useful in cases in which \code{scale = TRUE}.}
 
  Much other information can be accessed as attributes.
 }
@@ -102,7 +102,8 @@ If saved, users can access most of the items that are returned in the
 \code{summary}, but formatted differently with more options.
 }
 \details{
-By default, this function will print the following items to the console:
+By default, this function will print the following items to the
+ console:
 \itemize{
   \item The sample size
   \item The name of the outcome variable
@@ -111,17 +112,19 @@ By default, this function will print the following items to the console:
    p values.
 }
 
- There are several options available for \code{robust.type}. The heavy lifting
- is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+ There are several options available for \code{robust.type}. The heavy 
+ lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better 
+ described.
  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
  recommendation of the developers of \pkg{sandwich}, the default is set to
  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
- if the goal is to replicate Stata's output. Any option that is understood by
- \code{vcovHC} will be accepted. Cluster-robust standard errors are computed
- if \code{cluster} is set to the name of the input data's cluster variable
- or is a vector of clusters.
+ if the goal is to replicate Stata's output. Any option that is understood 
+ by \code{vcovHC} will be accepted. Cluster-robust standard errors are 
+ computed if \code{cluster} is set to the name of the input data's cluster 
+ variable or is a vector of clusters.
 
- The \code{standardize} and \code{center} options are performed via refitting
+ The \code{scale} and \code{center} options are performed via 
+ refitting
  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
  respectively. Each of those in turn uses \code{\link{gscale}} for the
  mean-centering and scaling.
@@ -139,32 +142,33 @@ By default, this function will print the following items to the console:
  not report the "robust" partial and semipartial correlations in
  publications.
 
- There are two pieces of information given for \code{model.check}, provided that
- the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
- \code{\link[car]{ncvTest}}. This is a
- hypothesis test for which the alternative hypothesis is heteroskedastic errors.
- The test becomes much more likely to be statistically significant as the sample
- size increases; however, the homoskedasticity assumption becomes less important
- to inference as sample size increases (Lumley, Diehr, Emerson, & Lu, 2002).
- Take the result of the test as a cue to check graphical checks rather than a
- definitive decision. Note that the use of robust standard errors can account
- for heteroskedasticity, though some oppose this approach (see King & Roberts,
- 2015).
+ There are two pieces of information given for \code{model.check}, provided 
+ that the model is an \code{lm} object. First, a Breusch-Pagan test is 
+ performed with \code{\link[car]{ncvTest}}. This is a
+ hypothesis test for which the alternative hypothesis is heteroskedastic 
+ errors. The test becomes much more likely to be statistically significant 
+ as the sample size increases; however, the homoskedasticity assumption 
+ becomes less important to inference as sample size increases (Lumley, 
+ Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
+ graphical checks rather than a definitive decision. Note that the use of 
+ robust standard errors can account for heteroskedasticity, though some 
+ oppose this approach (see King & Roberts, 2015).
 
  The second piece of information provided by setting \code{model.check} to
  \code{TRUE} is the number of high leverage observations. There are no hard
  and fast rules for determining high leverage either, but in this case it is
  based on Cook's Distance. All Cook's Distance values greater than (4/N) are
  included in the count. Again, this is not a recommendation to locate and
- remove such observations, but rather to look more closely with graphical and
- other methods.
+ remove such observations, but rather to look more closely with graphical 
+ and other methods.
 }
 \examples{
 # Create lm object
-fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
+fit <- lm(Income ~ Frost + Illiteracy + Murder,
+          data = as.data.frame(state.x77))
 
-# Print the output with standardized coefficients and 2 digits past the decimal
-summ(fit, standardize = TRUE, digits = 2)
+# Print the output with standardized coefficients and 3 digits 
+summ(fit, scale = TRUE, digits = 3)
 
 }
 \references{

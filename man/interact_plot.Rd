@@ -5,13 +5,13 @@
 \title{Plot interaction effects in regression models}
 \usage{
 interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
-  mod2vals = NULL, centered = NULL, standardize = FALSE, n.sd = 1,
+  mod2vals = NULL, centered = NULL, scale = FALSE, n.sd = 1,
   plot.points = FALSE, interval = FALSE, int.type = c("confidence",
   "prediction"), int.width = 0.95, outcome.scale = "response",
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
   legend.main = NULL, color.class = NULL, line.thickness = 1.1,
-  vary.lty = TRUE)
+  vary.lty = TRUE, standardize = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -45,29 +45,30 @@ moderator. Defaults are the same as \code{modxvals}.}
 the user-specified predictors are centered. User can also use "none" or "all"
 arguments. The response variable is not centered unless specified directly.}
 
-\item{standardize}{Logical. Would you like to standardize the variables
+\item{scale}{Logical. Would you like to standardize the variables
 that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 standardize variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its default.}
+non-focal predictors are centered when \code{centered = NULL}, its
+default.}
 
-\item{n.sd}{How many standard deviations should be used if \code{standardize
+\item{n.sd}{How many standard deviations should be used if \code{scale
 = TRUE}? Default is 1, but some prefer 2.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines. If moderator is a factor, the dots
 will be the same color as their parent factor.}
 
-\item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
-the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
-\code{merMod} models.}
+\item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
+intervals the line using \code{\link[ggplot2]{geom_ribbon}}. Not
+supported for \code{merMod} models.}
 
-\item{int.type}{Type of interval to plot. Options are "confidence" or "prediction".
-Default is confidence interval.}
+\item{int.type}{Type of interval to plot. Options are "confidence" or
+"prediction". Default is confidence interval.}
 
-\item{int.width}{How large should the interval be, relative to the standard error?
-The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
-level for values outside the range. In other words, for a confidence interval,
-.95 is analogous to a 95\% confidence interval.}
+\item{int.width}{How large should the interval be, relative to the standard
+error? The default, .95, corresponds to roughly 1.96 standard errors and
+a .05 alpha level for values outside the range. In other words, for a
+confidence interval, .95 is analogous to a 95\% confidence interval.}
 
 \item{outcome.scale}{For nonlinear models (i.e., GLMs), should the outcome
 variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -81,45 +82,52 @@ offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}
 
-\item{x.label}{A character object specifying the desired x-axis label. If \code{NULL},
-the variable name is used.}
+\item{x.label}{A character object specifying the desired x-axis label. If
+\code{NULL}, the variable name is used.}
 
-\item{y.label}{A character object specifying the desired x-axis label. If \code{NULL},
-the variable name is used.}
+\item{y.label}{A character object specifying the desired x-axis label. If
+\code{NULL}, the variable name is used.}
 
 \item{pred.labels}{A character vector of 2 labels for the predictor if it is
-a 2-level factor or a continuous variable with only 2 values. If \code{NULL},
-the default, the factor labels are used.}
+a 2-level factor or a continuous variable with only 2 values. If 
+\code{NULL}, the default, the factor labels are used.}
 
-\item{modx.labels}{A character vector of labels for each level of the moderator values,
-provided in the same order as the \code{modxvals} argument. If \code{NULL},
-the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
-In that case, "+1 SD" and "-1 SD" are used.}
+\item{modx.labels}{A character vector of labels for each level of the
+moderator values, provided in the same order as the \code{modxvals} 
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+are used.}
 
-\item{mod2.labels}{A character vector of labels for each level of the 2nd moderator
-values, provided in the same order as the \code{mod2vals} argument. If \code{NULL},
-the values themselves are used as labels unless \code{mod2vals} is also \code{NULL}.
-In that case, "+1 SD" and "-1 SD" are used.}
+\item{mod2.labels}{A character vector of labels for each level of the 2nd 
+moderator values, provided in the same order as the \code{mod2vals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+are used.}
 
-\item{main.title}{A character object that will be used as an overall title for the
-plot. If \code{NULL}, no main title is used.}
+\item{main.title}{A character object that will be used as an overall title
+for the plot. If \code{NULL}, no main title is used.}
 
-\item{legend.main}{A character object that will be used as the title that appears
-above the legend. If \code{NULL}, the name of the moderating variable is used.}
+\item{legend.main}{A character object that will be used as the title that
+appears above the legend. If \code{NULL}, the name of the moderating 
+variable is used.}
 
 \item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor moderators,
-"Blues" for +/- SD and user-specified \code{modxvals} values.}
+\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
+ moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
 
-\item{vary.lty}{Should the resulting plot have different shapes for each line
-in addition to colors? Defaults to \code{TRUE}.}
+\item{vary.lty}{Should the resulting plot have different shapes for each 
+line in addition to colors? Defaults to \code{TRUE}.}
+
+\item{standardize}{Deprecated. Equivalent to `scale`. Please change your 
+scripts to use `scale` instead as this argument will be removed in the 
+future.}
 }
 \value{
-The functions returns a \code{ggplot} object, which can be treated like
-  a user-created plot and expanded upon as such.
+The functions returns a \code{ggplot} object, which can be treated 
+  like a user-created plot and expanded upon as such.
 }
 \description{
 \code{interact_plot()} plots regression lines at user-specified levels of a moderator
@@ -127,8 +135,9 @@ variable to explore interactions. The plotting is done with \code{ggplot2} rathe
 base graphics, which some similar functions use.
 }
 \details{
-This function provides a means for plotting conditional effects for the
-  purpose of exploring interactions in the context of regression. You must have the
+This function provides a means for plotting conditional effects
+  for the purpose of exploring interactions in the context of regression. 
+  You must have the
   package \code{ggplot2} installed to benefit from these plotting functions.
 
   The function is designed for two and three-way interactions. For
@@ -186,7 +195,8 @@ interact_plot(model = fit, pred = Murder,
 # With svyglm
 library(survey)
 data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                    data = apistrat, fpc = ~fpc)
 regmodel <- svyglm(api00~ell*meals,design=dstrat)
 interact_plot(regmodel, pred = ell, modx = meals)
 
@@ -194,19 +204,22 @@ interact_plot(regmodel, pred = ell, modx = meals)
 \dontrun{
 library(lme4)
 data(VerbAgg)
-mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
+mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg,
+            family = binomial,
             control = glmerControl("bobyqa"))
 interact_plot(mv, pred = Anger, modx = mode)
 }
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
- regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+ multilevel regression: Inferential and graphical techniques. 
+ \emph{Multivariate Behavioral
  Research}, \emph{40}(3), 373-400.
  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+multiple
 regression/correlation analyses for the behavioral sciences} (3rd ed.).
 Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
@@ -225,3 +238,4 @@ Other interaction tools: \code{\link{johnson_neyman}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

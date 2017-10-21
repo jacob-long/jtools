@@ -84,3 +84,4 @@ Other interaction tools: \code{\link{interact_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

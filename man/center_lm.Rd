@@ -12,36 +12,40 @@ center_lm(model, binary.inputs = "0/1", center.response = FALSE)
 tested.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{0/1};
-\code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
-\code{center} subtracts the mean; and \code{full} treats them like other
-continuous variables.}
+\code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1
+as 0.5; \code{center} subtracts the mean; and \code{full} treats them 
+like other continuous variables.}
 
-\item{center.response}{Should the response variable also be centered? Default
-is \code{FALSE}.}
+\item{center.response}{Should the response variable also be centered? 
+Default is \code{FALSE}.}
 }
 \value{
-The functions returns a \code{lm} or \code{glm} object, inheriting from
-  whichever class was supplied.
+The functions returns a \code{lm} or \code{glm} object, inheriting 
+  from whichever class was supplied.
 }
 \description{
-\code{center_lm} takes fitted regression models and mean-centers the continuous
-  variables in the model to aid interpretation, especially in the case of models
-  with interactions. It is a wrapper to \code{\link{scale_lm}}.
+\code{center_lm} takes fitted regression models and mean-centers the 
+  continuous variables in the model to aid interpretation, especially in 
+  the case of models with interactions. It is a wrapper to 
+  \code{\link{scale_lm}}.
 }
 \details{
-This function will mean-center all continuous variables in a regression
-  model for ease of interpretation, especially for those models that have
+This function will mean-center all continuous variables in a 
+  regression model for ease of interpretation, especially for those models 
+  that have
   interaction terms. The mean for \code{svyglm} objects is calculated using
   \code{svymean}, so reflects the survey-weighted mean. The weight variables
   in \code{svyglm} are not centered, nor are they in other \code{lm} family
   models.
 
-  This function re-estimates the model, so for large models one should expect
+  This function re-estimates the model, so for large models one should 
+  expect
   a runtime equal to the first run.
 }
 \examples{
 
-fit <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x77))
+fit <- lm(formula = Murder ~ Income * Illiteracy,
+          data = as.data.frame(state.x77))
 fit_center <- center_lm(fit)
 
 # With weights
@@ -53,19 +57,20 @@ fitw_center <- center_lm(fitw)
 # With svyglm
 library(survey)
 data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-regmodel <- svyglm(api00~ell*meals,design=dstrat)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                    data = apistrat, fpc =~ fpc)
+regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 regmodel_center <- center_lm(regmodel)
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
- regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
- Research}, \emph{40}(3), 373-400.
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
+ multilevel regression: Inferential and graphical techniques. 
+ \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
-regression/correlation analyses for the behavioral sciences} (3rd ed.).
-Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+multiple regression/correlation analyses for the behavioral sciences} (3rd 
+ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{sim_slopes}} performs a simple slopes analysis.
@@ -79,3 +84,4 @@ Other standardization, scaling, and centering tools: \code{\link{gscale}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{standardization, scaling, and centering tools}

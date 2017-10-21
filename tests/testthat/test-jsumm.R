@@ -41,25 +41,29 @@ library(lme4, quietly = TRUE)
 data(sleepstudy)
 mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-test_that("jsumm: non-linear models work", {
+test_that("standardize gives deprecated warning", {
+  expect_warning(summ(fit, standardize = TRUE))
+  expect_warning(summ(fitgf, standardize = TRUE))
+  expect_warning(summ(mv, standardize = TRUE))
+  expect_warning(summ(regmodel, standardize = TRUE))
+})
+
+test_that("jsumm: GLMs work", {
   expect_is(summ(fitgf), "summ.glm")
-  expect_is(summ(fitgf, standardize = TRUE), "summ.glm")
+  expect_is(summ(fitgf, scale = TRUE), "summ.glm")
   expect_is(summ(fitgf, center = TRUE), "summ.glm")
-  # expect_warning(summ(fitgf, robust = TRUE))
 })
 
-test_that("jsumm: non-linear models w/ offsets work (arg)", {
+test_that("jsumm: GLMs w/ offsets work (arg)", {
   expect_is(summ(pmod), "summ.glm")
-  expect_is(summ(pmod, standardize = TRUE), "summ.glm")
+  expect_is(summ(pmod, scale = TRUE), "summ.glm")
   expect_is(summ(pmod, center = TRUE), "summ.glm")
-  # expect_warning(summ(fitgf, robust = TRUE))
 })
 
-test_that("jsumm: non-linear models w/ offsets work (formula)", {
+test_that("jsumm: GLMs w/ offsets work (formula)", {
   expect_is(summ(pmod2), "summ.glm")
-  expect_is(summ(pmod2, standardize = TRUE), "summ.glm")
+  expect_is(summ(pmod2, scale = TRUE), "summ.glm")
   expect_is(summ(pmod2, center = TRUE), "summ.glm")
-  # expect_warning(summ(fitgf, robust = TRUE))
 })
 
 test_that("jsumm: partial correlations work", {
@@ -121,8 +125,8 @@ test_that("jsumm: merMod dropping pvals works", {
 })
 
 test_that("jsumm and scale_lm: scaling works", {
-  expect_is(summ(fitgf, standardize = TRUE, n.sd = 2), "summ.glm")
-  expect_is(summ(fit, standardize = TRUE, n.sd = 2), "summ.lm")
+  expect_is(summ(fitgf, scale = TRUE, n.sd = 2), "summ.glm")
+  expect_is(summ(fit, scale = TRUE, n.sd = 2), "summ.lm")
 })
 
 test_that("jsumm and center_lm: centering works", {
@@ -132,12 +136,12 @@ test_that("jsumm and center_lm: centering works", {
 
 test_that("jsumm and merMod objects: everything works", {
   expect_is(suppressWarnings(summ(mv, center = TRUE, n.sd = 2)), "summ.merMod")
-  expect_is(summ(mv, standardize = TRUE, n.sd = 2), "summ.merMod")
+  expect_is(summ(mv, scale = TRUE, n.sd = 2), "summ.merMod")
   expect_warning(summ(mv, robust = TRUE))
 })
 
-test_that("jsumm can standardize weighted lms", {
-  expect_is(summ(fitw, standardize = T, n.sd = 2, robust = TRUE), "summ.lm")
+test_that("jsumm can scale weighted lms", {
+  expect_is(summ(fitw, scale = T, n.sd = 2, robust = TRUE), "summ.lm")
   expect_is(summ(fitw, center = T, robust = TRUE), "summ.lm")
 })
 
@@ -183,14 +187,14 @@ test_that("jsumm: glm cluster-robust SEs work", {
 
 test_that("jsumm: Printing isn't borked", {
   expect_output(print(summ(fitgf, vifs = TRUE)))
-  expect_output(print(summ(fitgf, standardize = TRUE)))
-  expect_output(print(summ(regmodel, standardize = TRUE, n.sd = 2)))
+  expect_output(print(summ(fitgf, scale = TRUE)))
+  expect_output(print(summ(regmodel, scale = TRUE, n.sd = 2)))
   expect_output(print(summ(regmodel, model.check = TRUE, vifs = TRUE)))
-  expect_output(print(summ(regmodell, standardize = TRUE, n.sd = 2)))
+  expect_output(print(summ(regmodell, scale = TRUE, n.sd = 2)))
   expect_output(print(summ(regmodell, model.check = TRUE, vifs = TRUE)))
-  expect_output(print(summ(fit, standardize = TRUE, n.sd = 2)))
+  expect_output(print(summ(fit, scale = TRUE, n.sd = 2)))
   expect_output(print(summ(fit, model.check = TRUE, vifs = TRUE)))
-  expect_output(print(summ(mv, standardize = TRUE, n.sd = 2)))
+  expect_output(print(summ(mv, scale = TRUE, n.sd = 2)))
 
 })
 
@@ -202,12 +206,12 @@ test_that("summ.merMod: r.squared works", {
 
 test_that("jsumm: summ.default", {
   expect_is(jtools:::summ.default(fit), "summ.default")
-  expect_is(jtools:::summ.default(fit, robust = T, standardize = T),
+  expect_is(jtools:::summ.default(fit, robust = T, scale = T),
             "summ.default")
   expect_is(jtools:::summ.default(regmodel, center = T), "summ.default")
   expect_is(jtools:::summ.default(regmodel, confint = T), "summ.default")
   expect_output(print(jtools:::summ.default(fit)))
-  expect_output(print(jtools:::summ.default(fit, robust = T, standardize = T)))
+  expect_output(print(jtools:::summ.default(fit, robust = T, scale = T)))
   expect_output(print(jtools:::summ.default(regmodel, center = T)))
   expect_output(print(jtools:::summ.default(regmodel, confint = T)))
 })

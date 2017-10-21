@@ -4,11 +4,12 @@
 \alias{effect_plot}
 \title{Plot simple effects in regression models}
 \usage{
-effect_plot(model, pred, centered = NULL, standardize = FALSE, n.sd = 1,
+effect_plot(model, pred, centered = NULL, scale = FALSE, n.sd = 1,
   plot.points = FALSE, interval = FALSE, int.type = c("confidence",
   "prediction"), int.width = 0.95, outcome.scale = "response",
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
-  main.title = NULL, color.class = NULL, line.thickness = 1.1)
+  main.title = NULL, color.class = NULL, line.thickness = 1.1,
+  standardize = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -23,12 +24,13 @@ only the user-specified predictors are centered. User can also use "none"
 or "all" arguments. The response variable is not centered unless specified
 directly.}
 
-\item{standardize}{Logical. Would you like to standardize the variables
+\item{scale}{Logical. Would you like to standardize the variables
 that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 standardize variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its default.}
+non-focal predictors are centered when \code{centered = NULL}, its 
+default.}
 
-\item{n.sd}{How many standard deviations should be used if \code{standardize
+\item{n.sd}{How many standard deviations should be used if \code{scale
 = TRUE}? Default is 1, but some prefer 2.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
@@ -76,9 +78,14 @@ plot. If \code{NULL}, no main title is used.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
+
+\item{standardize}{Deprecated. Equivalent to `scale`. Please change your 
+scripts to use `scale` instead as this argument will be removed in the 
+future.}
 }
 \value{
-The functions returns a \code{ggplot} object, which can be treated like
+The functions returns a \code{ggplot} object, which can be treated
+  like
   a user-created plot and expanded upon as such.
 }
 \description{
@@ -131,7 +138,8 @@ effect_plot(regmodel, pred = ell, interval = TRUE)
 \dontrun{
 library(lme4)
 data(VerbAgg)
-mv <- glmer(r2 ~ Anger + mode + (1 | item), data = VerbAgg, family = binomial,
+mv <- glmer(r2 ~ Anger + mode + (1 | item), data = VerbAgg,
+            family = binomial,
             control = glmerControl("bobyqa"))
 effect_plot(mv, pred = Anger)
 }

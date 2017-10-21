@@ -6,10 +6,10 @@
 \title{Plot Regression Summaries}
 \usage{
 plot_summs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = NULL, color.class = "Set2")
+  omit.coefs = "(Intercept)", color.class = "Set2")
 
 plot_coefs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = NULL, color.class = "Set2")
+  omit.coefs = "(Intercept)", color.class = "Set2")
 }
 \arguments{
 \item{...}{regression model(s).}
@@ -27,7 +27,8 @@ in place of the variable names. See details for examples. Default: NULL}
 
 \item{omit.coefs}{If you'd like to specify some coefficients to not include
 in the plot, provide them as a vector. This argument is overridden by
-`coefs` if both are provided. Default: NULL}
+`coefs` if both are provided. By default, the intercept term is omitted.
+To include the intercept term, just set omit.coefs to NULL.}
 
 \item{color.class}{A color class understood by
 [ggplot2::scale_colour_brewer()] for differentiating multiple models.
@@ -74,6 +75,6 @@ fit3 <- lm(Income ~ Frost + Illiteracy + Murder +
 export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
              coefs = c("Frost Days" = "Frost", "\% Illiterate" = "Illiteracy",
              "Murder Rate" = "Murder"),
-             standardize = TRUE, robust = TRUE)
+             scale = TRUE, robust = TRUE)
 
 }

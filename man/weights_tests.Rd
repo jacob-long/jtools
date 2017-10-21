@@ -77,3 +77,4 @@ Other survey tools: \code{\link{pf_sv_test}},
   \code{\link{svycor}}, \code{\link{svysd}},
   \code{\link{wgttest}}
 }
+\concept{survey tools}

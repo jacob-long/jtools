@@ -12,14 +12,16 @@ scale_lm(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 \code{\link[survey]{svyglm}}.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{"0/1"};
-\code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5 and
- 1 as 0.5; \code{center} subtracts the mean; and \code{full} treats them
+\code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5
+and
+1 as 0.5; \code{center} subtracts the mean; and \code{full} treats them
 like other continuous variables.}
 
 \item{n.sd}{How many standard deviations should you divide by for
 standardization? Default is 1, though some prefer 2.}
 
-\item{center}{Default is \code{TRUE}. If \code{TRUE}, the predictors are also
+\item{center}{Default is \code{TRUE}. If \code{TRUE}, the predictors are
+also
 mean-centered. For binary predictors, the \code{binary.inputs} argument
 supersedes this one.}
 
@@ -30,8 +32,8 @@ is \code{TRUE}.}
 them.}
 }
 \value{
-The functions returns a \code{lm} or \code{glm} object, inheriting from
-  whichever class was supplied.
+The functions returns a \code{lm} or \code{glm} object, inheriting
+  from whichever class was supplied.
 }
 \description{
 \code{scale_lm()} takes fitted regression models and scales all predictors
@@ -40,18 +42,21 @@ by dividing each by 1 or 2 standard deviations (as chosen by the user).
 \details{
 This function will scale all continuous variables in a regression
   model for ease of interpretation, especially for those models that have
-  interaction terms. It can also mean-center all of them as well, if requested.
+  interaction terms. It can also mean-center all of them as well, if 
+  requested.
 
-  The scaling happens on the input data, not the terms themselves. That means
-  interaction terms are still properly calculated because they are the product
-  of standardized predictors, not a standardized product of predictors.
+  The scaling happens on the input data, not the terms themselves. That 
+  means interaction terms are still properly calculated because they are
+  the product of standardized predictors, not a standardized product of 
+  predictors.
 
-  This function re-estimates the model, so for large models one should expect
-  a runtime equal to the first run.
+  This function re-estimates the model, so for large models one should 
+  expect a runtime equal to the first run.
 }
 \examples{
 
-fit <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x77))
+fit <- lm(formula = Murder ~ Income * Illiteracy,
+          data = as.data.frame(state.x77))
 fit_scale <- scale_lm(fit)
 fit_scale <- scale_lm(fit, center = TRUE)
 
@@ -72,13 +77,13 @@ regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
- regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
- Research}, \emph{40}(3), 373-400.
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
+ multilevel regression: Inferential and graphical techniques. 
+ \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
-regression/correlation analyses for the behavioral sciences} (3rd ed.).
-Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+multiple regression/correlation analyses for the behavioral sciences} (3rd 
+ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{sim_slopes}} performs a simple slopes analysis.
@@ -92,3 +97,4 @@ Other standardization, scaling, and centering tools: \code{\link{center_lm}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{standardization, scaling, and centering tools}

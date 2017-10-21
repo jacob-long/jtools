@@ -6,3 +6,6 @@
 ^CONDUCT\.md$
 ^cran-comments\.md$
 ^docs$
+^.*\.sublime-project$
+^.*\.sublime-workspace$
+^_pkgdown.yaml$

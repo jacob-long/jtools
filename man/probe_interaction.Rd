@@ -22,7 +22,8 @@ variable involved in the interaction.}
 }
 \value{
 \item{simslopes}{The \code{sim_slopes} object created.}
-\item{interactplot}{The \code{ggplot} object created by \code{interact_plot}.}
+\item{interactplot}{The \code{ggplot} object created by 
+\code{interact_plot}.}
 }
 \description{
 \code{probe_interaction} is a convenience function that allows users to call
@@ -33,27 +34,29 @@ call.
 This function simply merges the nearly-equivalent arguments needed to call
 both \code{\link{sim_slopes}} and \code{\link{interact_plot}} without the
 need for re-typing their common arguments. Note that each function is called
-separately and they re-fit a separate model for each level of each moderator;
-therefore, the runtime may be considerably longer than the original model
-fit. For larger models, this is worth keeping in mind.
+separately and they re-fit a separate model for each level of each 
+moderator; therefore, the runtime may be considerably longer than the 
+original model fit. For larger models, this is worth keeping in mind.
 
-Sometimes, you may want different parameters when doing simple slopes analysis
-compared to when plotting interaction effects. For instance, it is often
-easier to interpret the regression output when variables are standardized;
-but plots are often easier to understand when the variables are in their
-original units of measure. \code{probe_interaction} does not support
-providing different arguments to each function. If that is needed, use
-\code{sim_slopes} and \code{interact_plot} directly.
+Sometimes, you may want different parameters when doing simple slopes 
+analysis compared to when plotting interaction effects. For instance, it is 
+often easier to interpret the regression output when variables are 
+standardized; but plots are often easier to understand when the variables 
+are in their original units of measure. 
+
+\code{probe_interaction} does not 
+support providing different arguments to each function. If that is needed,
+use \code{sim_slopes} and \code{interact_plot} directly.
 }
 \examples{
 
 # Using a fitted model as formula input
-fiti <- lm(Income ~ Frost + Murder*Illiteracy,
+fiti <- lm(Income ~ Frost + Murder * Illiteracy,
   data=as.data.frame(state.x77))
 probe_interaction(model = fiti, pred = Murder, modx = Illiteracy,
                   modxvals = "plus-minus")
 # 3-way interaction
-fiti3 <- lm(Income ~ Frost*Murder*Illiteracy,
+fiti3 <- lm(Income ~ Frost * Murder * Illiteracy,
   data=as.data.frame(state.x77))
 probe_interaction(model = fiti3, pred = Murder, modx = Illiteracy,
                   mod2 = Frost, mod2vals = "plus-minus")
@@ -61,16 +64,19 @@ probe_interaction(model = fiti3, pred = Murder, modx = Illiteracy,
 # With svyglm
 library(survey)
 data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-regmodel <- svyglm(api00~ell*meals + sch.wide, design = dstrat)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                    data = apistrat, fpc = ~fpc)
+regmodel <- svyglm(api00 ~ ell * meals + sch.wide, design = dstrat)
 probe_interaction(model = regmodel, pred = ell, modx = meals,
-                  modxvals = "plus-minus", cond.int = TRUE) # conditional intercepts
+                  modxvals = "plus-minus", cond.int = TRUE) 
 
 # 3-way with survey and factor input
-regmodel3 <- svyglm(api00~ell*meals*sch.wide, design = dstrat)
-probe_interaction(model = regmodel3, pred = ell, modx = meals, mod2 = sch.wide)
+regmodel3 <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
+probe_interaction(model = regmodel3, pred = ell, modx = meals,
+                  mod2 = sch.wide)
 # Can try different configurations of 1st vs 2nd mod
-probe_interaction(model = regmodel3, pred = ell, modx = sch.wide, mod2 = meals)
+probe_interaction(model = regmodel3, pred = ell, modx = sch.wide,
+                  mod2 = meals)
 
 }
 \seealso{
@@ -80,3 +86,4 @@ Other interaction tools: \code{\link{interact_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

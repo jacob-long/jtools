@@ -55,3 +55,5 @@ Other survey tools: \code{\link{pf_sv_test}},
   \code{\link{svycor}}, \code{\link{weights_tests}},
   \code{\link{wgttest}}
 }
+\concept{\pkg{survey} package extensions}
+\concept{survey tools}

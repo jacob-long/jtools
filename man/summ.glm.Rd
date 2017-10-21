@@ -5,16 +5,16 @@
 \alias{j_summ.glm}
 \title{Generalized linear regression summaries with options}
 \usage{
-\method{summ}{glm}(model, standardize = FALSE, vifs = FALSE,
-  confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 3),
-  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, ...)
+\method{summ}{glm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
+  ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,
+  digits = getOption("jtools-digits", default = 2), odds.ratio = FALSE,
+  model.info = TRUE, model.fit = TRUE, pvals = TRUE, n.sd = 1,
+  center = FALSE, scale.response = FALSE, ...)
 }
 \arguments{
-\item{model}{A \code{glm} object.}
+\item{model}{A `glm` object.}
 
-\item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
+\item{scale}{If \code{TRUE}, reports standardized regression 
 coefficients. Default is \code{FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
@@ -27,16 +27,16 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard errors
-  instead of conventional SEs. These are also known as Huber-White standard
-  errors.
+\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard 
+  errors instead of conventional SEs. These are also known as Huber-White 
+  standard errors.
 
   Default is \code{FALSE}.
 
   This requires the \code{sandwich} package to compute the
    standard errors.}
 
-\item{robust.type}{Only used if \code{robust=TRUE}. Specifies the type of
+\item{robust.type}{Only used if \code{robust = TRUE}. Specifies the type of
 robust standard errors to be used by \code{sandwich}. By default, set to
 \code{"HC3"}. See details for more on options.}
 
@@ -45,45 +45,44 @@ the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in
-the output. Default is 3. You can change the default number of digits for
-all jtools functions with \code{options("jtools-digits" = digits)} where
-digits is the desired number.}
+report in the output. Default is 2. You can change the default number of 
+digits for all jtools functions with 
+\code{options("jtools-digits" = digits)} where digits is the desired 
+number.}
 
 \item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
 
-\item{model.info}{Toggles printing of basic information on sample size, name o
-DV, and number of predictors.}
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
 
-\item{model.fit}{Toggles printing of Pseudo-R-squared and AIC/BIC
-(when applicable).}
+\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
 details).}
 
-\item{n.sd}{If \code{standardize = TRUE}, how many standard deviations should
+\item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
 
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{standardize.response}{Should standardization apply to response variable?
+\item{scale.response}{Should standardization apply to response variable?
 Default is \code{FALSE}.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
 }
 \value{
-If saved, users can access most of the items that are returned in the
-  output (and without rounding).
+If saved, users can access most of the items that are returned in 
+  the output (and without rounding).
 
  \item{coeftable}{The outputted table of variables and coefficients}
  \item{model}{The model for which statistics are displayed. This would be
-   most useful in cases in which \code{standardize = TRUE}.}
+   most useful in cases in which \code{scale = TRUE}.}
 
  Much other information can be accessed as attributes.
 }
@@ -101,8 +100,9 @@ By default, this function will print the following items to the console:
    p values.
 }
 
- There are several options available for \code{robust.type}. The heavy lifting
- is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+ There are several options available for \code{robust.type}. The heavy 
+ lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better 
+ described.
  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
  recommendation of the developers of \pkg{sandwich}, the default is set to
  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
@@ -111,28 +111,33 @@ By default, this function will print the following items to the console:
  if \code{cluster} is set to the name of the input data's cluster variable
  or is a vector of clusters.
 
- The \code{standardize} and \code{center} options are performed via refitting
+ The \code{scale} and \code{center} options are performed via 
+ refitting
  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
  respectively. Each of those in turn uses \code{\link{gscale}} for the
  mean-centering and scaling.
 }
 \examples{
-# Create lm object
-fit <- lm(Income ~ Frost + Illiteracy + Murder,
- data = as.data.frame(state.x77))
-
-# Print the output with standardized coefficients and 2 digits past the decimal
-summ(fit, standardize = TRUE, digits = 2)
-
+ ## Dobson (1990) Page 93: Randomized Controlled Trial :
+ counts <- c(18,17,15,20,10,20,25,13,12)
+ outcome <- gl(3,1,9)
+ treatment <- gl(3,3)
+ print(d.AD <- data.frame(treatment, outcome, counts))
+ glm.D93 <- glm(counts ~ outcome + treatment, family = poisson)
+ 
+ # Summarize with standardized coefficients 
+ summ(glm.D93, scale = TRUE)
 
 }
 \references{
-King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
- problems they do not fix, and what to do about it. \emph{Political Analysis},
-  \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
+King, G., & Roberts, M. E. (2015). How robust standard errors expose 
+ methodological problems they do not fix, and what to do about it. 
+ \emph{Political Analysis}, \emph{23}(2), 159–179. 
+ \url{https://doi.org/10.1093/pan/mpu015}
 
 Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
-Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
+Normality Assumption in Large Public Health Data Sets. \emph{Annual Review
+ of
  Public Health}, \emph{23}, 151–169.
  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 }

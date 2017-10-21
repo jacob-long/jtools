@@ -5,16 +5,16 @@
 \alias{j_summ.merMod}
 \title{Mixed effects regression summaries with options}
 \usage{
-\method{summ}{merMod}(model, standardize = FALSE, confint = FALSE,
-  ci.width = 0.95, digits = getOption("jtools-digits", default = 3),
+\method{summ}{merMod}(model, scale = FALSE, confint = FALSE,
+  ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
   model.info = TRUE, model.fit = TRUE, r.squared = FALSE, pvals = NULL,
-  n.sd = 1, center = FALSE, standardize.response = FALSE,
-  odds.ratio = FALSE, t.df = NULL, ...)
+  n.sd = 1, center = FALSE, scale.response = FALSE, odds.ratio = FALSE,
+  t.df = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
 
-\item{standardize}{If \code{TRUE}, adds a column to output with standardized regression
+\item{scale}{If \code{TRUE}, reports standardized regression 
 coefficients. Default is \code{FALSE}.}
 
 \item{confint}{Show confidence intervals instead of standard errors? Default
@@ -25,16 +25,15 @@ desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in
-the output. Default is 3. You can change the default number of digits for
-all jtools functions with \code{options("jtools-digits" = digits)} where
-digits is the desired number.}
+report in the output. Default is 2. You can change the default number of 
+digits for all jtools functions with 
+\code{options("jtools-digits" = digits)} where digits is the desired 
+number.}
 
-\item{model.info}{Toggles printing of basic information on sample size, name of
-DV, and number of predictors.}
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
 
-\item{model.fit}{Toggles printing of AIC/BIC
-(when applicable).}
+\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
 \item{r.squared}{Calculate an r-squared model fit statistic? Default is
 \code{FALSE} because it seems to have convergence problems too often.}
@@ -43,13 +42,13 @@ DV, and number of predictors.}
 are not printed. Default is \code{TRUE}, except for merMod objects (see
 details).}
 
-\item{n.sd}{If \code{standardize = TRUE}, how many standard deviations should
+\item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
 
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{standardize.response}{Should standardization apply to response variable?
+\item{scale.response}{Should standardization apply to response variable?
 Default is \code{FALSE}.}
 
 \item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
@@ -64,12 +63,12 @@ freedom used in conducting t-tests. See details for options.}
 types of models.}
 }
 \value{
-If saved, users can access most of the items that are returned in the
-  output (and without rounding).
+If saved, users can access most of the items that are returned in 
+  the output (and without rounding).
 
  \item{coeftable}{The outputted table of variables and coefficients}
  \item{model}{The model for which statistics are displayed. This would be
-   most useful in cases in which \code{standardize = TRUE}.}
+   most useful in cases in which \code{scale = TRUE}.}
 
  Much other information can be accessed as attributes.
 }
@@ -78,7 +77,8 @@ If saved, users can access most of the items that are returned in the
 \code{summary}, but formatted differently with more options.
 }
 \details{
-By default, this function will print the following items to the console:
+By default, this function will print the following items to the 
+console:
 \itemize{
   \item The sample size
   \item The name of the outcome variable
@@ -86,7 +86,7 @@ By default, this function will print the following items to the console:
   \item A table with regression coefficients, standard errors, and t-values.
 }
 
- The \code{standardize} and \code{center} options are performed via refitting
+ The \code{scale} and \code{center} options are performed via refitting
  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
  respectively. Each of those in turn uses \code{\link{gscale}} for the
  mean-centering and scaling.
@@ -160,8 +160,8 @@ Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
  \emph{53}, 983.
  https://doi.org/10.2307/2533558
 
-Luke, S. G. (2017). Evaluating significance in linear mixed-effects models in
-R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
+Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
+ in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
  https://doi.org/10.3758/s13428-016-0809-y
 
 Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for

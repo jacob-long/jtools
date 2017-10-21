@@ -9,7 +9,8 @@ export_summs(..., error_format = "({std.error})", error_pos = c("below",
   model.names = NULL, coefs = NULL, to.word = FALSE, word.file = NULL)
 }
 \arguments{
-\item{...}{At minimum, a regression object(s). See details for more arguments.}
+\item{...}{At minimum, a regression object(s). See details for more
+arguments.}
 
 \item{error_format}{Which of standard error, confidence intervals, test
 statistics, or p values should be used to express uncertainty of estimates
@@ -61,7 +62,7 @@ This function allows users to use the features of
 \details{
 There are many optional parameters not documented above. Any
   argument that you would want to pass to \code{\link{summ}}, for instance,
-  will be used. Of particular interest may be the robust and standardize
+  will be used. Of particular interest may be the robust and scale
   arguments. Note that some \code{summ} arguments may not have any bearing
   on the table output.
 
@@ -137,7 +138,7 @@ fit3 <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77)
 export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
              coefs = c("Frost Days" = "Frost", "\% Illiterate" = "Illiteracy",
              "Murder Rate" = "Murder"),
-             standardize = TRUE, robust = TRUE)
+             scale = TRUE, robust = TRUE)
 
 }
 \seealso{
