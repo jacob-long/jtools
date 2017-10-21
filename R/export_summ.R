@@ -536,33 +536,52 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   }
 
+  # Combine the tidy frames into one, long frame
   tidies <- do.call(rbind, tidies)
-  tidies$model <- factor(tidies$model)
-  tidies$term <- factor(tidies$term)
 
+  # Drop omitted coefficients
   if (!is.null(omit.coefs)) {
 
     tidies <- tidies[tidies$term %nin% omit.coefs,]
 
   }
 
+  # For consistency in creating the factors apply contrived names to model.names
+  if (is.null(model.names)) {
+
+    model.names <- unique(tidies$model)
+
+  }
+
+  # For some reason, the order of the legend and the dodged colors
+  # only line up when they are reversed here and in the limits arg of
+  # scale_colour_brewer...no clue why that has to be the case
+  tidies$model <- factor(tidies$model, levels = rev(model.names))
+  tidies$term <- factor(tidies$term, levels = unique(tidies$term))
+
+  # Gross way of avoiding CRAN complaining about undefined global variables
+  conf.high <- conf.low <- estimate <- model <- term <- NULL
+
   p <- ggplot(data = tidies)
 
   if (length(jsumms) > 1) {
     p <- p + geom_pointrange_h( # jtools function
-        aes_string(y = "term", x = "estimate", xmin = "conf.low",
-                   xmax = "conf.high", colour = "model"),
+        aes(y = term, x = estimate, xmin = conf.low, xmax = conf.high,
+            colour = model),
         position = position_dodgev(height = 0.5), # jtools function
         shape = 21, fill = "white", fatten = 3, size = 0.8)
   } else {
     p <- p + geom_pointrange_h( # jtools function
-      aes_string(y = "term", x = "estimate", xmin = "conf.low",
-                 xmax = "conf.high"),
-      shape = 21, fill = "white", fatten = 3, size = 0.8)
+      aes(y = term, x = estimate, xmin = conf.low, xmax = conf.high,
+          colour = model),
+      shape = 21, fill = "white", fatten = 3, size = 0.8,
+      show.legend = FALSE) # omit legend for single models
   }
 
   p <- p +
-    scale_colour_brewer(palette = color.class) +
+    scale_colour_brewer(palette = color.class,
+            limits = rev(levels(tidies$model))) +
+    scale_y_discrete(limits = rev(levels(tidies$term))) +
     theme_apa(legend.pos = "right", legend.font.size = 9) +
     theme(axis.title.y = element_blank(),
                    axis.title.x = element_blank(),
@@ -654,34 +673,68 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   }
 
+  # Combine the tidy frames into one, long frame
   tidies <- do.call(rbind, tidies)
-  tidies$model <- factor(tidies$model)
-  tidies$term <- factor(tidies$term)
 
+  # For consistency in creating the factors apply contrived names to model.names
+  if (is.null(model.names)) {
+
+    model.names <- unique(tidies$model)
+
+  }
+
+  # Drop omitted coefficients
   if (!is.null(omit.coefs)) {
 
     tidies <- tidies[tidies$term %nin% omit.coefs,]
 
   }
 
+  # Creating factors with consistent ordering for coefficients too
+  if (is.null(coefs)) {
+
+    coefs <- unique(tidies$term)
+    names(coefs) <- coefs
+
+  } else {
+
+    tidies <- tidies[tidies$term %in% coefs,]
+    if (is.null(names(coefs))) {
+      names(coefs) <- coefs
+    }
+
+  }
+
+  # For some reason, the order of the legend and the dodged colors
+  # only line up when they are reversed here and in the limits arg of
+  # scale_colour_brewer...no clue why that has to be the case
+  tidies$model <- factor(tidies$model, levels = rev(model.names))
+  tidies$term <- factor(tidies$term, levels = coefs, labels = names(coefs))
+
+  # Gross way of avoiding CRAN complaining about undefined global variables
+  conf.high <- conf.low <- estimate <- model <- term <- NULL
+
   p <- ggplot(data = tidies)
 
   if (length(mods) > 1) {
     p <- p + geom_pointrange_h( # jtools function
-      aes_string(y = "term", x = "estimate", xmin = "conf.low",
-                 xmax = "conf.high", colour = "model"),
+      aes(y = term, x = estimate, xmin = conf.low,
+                 xmax = conf.high, colour = model),
       position = position_dodgev(height = 0.5), # jtools function
       shape = 21, fill = "white", fatten = 3, size = 0.8)
   } else {
     p <- p + geom_pointrange_h( # jtools function
-      aes_string(y = "term", x = "estimate", xmin = "conf.low",
-                 xmax = "conf.high"),
-      shape = 21, fill = "white", fatten = 3, size = 0.8)
+      aes(y = term, x = estimate, xmin = conf.low,
+                 xmax = conf.high, colour = model),
+      shape = 21, fill = "white", fatten = 3, size = 0.8,
+      show.legend = FALSE) # omit legend if just a single model
   }
 
   p <- p +
     geom_vline(xintercept = 0, linetype = 2, size = .25) +
-    scale_colour_brewer(palette = color.class) +
+    scale_colour_brewer(palette = color.class,
+     limits = rev(levels(tidies$model))) +
+    scale_y_discrete(limits = rev(levels(tidies$term))) +
     theme_apa(legend.pos = "right", legend.font.size = 9) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
