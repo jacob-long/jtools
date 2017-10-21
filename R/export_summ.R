@@ -42,7 +42,7 @@
 #'
 #' @details There are many optional parameters not documented above. Any
 #'   argument that you would want to pass to \code{\link{summ}}, for instance,
-#'   will be used. Of particular interest may be the robust and standardize
+#'   will be used. Of particular interest may be the robust and scale
 #'   arguments. Note that some \code{summ} arguments may not have any bearing
 #'   on the table output.
 #'
@@ -118,7 +118,7 @@
 #' export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
 #'              coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
 #'              "Murder Rate" = "Murder"),
-#'              standardize = TRUE, robust = TRUE)
+#'              scale = TRUE, robust = TRUE)
 #'
 #' @seealso
 #'
@@ -182,9 +182,9 @@ export_summs <- function(...,
 
   # Setting defaults for summ functions I want to add captions about
   robust <- FALSE
-  standardize <- FALSE
+  scale <- FALSE
   n.sd <- 1
-  digits <- getOption("jtools-digits", 3)
+  digits <- getOption("jtools-digits", 2)
 
   # Check for need to fit confidence intervals
   if (!grepl("conf.low", error_format, fixed = TRUE) &
@@ -209,8 +209,7 @@ export_summs <- function(...,
     # For those critical arguments that require a note, see if they were
     # provided by the user and overwrite if so
     if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
-    if ("standardize" %in% names(summ_args)) {standardize <- 
-                                              summ_args$standardize}
+    if ("scale" %in% names(summ_args)) {scale <- summ_args$scale}
     if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
     if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
 
@@ -274,7 +273,7 @@ export_summs <- function(...,
 
     if (!("note" %in% names(hux_args))) {
 
-      if (standardize == TRUE) {
+      if (scale == TRUE) {
 
         note <- "All continuous predictors are mean-centered and scaled by 1 standard deviation."
 
@@ -290,7 +289,7 @@ export_summs <- function(...,
 
         hux_args$note <- note
 
-      } else if (robust == TRUE & standardize == FALSE) {
+      } else if (robust == TRUE & scale == FALSE) {
 
         note <- paste("Standard errors are heteroskedasticity robust. %stars%.")
         hux_args$note <- note
@@ -405,7 +404,7 @@ export_summs <- function(...,
 #' export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
 #'              coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
 #'              "Murder Rate" = "Murder"),
-#'              standardize = TRUE, robust = TRUE)
+#'              scale = TRUE, robust = TRUE)
 #'
 #' @rdname plot_coefs
 #' @export
@@ -464,7 +463,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   # Setting defaults for summ functions I want to add captions about
   robust <- FALSE
-  standardize <- FALSE
+  scale <- FALSE
   n.sd <- 1
   odds.ratio <- FALSE
 
@@ -481,7 +480,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
     # For those critical arguments that require a note, see if they were
     # provided by the user and overwrite if so
     if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
-    if ("standardize" %in% names(summ_args)) {standardize <- summ_args$standardize}
+    if ("scale" %in% names(summ_args)) {scale <- summ_args$scale}
     if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
     if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
     if ("odds.ratio" %in% names(summ_args)) {

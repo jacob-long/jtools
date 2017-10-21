@@ -144,11 +144,11 @@
 #'
 
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
-                       mod2vals = NULL, centered = NULL, standardize = FALSE,
+                       mod2vals = NULL, centered = NULL, scale = FALSE,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE, robust.type = "HC3",
-                       digits = getOption("jtools-digits", default = 3),
-                       n.sd = 1) {
+                       digits = getOption("jtools-digits", default = 2),
+                       n.sd = 1, standardize = NULL) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -158,6 +158,13 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (length(mod2) == 0) {
     mod2 <- NULL
     mod2vals2 <- NULL
+  }
+
+  # Check for deprecated argument
+  if (!is.null(standardize)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- standardize
   }
 
   # Create object to return
@@ -305,7 +312,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
               resp = resp, modx = modx, survey = survey,
               design = design, mod2 = mod2, wname = wname,
               offname = offname, centered = centered,
-              standardize = standardize, n.sd = n.sd)
+              scale = scale, n.sd = n.sd)
 
   design <- c_out$design
   d <- c_out$d

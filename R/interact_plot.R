@@ -35,29 +35,30 @@
 #'   the user-specified predictors are centered. User can also use "none" or "all"
 #'   arguments. The response variable is not centered unless specified directly.
 #'
-#' @param standardize Logical. Would you like to standardize the variables
+#' @param scale Logical. Would you like to standardize the variables
 #'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 #'   standardize variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its default.
+#'   non-focal predictors are centered when \code{centered = NULL}, its
+#'   default.
 #'
-#' @param n.sd How many standard deviations should be used if \code{standardize
+#' @param n.sd How many standard deviations should be used if \code{scale
 #'   = TRUE}? Default is 1, but some prefer 2.
 #'
 #' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
 #'   scatterplot on top of the interaction lines. If moderator is a factor, the dots
 #'   will be the same color as their parent factor.
 #'
-#' @param interval Logical. If \code{TRUE}, plots confidence/prediction intervals
-#'   the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
-#'   \code{merMod} models.
+#' @param interval Logical. If \code{TRUE}, plots confidence/prediction
+#'   intervals the line using \code{\link[ggplot2]{geom_ribbon}}. Not
+#'   supported for \code{merMod} models.
 #'
-#' @param int.type Type of interval to plot. Options are "confidence" or "prediction".
-#'   Default is confidence interval.
+#' @param int.type Type of interval to plot. Options are "confidence" or
+#'  "prediction". Default is confidence interval.
 #'
-#' @param int.width How large should the interval be, relative to the standard error?
-#'   The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
-#'   level for values outside the range. In other words, for a confidence interval,
-#'   .95 is analogous to a 95\% confidence interval.
+#' @param int.width How large should the interval be, relative to the standard
+#'   error? The default, .95, corresponds to roughly 1.96 standard errors and
+#'   a .05 alpha level for values outside the range. In other words, for a
+#'   confidence interval, .95 is analogous to a 95\% confidence interval.
 #'
 #' @param outcome.scale For nonlinear models (i.e., GLMs), should the outcome
 #'   variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -71,45 +72,52 @@
 #'   offset. By default, this is set to 1, which makes the predicted values a
 #'   proportion. See details for more about offset support.
 #'
-#' @param x.label A character object specifying the desired x-axis label. If \code{NULL},
-#'   the variable name is used.
+#' @param x.label A character object specifying the desired x-axis label. If
+#'   \code{NULL}, the variable name is used.
 #'
-#' @param y.label A character object specifying the desired x-axis label. If \code{NULL},
-#'   the variable name is used.
+#' @param y.label A character object specifying the desired x-axis label. If
+#'   \code{NULL}, the variable name is used.
 #'
 #' @param pred.labels A character vector of 2 labels for the predictor if it is
-#'   a 2-level factor or a continuous variable with only 2 values. If \code{NULL},
-#'   the default, the factor labels are used.
+#'   a 2-level factor or a continuous variable with only 2 values. If 
+#'   \code{NULL}, the default, the factor labels are used.
 #'
-#' @param modx.labels A character vector of labels for each level of the moderator values,
-#'   provided in the same order as the \code{modxvals} argument. If \code{NULL},
-#'   the values themselves are used as labels unless \code{modxvals} is also \code{NULL}.
-#'   In that case, "+1 SD" and "-1 SD" are used.
+#' @param modx.labels A character vector of labels for each level of the
+#'   moderator values, provided in the same order as the \code{modxvals} 
+#'   argument. If \code{NULL}, the values themselves are used as labels unless
+#'   \code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+#'   are used.
 #'
-#' @param mod2.labels A character vector of labels for each level of the 2nd moderator
-#'   values, provided in the same order as the \code{mod2vals} argument. If \code{NULL},
-#'   the values themselves are used as labels unless \code{mod2vals} is also \code{NULL}.
-#'   In that case, "+1 SD" and "-1 SD" are used.
+#' @param mod2.labels A character vector of labels for each level of the 2nd 
+#'   moderator values, provided in the same order as the \code{mod2vals}
+#'   argument. If \code{NULL}, the values themselves are used as labels unless
+#'   \code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+#'   are used.
 #'
-#' @param main.title A character object that will be used as an overall title for the
-#'   plot. If \code{NULL}, no main title is used.
+#' @param main.title A character object that will be used as an overall title
+#'   for the plot. If \code{NULL}, no main title is used.
 #'
-#' @param legend.main A character object that will be used as the title that appears
-#'   above the legend. If \code{NULL}, the name of the moderating variable is used.
+#' @param legend.main A character object that will be used as the title that
+#'   appears above the legend. If \code{NULL}, the name of the moderating 
+#'   variable is used.
 #'
 #' @param color.class Any palette argument accepted by
-#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor moderators,
-#'   "Blues" for +/- SD and user-specified \code{modxvals} values.
+#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
+#'    moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
 #'
-#' @param vary.lty Should the resulting plot have different shapes for each line
-#'   in addition to colors? Defaults to \code{TRUE}.
+#' @param vary.lty Should the resulting plot have different shapes for each 
+#'   line in addition to colors? Defaults to \code{TRUE}.
 #'
-#'
-#' @details This function provides a means for plotting conditional effects for the
-#'   purpose of exploring interactions in the context of regression. You must have the
+#' @param standardize Deprecated. Equivalent to `scale`. Please change your 
+#'  scripts to use `scale` instead as this argument will be removed in the 
+#'  future.
+#' 
+#' @details This function provides a means for plotting conditional effects
+#'   for the purpose of exploring interactions in the context of regression. 
+#'   You must have the
 #'   package \code{ggplot2} installed to benefit from these plotting functions.
 #'
 #'   The function is designed for two and three-way interactions. For
@@ -144,8 +152,8 @@
 #'   if you apply no transformation at all, the exposures used will be the
 #'   post-tranformation number (which is by default 1).
 #'
-#' @return The functions returns a \code{ggplot} object, which can be treated like
-#'   a user-created plot and expanded upon as such.
+#' @return The functions returns a \code{ggplot} object, which can be treated 
+#'   like a user-created plot and expanded upon as such.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -161,12 +169,14 @@
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
-#'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+#'  multilevel regression: Inferential and graphical techniques. 
+#'  \emph{Multivariate Behavioral
 #'  Research}, \emph{40}(3), 373-400.
 #'  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+#' multiple
 #' regression/correlation analyses for the behavioral sciences} (3rd ed.).
 #' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
@@ -193,7 +203,8 @@
 #' # With svyglm
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+#' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+#'                     data = apistrat, fpc = ~fpc)
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' interact_plot(regmodel, pred = ell, modx = meals)
 #'
@@ -211,7 +222,7 @@
 #' @export interact_plot
 
 interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
-                          mod2vals = NULL, centered = NULL, standardize = FALSE,
+                          mod2vals = NULL, centered = NULL, scale = FALSE,
                           n.sd = 1, plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence","prediction"),
                           int.width = .95, outcome.scale = "response",
@@ -220,7 +231,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           pred.labels = NULL, modx.labels = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
-                          line.thickness = 1.1, vary.lty = TRUE) {
+                          line.thickness = 1.1, vary.lty = TRUE,
+                          standardize = NULL) {
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
@@ -229,6 +241,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # To avoid unexpected behavior, need to un-un-parse mod2 when it is NULL
   if (length(mod2) == 0) {
     mod2 <- NULL
+  }
+
+  # Check for deprecated argument
+  if (!is.null(standardize)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- standardize
   }
 
   # Duplicating the dataframe so it can be manipulated as needed
@@ -390,7 +409,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                        resp = resp, modx = modx, survey = survey,
                        design = design, mod2 = mod2, wname = wname,
                        offname = offname, centered = centered,
-                       standardize = standardize, n.sd = n.sd)
+                       scale = scale, n.sd = n.sd)
 
   design <- c_out$design
   d <- c_out$d
@@ -793,12 +812,13 @@ print.interact_plot <- function(x, ...) {
 #'   or "all" arguments. The response variable is not centered unless specified
 #'   directly.
 #'
-#' @param standardize Logical. Would you like to standardize the variables
+#' @param scale Logical. Would you like to standardize the variables
 #'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 #'   standardize variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its default.
+#'   non-focal predictors are centered when \code{centered = NULL}, its 
+#'   default.
 #'
-#' @param n.sd How many standard deviations should be used if \code{standardize
+#' @param n.sd How many standard deviations should be used if \code{scale
 #'   = TRUE}? Default is 1, but some prefer 2.
 #'
 #' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
@@ -846,6 +866,10 @@ print.interact_plot <- function(x, ...) {
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
+#' 
+#' @param standardize Deprecated. Equivalent to `scale`. Please change your 
+#'  scripts to use `scale` instead as this argument will be removed in the 
+#'  future.
 #'
 #'
 #' @details This function provides a means for plotting effects for the
@@ -869,7 +893,8 @@ print.interact_plot <- function(x, ...) {
 #'   Note: to use transformed predictors, e.g., \code{log(variable)},
 #'   put its name in quotes or backticks in the argument.
 #'
-#' @return The functions returns a \code{ggplot} object, which can be treated like
+#' @return The functions returns a \code{ggplot} object, which can be treated
+#'   like
 #'   a user-created plot and expanded upon as such.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -911,15 +936,23 @@ print.interact_plot <- function(x, ...) {
 #' @importFrom stats median
 #' @export effect_plot
 
-effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
+effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
                         n.sd = 1, plot.points = FALSE, interval = FALSE,
                         int.type = c("confidence","prediction"),
                         int.width = .95, outcome.scale = "response",
                         set.offset = 1,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
-                        color.class = NULL, line.thickness = 1.1) {
+                        color.class = NULL, line.thickness = 1.1,
+                        standardize = NULL) {
 
+  # Check for deprecated argument
+  if (!is.null(standardize)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- standardize
+  }
+  
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
 
@@ -1065,7 +1098,7 @@ effect_plot <- function(model, pred, centered = NULL, standardize = FALSE,
                        resp = resp, modx = NULL, survey = survey,
                        design = design, mod2 = NULL, wname = wname,
                        offname = offname, centered = centered,
-                       standardize = standardize, n.sd = n.sd)
+                       scale = scale, n.sd = n.sd)
 
   design <- c_out$design
   d <- c_out$d

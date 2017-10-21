@@ -24,22 +24,25 @@
 #' This function simply merges the nearly-equivalent arguments needed to call
 #' both \code{\link{sim_slopes}} and \code{\link{interact_plot}} without the
 #' need for re-typing their common arguments. Note that each function is called
-#' separately and they re-fit a separate model for each level of each moderator;
-#' therefore, the runtime may be considerably longer than the original model
-#' fit. For larger models, this is worth keeping in mind.
+#' separately and they re-fit a separate model for each level of each 
+#' moderator; therefore, the runtime may be considerably longer than the 
+#' original model fit. For larger models, this is worth keeping in mind.
 #'
-#' Sometimes, you may want different parameters when doing simple slopes analysis
-#' compared to when plotting interaction effects. For instance, it is often
-#' easier to interpret the regression output when variables are standardized;
-#' but plots are often easier to understand when the variables are in their
-#' original units of measure. \code{probe_interaction} does not support
-#' providing different arguments to each function. If that is needed, use
-#' \code{sim_slopes} and \code{interact_plot} directly.
+#' Sometimes, you may want different parameters when doing simple slopes 
+#' analysis compared to when plotting interaction effects. For instance, it is 
+#' often easier to interpret the regression output when variables are 
+#' standardized; but plots are often easier to understand when the variables 
+#' are in their original units of measure. 
+#' 
+#' \code{probe_interaction} does not 
+#' support providing different arguments to each function. If that is needed,
+#' use \code{sim_slopes} and \code{interact_plot} directly.
 #'
 #' @return
 #'
 #' \item{simslopes}{The \code{sim_slopes} object created.}
-#' \item{interactplot}{The \code{ggplot} object created by \code{interact_plot}.}
+#' \item{interactplot}{The \code{ggplot} object created by 
+#' \code{interact_plot}.}
 #'
 #' @family interaction tools
 #'
@@ -48,12 +51,12 @@
 #' @examples
 #'
 #' # Using a fitted model as formula input
-#' fiti <- lm(Income ~ Frost + Murder*Illiteracy,
+#' fiti <- lm(Income ~ Frost + Murder * Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' probe_interaction(model = fiti, pred = Murder, modx = Illiteracy,
 #'                   modxvals = "plus-minus")
 #' # 3-way interaction
-#' fiti3 <- lm(Income ~ Frost*Murder*Illiteracy,
+#' fiti3 <- lm(Income ~ Frost * Murder * Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' probe_interaction(model = fiti3, pred = Murder, modx = Illiteracy,
 #'                   mod2 = Frost, mod2vals = "plus-minus")
@@ -61,16 +64,19 @@
 #' # With svyglm
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-#' regmodel <- svyglm(api00~ell*meals + sch.wide, design = dstrat)
+#' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+#'                     data = apistrat, fpc = ~fpc)
+#' regmodel <- svyglm(api00 ~ ell * meals + sch.wide, design = dstrat)
 #' probe_interaction(model = regmodel, pred = ell, modx = meals,
-#'                   modxvals = "plus-minus", cond.int = TRUE) # conditional intercepts
+#'                   modxvals = "plus-minus", cond.int = TRUE) 
 #'
 #' # 3-way with survey and factor input
-#' regmodel3 <- svyglm(api00~ell*meals*sch.wide, design = dstrat)
-#' probe_interaction(model = regmodel3, pred = ell, modx = meals, mod2 = sch.wide)
+#' regmodel3 <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
+#' probe_interaction(model = regmodel3, pred = ell, modx = meals,
+#'                   mod2 = sch.wide)
 #' # Can try different configurations of 1st vs 2nd mod
-#' probe_interaction(model = regmodel3, pred = ell, modx = sch.wide, mod2 = meals)
+#' probe_interaction(model = regmodel3, pred = ell, modx = sch.wide,
+#'                   mod2 = meals)
 #'
 #' @export
 
@@ -293,20 +299,20 @@ auto_mod_vals <-
 
 center_vals <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
                         survey, design = NULL, mod2, wname, offname, centered,
-                        standardize, n.sd) {
+                        scale, n.sd) {
 
   # Just need to pick a helper function based on survey vs no survey
   if (survey == TRUE) {
 
     out <- center_vals_survey(d, weights, facvars, fvars, pred, resp, modx,
                               survey, design, mod2, wname, offname, centered,
-                              standardize, n.sd)
+                              scale, n.sd)
 
   } else {
 
     out <- center_vals_non_survey(d, weights, facvars, fvars, pred, resp, modx,
                                   mod2, wname, offname, centered,
-                                  standardize, n.sd)
+                                  scale, n.sd)
 
   }
 
@@ -319,7 +325,7 @@ center_vals <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
 
 center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
                                    resp, modx, mod2, wname, offname, centered,
-                                   standardize, n.sd) {
+                                   scale, n.sd) {
 
   omitvars <- c(pred, resp, modx, mod2, wname, offname)
   all_omitvars <- c(resp, wname, offname)
@@ -331,7 +337,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
   # Handling user-requested centered vars
   if (!is.null(centered) && centered != "all" && centered != "none") {
 
-    d <- gscale(x = centered, data = d, center.only = !standardize,
+    d <- gscale(x = centered, data = d, center.only = !scale,
                 weights = weights, n.sd = n.sd)
 
     for (v in fv2) {
@@ -349,7 +355,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
     # saving all vars except response
     vars <- names(d)[names(d) %nin% all_omitvars]
 
-    d <- gscale(x = vars, data = d, center.only = !standardize,
+    d <- gscale(x = vars, data = d, center.only = !scale,
                 weights = weights, n.sd = n.sd)
 
   } else if (!is.null(centered) && centered == "none") {
@@ -368,7 +374,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
     # Centering the non-focal variables to make the slopes more interpretable
     vars <- names(d)[names(d) %nin% omitvars]
 
-    d <- gscale(x = vars, data = d, center.only = !standardize, weights = wname,
+    d <- gscale(x = vars, data = d, center.only = !scale, weights = wname,
                 n.sd = n.sd)
 
   }
@@ -387,7 +393,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
                                modx, survey, design, mod2, wname, offname,
                                centered,
-                               standardize, n.sd) {
+                               scale, n.sd) {
 
   omitvars <- c(pred, resp, modx, mod2, wname, offname)
   all_omitvars <- c(resp, wname, offname)
@@ -399,7 +405,7 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
   # Handling user-requested centered vars
   if (!is.null(centered) && centered != "all" && centered != "none") {
 
-    design <- gscale(x = centered, data = design, center.only = !standardize,
+    design <- gscale(x = centered, data = design, center.only = !scale,
                      n.sd = n.sd)
     d <- design$variables
 
@@ -430,7 +436,7 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     ndfvars <- fvars[fvars %nin% all_omitvars]
 
     if (length(ndfvars) > 0) {
-      design <- gscale(x = ndfvars, data = design, center.only = !standardize,
+      design <- gscale(x = ndfvars, data = design, center.only = !scale,
                        n.sd = n.sd)
       d <- design$variables
     }
@@ -440,7 +446,7 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     nfvars <- fvars[fvars %nin% omitvars]
 
     if (length(nfvars) > 0) {
-      design <- gscale(x = nfvars, data = design, center.only = !standardize,
+      design <- gscale(x = nfvars, data = design, center.only = !scale,
                        n.sd = n.sd)
       d <- design$variables
     }
