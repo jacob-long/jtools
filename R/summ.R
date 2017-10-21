@@ -58,56 +58,75 @@ j_summ <- summ
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A \code{lm} object.
-#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
+#' 
+#' @param scale If \code{TRUE}, reports standardized regression 
 #'   coefficients. Default is \code{FALSE}.
+#' 
 #' @param vifs If \code{TRUE}, adds a column to output with variance inflation
 #'   factors (VIF). Default is \code{FALSE}.
+#' 
 #' @param confint Show confidence intervals instead of standard errors? Default
 #'   is \code{FALSE}.
+#' 
 #' @param ci.width A number between 0 and 1 that signifies the width of the
 #'   desired confidence interval. Default is \code{.95}, which corresponds
 #'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
-#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard errors
-#'   instead of conventional SEs. These are also known as Huber-White standard
-#'   errors.
+#' 
+#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard 
+#'   errors instead of conventional SEs. These are also known as Huber-White 
+#'   standard errors.
 #'
 #'   Default is \code{FALSE}.
 #'
 #'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
-#' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
+#' 
+#' @param robust.type Only used if \code{robust = TRUE}. Specifies the type of
 #'   robust standard errors to be used by \code{sandwich}. By default, set to
 #'   \code{"HC3"}. See details for more on options.
+#' 
 #' @param cluster For clustered standard errors, provide the column name of
 #'   the cluster variable in the input data frame (as a string). Alternately,
 #'   provide a vector of clusters.
+#' 
 #' @param digits An integer specifying the number of digits past the decimal to
-#'   report in
-#'   the output. Default is 3. You can change the default number of digits for
-#'   all jtools functions with \code{options("jtools-digits" = digits)} where
-#'   digits is the desired number.
+#'   report in the output. Default is 2. You can change the default number of 
+#'   digits for all jtools functions with 
+#'   \code{options("jtools-digits" = digits)} where digits is the desired 
+#'   number.
+#' 
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
-#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
+#' 
+#' @param n.sd If \code{scale = TRUE}, how many standard deviations should
 #'  predictors be divided by? Default is 1, though some suggest 2.
+#' 
 #' @param center If you want coefficients for mean-centered variables but don't
-#'  want to standardize, set this to \code{TRUE}.
-#' @param standardize.response Should standardization apply to response variable?
-#'  Default is \code{FALSE}.
-#' @param part.corr Print partial (labeled "partial.r") and semipartial (labeled
-#'  "part.r") correlations with the table?
+#'    want to standardize, set this to \code{TRUE}.
+#' 
+#' @param scale.response Should standardization apply to response variable?
+#'    Default is \code{FALSE}.
+#' 
+#' @param part.corr Print partial (labeled "partial.r") and 
+#'  semipartial (labeled "part.r") correlations with the table?
 #'  Default is \code{FALSE}. See details about these quantities when robust
 #'  standard errors are used.
-#' @param model.info Toggles printing of basic information on sample size, name of
-#'   DV, and number of predictors.
+#' 
+#' @param model.info Toggles printing of basic information on sample size,
+#'   name of DV, and number of predictors.
+#' 
 #' @param model.fit Toggles printing of R-squared and adjusted R-squared.
-#' @param model.check Toggles whether to perform Breusch-Pagan test for heteroskedasticity
+#' 
+#' @param model.check Toggles whether to perform Breusch-Pagan test for 
+#'  heteroskedasticity
 #'  and print number of high-leverage observations. See details for more info.
+#' 
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
 #'
-#' @details By default, this function will print the following items to the console:
+#' @details By default, this function will print the following items to the
+#'  console:
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
@@ -116,17 +135,19 @@ j_summ <- summ
 #'    p values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy lifting
-#'  is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+#'  There are several options available for \code{robust.type}. The heavy 
+#'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better 
+#'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
 #'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
-#'  if the goal is to replicate Stata's output. Any option that is understood by
-#'  \code{vcovHC} will be accepted. Cluster-robust standard errors are computed
-#'  if \code{cluster} is set to the name of the input data's cluster variable
-#'  or is a vector of clusters.
+#'  if the goal is to replicate Stata's output. Any option that is understood 
+#'  by \code{vcovHC} will be accepted. Cluster-robust standard errors are 
+#'  computed if \code{cluster} is set to the name of the input data's cluster 
+#'  variable or is a vector of clusters.
 #'
-#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  The \code{scale} and \code{center} options are performed via 
+#'  refitting
 #'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
@@ -144,33 +165,33 @@ j_summ <- summ
 #'  not report the "robust" partial and semipartial correlations in
 #'  publications.
 #'
-#'  There are two pieces of information given for \code{model.check}, provided that
-#'  the model is an \code{lm} object. First, a Breusch-Pagan test is performed with
-#'  \code{\link[car]{ncvTest}}. This is a
-#'  hypothesis test for which the alternative hypothesis is heteroskedastic errors.
-#'  The test becomes much more likely to be statistically significant as the sample
-#'  size increases; however, the homoskedasticity assumption becomes less important
-#'  to inference as sample size increases (Lumley, Diehr, Emerson, & Lu, 2002).
-#'  Take the result of the test as a cue to check graphical checks rather than a
-#'  definitive decision. Note that the use of robust standard errors can account
-#'  for heteroskedasticity, though some oppose this approach (see King & Roberts,
-#'  2015).
+#'  There are two pieces of information given for \code{model.check}, provided 
+#'  that the model is an \code{lm} object. First, a Breusch-Pagan test is 
+#'  performed with \code{\link[car]{ncvTest}}. This is a
+#'  hypothesis test for which the alternative hypothesis is heteroskedastic 
+#'  errors. The test becomes much more likely to be statistically significant 
+#'  as the sample size increases; however, the homoskedasticity assumption 
+#'  becomes less important to inference as sample size increases (Lumley, 
+#'  Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
+#'  graphical checks rather than a definitive decision. Note that the use of 
+#'  robust standard errors can account for heteroskedasticity, though some 
+#'  oppose this approach (see King & Roberts, 2015).
 #'
 #'  The second piece of information provided by setting \code{model.check} to
 #'  \code{TRUE} is the number of high leverage observations. There are no hard
 #'  and fast rules for determining high leverage either, but in this case it is
 #'  based on Cook's Distance. All Cook's Distance values greater than (4/N) are
 #'  included in the count. Again, this is not a recommendation to locate and
-#'  remove such observations, but rather to look more closely with graphical and
-#'  other methods.
+#'  remove such observations, but rather to look more closely with graphical 
+#'  and other methods.
 #'
 #'
-#' @return If saved, users can access most of the items that are returned in the
-#'   output (and without rounding).
+#' @return If saved, users can access most of the items that are returned in 
+#'   the output (and without rounding).
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
 #'  \item{model}{The model for which statistics are displayed. This would be
-#'    most useful in cases in which \code{standardize = TRUE}.}
+#'    most useful in cases in which \code{scale = TRUE}.}
 #'
 #'  Much other information can be accessed as attributes.
 #'
@@ -184,10 +205,11 @@ j_summ <- summ
 #'
 #' @examples
 #' # Create lm object
-#' fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
+#' fit <- lm(Income ~ Frost + Illiteracy + Murder,
+#'           data = as.data.frame(state.x77))
 #'
-#' # Print the output with standardized coefficients and 2 digits past the decimal
-#' summ(fit, standardize = TRUE, digits = 2)
+#' # Print the output with standardized coefficients and 3 digits 
+#' summ(fit, scale = TRUE, digits = 3)
 #'
 #' @references
 #'
@@ -210,14 +232,30 @@ j_summ <- summ
 #' @aliases j_summ.lm
 
 summ.lm <- function(
-  model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
+  model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
   robust = FALSE, robust.type = "HC3", cluster = NULL,
-  digits = getOption("jtools-digits", default = 3), pvals = TRUE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, part.corr = FALSE,
+  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
+  n.sd = 1, center = FALSE, scale.response = FALSE, part.corr = FALSE,
   model.info = TRUE, model.fit = TRUE, model.check = FALSE,
   ...) {
 
   j <- list()
+
+  dots <- list(...)
+
+  # Check for deprecated argument
+  if ("standardize" %in% names(dots)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- dots$standardize
+  }
+
+  # Check for deprecated argument
+  if ("standardize.response" %in% names(dots)) {
+    warning("The standardize.response argument is deprecated. Please use",
+      " 'scale.response' instead.")
+    scale.response <- dots$standardize.response
+  }
 
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
@@ -235,14 +273,14 @@ summ.lm <- function(
   missing <- length(sum$na.action)
 
   # Standardized betas
-  if (standardize == TRUE) {
+  if (scale == TRUE) {
 
     model <- scale_lm(model, n.sd = n.sd,
-                      scale.response = standardize.response)
+                      scale.response = scale.response)
     # Using information from summary()
     sum <- summary(model)
 
-  } else if (center == TRUE && standardize == FALSE) {
+  } else if (center == TRUE && scale == FALSE) {
 
     model <- center_lm(model)
     # Using information from summary()
@@ -250,10 +288,11 @@ summ.lm <- function(
 
   }
 
-  j <- structure(j, standardize = standardize, vifs = vifs, robust = robust,
-                        robust.type = robust.type, digits = digits,
-                        model.info = model.info, model.fit = model.fit,
-                        model.check = model.check, n.sd = n.sd, center = center)
+  j <- structure(j, standardize = scale, vifs = vifs, robust = robust,
+                 robust.type = robust.type, digits = digits,
+                 model.info = model.info, model.fit = model.fit,
+                 model.check = model.check, n.sd = n.sd, center = center,
+                 call = the_call, env = the_env, scale = scale)
 
   if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
@@ -352,7 +391,7 @@ summ.lm <- function(
 
     }
 
-    coefs <- coeftest(model,coefs)
+    coefs <- coeftest(model, coefs)
     ses <- coefs[,2]
     ts <- coefs[,3]
     ps <- coefs[,4]
@@ -372,13 +411,13 @@ summ.lm <- function(
     tcrit <- abs(qnorm(alpha))
 
     lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+    lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
 
     uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+    uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
 
-    lci <- ucoefs - (ses*tcrit)
-    uci <- ucoefs + (ses*tcrit)
+    lci <- ucoefs - (ses * tcrit)
+    uci <- ucoefs + (ses * tcrit)
     params <- list(ucoefs, lci, uci, ts, ps)
     namevec <- c("Est.", lci_lab, uci_lab, "t val.", "p")
 
@@ -402,7 +441,7 @@ summ.lm <- function(
     p.df <- length(ts) - df.int # If intercept, don't include it
     df.resid <- n - p.df - 1
 
-    partial_corrs <- ts/sqrt(ts^2 + df.resid)
+    partial_corrs <- ts / sqrt(ts^2 + df.resid)
     if (df.int == 1) {
       partial_corrs[1] <- NA # Intercept partial corr. isn't interpretable
     }
@@ -453,7 +492,7 @@ summ.lm <- function(
     homoskedp <- ncvTest(model)$p
     j <- structure(j, homoskedp = homoskedp)
 
-    cd <- table(cooks.distance(model) > 4/n)
+    cd <- table(cooks.distance(model) > 4 / n)
     j <- structure(j, cooksdf = cd[2])
 
   }
@@ -463,7 +502,8 @@ summ.lm <- function(
                  missing = missing, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = "t val.",
-                 standardize.response = standardize.response,
+                 standardize.response = scale.response,
+                 scale.response = scale.response,
                  odds.ratio = FALSE)
 
   modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
@@ -552,8 +592,8 @@ print.summ.lm <- function(x, ...) {
   print(ctable)
 
   # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    if (x$standardize.response == TRUE) {
+  if (x$scale == TRUE) {
+    if (x$scale.response == TRUE) {
       cat("\n")
       cat("All continuous variables are mean-centered and scaled by",
         x$n.sd, "s.d.", "\n")
@@ -577,54 +617,15 @@ print.summ.lm <- function(x, ...) {
 #' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
 #'
-#' @param model A \code{glm} object.
-#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
-#'   coefficients. Default is \code{FALSE}.
-#' @param vifs If \code{TRUE}, adds a column to output with variance inflation
-#'   factors (VIF). Default is \code{FALSE}.
-#' @param confint Show confidence intervals instead of standard errors? Default
-#'   is \code{FALSE}.
-#' @param ci.width A number between 0 and 1 that signifies the width of the
-#'   desired confidence interval. Default is \code{.95}, which corresponds
-#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
-#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard
-#'   errors instead of conventional SEs. These are also known as Huber-White
-#'   standard errors.
-#'
-#'   Default is \code{FALSE}.
-#'
-#'   This requires the \code{sandwich} package to compute the
-#'    standard errors.
-#' @param robust.type Only used if \code{robust=TRUE}. Specifies the type of
-#'   robust standard errors to be used by \code{sandwich}. By default, set to
-#'   \code{"HC3"}. See details for more on options.
-#' @param cluster For clustered standard errors, provide the column name of
-#'   the cluster variable in the input data frame (as a string). Alternately,
-#'   provide a vector of clusters.
-#' @param digits An integer specifying the number of digits past the decimal to
-#'   report in
-#'   the output. Default is 3. You can change the default number of digits for
-#'   all jtools functions with \code{options("jtools-digits" = digits)} where
-#'   digits is the desired number.
-#' @param model.info Toggles printing of basic information on sample size, name o
-#'   DV, and number of predictors.
-#' @param model.fit Toggles printing of Pseudo-R-squared and AIC/BIC
-#'   (when applicable).
-#' @param pvals Show p values and significance stars? If \code{FALSE}, these
-#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
-#'  details).
-#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
-#'  predictors be divided by? Default is 1, though some suggest 2.
-#' @param center If you want coefficients for mean-centered variables but don't
-#'  want to standardize, set this to \code{TRUE}.
-#' @param standardize.response Should standardization apply to response variable?
-#'  Default is \code{FALSE}.
+#' @param model A `glm` object.
 #' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
+#' 
+#' @inheritParams summ.lm
 #'
 #' @details By default, this function will print the following items to the console:
 #' \itemize{
@@ -635,8 +636,9 @@ print.summ.lm <- function(x, ...) {
 #'    p values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy lifting
-#'  is done by \code{\link[sandwich]{vcovHC}}, where those are better described.
+#'  There are several options available for \code{robust.type}. The heavy 
+#'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better 
+#'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
 #'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
@@ -645,17 +647,18 @@ print.summ.lm <- function(x, ...) {
 #'  if \code{cluster} is set to the name of the input data's cluster variable
 #'  or is a vector of clusters.
 #'
-#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  The \code{scale} and \code{center} options are performed via 
+#'  refitting
 #'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
 #'
-#' @return If saved, users can access most of the items that are returned in the
-#'   output (and without rounding).
+#' @return If saved, users can access most of the items that are returned in 
+#'   the output (and without rounding).
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
 #'  \item{model}{The model for which statistics are displayed. This would be
-#'    most useful in cases in which \code{standardize = TRUE}.}
+#'    most useful in cases in which \code{scale = TRUE}.}
 #'
 #'  Much other information can be accessed as attributes.
 #'
@@ -668,22 +671,26 @@ print.summ.lm <- function(x, ...) {
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @examples
-#' # Create lm object
-#' fit <- lm(Income ~ Frost + Illiteracy + Murder,
-#'  data = as.data.frame(state.x77))
-#'
-#' # Print the output with standardized coefficients and 2 digits past the decimal
-#' summ(fit, standardize = TRUE, digits = 2)
-#'
-#'
+#'  ## Dobson (1990) Page 93: Randomized Controlled Trial :
+#'  counts <- c(18,17,15,20,10,20,25,13,12)
+#'  outcome <- gl(3,1,9)
+#'  treatment <- gl(3,3)
+#'  print(d.AD <- data.frame(treatment, outcome, counts))
+#'  glm.D93 <- glm(counts ~ outcome + treatment, family = poisson)
+#'  
+#'  # Summarize with standardized coefficients 
+#'  summ(glm.D93, scale = TRUE)
+#' 
 #' @references
 #'
-#' King, G., & Roberts, M. E. (2015). How robust standard errors expose methodological
-#'  problems they do not fix, and what to do about it. \emph{Political Analysis},
-#'   \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
+#' King, G., & Roberts, M. E. (2015). How robust standard errors expose 
+#'  methodological problems they do not fix, and what to do about it. 
+#'  \emph{Political Analysis}, \emph{23}(2), 159–179. 
+#'  \url{https://doi.org/10.1093/pan/mpu015}
 #'
 #' Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
-#' Normality Assumption in Large Public Health Data Sets. \emph{Annual Review of
+#' Normality Assumption in Large Public Health Data Sets. \emph{Annual Review
+#'  of
 #'  Public Health}, \emph{23}, 151–169.
 #'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 #'
@@ -696,13 +703,29 @@ print.summ.lm <- function(x, ...) {
 #'
 
 summ.glm <- function(
-  model, standardize = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
+  model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
   robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 3),
+  cluster = NULL, digits = getOption("jtools-digits", default = 2),
   odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
-  n.sd = 1, center = FALSE, standardize.response = FALSE, ...) {
+  n.sd = 1, center = FALSE, scale.response = FALSE, ...) {
 
   j <- list()
+
+  dots <- list(...)
+
+  # Check for deprecated argument
+  if ("standardize" %in% names(dots)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- dots$standardize
+  }
+
+  # Check for deprecated argument
+  if ("standardize.response" %in% names(dots)) {
+    warning("The standardize.response argument is deprecated. Please use",
+      " 'scale.response' instead.")
+    scale.response <- dots$standardize.response
+  }
 
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
@@ -726,13 +749,13 @@ summ.glm <- function(
   }
 
   # Standardized betas
-  if (standardize == TRUE) {
+  if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+    model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
     # Using information from summary()
     sum <- summary(model)
 
-  } else if (center == TRUE && standardize == FALSE) {
+  } else if (center == TRUE && scale == FALSE) {
 
     model <- center_lm(model)
     # Using information from summary()
@@ -741,9 +764,10 @@ summ.glm <- function(
   }
 
 
-  j <- structure(j, standardize = standardize, vifs = vifs, digits = digits,
+  j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
                  center = center)
+                 scale = scale)
 
   if (!all(attributes(model$terms)$order > 1)) {
     interaction <- TRUE
@@ -1001,8 +1025,9 @@ summ.glm <- function(
                  robust.type = robust.type, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
-                 standardize.response = standardize.response,
-                 odds.ratio = odds.ratio)
+                 standardize.response = scale.response,
+                 odds.ratio = odds.ratio,
+                 scale.response = scale.response)
 
   j <- structure(j, lmFamily = model$family)
 
@@ -1080,8 +1105,8 @@ print.summ.glm <- function(x, ...) {
   }
 
   # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    if (x$standardize.response == TRUE) {
+  if (x$scale == TRUE) {
+    if (x$scale.response == TRUE) {
       cat("\n")
       cat("All continuous variables are mean-centered and scaled by",
           x$n.sd, "s.d.", "\n")
@@ -1105,45 +1130,16 @@ print.summ.glm <- function(x, ...) {
 #' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
 #'
-#' @param model A \code{\link[survey]{svyglm}} object.
-#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
-#'   coefficients. Default is \code{FALSE}.
-#' @param vifs If \code{TRUE}, adds a column to output with variance inflation
-#'   factors (VIF). Default is \code{FALSE}.
-#' @param confint Show confidence intervals instead of standard errors? Default
-#'   is \code{FALSE}.
-#' @param ci.width A number between 0 and 1 that signifies the width of the
-#'   desired confidence interval. Default is \code{.95}, which corresponds
-#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
-#' @param digits An integer specifying the number of digits past the decimal to
-#'   report in
-#'   the output. Default is 3. You can change the default number of digits for
-#'   all jtools functions with \code{options("jtools-digits" = digits)} where
-#'   digits is the desired number.
-#' @param model.info Toggles printing of basic information on sample size, name of
-#'   DV, and number of predictors.
-#' @param model.fit Toggles printing of R-squared, Pseudo-R-squared,
-#'  and AIC (when applicable).
-#' @param model.check Only for linear mdoels. Toggles whether to perform
-#'  Breusch-Pagan test for heteroskedasticity
-#'  and print number of high-leverage observations.
-#' @param pvals Show p values and significance stars? If \code{FALSE}, these
-#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
-#'  details).
-#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
-#'  predictors be divided by? Default is 1, though some suggest 2.
-#' @param center If you want coefficients for mean-centered variables but don't
-#'  want to standardize, set this to \code{TRUE}.
-#' @param standardize.response Should standardization apply to response variable?
-#'  Default is \code{FALSE}.
+#' @param model A `svyglm` object.
 #' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
-#' @param ... This just captures extra arguments that may only work for other
-#'  types of models.
+#' 
+#' @inheritParams summ.lm
 #'
-#' @details By default, this function will print the following items to the console:
+#' @details By default, this function will print the following items to the 
+#' console:
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
@@ -1152,7 +1148,7 @@ print.summ.glm <- function(x, ...) {
 #'    p values.
 #' }
 #'
-#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  The \code{scale} and \code{center} options are performed via refitting
 #'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling. These functions can handle \code{svyglm} objects
@@ -1166,7 +1162,7 @@ print.summ.glm <- function(x, ...) {
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
 #'  \item{model}{The model for which statistics are displayed. This would be
-#'    most useful in cases in which \code{standardize = TRUE}.}
+#'    most useful in cases in which \code{scale = TRUE}.}
 #'
 #'  Much other information can be accessed as attributes.
 #'
@@ -1181,9 +1177,10 @@ print.summ.glm <- function(x, ...) {
 #' @examples
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw, data = apistrat,
-#'  fpc =~ fpc)
+#' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
+#'                     data = apistrat, fpc =~ fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
+#' 
 #' summ(regmodel)
 #
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
@@ -1192,13 +1189,30 @@ print.summ.glm <- function(x, ...) {
 #' @aliases j_summ.svyglm
 
 summ.svyglm <- function(
-  model, standardize = FALSE, vifs = FALSE,
+  model, scale = FALSE, vifs = FALSE,
   confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, pvals = TRUE, n.sd = 1, center = FALSE,
-  standardize.response = FALSE, odds.ratio = FALSE, ...) {
+  digits = getOption("jtools-digits", default = 2), model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, pvals = TRUE, n.sd = 1,
+  center = FALSE,
+  scale.response = FALSE, odds.ratio = FALSE, ...) {
 
   j <- list()
+
+  dots <- list(...)
+
+  # Check for deprecated argument
+  if ("standardize" %in% names(dots)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- dots$standardize
+  }
+
+  # Check for deprecated argument
+  if ("standardize.response" %in% names(dots)) {
+    warning("The standardize.response argument is deprecated. Please use",
+      " 'scale.response' instead.")
+    scale.response <- dots$standardize.response
+  }
 
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
@@ -1221,15 +1235,15 @@ summ.svyglm <- function(
   }
 
   # Standardized betas
-  if (standardize == TRUE || center == TRUE) {
+  if (scale == TRUE || center == TRUE) {
     # Standardized betas
-    if (standardize == TRUE) {
+    if (scale == TRUE) {
 
-      model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+      model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
       # Using information from summary()
       sum <- summary(model)
 
-    } else if (center == TRUE && standardize == FALSE) {
+    } else if (center == TRUE && scale == FALSE) {
 
       model <- center_lm(model)
       # Using information from summary()
@@ -1242,9 +1256,10 @@ summ.svyglm <- function(
 
   }
 
-  j <- structure(j, standardize = standardize, vifs = vifs, digits = digits,
+  j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd, center = center)
+                 scale = scale)
 
 
 
@@ -1436,8 +1451,9 @@ summ.svyglm <- function(
                  dispersion = dispersion, missing = missing,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
-                 standardize.response = standardize.response,
-                 odds.ratio = odds.ratio)
+                 standardize.response = scale.response,
+                 odds.ratio = odds.ratio,
+                 scale.response = scale.response)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -1522,8 +1538,8 @@ print.summ.svyglm <- function(x, ...) {
   }
 
   # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    if (x$standardize.response == TRUE) {
+  if (x$scale == TRUE) {
+    if (x$scale.response == TRUE) {
       cat("\n")
       cat("All continuous variables are mean-centered and scaled by",
           x$n.sd, "s.d.", "\n")
@@ -1548,43 +1564,22 @@ print.summ.svyglm <- function(x, ...) {
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A \code{\link[lme4]{merMod}} object.
-#' @param standardize If \code{TRUE}, adds a column to output with standardized regression
-#'   coefficients. Default is \code{FALSE}.
-#' @param confint Show confidence intervals instead of standard errors? Default
-#'   is \code{FALSE}.
-#' @param ci.width A number between 0 and 1 that signifies the width of the
-#'   desired confidence interval. Default is \code{.95}, which corresponds
-#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
-#' @param digits An integer specifying the number of digits past the decimal to
-#'   report in
-#'   the output. Default is 3. You can change the default number of digits for
-#'   all jtools functions with \code{options("jtools-digits" = digits)} where
-#'   digits is the desired number.
-#' @param model.info Toggles printing of basic information on sample size, name of
-#'   DV, and number of predictors.
-#' @param model.fit Toggles printing of AIC/BIC
-#'  (when applicable).
 #' @param r.squared Calculate an r-squared model fit statistic? Default is
 #'  \code{FALSE} because it seems to have convergence problems too often.
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
-#' @param n.sd If \code{standardize = TRUE}, how many standard deviations should
-#'  predictors be divided by? Default is 1, though some suggest 2.
-#' @param center If you want coefficients for mean-centered variables but don't
-#'  want to standardize, set this to \code{TRUE}.
-#' @param standardize.response Should standardization apply to response variable?
-#'  Default is \code{FALSE}.
 #' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
 #' @param t.df For \code{lmerMod} models only. User may set the degrees of
 #'  freedom used in conducting t-tests. See details for options.
-#' @param ... This just captures extra arguments that may only work for other
-#'  types of models.
+#' 
+#' @inheritParams summ.lm
 #'
-#' @details By default, this function will print the following items to the console:
+#' @details By default, this function will print the following items to the 
+#' console:
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
@@ -1592,7 +1587,7 @@ print.summ.svyglm <- function(x, ...) {
 #'   \item A table with regression coefficients, standard errors, and t-values.
 #' }
 #'
-#'  The \code{standardize} and \code{center} options are performed via refitting
+#'  The \code{scale} and \code{center} options are performed via refitting
 #'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
@@ -1636,12 +1631,12 @@ print.summ.svyglm <- function(x, ...) {
 #'  determine the d.f., then any number provided as the argument will be
 #'  used.
 #'
-#' @return If saved, users can access most of the items that are returned in the
-#'   output (and without rounding).
+#' @return If saved, users can access most of the items that are returned in 
+#'   the output (and without rounding).
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
 #'  \item{model}{The model for which statistics are displayed. This would be
-#'    most useful in cases in which \code{standardize = TRUE}.}
+#'    most useful in cases in which \code{scale = TRUE}.}
 #'
 #'  Much other information can be accessed as attributes.
 #'
@@ -1689,8 +1684,8 @@ print.summ.svyglm <- function(x, ...) {
 #'  \emph{53}, 983.
 #'  https://doi.org/10.2307/2533558
 #'
-#' Luke, S. G. (2017). Evaluating significance in linear mixed-effects models in
-#' R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
+#' Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
+#'  in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
 #'  https://doi.org/10.3758/s13428-016-0809-y
 #'
 #' Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
@@ -1708,13 +1703,29 @@ print.summ.svyglm <- function(x, ...) {
 #'
 
 summ.merMod <- function(
-  model, standardize = FALSE, confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 3), model.info = TRUE,
+  model, scale = FALSE, confint = FALSE, ci.width = .95,
+  digits = getOption("jtools-digits", default = 2), model.info = TRUE,
   model.fit = TRUE, r.squared = FALSE, pvals = NULL, n.sd = 1,
   center = FALSE,
-  standardize.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...) {
+  scale.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...) {
 
   j <- list()
+
+  dots <- list(...)
+
+  # Check for deprecated argument
+  if ("standardize" %in% names(dots)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+      " instead.")
+    scale <- dots$standardize
+  }
+
+  # Check for deprecated argument
+  if ("standardize.response" %in% names(dots)) {
+    warning("The standardize.response argument is deprecated. Please use",
+      " 'scale.response' instead.")
+    scale.response <- dots$standardize.response
+  }
 
   # Accept arguments meant for other types of models and print warnings as
   # needed.
@@ -1770,20 +1781,21 @@ summ.merMod <- function(
   }
 
   # Standardized betas
-  if (standardize == TRUE) {
+  if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = standardize.response)
+    model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
 
-  } else if (center == TRUE && standardize == FALSE) {
+  } else if (center == TRUE && scale == FALSE) {
 
     model <- center_lm(model)
 
   }
 
-  j <- structure(j, standardize = standardize, digits = digits,
+  j <- structure(j, standardize = scale, digits = digits,
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd,
                  center = center, t.df = t.df)
+                 scale = scale)
 
   # Using information from summary()
   sum <- summary(model)
@@ -1998,8 +2010,9 @@ summ.merMod <- function(
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  df = df, pbkr = pbkr, r.squared = r.squared,
                  failed.rsq = failed.rsq, test.stat = tcol,
-                 standardize.response = standardize.response,
-                 odds.ratio = odds.ratio)
+                 standardize.response = scale.response,
+                 odds.ratio = odds.ratio,
+                 scale.response = scale.response)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -2102,8 +2115,8 @@ package \"pbkrtest\" to get more accurate p values.")
   print(gtable)
 
   # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    if (x$standardize.response == TRUE) {
+  if (x$scale == TRUE) {
+    if (x$scale.response == TRUE) {
       cat("\n")
       cat("All continuous variables are mean-centered and scaled by",
           x$n.sd, "s.d.", "\n")
@@ -2126,12 +2139,12 @@ package \"pbkrtest\" to get more accurate p values.")
 #' @export
 #'
 
-summ.default <- function(model, standardize = FALSE, vifs = FALSE,
+summ.default <- function(model, scale = FALSE, vifs = FALSE,
                          confint = FALSE, ci.width = .95,
                          robust = FALSE, robust.type = "HC3", cluster = NULL,
-                         digits = getOption("jtools-digits", default = 3),
+                         digits = getOption("jtools-digits", default = 2),
                          pvals = TRUE, n.sd = 1, center = FALSE,
-                         standardize.response = FALSE, model.info = TRUE,
+                         scale.response = FALSE, model.info = TRUE,
                          model.fit = TRUE, model.check = FALSE, ...) {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
@@ -2142,16 +2155,16 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
   }
 
   # Standardized betas
-  if (standardize == TRUE) {
+  if (scale == TRUE) {
 
     model2 <-
-      try({scale_lm(model, n.sd = n.sd, scale.response = standardize.response)},
+      try({scale_lm(model, n.sd = n.sd, scale.response = scale.response)},
           silent = TRUE)
     if ("try-error" %in% class(model2)) {
 
-      warning("Could not standardize this type of model. Reporting",
-              " unstandardized estimates...")
-      standardize <- FALSE
+      warning("Could not scale this type of model. Reporting",
+              " unscaled estimates...")
+      scale <- FALSE
       center <- FALSE
 
     } else {
@@ -2160,7 +2173,7 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
 
     }
 
-  } else if (center == TRUE && standardize == FALSE) {
+  } else if (center == TRUE && scale == FALSE) {
 
     model2 <-  try({center_lm(model)}, silent = TRUE)
     if ("try-error" %in% class(model2)) {
@@ -2488,12 +2501,12 @@ summ.default <- function(model, standardize = FALSE, vifs = FALSE,
   out <- structure(out, pvals = pvals, robust = robust, vifs = vifs,
                    mod_class = mod_class, mod_info = mod_info,
                    confint = confint, ci.width = ci.width, broom = broom,
-                   standardize = standardize, center = center,
+                   scale = scale, center = center,
                    n.sd = n.sd, dv = dv,
                    n = n_obs, mod_info2 = mod_info2, digits = digits,
                    model.info = model.info, model.fit = model.fit,
                    use_cluster = use_cluster, robust.type = robust.type,
-                   standardize.response = standardize.response)
+                   scale.response = scale.response,
   class(out) <- c("summ.default","summ")
   return(out)
 
@@ -2559,8 +2572,8 @@ print.summ.default <- function(x, ...) {
   print(as.table(ctable))
 
   # Notifying user if variables altered from original fit
-  if (x$standardize == TRUE) {
-    if (x$standardize.response == TRUE) {
+  if (x$scale == TRUE) {
+    if (x$scale.response == TRUE) {
       cat("\n")
       cat("All continuous variables are mean-centered and scaled by",
           x$n.sd, "s.d.", "\n")
