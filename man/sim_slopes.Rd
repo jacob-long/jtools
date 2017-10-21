@@ -5,13 +5,14 @@
 \title{Perform a simple slopes analysis}
 \usage{
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
-  mod2vals = NULL, centered = NULL, standardize = FALSE,
-  cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
-  jnalpha = 0.05, robust = FALSE, robust.type = "HC3",
-  digits = getOption("jtools-digits", default = 3), n.sd = 1)
+  mod2vals = NULL, centered = NULL, scale = FALSE, cond.int = FALSE,
+  johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
+  robust.type = "HC3", digits = getOption("jtools-digits", default = 2),
+  n.sd = 1, standardize = NULL)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
+\item{model}{A regression model of type \code{lm} or 
+\code{\link[survey]{svyglm}}.
 It should contain the interaction of interest.}
 
 \item{pred}{The predictor variable involved in the interaction.}
@@ -21,29 +22,33 @@ It should contain the interaction of interest.}
 \item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction.}
 
-\item{modxvals}{For which values of the moderator should simple slopes analysis
-be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
-the customary +/- 1 standard deviation from the mean as well as the mean itself.
-There is no specific limit on the number of variables provided. Factor variables
-are not particularly suited to simple slopes analysis, but you could have a
-numeric moderator with values of 0 and 1 and give \code{c(0,1)} to compare the
-slopes at the different conditions. Two-level factor variables are coerced
-to numeric 0/1 variables, but are not standardized/centered like they could
-be if your input data had a numeric 0/1 variable.}
+\item{modxvals}{For which values of the moderator should simple slopes 
+analysis be performed? Default is \code{NULL}. If \code{NULL}, then the 
+values will be the customary +/- 1 standard deviation from the mean as 
+well as the mean itself. There is no specific limit on the number of 
+variables provided. Factor variables
+are not particularly suited to simple slopes analysis, but you could have
+a numeric moderator with values of 0 and 1 and give \code{c(0,1)} to 
+compare the slopes at the different conditions. Two-level factor
+variables are coerced to numeric 0/1 variables, but are not 
+standardized/centered like they could be if your input data had a numeric 
+0/1 variable.}
 
 \item{mod2vals}{For which values of the second moderator should the plot be
 facetted by? That is, there will be a separate plot for each level of this
 moderator. Defaults are the same as \code{modxvals}.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered. If
-\code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
-the user-specified predictors are centered. User can also use "none" or "all"
-arguments. The response variable is not centered unless specified directly.}
+\item{centered}{A vector of quoted variable names that are to be 
+mean-centered. If \code{NULL}, all non-focal predictors are centered. If 
+not \code{NULL}, only the user-specified predictors are centered. User 
+can also use "none" or "all" arguments. The response variable is not 
+centered unless specified directly.}
 
-\item{standardize}{Logical. Would you like to standardize the variables
+\item{scale}{Logical. Would you like to standardize the variables
 that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-standardize variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its default.}
+scale variables specified by the \code{centered} argument. Note that
+non-focal predictors are centered when \code{centered = NULL}, its 
+default.}
 
 \item{cond.int}{Should conditional intercepts be printed in addition to the
 slopes? Default is \code{FALSE}.}
@@ -55,31 +60,37 @@ Default is \code{TRUE}. This can be performed separately with
 \item{jnplot}{Should the Johnson-Neyman interval be plotted as well? Default
 is \code{FALSE}.}
 
-\item{jnalpha}{What should the alpha level be for the Johnson-Neyman interval?
-Default is .05, which corresponds to a 95\% confidence interval.}
+\item{jnalpha}{What should the alpha level be for the Johnson-Neyman 
+interval? Default is .05, which corresponds to a 95\% confidence interval.}
 
 \item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust
 standard errors.}
 
 \item{robust.type}{Type of heteroskedasticity-robust standard errors to use
 if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
- options.}
+options.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 3. You can change the default number of
 digits for all jtools functions with
-\code{options("jtools-digits" = digits)} where digits is the desired number.}
+\code{options("jtools-digits" = digits)} where digits is the desired 
+number.}
 
-\item{n.sd}{How many standard deviations should be used if \code{standardize
+\item{n.sd}{How many standard deviations should be used if \code{scale
 = TRUE}? Default is 1, but some prefer 2.}
+
+\item{standardize}{Deprecated. Equivalent to `scale`. Please change your 
+scripts to use `scale` instead as this argument will be removed in the 
+future.}
 }
 \value{
-\item{slopes}{A table of coefficients for the focal predictor at each value of
- the moderator}
- \item{ints}{A table of coefficients for the intercept at each value of the moderator}
+\item{slopes}{A table of coefficients for the focal predictor at each 
+ value of the moderator}
+ \item{ints}{A table of coefficients for the intercept at each value of the
+   moderator}
  \item{modxvals}{The values of the moderator used in the analysis}
- \item{mods}{A list containing each regression model created to estimate the conditional
- coefficients.}
+ \item{mods}{A list containing each regression model created to estimate 
+    the conditional coefficients.}
  \item{jn}{If \code{johnson_neyman = TRUE}, a list of `johnson_neyman`
  objects from \code{\link{johnson_neyman}}. These contain the values of the
  interval and the plots. If a 2-way interaction, the list will be of length
@@ -91,62 +102,63 @@ digits for all jtools functions with
 understanding two- and three-way interaction effects in linear regression.
 }
 \details{
-This allows the user to perform a simple slopes analysis for the purpose
-  of probing interaction effects in a linear regression. Two- and three-way
-  interactions are supported, though one should be warned that three-way
-  interactions are not easy to interpret in this way.
+This allows the user to perform a simple slopes analysis for the 
+  purpose of probing interaction effects in a linear regression. Two- and 
+  three-way interactions are supported, though one should be warned that 
+  three-way interactions are not easy to interpret in this way.
 
   For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 
-  The function accepts a \code{lm} object and uses it to recompute models with
-  the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
-   objects are also accepted, though users should be cautioned against using
-  simple slopes analysis with non-linear models (\code{svyglm} also estimates
-  linear models).
+  The function accepts a \code{lm} object and uses it to recompute models 
+  with the moderating variable set to the levels requested. 
+  \code{\link[survey]{svyglm}} objects are also accepted, though users 
+  should be cautioned against using simple slopes analysis with non-linear 
+  models (\code{svyglm} also estimates linear models).
 
-  Factor moderators are coerced to a 0/1 numeric variable and are not centered,
-  even when requested in arguments. To avoid this, modify your data to change
-  the factor to a binary numeric variable. Factors with more than 2 levels
-  trigger an error.
+  Factor moderators are coerced to a 0/1 numeric variable and are not 
+  centered, even when requested in arguments. To avoid this, modify your 
+  data to change the factor to a binary numeric variable. Factors with more 
+  than 2 levels trigger an error.
 }
 \examples{
 
 # Using a fitted model as formula input
-fiti <- lm(Income ~ Frost + Murder*Illiteracy,
+fiti <- lm(Income ~ Frost + Murder * Illiteracy,
   data=as.data.frame(state.x77))
 sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 
 # With svyglm
 library(survey)
 data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-regmodel <- svyglm(api00~ell*meals,design=dstrat)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                    data = apistrat, fpc = ~fpc)
+regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 sim_slopes(regmodel, pred = ell, modx = meals)
 
 # 3-way with survey and factor input
-regmodel <- svyglm(api00~ell*meals*sch.wide,design=dstrat)
+regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
- regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
- Research}, \emph{40}(3), 373-400.
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
+ multilevel regression: Inferential and graphical techniques. 
+ \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
-regression/correlation analyses for the behavioral sciences} (3rd ed.).
-Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+multiple regression/correlation analyses for the behavioral sciences} (3rd
+ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{interact_plot}} accepts similar syntax and will plot the
   results with \code{\link[ggplot2]{ggplot}}.
 
-  \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of differences
-  and provides Johnson-Neyman intervals.
+  \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of 
+      differences and provides Johnson-Neyman intervals.
 
-  \code{\link[pequod]{simpleSlope}} performs a similar analysis and can analyze
-  a second moderator.
+  \code{\link[pequod]{simpleSlope}} performs a similar analysis and can 
+       also analyze a second moderator.
 
 Other interaction tools: \code{\link{interact_plot}},
   \code{\link{johnson_neyman}},
@@ -155,3 +167,4 @@ Other interaction tools: \code{\link{interact_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

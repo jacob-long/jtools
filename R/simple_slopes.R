@@ -3,7 +3,8 @@
 #' \code{sim_slopes()} conducts a simple slopes analysis for the purposes of
 #' understanding two- and three-way interaction effects in linear regression.
 #'
-#' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
+#' @param model A regression model of type \code{lm} or 
+#'    \code{\link[survey]{svyglm}}.
 #'    It should contain the interaction of interest.
 #'
 #' @param pred The predictor variable involved in the interaction.
@@ -13,29 +14,33 @@
 #' @param mod2 Optional. The name of the second moderator
 #'  variable involved in the interaction.
 #'
-#' @param modxvals For which values of the moderator should simple slopes analysis
-#'   be performed? Default is \code{NULL}. If \code{NULL}, then the values will be
-#'   the customary +/- 1 standard deviation from the mean as well as the mean itself.
-#'   There is no specific limit on the number of variables provided. Factor variables
-#'   are not particularly suited to simple slopes analysis, but you could have a
-#'   numeric moderator with values of 0 and 1 and give \code{c(0,1)} to compare the
-#'   slopes at the different conditions. Two-level factor variables are coerced
-#'   to numeric 0/1 variables, but are not standardized/centered like they could
-#'   be if your input data had a numeric 0/1 variable.
+#' @param modxvals For which values of the moderator should simple slopes 
+#'   analysis be performed? Default is \code{NULL}. If \code{NULL}, then the 
+#'   values will be the customary +/- 1 standard deviation from the mean as 
+#'   well as the mean itself. There is no specific limit on the number of 
+#'   variables provided. Factor variables
+#'   are not particularly suited to simple slopes analysis, but you could have
+#'   a numeric moderator with values of 0 and 1 and give \code{c(0,1)} to 
+#'   compare the slopes at the different conditions. Two-level factor
+#'   variables are coerced to numeric 0/1 variables, but are not 
+#'   standardized/centered like they could be if your input data had a numeric 
+#'   0/1 variable.
 #'
 #' @param mod2vals For which values of the second moderator should the plot be
 #'   facetted by? That is, there will be a separate plot for each level of this
 #'   moderator. Defaults are the same as \code{modxvals}.
 #'
-#' @param centered A vector of quoted variable names that are to be mean-centered. If
-#'   \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
-#'   the user-specified predictors are centered. User can also use "none" or "all"
-#'   arguments. The response variable is not centered unless specified directly.
+#' @param centered A vector of quoted variable names that are to be 
+#'   mean-centered. If \code{NULL}, all non-focal predictors are centered. If 
+#'   not \code{NULL}, only the user-specified predictors are centered. User 
+#'   can also use "none" or "all" arguments. The response variable is not 
+#'   centered unless specified directly.
 #'
-#' @param standardize Logical. Would you like to standardize the variables
+#' @param scale Logical. Would you like to standardize the variables
 #'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-#'   standardize variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its default.
+#'   scale variables specified by the \code{centered} argument. Note that
+#'   non-focal predictors are centered when \code{centered = NULL}, its 
+#'   default.
 #'
 #' @param cond.int Should conditional intercepts be printed in addition to the
 #'   slopes? Default is \code{FALSE}.
@@ -47,50 +52,56 @@
 #' @param jnplot Should the Johnson-Neyman interval be plotted as well? Default
 #'   is \code{FALSE}.
 #'
-#' @param jnalpha What should the alpha level be for the Johnson-Neyman interval?
-#'   Default is .05, which corresponds to a 95\% confidence interval.
+#' @param jnalpha What should the alpha level be for the Johnson-Neyman 
+#'   interval? Default is .05, which corresponds to a 95\% confidence interval.
 #'
 #' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust
 #'   standard errors.
 #'
 #' @param robust.type Type of heteroskedasticity-robust standard errors to use
 #'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
-#'    options.
+#'   options.
 #'
 #' @param digits An integer specifying the number of digits past the decimal to
 #'   report in the output. Default is 3. You can change the default number of
 #'   digits for all jtools functions with
-#'   \code{options("jtools-digits" = digits)} where digits is the desired number.
+#'   \code{options("jtools-digits" = digits)} where digits is the desired 
+#'   number.
 #'
-#' @param n.sd How many standard deviations should be used if \code{standardize
+#' @param n.sd How many standard deviations should be used if \code{scale
 #'   = TRUE}? Default is 1, but some prefer 2.
+#' 
+#' @param standardize Deprecated. Equivalent to `scale`. Please change your 
+#'  scripts to use `scale` instead as this argument will be removed in the 
+#'  future.
 #'
-#' @details This allows the user to perform a simple slopes analysis for the purpose
-#'   of probing interaction effects in a linear regression. Two- and three-way
-#'   interactions are supported, though one should be warned that three-way
-#'   interactions are not easy to interpret in this way.
+#' @details This allows the user to perform a simple slopes analysis for the 
+#'   purpose of probing interaction effects in a linear regression. Two- and 
+#'   three-way interactions are supported, though one should be warned that 
+#'   three-way interactions are not easy to interpret in this way.
 #'
 #'   For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 #'
-#'   The function accepts a \code{lm} object and uses it to recompute models with
-#'   the moderating variable set to the levels requested. \code{\link[survey]{svyglm}}
-#'    objects are also accepted, though users should be cautioned against using
-#'   simple slopes analysis with non-linear models (\code{svyglm} also estimates
-#'   linear models).
+#'   The function accepts a \code{lm} object and uses it to recompute models 
+#'   with the moderating variable set to the levels requested. 
+#'   \code{\link[survey]{svyglm}} objects are also accepted, though users 
+#'   should be cautioned against using simple slopes analysis with non-linear 
+#'   models (\code{svyglm} also estimates linear models).
 #'
-#'   Factor moderators are coerced to a 0/1 numeric variable and are not centered,
-#'   even when requested in arguments. To avoid this, modify your data to change
-#'   the factor to a binary numeric variable. Factors with more than 2 levels
-#'   trigger an error.
+#'   Factor moderators are coerced to a 0/1 numeric variable and are not 
+#'   centered, even when requested in arguments. To avoid this, modify your 
+#'   data to change the factor to a binary numeric variable. Factors with more 
+#'   than 2 levels trigger an error.
 #'
 #' @return
 #'
-#'  \item{slopes}{A table of coefficients for the focal predictor at each value of
-#'  the moderator}
-#'  \item{ints}{A table of coefficients for the intercept at each value of the moderator}
+#'  \item{slopes}{A table of coefficients for the focal predictor at each 
+#'  value of the moderator}
+#'  \item{ints}{A table of coefficients for the intercept at each value of the
+#'    moderator}
 #'  \item{modxvals}{The values of the moderator used in the analysis}
-#'  \item{mods}{A list containing each regression model created to estimate the conditional
-#'  coefficients.}
+#'  \item{mods}{A list containing each regression model created to estimate 
+#'     the conditional coefficients.}
 #'  \item{jn}{If \code{johnson_neyman = TRUE}, a list of `johnson_neyman`
 #'  objects from \code{\link{johnson_neyman}}. These contain the values of the
 #'  interval and the plots. If a 2-way interaction, the list will be of length
@@ -104,39 +115,40 @@
 #' @seealso \code{\link{interact_plot}} accepts similar syntax and will plot the
 #'   results with \code{\link[ggplot2]{ggplot}}.
 #'
-#'   \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of differences
-#'   and provides Johnson-Neyman intervals.
+#'   \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of 
+#'       differences and provides Johnson-Neyman intervals.
 #'
-#'   \code{\link[pequod]{simpleSlope}} performs a similar analysis and can analyze
-#'   a second moderator.
+#'   \code{\link[pequod]{simpleSlope}} performs a similar analysis and can 
+#'        also analyze a second moderator.
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
-#'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
-#'  Research}, \emph{40}(3), 373-400.
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
+#'  multilevel regression: Inferential and graphical techniques. 
+#'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
-#' regression/correlation analyses for the behavioral sciences} (3rd ed.).
-#' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd
+#' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
 #' # Using a fitted model as formula input
-#' fiti <- lm(Income ~ Frost + Murder*Illiteracy,
+#' fiti <- lm(Income ~ Frost + Murder * Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' sim_slopes(model=fiti, pred=Murder, modx=Illiteracy)
 #'
 #' # With svyglm
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+#'                     data = apistrat, fpc = ~fpc)
+#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals)
 #'
 #' # 3-way with survey and factor input
-#' regmodel <- svyglm(api00~ell*meals*sch.wide,design=dstrat)
+#' regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
 #'
 #' @importFrom stats coef coefficients lm predict sd update getCall vcov
@@ -412,76 +424,73 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     # We don't want to do the J-N interval with the 1st moderator adjusted,
     # so we do it here. Requires an extra model fit.
-    if (johnson_neyman == TRUE) {
 
-      if (survey == FALSE) {
+    if (survey == FALSE) {
 
-        # Creating extra "copy" of model frame to change for model update
-        dt <- d
+      # Creating extra "copy" of model frame to change for model update
+      dt <- d
 
-        if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
+      if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
 
-          # The moderator value-adjusted variable
-          dt[,mod2] <- dt[,mod2] - mod2vals2[j]
+        # The moderator value-adjusted variable
+        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
 
-        }
+      }
 
-        # Creating the model
-        newmod <- update(model, data = dt)
+      # Creating the model
+      newmod <- update(model, data = dt)
 
-        # Getting SEs, robust or otherwise
-        if (robust == TRUE) {
+      # Getting SEs, robust or otherwise
+      if (robust == TRUE) {
 
-          # For J-N
-          covmat <- sandwich::vcovHC(newmod, type = robust.type)
+        # For J-N
+        covmat <- sandwich::vcovHC(newmod, type = robust.type)
 
-        } else {
-
-          # For J-N
-          covmat <- vcov(newmod)
-
-        }
-
-      } else if (survey == TRUE) {
-
-        # Create new design to modify
-        designt <- design
-
-        # Create new df to modify
-        dt <- d
-
-        if (!is.null(mod2)) {
-
-          # The moderator value-adjusted variable
-          dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-        }
-
-        # Update design
-        designt$variables <- dt
-
-        # Update model
-        ## Have to do all this to avoid adding survey to dependencies
-        call <- getCall(model)
-        call$design <- designt
-        call[[1]] <- survey::svyglm
-        newmod <- eval(call)
+      } else {
 
         # For J-N
         covmat <- vcov(newmod)
 
       }
 
-      jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
-                                    vmat = covmat, plot = jnplot,
-                                    alpha = jnalpha),
-                     error = function(e) {return("No values")},
-                     warning = function(w) {return("No values")})
+    } else if (survey == TRUE) {
 
-      if (j != 0) {
-          jns[[j]] <- jn
+      # Create new design to modify
+      designt <- design
+
+      # Create new df to modify
+      dt <- d
+
+      if (!is.null(mod2)) {
+
+        # The moderator value-adjusted variable
+        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
+
       }
 
+      # Update design
+      designt$variables <- dt
+
+      # Update model
+      ## Have to do all this to avoid adding survey to dependencies
+      call <- getCall(model)
+      call$design <- designt
+      call[[1]] <- survey::svyglm
+      newmod <- eval(call)
+
+      # For J-N
+      covmat <- vcov(newmod)
+
+    }
+
+    jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
+                                  vmat = covmat, plot = jnplot,
+                                  alpha = jnalpha),
+                   error = function(e) {return("No values")},
+                   warning = function(w) {return("No values")})
+
+    if (j != 0) {
+        jns[[j]] <- jn
     }
 
   # Looping so any amount of moderator values can be used
@@ -583,7 +592,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     }
 
-    mods[[i + (j-1)*modxval_len]] <- newmod
+    mods[[i + (j - 1)*modxval_len]] <- newmod
 
   }
 
@@ -625,9 +634,93 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     }
 
     class(ss) <- "sim_slopes"
-    return(ss)
+
+#### build jnplot for 3-way interactions ######################################
+
+  # If 3-way interaction and the user has `cowplot`, here's where we make the
+  # final output
+  if (!is.null(mod2) & johnson_neyman == TRUE) {
+
+    plots <- as.list(rep(NA, length(mod2vals) + 2))
+    the_legend <- NULL
+
+    for (j in 1:length(jns)) {
+
+    # Tell user we can't plot if they don't have cowplot installed
+    if (jnplot == TRUE && !is.null(mod2) &&
+      !requireNamespace("cowplot", quietly = TRUE)) {
+
+      msg <- "To plot Johnson-Neyman plots for 3-way interactions,
+      you need the cowplot package."
+      warning(msg)
+      jnplot <- FALSE # No more attempts at plotting
+
+    } else if (jnplot == TRUE && !is.null(mod2)) {
+
+      if (is.null(the_legend)) {
+        # We save the legend the first time around to use w/ cowplot
+        the_legend <-
+          cowplot::get_legend(jns[[j]]$plot +
+             theme_apa(legend.font.size = 8) +
+               ggplot2::theme(legend.position = "top"))
+
+        # Now we get rid of it for the actual plotting of the first plot
+        jns[[j]]$plot <- jns[[j]]$plot +
+          ggplot2::theme(legend.position = "none")
+
+        # Save the legend to the first spot in the list of plots
+        plots[[1]] <- the_legend
+        # Since we have two columns, we reserve an empty spot in the short
+        # first row by putting NULL in the second spot on the list
+        plots[[2]] <- ggplot2::ggplot() + ggplot2::theme_void() # white bg
+
+      } else {
+        # For each subsequent plot, we don't need to save the legend,
+        # just need to get rid of it
+        jns[[j]]$plot <- jns[[j]]$plot +
+          ggplot2::theme(legend.position = "none")
+      }
+
+      # Add a label for cowplot
+      mod2lab <- names(mod2vals2)[j]
+      jns[[j]]$plot <- 
+        jns[[j]]$plot + ggplot2::ggtitle(paste(mod2, "=", mod2lab)) +
+        ggplot2::theme(plot.title = ggplot2::element_text(size = 11))
+
+      # Add the plot to the plot list at whatever the current end is
+      index <- j + 2
+      plots[[index]] <- jns[[j]]$plot 
+
+    }
+    
+    if (jnplot == TRUE && !is.null(mod2)) {
+
+      # This makes the legend row smaller than the others
+      sizes <- c(0.2, rep(1, times = length(plots) - 1))
+      
+      # Now we put it all together--vjust is at a non-default level
+      ss$jnplot <- cowplot::plot_grid(plotlist = plots, align = "auto",
+                              ncol = 2, rel_heights = sizes,
+                              vjust = 0, scale = 1)
+
+    }
+  }
+
+  } else if (johnson_neyman == TRUE) {
+
+    ss$jnplot <- jns[[1]]$plot
+
+  } 
+
+  if (jnplot == FALSE | johnson_neyman == FALSE) {
+
+    ss$jnplot <- NULL
 
   }
+  
+  return(ss)
+
+}
 
 
 
@@ -650,11 +743,6 @@ print.sim_slopes <- function(x, ...) {
   } else {
     length <- 1
   }
-
-  # Need to make some things outside the loops for efficent grid plotting
-  labs <- c()
-  plots <- list()
-  legend <- NULL
 
   # Loop through each value of second moderator...if none, just one loop
   for (j in 1:length) {
@@ -691,47 +779,6 @@ print.sim_slopes <- function(x, ...) {
         attributes(x$jns[[j]])$plot <- FALSE
         print(x$jns[[j]])
 
-        # Tell user we can't plot if they don't have cowplot installed
-        if (x$jnplot == TRUE && !requireNamespace("cowplot", quietly = TRUE)) {
-          msg <- "To plot Johnson-Neyman plots for 3-way interactions,
-          you need the cowplot package."
-          warning(msg)
-          x$jnplot <- FALSE # No more attempts at plotting
-        } else if (x$jnplot == TRUE) {
-
-          if (is.null(legend)) {
-            # We save the legend the first time around to use w/ cowplot
-            legend <-
-              cowplot::get_legend(x$jns[[j]]$plot +
-                 theme_apa(legend.font.size = 8) +
-                   ggplot2::theme(legend.position = "top"))
-
-            # Now we get rid of it for the actual plotting of the first plot
-            x$jns[[j]]$plot <- x$jns[[j]]$plot +
-              ggplot2::theme(legend.position = "none")
-
-            # Save the legend to the first spot in the list of plots
-            plots[[1]] <- legend
-            # Since we have two columns, we reserve an empty spot in the short
-            # first row by putting NULL in the second spot on the list
-            plots[[2]] <- ggplot2::ggplot() + ggplot2::theme_void() # white bg
-            # We give these two plots empty labels
-            labs <- c("","")
-          } else {
-            # For each subsequent plot, we don't need to save the legend,
-            # just need to get rid of it
-            x$jns[[j]]$plot <- x$jns[[j]]$plot +
-              ggplot2::theme(legend.position = "none")
-          }
-
-          # Add a label for cowplot
-          labs <- c(labs, paste(x$mod2, "=", x$mod2vals[j]))
-
-          # Add the plot to the plot list at whatever the current end is
-          index <- length(plots) + 1
-          plots[[index]] <- x$jns[[j]]$plot
-
-        }
       }
 
     } else {
@@ -784,18 +831,8 @@ print.sim_slopes <- function(x, ...) {
     }
   } # end mod2 loop
 
-  # If 3-way interaction and the user has `cowplot`, here's where we make the
-  # final output
-  if (x$jnplot == TRUE && !is.null(x$mod2)) {
-
-    # This makes the legend row smaller than the others
-    sizes <- c(0.2, rep(1, times = (length(plots) - 1)))
-
-    # Now we put it all together--vjust is at a non-default level
-    print(cowplot::plot_grid(plotlist = plots, labels = labs, label_size = 10,
-                               align = "auto", ncol = 2, rel_heights = sizes,
-                             vjust = 0, scale = 1))
-
+  if (!is.null(x$mod2) && x$jnplot == TRUE) {
+    print(ss$jnplot)
   }
 
 }
