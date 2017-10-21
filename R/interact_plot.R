@@ -212,13 +212,15 @@
 #' \dontrun{
 #' library(lme4)
 #' data(VerbAgg)
-#' mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg, family = binomial,
+#' mv <- glmer(r2 ~ Anger * mode + (1 | item), data = VerbAgg,
+#'             family = binomial,
 #'             control = glmerControl("bobyqa"))
 #' interact_plot(mv, pred = Anger, modx = mode)
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
 #' @importFrom stats median
+#' @import ggplot2
 #' @export interact_plot
 
 interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
@@ -259,6 +261,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     mixed <- FALSE
     design <- model$survey.design
     d <- design$variables
+
+    wts <- weights(design) # for use with points.plot aesthetic
 
     # Focal vars so the weights don't get centered
     fvars <- as.character(attributes(terms(model))$variables)
@@ -315,7 +319,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
     weights <- FALSE
     wname <- NULL
-    wts <- rep(1, times = nrow(d))
+    if (survey == FALSE) {wts <- rep(1, times = nrow(d))}
 
   }
 
@@ -489,21 +493,21 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Creating matrix for use in predict()
   if (interval == TRUE) { # Only create SE columns if intervals needed
     if (is.null(mod2)) {
-      pm <- matrix(rep(0, 100*(nc + 2)*length(modxvals2)), ncol = (nc + 2))
+      pm <- matrix(rep(0, 100 * (nc + 2) * length(modxvals2)), ncol = (nc + 2))
     } else {
-      pm <- matrix(rep(0, (nc + 2)*length(facs)), ncol = (nc + 2))
+      pm <- matrix(rep(0, (nc + 2) * length(facs)), ncol = (nc + 2))
     }
   } else {
     if (is.null(mod2)) {
-      pm <- matrix(rep(0, 100*(nc)*length(modxvals2)), ncol = nc)
+      pm <- matrix(rep(0, 100 * nc * length(modxvals2)), ncol = nc)
     } else {
-      pm <- matrix(rep(0, (nc)*length(facs)), ncol = nc)
+      pm <- matrix(rep(0, nc * length(facs)), ncol = nc)
     }
   }
 
   # Naming columns
   if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d),"ymax","ymin")
+    colnames(pm) <- c(colnames(d), "ymax", "ymin")
   } else {
     colnames(pm) <- colnames(d)
   }
@@ -663,60 +667,59 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Defining linetype here
   if (vary.lty == TRUE) {
-    p <- ggplot2::ggplot(pm, ggplot2::aes(x = pm[,pred],
-                                          y = pm[,resp],
-                                          colour = pm[,modx],
-                                          group = pm[,modx],
-                                          linetype = pm[,modx]))
+    p <- ggplot(pm, aes_string(x = pred, y = resp, colour = modx,
+                               group = modx, linetype = modx))
   } else {
-    p <- ggplot2::ggplot(pm, ggplot2::aes(x = pm[,pred],
-                                          y = pm[,resp],
-                                          colour = pm[,modx],
-                                          group = pm[,modx]))
+    p <- ggplot(pm, aes_string(x = pred, y = resp, colour = modx,
+                               group = modx))
   }
 
-  p <- p + ggplot2::geom_path(size = line.thickness)
+  p <- p + geom_path(size = line.thickness)
 
   # Plot intervals if requested
   if (interval == TRUE) {
-    p <- p + ggplot2::geom_ribbon(data = pm, ggplot2::aes(ymin = pm[,"ymin"],
-                                                        ymax = pm[,"ymax"],
-                                                        fill = pm[,modx],
-                                                        group = pm[,modx],
-                                                        colour = pm[,modx],
-                                                        linetype = NA),
+    p <- p + geom_ribbon(aes_string(ymin = "ymin", ymax = "ymax", 
+                                    fill = modx, group = modx,
+                                    colour = modx, linetype = NA),
                                   alpha = 1/5, show.legend = FALSE)
     if (facmod == TRUE) {
-      p <- p + ggplot2::scale_fill_brewer(palette = color.class)
+      p <- p + scale_fill_brewer(palette = color.class)
     } else {
-      p <- p + ggplot2::scale_fill_manual(values = colors,
-                                          breaks = levels(pm[,modx]))
+      p <- p + scale_fill_manual(values = colors, 
+                                 breaks = levels(pm[,modx]))
     }
   }
 
   # If third mod, facet by third mod
   if (!is.null(mod2)) {
-    p <- p + ggplot2::facet_grid(. ~ pm[,mod2])
+    p <- p + facet_grid(. ~ pm[,mod2]) # don't think can programmatically do it
   }
 
   # For factor vars, plotting the observed points
   # and coloring them by factor looks great
-  if (plot.points == TRUE && is.factor(d[,modx])) {
-    p <- p + ggplot2::geom_point(data = d, ggplot2::aes(x = d[,pred],
-                                                        y = d[,resp],
-                                                        colour = d[,modx]),
-                                 position = "jitter", inherit.aes = F,
-                                 show.legend = F)
-  } else if (plot.points == TRUE && !is.factor(d[,modx])) {
-    # otherwise just black points
-    p <- p + ggplot2::geom_point(data = d,
-                                 ggplot2::aes(x = d[,pred], y = d[,resp],
-                                              alpha = d[,modx]),
-                                 colour = first(colors),
-                                 inherit.aes = F, position = "jitter",
-                                 show.legend = F) +
-      ggplot2::scale_alpha_continuous(range = c(0.25, 1),
-                                      guide = "none")
+  if (plot.points == TRUE) {
+    # Transform weights so they have mean = 1
+    const <- length(wts)/sum(wts) # scaling constant
+    const <- const * 2 # make the range of values larger
+    wts <- const * wts
+    # Append weights to data
+    d[,"the_weights"] <- wts
+    if (is.factor(d[,modx])) {
+      p <- p + geom_point(data = d, aes_string(x = pred, y = resp, 
+                          colour = modx, size = "the_weights"),
+               position = "jitter", inherit.aes = FALSE, show.legend = FALSE)
+    } else if (!is.factor(d[,modx])) {
+      # using alpha for same effect with continuous vars
+      p <- p + geom_point(data = d, 
+                          aes_string(x = pred, y = resp, alpha = modx, 
+                                    size = "the_weights"),
+                          colour = first(colors), inherit.aes = FALSE,
+                          position = "jitter", show.legend = FALSE) +
+          scale_alpha_continuous(range = c(0.25, 1), guide = "none")
+    }
+    # Add size aesthetic to avoid giant points
+    # p <- p + scale_size(range = c(0.3, 4))
+    p <- p + scale_size_identity()
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
@@ -727,57 +730,52 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
                        facet.title.size = 10)
   }
-  p <- p + ggplot2::labs(x = x.label, y = y.label) # better labels for axes
+  p <- p + labs(x = x.label, y = y.label) # better labels for axes
 
   # Getting rid of tick marks for factor predictor
   if (predfac == TRUE) {
     if (is.null(pred.labels)) { # Let pred.labels override factor labels
-      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = predlabs)
+      p <- p + scale_x_continuous(breaks = c(0,1), labels = predlabs)
     } else { # Use the factor labels
-      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1),
-                                           labels = pred.labels)
+      p <- p + scale_x_continuous(breaks = c(0,1), labels = pred.labels)
     }
   } else if (length(unique(d[,pred])) == 2) {
     # Predictor has only two unique values
     # Make sure those values are in increasing order
     brks <- sort(unique(d[,pred]), decreasing = F)
     if (is.null(pred.labels)) {
-      p <- p + ggplot2::scale_x_continuous(breaks = brks)
+      p <- p + scale_x_continuous(breaks = brks)
     } else {
       if (length(pred.labels) == 2) { # Make sure pred.labels has right length
-        p <- p + ggplot2::scale_x_continuous(breaks = brks,
-                                             labels = pred.labels)
+        p <- p + scale_x_continuous(breaks = brks, labels = pred.labels)
       } else {
         warning("pred.labels argument has the wrong length. It won't be used")
-        p <- p + ggplot2::scale_x_continuous(breaks = brks)
+        p <- p + scale_x_continuous(breaks = brks)
       }
     }
   }
 
   # Get scale colors, provide better legend title
   if (facmod == TRUE) {
-    p <- p + ggplot2::scale_colour_brewer(name = legend.main,
-                                          palette = color.class)
+    p <- p + scale_colour_brewer(name = legend.main, palette = color.class)
   } else {
-    p <- p + ggplot2::scale_colour_manual(name = legend.main,
-                                          values = colors,
-                                          breaks = pm[,modx])
+    p <- p + scale_colour_manual(name = legend.main, values = colors,
+                                 breaks = pm[,modx])
   }
 
-  if (vary.lty == TRUE) {# Add line-specific changes
+  if (vary.lty == TRUE) { # Add line-specific changes
     if (facmod == FALSE) {
-      p <- p + ggplot2::scale_linetype_discrete(name = legend.main,
-                                                breaks = pm[,modx])
+      p <- p + scale_linetype_discrete(name = legend.main, breaks = pm[,modx])
     } else {
-      p <- p + ggplot2::scale_linetype_discrete(name = legend.main)
+      p <- p + scale_linetype_discrete(name = legend.main)
     }
     # Need some extra width to show the linetype pattern fully
-    p <- p + ggplot2::theme(legend.key.width = grid::unit(2, "lines"))
+    p <- p + theme(legend.key.width = grid::unit(2, "lines"))
   }
 
   # Give the plot the user-specified title if there is one
   if (!is.null(main.title)) {
-    p <- p + ggplot2::ggtitle(main.title)
+    p <- p + ggtitle(main.title)
   }
 
   # Return the plot
@@ -927,13 +925,15 @@ print.interact_plot <- function(x, ...) {
 #' \dontrun{
 #' library(lme4)
 #' data(VerbAgg)
-#' mv <- glmer(r2 ~ Anger + mode + (1 | item), data = VerbAgg, family = binomial,
+#' mv <- glmer(r2 ~ Anger + mode + (1 | item), data = VerbAgg,
+#'             family = binomial,
 #'             control = glmerControl("bobyqa"))
 #' effect_plot(mv, pred = Anger)
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median
+#' @importFrom stats median weights
+#' @import ggplot2 
 #' @export effect_plot
 
 effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
@@ -965,6 +965,8 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     mixed <- FALSE
     design <- model$survey.design
     d <- design$variables
+
+    wts <- weights(design) # for use with points.plot aesthetic
 
     # Focal vars so the weights don't get centered
     fvars <- as.character(attributes(terms(model))$variables)
@@ -1021,7 +1023,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
 
     weights <- FALSE
     wname <- NULL
-    wts <- rep(1, times = nrow(d))
+    if (survey == FALSE) {wts <- rep(1, times = nrow(d))}
 
   }
 
@@ -1265,54 +1267,64 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
   }
 
   # Starting plot object
-  p <- ggplot2::ggplot(pm, ggplot2::aes(x=pm[,pred], y=pm[,resp]))
+  p <- ggplot(pm, aes_string(x = pred, y = resp))
 
   # Define line thickness
-  p <- p + ggplot2::geom_path(size = line.thickness)
+  p <- p + geom_path(size = line.thickness)
 
   # Plot intervals if requested
-  if (interval==TRUE) {
-    p <- p + ggplot2::geom_ribbon(data=pm, ggplot2::aes(ymin=pm[,"ymin"],
-                                                        ymax=pm[,"ymax"]),
-                                  alpha=1/5, show.legend = FALSE)
+  if (interval == TRUE) {
+    p <- p + geom_ribbon(data = pm, aes_string(ymin = "ymin",
+                                               ymax = "ymax"),
+                         alpha = 1/5, show.legend = FALSE)
   }
 
-  # Plotting the observed points
+  # Plot observed data
   if (plot.points == TRUE) {
-    p <- p + ggplot2::geom_point(data=d, ggplot2::aes(x=d[,pred], y=d[,resp]),
-                                 inherit.aes = F, position = "jitter")
+    # Transform weights so they have mean = 1
+    const <- length(wts)/sum(wts) # scaling constant
+    const <- const * 2 # make the range of values larger
+    wts <- const * wts
+    # Append weights to data
+    d[,"the_weights"] <- wts
+      p <- p + geom_point(data = d, 
+                          aes_string(x = pred, y = resp, size = "the_weights"),
+               position = "jitter", inherit.aes = FALSE, show.legend = FALSE)
+    # Add size aesthetic to avoid giant points
+    # p <- p + scale_size(range = c(0.3, 4))
+    p <- p + scale_size_identity()
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
   p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
 
-  p <- p + ggplot2::labs(x = x.label, y = y.label) # better labels for axes
+  p <- p + labs(x = x.label, y = y.label) # better labels for axes
 
   # Getting rid of tick marks for factor predictor
   if (predfac == TRUE) {
     if (is.null(pred.labels)) { # Let pred.labels override factor labels
-      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = predlabs)
+      p <- p + scale_x_continuous(breaks = c(0,1), labels = predlabs)
     } else { # Use the factor labels
-      p <- p + ggplot2::scale_x_continuous(breaks = c(0,1), labels = pred.labels)
+      p <- p + scale_x_continuous(breaks = c(0,1), labels = pred.labels)
     }
   } else if (length(unique(d[,pred])) == 2) { # Predictor has only two unique values
     # Make sure those values are in increasing order
     brks <- sort(unique(d[,pred]), decreasing = F)
     if (is.null(pred.labels)) {
-      p <- p + ggplot2::scale_x_continuous(breaks = brks)
+      p <- p + scale_x_continuous(breaks = brks)
     } else {
       if (length(pred.labels) == 2) { # Make sure pred.labels has right length
-        p <- p + ggplot2::scale_x_continuous(breaks = brks, labels = pred.labels)
+        p <- p + scale_x_continuous(breaks = brks, labels = pred.labels)
       } else {
         warning("pred.labels argument has the wrong length. It won't be used")
-        p <- p + ggplot2::scale_x_continuous(breaks = brks)
+        p <- p + scale_x_continuous(breaks = brks)
       }
     }
   }
 
   # Give the plot the user-specified title if there is one
   if (!is.null(main.title)) {
-    p <- p + ggplot2::ggtitle(main.title)
+    p <- p + ggtitle(main.title)
   }
 
   # Return the plot
