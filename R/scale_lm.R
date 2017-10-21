@@ -7,14 +7,16 @@
 #' \code{\link[survey]{svyglm}}.
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{"0/1"};
-#'   \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5 and
-#'    1 as 0.5; \code{center} subtracts the mean; and \code{full} treats them
+#'   \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5
+#'   and
+#'   1 as 0.5; \code{center} subtracts the mean; and \code{full} treats them
 #'   like other continuous variables.
 #'
 #' @param n.sd How many standard deviations should you divide by for
 #'   standardization? Default is 1, though some prefer 2.
 #'
-#' @param center Default is \code{TRUE}. If \code{TRUE}, the predictors are also
+#' @param center Default is \code{TRUE}. If \code{TRUE}, the predictors are
+#'   also
 #'   mean-centered. For binary predictors, the \code{binary.inputs} argument
 #'   supersedes this one.
 #'
@@ -26,17 +28,19 @@
 #'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
-#'   interaction terms. It can also mean-center all of them as well, if requested.
+#'   interaction terms. It can also mean-center all of them as well, if 
+#'   requested.
 #'
-#'   The scaling happens on the input data, not the terms themselves. That means
-#'   interaction terms are still properly calculated because they are the product
-#'   of standardized predictors, not a standardized product of predictors.
+#'   The scaling happens on the input data, not the terms themselves. That 
+#'   means interaction terms are still properly calculated because they are
+#'   the product of standardized predictors, not a standardized product of 
+#'   predictors.
 #'
-#'   This function re-estimates the model, so for large models one should expect
-#'   a runtime equal to the first run.
+#'   This function re-estimates the model, so for large models one should 
+#'   expect a runtime equal to the first run.
 #'
-#' @return The functions returns a \code{lm} or \code{glm} object, inheriting from
-#'   whichever class was supplied.
+#' @return The functions returns a \code{lm} or \code{glm} object, inheriting
+#'   from whichever class was supplied.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -51,17 +55,18 @@
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
-#'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
-#'  Research}, \emph{40}(3), 373-400.
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
+#'  multilevel regression: Inferential and graphical techniques. 
+#'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
-#' regression/correlation analyses for the behavioral sciences} (3rd ed.).
-#' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd 
+#' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
-#' fit <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x77))
+#' fit <- lm(formula = Murder ~ Income * Illiteracy,
+#'           data = as.data.frame(state.x77))
 #' fit_scale <- scale_lm(fit)
 #' fit_scale <- scale_lm(fit, center = TRUE)
 #'
@@ -92,8 +97,10 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
   call <- getCall(model)
+  if (is.null(call)) {
+    stop("Model object does not support updating (no call)", call. = FALSE)
+  }
 
-  mm <- model.matrix(model)
   mf <- model.frame(model)
   form <- formula(model)
   formc <- as.character(deparse(formula(model)))
@@ -188,7 +195,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
     design <- gscale(x = vars, data = design, n.sd = n.sd, scale.only = !center,
                      center.only = center.only)
 
-    call$design <- design
+    call$design <- quote(design)
     call[[1]] <- survey::svyglm
     new <- eval(call)
 
@@ -243,30 +250,15 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
   if (survey == FALSE) {
 
-    if (offset == TRUE && weights == FALSE) {
+    form <- as.formula(formc)
 
-      mf$the_offset <- the_offset
+    call <- getCall(model)
+    call$formula <- form
+    call$data <- quote(mf) # quoting avoids that gnarly output
+    call$offset <- the_offset
+    call$weights <- the_weights
 
-      new <- j_update(model, formula = as.formula(formc),
-                    offset = the_offset, data = mf)
-
-    } else if (weights == TRUE && offset == FALSE) {
-
-      new <- j_update(model, formula = as.formula(formc),
-                    weights = the_weights, data = mf)
-
-    } else if (weights == TRUE && offset == TRUE) {
-
-      mf$the_offset <- the_offset
-
-      new <- j_update(model, formula = as.formula(formc),
-                    weights = the_weights, offset = the_offset, data = mf)
-
-    } else {
-
-      new <- j_update(model, formula = as.formula(formc), data = mf)
-
-    }
+    new <- eval(call)
 
   }
 
@@ -277,34 +269,37 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
 #' Center variables in fitted regression models
 #'
-#' \code{center_lm} takes fitted regression models and mean-centers the continuous
-#'   variables in the model to aid interpretation, especially in the case of models
-#'   with interactions. It is a wrapper to \code{\link{scale_lm}}.
+#' \code{center_lm} takes fitted regression models and mean-centers the 
+#'   continuous variables in the model to aid interpretation, especially in 
+#'   the case of models with interactions. It is a wrapper to 
+#'   \code{\link{scale_lm}}.
 #'
 #' @param model A regression model of type \code{lm}, \code{glm}, or
 #' \code{\link[survey]{svyglm}}; others may work as well but have not been
 #' tested.
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{0/1};
-#'   \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1 as 0.5;
-#'   \code{center} subtracts the mean; and \code{full} treats them like other
-#'   continuous variables.
+#'   \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1
+#'   as 0.5; \code{center} subtracts the mean; and \code{full} treats them 
+#'   like other continuous variables.
 #'
-#' @param center.response Should the response variable also be centered? Default
-#'   is \code{FALSE}.
+#' @param center.response Should the response variable also be centered? 
+#'   Default is \code{FALSE}.
 #'
-#' @details This function will mean-center all continuous variables in a regression
-#'   model for ease of interpretation, especially for those models that have
+#' @details This function will mean-center all continuous variables in a 
+#'   regression model for ease of interpretation, especially for those models 
+#'   that have
 #'   interaction terms. The mean for \code{svyglm} objects is calculated using
 #'   \code{svymean}, so reflects the survey-weighted mean. The weight variables
 #'   in \code{svyglm} are not centered, nor are they in other \code{lm} family
 #'   models.
 #'
-#'   This function re-estimates the model, so for large models one should expect
+#'   This function re-estimates the model, so for large models one should 
+#'   expect
 #'   a runtime equal to the first run.
 #'
-#' @return The functions returns a \code{lm} or \code{glm} object, inheriting from
-#'   whichever class was supplied.
+#' @return The functions returns a \code{lm} or \code{glm} object, inheriting 
+#'   from whichever class was supplied.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
@@ -319,17 +314,18 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
-#'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
-#'  Research}, \emph{40}(3), 373-400.
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
+#'  multilevel regression: Inferential and graphical techniques. 
+#'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied multiple
-#' regression/correlation analyses for the behavioral sciences} (3rd ed.).
-#' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd 
+#' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
-#' fit <- lm(formula = Murder ~ Income * Illiteracy, data = as.data.frame(state.x77))
+#' fit <- lm(formula = Murder ~ Income * Illiteracy,
+#'           data = as.data.frame(state.x77))
 #' fit_center <- center_lm(fit)
 #'
 #' # With weights
@@ -341,8 +337,9 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #' # With svyglm
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+#'                     data = apistrat, fpc =~ fpc)
+#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #' regmodel_center <- center_lm(regmodel)
 #'
 #' @export center_lm
