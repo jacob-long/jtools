@@ -1,28 +1,26 @@
 ---
-title: "`summ` --- An alternative to `summary` for regression models"
+title: "Tools for summarizing and visualizing regression models"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{summ — An alternative to summary for regression models}
+  %\VignetteIndexEntry{Tools for summarizing and visualizing regression models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r echo=FALSE}
-knitr::opts_chunk$set(message=F, warning=F)
+knitr::opts_chunk$set(message = F, warning = F)
 library(jtools)
 ```
 
-## 
-
 When sharing analyses with colleagues unfamiliar with R, I found that the output
 generally was not clear to them. Things were even worse if I wanted to give
-them information  that is not included in the output like VIFs, robust standard
-errors, or standardized coefficients since the functions for estimating these
-don't append them to a typical regression table. After creating output tables
-"by hand" on multiple occasions, I thought it best to pack things into a
-reusable function.
+them information that is not included in the `summary` like robust
+standard errors, standardized coefficients, and VIFs since the functions for 
+estimating these don't append them to a typical regression table. After creating
+output tables "by hand" on multiple occasions, I thought it best to pack things
+into a reusable function: It became `summ`.
 
 With no user-specified arguments except a fitted model, the output of `summ`
 looks like this:
@@ -35,37 +33,19 @@ summ(fit)
 
 Like any output, this one is somewhat opinionated—some information is shown that
 perhaps not everyone would be interested in, some may be missing. That,
-of course, was the motivation behind the creation of the function; the author
-was no fan of `summary` and its lack of configurability. 
+of course, was the motivation behind the creation of the function; I didn't 
+like the choices made by R's core team with `summary`!
 
 ## Adding and removing written output
 
-Much of the output with `summ` can be removed while there are several other pieces
-of information under the hood that users can ask for. 
+Much of the output with `summ` can be removed while there are several other
+pieces of information under the hood that users can ask for. 
 
 To remove the written output at the beginning, set `model.info = FALSE` and/or 
 `model.fit = FALSE`.
 
 ```{r}
 summ(fit, model.info = FALSE, model.fit = FALSE)
-```
-
-Another, related bit of information available before the coefficient table relates
-to model assumptions (for OLS linear regression). When `model.check = TRUE`,
-`summ` will report (with the help of the `car` package) two quantities
-related to linear regression assumptions:
-
-* The result of the Breusch-Pagan test for heteroskedasticity. A low *p* value
-indicates the presence of heteroskedasticity.
-* A count of high-leverage observations using Cook's Distance. The threshold for 
-what is considered high is equal to $4/N$, where $N$ is the sample size.
-
-In both cases, you shouldn't treat the results as proof of meaningful problems (or
-a lack of meaningful problems), but instead as a heuristic for more probing with 
-graphical analyses.
-
-```{r}
-summ(fit, model.check = TRUE)
 ```
 
 ## Report robust standard errors
