@@ -788,10 +788,10 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
-  if (attributes(x)$confint == TRUE) {
+  if (attributes(x)$confint == TRUE | conf.int == TRUE) {
 
     # Need to use this to get the right coeftable colnames
-    alpha <- (1 - conf.level)/2
+    alpha <- (1 - conf.level) / 2
 
     lci_lab <- 0 + alpha
     lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
@@ -799,8 +799,16 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     uci_lab <- 1 - alpha
     uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
 
-    base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
-    base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
+    if (attributes(x)$confint == TRUE | attributes(x)$ci.width != conf.level) {
+      base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
+      base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
+    } else {
+      conf.level <- as.numeric(deparse(conf.level))
+      x <- update_summ(x, confint = TRUE, ci.width = conf.level,
+                       call.env = environment())
+      base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
+      base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
+    }
 
   }
 

@@ -257,6 +257,10 @@ summ.lm <- function(
     scale.response <- dots$standardize.response
   }
 
+  the_call <- match.call()
+  the_call[[1]] <- substitute(summ)
+  the_env <- parent.frame(n = 2)
+
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
@@ -727,6 +731,10 @@ summ.glm <- function(
     scale.response <- dots$standardize.response
   }
 
+  the_call <- match.call()
+  the_call[[1]] <- substitute(summ)
+  the_env <- parent.frame(n = 2)
+
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
@@ -766,7 +774,7 @@ summ.glm <- function(
 
   j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
-                 center = center)
+                 center = center, call = the_call, env = the_env,
                  scale = scale)
 
   if (!all(attributes(model$terms)$order > 1)) {
@@ -1214,6 +1222,10 @@ summ.svyglm <- function(
     scale.response <- dots$standardize.response
   }
 
+  the_call <- match.call()
+  the_call[[1]] <- substitute(summ)
+  the_env <- parent.frame(n = 2)
+
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
@@ -1258,7 +1270,7 @@ summ.svyglm <- function(
 
   j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit,
-                 n.sd = n.sd, center = center)
+                 n.sd = n.sd, center = center, call = the_call, env = the_env,
                  scale = scale)
 
 
@@ -1727,6 +1739,10 @@ summ.merMod <- function(
     scale.response <- dots$standardize.response
   }
 
+  the_call <- match.call()
+  the_call[[1]] <- substitute(summ)
+  the_env <- parent.frame(n = 2)
+
   # Accept arguments meant for other types of models and print warnings as
   # needed.
   ell <- list(...)
@@ -1794,7 +1810,7 @@ summ.merMod <- function(
   j <- structure(j, standardize = scale, digits = digits,
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd,
-                 center = center, t.df = t.df)
+                 center = center, t.df = t.df, call = the_call, env = the_env,
                  scale = scale)
 
   # Using information from summary()
@@ -2154,6 +2170,10 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
 
   }
 
+  the_call <- match.call()
+  the_call[[1]] <- substitute(summ)
+  the_env <- parent.frame(n = 2)
+
   # Standardized betas
   if (scale == TRUE) {
 
@@ -2507,6 +2527,7 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
                    model.info = model.info, model.fit = model.fit,
                    use_cluster = use_cluster, robust.type = robust.type,
                    scale.response = scale.response,
+                   call = the_call, env = the_env)
   class(out) <- c("summ.default","summ")
   return(out)
 
@@ -2589,3 +2610,72 @@ print.summ.default <- function(x, ...) {
   cat("\n")
 
 }
+
+#### utilities ###############################################################
+
+#' @export
+
+getCall.summ <- function(x, ...) {
+
+  return(attr(x, "call"))
+
+}
+
+#' @export
+
+update.summ <- function(object, ...) {
+
+  call <- getCall(object)
+
+  extras <- match.call(expand.dots = FALSE)$...
+  if (length(extras)) {
+    existing <- !is.na(match(names(extras), names(call)))
+    for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
+    if (any(!existing)) {
+      call <- c(as.list(call), extras[!existing])
+      call <- as.call(call)
+    }
+  }
+  s_env <- attr(object, "env")
+  eval(call, envir = s_env)
+
+}
+
+update_summ <- function(summ, call.env, ...) {
+
+  call <- getCall(summ)
+
+  # Assuming all models are the same type as first
+  mod_type <- which(!is.null(sapply(class(summ$model),
+                    utils::getS3method, f = "summ",
+                    optional = T)))
+  mod_type <- class(summ$model)[mod_type[1]]
+  mod_type <- paste0("summ.", mod_type)
+
+  # Now get the argument names for that version of summ
+  summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
+
+  extras <- as.list(match.call())
+  indices <- match(names(extras), names(summ_formals))
+  extras <- extras[indices]
+
+  for (i in 1:length(extras)) {
+    if (is.name(extras[[i]])) {
+      extras[[i]] <- eval(extras[[i]], envir = call.env)
+    }
+  }
+  existing <- !is.na(match(names(extras), names(call)))
+  for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
+  if (any(!existing)) {
+    call <- c(as.list(call), extras[!existing])
+    call <- as.call(call)
+  }
+
+  env <- attr(summ, "env")
+
+  call$model <- summ$model
+
+  eval(call, env, parent.frame())
+
+}
+
