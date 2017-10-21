@@ -413,7 +413,7 @@ export_summs <- function(...,
 #' @importFrom ggplot2 element_blank element_text ylab
 
 plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
-                       omit.coefs = NULL, color.class = "Set2") {
+                       omit.coefs = "(Intercept)", color.class = "Set2") {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
 
@@ -451,8 +451,10 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   }
 
   if (!is.null(omit.coefs) & !is.null(coefs)) {
-    message("coefs argument overrides omit.coefs argument, displaying ",
-            "coefficients listed in coefs argument.")
+    if (omit.coefs != "(Intercept)") {
+      message("coefs argument overrides omit.coefs argument, displaying ",
+              "coefficients listed in coefs argument.")
+    }
     omit.coefs <- NULL
   }
 
@@ -584,7 +586,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 #' @importFrom ggplot2 element_blank element_text ylab
 
 plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
-                       omit.coefs = NULL, color.class = "Set2") {
+                       omit.coefs = "(Intercept)", color.class = "Set2") {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
 
@@ -622,8 +624,10 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   }
 
   if (!is.null(omit.coefs) & !is.null(coefs)) {
-    message("coefs argument overrides omit.coefs argument, displaying ",
-            "coefficients listed in coefs argument.")
+    if (omit.coefs != "(Intercept)") {
+      message("coefs argument overrides omit.coefs argument, displaying ",
+              "coefficients listed in coefs argument.")
+    }
     omit.coefs <- NULL
   }
 
