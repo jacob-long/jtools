@@ -74,8 +74,8 @@
 #'
 #' @examples
 #'
-#' x <- rnorm(100, 2, 1)
-#' x2 <- rbinom(100, 1, .5)
+#' x <- rnorm(10, 2, 1)
+#' x2 <- rbinom(10, 1, .5)
 #'
 #' # Basic use
 #' gscale(x)
@@ -92,16 +92,18 @@
 #' gscale(x2, binary.inputs = "center") # mean center it
 #'
 #' # Data frame as input
-#' gscale(data = mtcars, binary.inputs = "-0.5/0.5") # loops through each numeric column
+#' # loops through each numeric column
+#' gscale(data = mtcars, binary.inputs = "-0.5/0.5") 
+#' 
 #' # Specified vars in data frame
 #' gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
-#'
-#' wts <- runif(100, 0, 1)
-#' mtcars$weights <- wts[1:32]
-#'
+#' 
 #' # Weighted inputs
+#' 
+#' wts <- runif(10, 0, 1)
 #' gscale(x, weights = wts)
 #' # If using a weights column of data frame, give its name
+#' mtcars$weights <- runif(32, 0, 1)
 #' gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
 #' # If using a weights column of data frame, can still select variables
 #' gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
@@ -110,12 +112,14 @@
 #' library(survey)
 #' data(api)
 #' ## Create survey design object
-#' dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
-#'                      fpc=~fpc)
-#' dstrat$variables$binary <- rbinom(200, 1, 0.5) # Creating test binary variable
+#' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+#'                      data = apistrat, fpc=~fpc)
+#' # Creating test binary variable
+#' dstrat$variables$binary <- rbinom(200, 1, 0.5) 
 #'
 #' gscale(data = dstrat, binary.inputs = "-0.5/0.5")
-#' gscale(c("api00","meals","binary"), data = dstrat, binary.inputs = "-0.5/0.5")
+#' gscale(c("api00","meals","binary"), data = dstrat,
+#'        binary.inputs = "-0.5/0.5")
 #'
 #'
 #'
@@ -139,16 +143,16 @@ if (is.numeric(x)) {
   # for binary cases
   if (length(unique(x.obs))==2) {
 
-    if (binary.inputs=="0/1") {
+    if (binary.inputs == "0/1") {
       # Scale to 0/1
       x <- (x-min(x.obs))/(max(x.obs)-min(x.obs))
       return(x)
 
-    } else if (binary.inputs=="-0.5/0.5") {
+    } else if (binary.inputs == "-0.5/0.5") {
       # Keep scale, but center at 0 (not mean center!)
       return(x-0.5)
 
-    } else if (binary.inputs=="center") {
+    } else if (binary.inputs == "center") {
       # Actually mean center
       if (is.null(weights)) {
         return(x - mean(x.obs, na.rm = TRUE))
@@ -156,7 +160,7 @@ if (is.numeric(x)) {
         return(x - weighted.mean(x.obs, weights, na.rm = TRUE))
       }
 
-    } else if (binary.inputs=="full") {
+    } else if (binary.inputs == "full") {
       # Treat it just like continuous vars
 
       # support for weights

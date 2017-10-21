@@ -65,8 +65,8 @@ specifically requests them in the \code{x =} argument.
 }
 \examples{
 
-x <- rnorm(100, 2, 1)
-x2 <- rbinom(100, 1, .5)
+x <- rnorm(10, 2, 1)
+x2 <- rbinom(10, 1, .5)
 
 # Basic use
 gscale(x)
@@ -83,16 +83,18 @@ gscale(x2, binary.inputs = "-0.5/0.5") # keep scale, center at zero
 gscale(x2, binary.inputs = "center") # mean center it
 
 # Data frame as input
-gscale(data = mtcars, binary.inputs = "-0.5/0.5") # loops through each numeric column
+# loops through each numeric column
+gscale(data = mtcars, binary.inputs = "-0.5/0.5") 
+
 # Specified vars in data frame
 gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
 
-wts <- runif(100, 0, 1)
-mtcars$weights <- wts[1:32]
-
 # Weighted inputs
+
+wts <- runif(10, 0, 1)
 gscale(x, weights = wts)
 # If using a weights column of data frame, give its name
+mtcars$weights <- runif(32, 0, 1)
 gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
 # If using a weights column of data frame, can still select variables
 gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
@@ -101,12 +103,14 @@ gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
 library(survey)
 data(api)
 ## Create survey design object
-dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
-                     fpc=~fpc)
-dstrat$variables$binary <- rbinom(200, 1, 0.5) # Creating test binary variable
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                     data = apistrat, fpc=~fpc)
+# Creating test binary variable
+dstrat$variables$binary <- rbinom(200, 1, 0.5) 
 
 gscale(data = dstrat, binary.inputs = "-0.5/0.5")
-gscale(c("api00","meals","binary"), data = dstrat, binary.inputs = "-0.5/0.5")
+gscale(c("api00","meals","binary"), data = dstrat,
+       binary.inputs = "-0.5/0.5")
 
 
 
@@ -128,3 +132,4 @@ Other standardization, scaling, and centering tools: \code{\link{center_lm}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{standardization, scaling, and centering tools}
