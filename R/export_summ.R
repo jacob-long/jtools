@@ -265,7 +265,7 @@ export_summs <- function(...,
 
     hux_args <- dots[names(dots) %in% names(hux_formals)]
 
-    hux_args <- as.list(c(jsumms, unlist(hux_args),
+    hux_args <- as.list(c(jsumms, hux_args,
                           error_pos = error_pos[1],
                           error_format = error_format,
                           statistics = list(statistics),
@@ -366,7 +366,8 @@ export_summs <- function(...,
 #'   in place of the variable names. See details for examples. Default: NULL
 #' @param omit.coefs If you'd like to specify some coefficients to not include
 #'   in the plot, provide them as a vector. This argument is overridden by
-#'   `coefs` if both are provided. Default: NULL
+#'   `coefs` if both are provided. By default, the intercept term is omitted.
+#'   To include the intercept term, just set omit.coefs to NULL.
 #' @param color.class A color class understood by
 #'   [ggplot2::scale_colour_brewer()] for differentiating multiple models.
 #'   Not used if only one model is plotted. Default: 'Set2'
