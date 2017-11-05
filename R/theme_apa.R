@@ -89,18 +89,19 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
 
   # Specifying parameters, using theme_bw() as starting point
   plot <- ggplot2::theme_bw() + ggplot2::theme(
-    plot.title = ggplot2::element_text(face="bold", size=14),
-    axis.title.x = ggplot2::element_text(size=x.font.size),
-    axis.title.y = ggplot2::element_text(size=y.font.size,
-                                         angle=90),
+    plot.title = ggplot2::element_text(face = "bold", size = 14),
+    axis.title.x = ggplot2::element_text(size = x.font.size),
+    axis.title.y = ggplot2::element_text(size = y.font.size,
+                                         angle = 90),
     panel.grid.major = ggplot2::element_blank(), # no major gridlines
     panel.grid.minor = ggplot2::element_blank(), # no minor gridlines
-    legend.text = ggplot2::element_text(size=legend.font.size),
+    legend.text = ggplot2::element_text(size = legend.font.size),
     legend.key.size = ggplot2::unit(1.5, "lines"),
     # switch off the rectangle around symbols
     legend.key = ggplot2::element_blank(),
-    strip.text.x = ggplot2::element_text(size=facet.title.size), # facet labels
-    strip.text.y = ggplot2::element_text(size=facet.title.size),
+    legend.key.width = grid::unit(2, "lines"),
+    strip.text.x = ggplot2::element_text(size = facet.title.size), # facet labs
+    strip.text.y = ggplot2::element_text(size = facet.title.size),
     # facet titles
     strip.background = ggplot2::element_rect(colour = "white", fill = "white")
   )
@@ -111,23 +112,23 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
   if (legend.pos == "topleft") {
     # manually position the legend (numbers being from 0,0 at bottom left of
     # whole plot to 1,1 at top right)
-    plot <- plot + ggplot2::theme(legend.position = c(.05,.95),
-                                  legend.justification = c(.05,.95))
+    plot <- plot + ggplot2::theme(legend.position = c(.05, .95),
+                                  legend.justification = c(.05, .95))
   } else if (legend.pos == "topright") {
     plot <- plot + ggplot2::theme(legend.position = c(.95, .95),
-                                  legend.justification = c(.95,.95))
+                                  legend.justification = c(.95, .95))
   } else if (legend.pos == "topmiddle") {
     plot <- plot + ggplot2::theme(legend.position = c(.50, .95),
-                                  legend.justification = c(.50,.95))
+                                  legend.justification = c(.50, .95))
   } else if (legend.pos == "bottomleft") {
     plot <- plot + ggplot2::theme(legend.position = c(.05, .05),
-                                  legend.justification = c(.05,.05))
+                                  legend.justification = c(.05, .05))
   } else if (legend.pos == "bottomright") {
     plot <- plot + ggplot2::theme(legend.position = c(.95, .05),
-                                  legend.justification = c(.95,.05))
+                                  legend.justification = c(.95, .05))
   } else if (legend.pos == "bottommiddle") {
     plot <- plot + ggplot2::theme(legend.position = c(.50, .05),
-                                  legend.justification = c(.50,.05))
+                                  legend.justification = c(.50, .05))
   } else if (legend.pos == "none") {
     plot <- plot + ggplot2::theme(legend.position = "none")
   } else {

@@ -79,26 +79,26 @@
 #'   \code{NULL}, the variable name is used.
 #'
 #' @param pred.labels A character vector of 2 labels for the predictor if it is
-#'   a 2-level factor or a continuous variable with only 2 values. If 
+#'   a 2-level factor or a continuous variable with only 2 values. If
 #'   \code{NULL}, the default, the factor labels are used.
 #'
 #' @param modx.labels A character vector of labels for each level of the
-#'   moderator values, provided in the same order as the \code{modxvals} 
+#'   moderator values, provided in the same order as the \code{modxvals}
 #'   argument. If \code{NULL}, the values themselves are used as labels unless
-#'   \code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+#'   \code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 #'   are used.
 #'
-#' @param mod2.labels A character vector of labels for each level of the 2nd 
+#' @param mod2.labels A character vector of labels for each level of the 2nd
 #'   moderator values, provided in the same order as the \code{mod2vals}
 #'   argument. If \code{NULL}, the values themselves are used as labels unless
-#'   \code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+#'   \code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 #'   are used.
 #'
 #' @param main.title A character object that will be used as an overall title
 #'   for the plot. If \code{NULL}, no main title is used.
 #'
 #' @param legend.main A character object that will be used as the title that
-#'   appears above the legend. If \code{NULL}, the name of the moderating 
+#'   appears above the legend. If \code{NULL}, the name of the moderating
 #'   variable is used.
 #'
 #' @param color.class Any palette argument accepted by
@@ -108,15 +108,15 @@
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
 #'
-#' @param vary.lty Should the resulting plot have different shapes for each 
+#' @param vary.lty Should the resulting plot have different shapes for each
 #'   line in addition to colors? Defaults to \code{TRUE}.
 #'
-#' @param standardize Deprecated. Equivalent to `scale`. Please change your 
-#'  scripts to use `scale` instead as this argument will be removed in the 
+#' @param standardize Deprecated. Equivalent to `scale`. Please change your
+#'  scripts to use `scale` instead as this argument will be removed in the
 #'  future.
-#' 
+#'
 #' @details This function provides a means for plotting conditional effects
-#'   for the purpose of exploring interactions in the context of regression. 
+#'   for the purpose of exploring interactions in the context of regression.
 #'   You must have the
 #'   package \code{ggplot2} installed to benefit from these plotting functions.
 #'
@@ -152,7 +152,7 @@
 #'   if you apply no transformation at all, the exposures used will be the
 #'   post-tranformation number (which is by default 1).
 #'
-#' @return The functions returns a \code{ggplot} object, which can be treated 
+#' @return The functions returns a \code{ggplot} object, which can be treated
 #'   like a user-created plot and expanded upon as such.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -170,12 +170,12 @@
 #' @references
 #'
 #' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
-#'  multilevel regression: Inferential and graphical techniques. 
+#'  multilevel regression: Inferential and graphical techniques.
 #'  \emph{Multivariate Behavioral
 #'  Research}, \emph{40}(3), 373-400.
 #'  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
 #' multiple
 #' regression/correlation analyses for the behavioral sciences} (3rd ed.).
 #' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
@@ -678,14 +678,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Plot intervals if requested
   if (interval == TRUE) {
-    p <- p + geom_ribbon(aes_string(ymin = "ymin", ymax = "ymax", 
+    p <- p + geom_ribbon(aes_string(ymin = "ymin", ymax = "ymax",
                                     fill = modx, group = modx,
                                     colour = modx, linetype = NA),
                                   alpha = 1/5, show.legend = FALSE)
     if (facmod == TRUE) {
       p <- p + scale_fill_brewer(palette = color.class)
     } else {
-      p <- p + scale_fill_manual(values = colors, 
+      p <- p + scale_fill_manual(values = colors,
                                  breaks = levels(pm[,modx]))
     }
   }
@@ -704,14 +704,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     wts <- const * wts
     # Append weights to data
     d[,"the_weights"] <- wts
+
     if (is.factor(d[,modx])) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp, 
+      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                           colour = modx, size = "the_weights"),
                position = "jitter", inherit.aes = FALSE, show.legend = FALSE)
     } else if (!is.factor(d[,modx])) {
       # using alpha for same effect with continuous vars
-      p <- p + geom_point(data = d, 
-                          aes_string(x = pred, y = resp, alpha = modx, 
+      p <- p + geom_point(data = d,
+                          aes_string(x = pred, y = resp, alpha = modx,
                                     size = "the_weights"),
                           colour = first(colors), inherit.aes = FALSE,
                           position = "jitter", show.legend = FALSE) +
@@ -813,7 +814,7 @@ print.interact_plot <- function(x, ...) {
 #' @param scale Logical. Would you like to standardize the variables
 #'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 #'   standardize variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its 
+#'   non-focal predictors are centered when \code{centered = NULL}, its
 #'   default.
 #'
 #' @param n.sd How many standard deviations should be used if \code{scale
@@ -864,9 +865,9 @@ print.interact_plot <- function(x, ...) {
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
-#' 
-#' @param standardize Deprecated. Equivalent to `scale`. Please change your 
-#'  scripts to use `scale` instead as this argument will be removed in the 
+#'
+#' @param standardize Deprecated. Equivalent to `scale`. Please change your
+#'  scripts to use `scale` instead as this argument will be removed in the
 #'  future.
 #'
 #'
@@ -933,7 +934,7 @@ print.interact_plot <- function(x, ...) {
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
 #' @importFrom stats median weights
-#' @import ggplot2 
+#' @import ggplot2
 #' @export effect_plot
 
 effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
@@ -952,7 +953,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
       " instead.")
     scale <- standardize
   }
-  
+
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
 
@@ -1287,7 +1288,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     wts <- const * wts
     # Append weights to data
     d[,"the_weights"] <- wts
-      p <- p + geom_point(data = d, 
+      p <- p + geom_point(data = d,
                           aes_string(x = pred, y = resp, size = "the_weights"),
                position = "jitter", inherit.aes = FALSE, show.legend = FALSE)
     # Add size aesthetic to avoid giant points

@@ -93,13 +93,13 @@
 #'
 #' # Data frame as input
 #' # loops through each numeric column
-#' gscale(data = mtcars, binary.inputs = "-0.5/0.5") 
-#' 
+#' gscale(data = mtcars, binary.inputs = "-0.5/0.5")
+#'
 #' # Specified vars in data frame
 #' gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
-#' 
+#'
 #' # Weighted inputs
-#' 
+#'
 #' wts <- runif(10, 0, 1)
 #' gscale(x, weights = wts)
 #' # If using a weights column of data frame, give its name
@@ -115,7 +115,7 @@
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                      data = apistrat, fpc=~fpc)
 #' # Creating test binary variable
-#' dstrat$variables$binary <- rbinom(200, 1, 0.5) 
+#' dstrat$variables$binary <- rbinom(200, 1, 0.5)
 #'
 #' gscale(data = dstrat, binary.inputs = "-0.5/0.5")
 #' gscale(c("api00","meals","binary"), data = dstrat,
@@ -131,7 +131,8 @@ gscale <- function(x = NULL, binary.inputs = "center", data = NULL, n.sd = 2,
                    center.only = FALSE, scale.only = FALSE, weights = NULL) {
 
 if (!(binary.inputs %in% c("center","full","0/1","-0.5/0.5"))) {
-  stop("binary.inputs must be one of \"center\", \"full\", \"0/1\", or \"-0.5/0.5\"")
+  stop("binary.inputs must be one of \"center\", \"full\", \"0/1\",",
+       "or \"-0.5/0.5\"")
 }
 
 # If it's a vector, just do the thing
