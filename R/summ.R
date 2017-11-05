@@ -1857,22 +1857,27 @@ summ.merMod <- function(
   ## This is a start
   failed.rsq <- FALSE
   if (r.squared == TRUE) {
-    timer <- system.time(tryo <-
-                           try({rsqs <- suppressWarnings(r.squaredGLMM(model))},
-                               silent = TRUE))
+
+    t0 <- Sys.time() # Calculating time elapsed
+    tryo <- try({rsqs <- suppressWarnings(r.squaredGLMM(model))}, silent = TRUE)
+    t1 <- Sys.time()
 
     if (class(tryo) == "try-error") {
 
       rsqs <- NA
       failed.rsq <- TRUE
       r.squared <- FALSE
-      warning("Could not calculate r-squared. Try removing missing data before fitting the model.\n")
+      warning("Could not calculate r-squared. Try removing missing data",
+              " before fitting the model.\n")
 
     }
 
-    if (failed.rsq <- FALSE & timer["elapsed"] > 5) {
+    if (failed.rsq == FALSE & (t1 - t0) > 5 &
+        !getOption("pr2_warned", FALSE)) {
 
-      message("If summ is taking too long to run, try setting r.squared = FALSE.")
+      message("If summ is taking too long to run, try setting ",
+              "r.squared = FALSE.")
+      options("pr2_warned" = TRUE)
 
     }
   } else {
@@ -1905,7 +1910,15 @@ summ.merMod <- function(
 
     } else if (pbkr == TRUE & is.null(t.df)) {
 
+      t0 <- Sys.time()
       df <- pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
+      t1 <- Sys.time()
+
+      if ((t1 - t0) > 5 & !getOption("pbkr_warned", FALSE)) {
+        message("If summ is taking too long to run, try setting ",
+                "pvals = FALSE or t.df = 'residual' (or some number).")
+        options("pbkr_warned" = TRUE)
+      }
 
     } else if (!is.null(t.df)) {
 
