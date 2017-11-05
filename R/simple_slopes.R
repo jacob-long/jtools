@@ -487,7 +487,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
                                   vmat = covmat, plot = jnplot,
-                                  alpha = jnalpha),
+                                  alpha = jnalpha, digits = digits, ...),
                    error = function(e) {return("No values")},
                    warning = function(w) {return("No values")})
 
@@ -643,7 +643,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   # final output
   if (!is.null(mod2) & johnson_neyman == TRUE) {
 
-    plots <- as.list(rep(NA, length(mod2vals) + 2))
+    # plots <- as.list(rep(NA, length(mod2vals) + 2))
+    plots <- as.list(rep(NA, length(mod2vals)))
     the_legend <- NULL
 
     for (j in 1:length(jns)) {
@@ -664,17 +665,11 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
         the_legend <-
           cowplot::get_legend(jns[[j]]$plot +
              theme_apa(legend.font.size = 8) +
-               ggplot2::theme(legend.position = "top"))
+               ggplot2::theme(legend.position = "bottom"))
 
         # Now we get rid of it for the actual plotting of the first plot
         jns[[j]]$plot <- jns[[j]]$plot +
           ggplot2::theme(legend.position = "none")
-
-        # Save the legend to the first spot in the list of plots
-        plots[[1]] <- the_legend
-        # Since we have two columns, we reserve an empty spot in the short
-        # first row by putting NULL in the second spot on the list
-        plots[[2]] <- ggplot2::ggplot() + ggplot2::theme_void() # white bg
 
       } else {
         # For each subsequent plot, we don't need to save the legend,
@@ -685,41 +680,48 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
       # Add a label for cowplot
       mod2lab <- names(mod2vals2)[j]
-      jns[[j]]$plot <- 
+      jns[[j]]$plot <-
         jns[[j]]$plot + ggplot2::ggtitle(paste(mod2, "=", mod2lab)) +
         ggplot2::theme(plot.title = ggplot2::element_text(size = 11))
 
       # Add the plot to the plot list at whatever the current end is
-      index <- j + 2
-      plots[[index]] <- jns[[j]]$plot 
+      index <- j
+      plots[[index]] <- jns[[j]]$plot
 
     }
-    
-    if (jnplot == TRUE && !is.null(mod2)) {
 
-      # This makes the legend row smaller than the others
-      sizes <- c(0.2, rep(1, times = length(plots) - 1))
-      
-      # Now we put it all together--vjust is at a non-default level
-      ss$jnplot <- cowplot::plot_grid(plotlist = plots, align = "auto",
-                              ncol = 2, rel_heights = sizes,
-                              vjust = 0, scale = 1)
-
-    }
   }
+
+  if (length(plots) %% 2 == 1) {
+
+    plots[[length(plots) + 1]] <- the_legend
+    just_plots <- cowplot::plot_grid(plotlist = plots, align = "auto",
+                                         ncol = 2, vjust = 0, scale = 1)
+    with_legend <- just_plots
+
+  } else {
+
+    just_plots <- cowplot::plot_grid(plotlist = plots, ncol = 2)
+    with_legend <- cowplot::plot_grid(just_plots, the_legend,
+                                      rel_heights = c(1,.1), nrow = 2)
+
+  }
+
+  # Now we put it all together--vjust is at a non-default level
+  ss$jnplot <- with_legend
 
   } else if (johnson_neyman == TRUE) {
 
     ss$jnplot <- jns[[1]]$plot
 
-  } 
+  }
 
   if (jnplot == FALSE | johnson_neyman == FALSE) {
 
     ss$jnplot <- NULL
 
   }
-  
+
   return(ss)
 
 }
