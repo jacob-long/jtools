@@ -647,7 +647,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   # If 3-way interaction and the user has `cowplot`, here's where we make the
   # final output
-  if (!is.null(mod2) & johnson_neyman == TRUE) {
+  if (!is.null(mod2) & johnson_neyman == TRUE & jnplot == TRUE) {
 
     # plots <- as.list(rep(NA, length(mod2vals) + 2))
     plots <- as.list(rep(NA, length(mod2vals)))
