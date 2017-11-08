@@ -148,4 +148,246 @@ test_that("effect_plot handles offsets", {
   expect_message(effect_plot(pmod, pred = money))
 })
 
+### johnson_neyman ###########################################################
 
+test_that("johnson_neyman control.fdr argument works", {
+  expect_s3_class(johnson_neyman(fit, pred = Murder, modx = Illiteracy,
+                                 control.fdr = TRUE), "johnson_neyman")
+})
+
+### cat_plot ##################################################################
+
+library(ggplot2)
+diamond <- diamonds
+diamond <- diamond[diamond$color != "D",]
+set.seed(10)
+samps <- sample(1:nrow(diamond), 2000)
+diamond <- diamond[samps,]
+fit <- lm(price ~ cut * color, data = diamond)
+
+test_that("cat_plot handles simple plot (bar)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut))
+})
+
+test_that("cat_plot handles intervals (bar)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE))
+})
+
+test_that("cat_plot handles plotted points (bar)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE))
+})
+
+test_that("cat_plot handles simple plot (line)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, geom = "line"))
+})
+
+test_that("cat_plot handles intervals (line)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         geom = "line"))
+})
+
+test_that("cat_plot handles plotted points (line)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE, geom = "line"))
+})
+
+test_that("cat_plot handles point.shape (line)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE, geom = "line", point.shape = TRUE))
+})
+
+test_that("cat_plot handles point.shape (line)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE, geom = "line", point.shape = TRUE,
+                         vary.lty = TRUE))
+})
+
+test_that("cat_plot handles simple plot (point)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, geom = "point"))
+})
+
+test_that("cat_plot handles intervals (point)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         geom = "point"))
+})
+
+test_that("cat_plot handles plotted points (point)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE, geom = "point"))
+})
+
+test_that("cat_plot handles point.shape (point)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE, geom = "point",
+                         point.shape = TRUE))
+})
+
+test_that("cat_plot handles simple plot (boxplot)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, geom = "boxplot"))
+})
+
+test_that("cat_plot handles plotted points (boxplot)", {
+  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+                         plot.points = TRUE, geom = "boxplot"))
+})
+
+# 3-way interaction
+
+## Will first create a couple dichotomous factors to ensure full rank
+mpg2 <- mpg
+mpg2$auto <- "auto"
+mpg2$auto[mpg2$trans %in% c("manual(m5)", "manual(m6)")] <- "manual"
+mpg2$fwd <- "2wd"
+mpg2$fwd[mpg2$drv == "4"] <- "4wd"
+## Drop the two cars with 5 cylinders (rest are 4, 6, or 8)
+mpg2 <- mpg2[mpg2$cyl != "5",]
+## Fit the model
+fit3 <- lm(cty ~ cyl * fwd * auto, data = mpg2)
+
+
+test_that("cat_plot does 3-way interactions (bar)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "bar"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does intervals w/ 3-way interactions (bar)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "bar",
+           interval = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does plot.points w/ 3-way interactions (bar)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "bar",
+           interval = TRUE, plot.points = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does point.shape w/ 3-way interactions (bar)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "bar",
+           interval = TRUE, plot.points = TRUE, point.shape = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does intervals w/ 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
+           interval = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does plot.points w/ 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
+           interval = TRUE, plot.points = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does point.shape w/ 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
+           interval = TRUE, plot.points = TRUE, point.shape = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does vary.lty w/ 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
+           interval = TRUE, plot.points = TRUE, point.shape = TRUE,
+           vary.lty = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does 3-way interactions (point)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "point"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does intervals w/ 3-way interactions (point)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "point",
+           interval = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does plot.points w/ 3-way interactions (point)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "point",
+           interval = TRUE, plot.points = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does point.shape w/ 3-way interactions (point)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "point",
+           interval = TRUE, plot.points = TRUE, point.shape = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does plot.points w/ 3-way interactions (line)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
+           plot.points = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot does point.shape w/ 3-way interactions (boxplot)", {
+  expect_silent(p <- cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "boxplot",
+           plot.points = TRUE, point.shape = TRUE))
+  expect_silent(print(p))
+})
+
+### No interaction cat_plot ##################################################
+
+test_that("cat_plot handles simple plot w/ no mod. (bar)", {
+  expect_silent(p <- cat_plot(fit, pred = color))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles intervals w/ no mod. (bar)", {
+  expect_silent(p <- cat_plot(fit, pred = color, interval = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles plotted points w/ no mod. (bar)", {
+  expect_silent(p <- cat_plot(fit, pred = color, interval = TRUE,
+                         plot.points = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles simple plot w/ no mod. (point)", {
+  expect_silent(p <- cat_plot(fit, pred = color, geom = "point"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles intervals w/ no mod. (point)", {
+  expect_silent(p <- cat_plot(fit, pred = color, interval = TRUE,
+                         geom = "point"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles plotted points w/ no mod. (point)", {
+  expect_silent(p <- cat_plot(fit, pred = color, interval = TRUE,
+                         plot.points = TRUE, geom = "point"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles point.shape w/ no mod. (point)", {
+  expect_silent(p <- cat_plot(fit, pred = color, interval = TRUE,
+                         plot.points = TRUE, geom = "point",
+                         point.shape = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles simple plot w/ no mod. (boxplot)", {
+  expect_silent(p <- cat_plot(fit, pred = color, geom = "boxplot"))
+  expect_silent(print(p))
+})
+
+test_that("cat_plot handles plotted points w/ no mod. (boxplot)", {
+  expect_silent(p <- cat_plot(fit, pred = color, interval = TRUE,
+                         plot.points = TRUE, geom = "boxplot"))
+  expect_silent(print(p))
+})
