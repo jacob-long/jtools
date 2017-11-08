@@ -526,7 +526,8 @@ print.johnson_neyman <- function(x, ...) {
   }
   if (atts$control.fdr == TRUE) {
     cat("Interval calculated using false discovery rate adjusted",
-        "critical t statistic =", round(x$t_value, atts$digits))
+        "t =", round(x$t_value, atts$digits),
+        "\n\n")
   }
 
   # If requested, print the plot
