@@ -18,7 +18,13 @@
 #'   analysis be performed? Default is \code{NULL}. If \code{NULL}, then the
 #'   values will be the customary +/- 1 standard deviation from the mean as
 #'   well as the mean itself. There is no specific limit on the number of
-#'   variables provided. Factor variables
+#'   variables provided. If
+#'   \code{"plus-minus"}, uses just +/- 1 standard
+#'   deviation without the mean. You may also choose `"terciles"` to split
+#'   the data into equally-sized groups and choose the point at the mean of
+#'   each of those groups.
+#'
+#'   Factor variables
 #'   are not particularly suited to simple slopes analysis, but you could have
 #'   a numeric moderator with values of 0 and 1 and give \code{c(0,1)} to
 #'   compare the slopes at the different conditions. Two-level factor

@@ -271,6 +271,24 @@ auto_mod_vals <-
                               paste("Mean of", modx, "- 1 SD"))
       }
 
+    } else if (!is.null(modxvals) && modxvals == "terciles") {
+
+      x_or_2 <- switch(as.character(mod2),
+                       "TRUE" = "2",
+                       "FALSE" = "x")
+      group_name <- paste0("mod", x_or_2)
+      d[[group_name]] <- cut2(d[[modx]], g = 3, levels.mean = TRUE)
+      modxvals2 <- as.numeric(levels(d[[group_name]]))
+
+      if (mod2 == FALSE) {
+        names(modxvals2) <- c("Lower tercile", "Middle tercile",
+                              "Upper tercile")
+      } else {
+        names(modxvals2) <- c(paste("Lower tercile of", modx),
+                              paste("Middle tercile of", modx),
+                              paste("Upper tercile of", modx))
+      }
+
     } else if (is.null(modxvals) & length(unique(d[,modx])) == 2) {
 
       modxvals2 <- as.numeric(levels(factor(d[,modx])))

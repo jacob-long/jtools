@@ -1,8 +1,8 @@
 #' Plot interaction effects in regression models
 #'
-#' \code{interact_plot()} plots regression lines at user-specified levels of a moderator
-#' variable to explore interactions. The plotting is done with \code{ggplot2} rather than
-#' base graphics, which some similar functions use.
+#' \code{interact_plot()} plots regression lines at user-specified levels of a
+#'  moderator variable to explore interactions. The plotting is done with
+#'  \code{ggplot2} rather than base graphics, which some similar functions use.
 #'
 #' @param model A regression model of type \code{lm}, \code{glm},
 #'   \code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
@@ -24,16 +24,19 @@
 #'   moderators. If the moderator is a factor variable and \code{modxvals} is
 #'   \code{NULL}, each level of the factor is included. If
 #'   \code{"plus-minus"}, plots lines when the moderator is at +/- 1 standard
-#'   deviation without the mean.
+#'   deviation without the mean. You may also choose `"terciles"` to split
+#'   the data into equally-sized groups and choose the point at the mean of
+#'   each of those groups.
 #'
 #' @param mod2vals For which values of the second moderator should the plot be
 #'   facetted by? That is, there will be a separate plot for each level of this
 #'   moderator. Defaults are the same as \code{modxvals}.
 #'
-#' @param centered A vector of quoted variable names that are to be mean-centered. If
-#'   \code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
-#'   the user-specified predictors are centered. User can also use "none" or "all"
-#'   arguments. The response variable is not centered unless specified directly.
+#' @param centered A vector of quoted variable names that are to be
+#'   mean-centered. If \code{NULL}, all non-focal predictors are centered. If
+#'   not \code{NULL}, only the user-specified predictors are centered. User can
+#'   also use "none" or "all" arguments. The response variable is not centered
+#'   unless specified directly.
 #'
 #' @param scale Logical. Would you like to standardize the variables
 #'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
@@ -45,11 +48,11 @@
 #'   = TRUE}? Default is 1, but some prefer 2.
 #'
 #' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
-#'   scatterplot on top of the interaction lines. If moderator is a factor, the dots
-#'   will be the same color as their parent factor.
+#'   scatterplot on top of the interaction lines. The color of the dots will be
+#'   based on their moderator value.
 #'
 #' @param interval Logical. If \code{TRUE}, plots confidence/prediction
-#'   intervals the line using \code{\link[ggplot2]{geom_ribbon}}. Not
+#'   intervals around the line using \code{\link[ggplot2]{geom_ribbon}}. Not
 #'   supported for \code{merMod} models.
 #'
 #' @param int.type Type of interval to plot. Options are "confidence" or
@@ -66,6 +69,14 @@
 #'   default is \code{"response"}, which is the original scale. For the link
 #'   scale, which will show straight lines rather than curves, use
 #'   \code{"link"}.
+#'
+#' @param linearity.check For two-way interactions only. If `TRUE`, plots a
+#'   pane for each level of the moderator and superimposes a loess smoothed
+#'   line (in gray) over the plot. This enables you to see if the effect is
+#'   linear through the span of the moderator. See Hainmuller et al. (2016) in
+#'   the references for more details on the intuition behind this. It is
+#'   recommended that you also set `plot.points = TRUE` and use
+#'   `modxvals = "terciles"` with this option.
 #'
 #' @param set.offset For models with an offset (e.g., Poisson models), sets a
 #'   offset for the predicted values. All predicted values will have the same
@@ -135,6 +146,38 @@
 #'   Note: to use transformed predictors, e.g., \code{log(variable)},
 #'   put its name in quotes or backticks in the argument.
 #'
+#'   \emph{Details on how observed data are split in multi-pane plots}:
+#'
+#'   If you set `plot.points = TRUE` and request a multi-pane (facetted) plot
+#'   either with a second moderator or `linearity.check = TRUE`, the observed
+#'   data are split into as many groups as there  arepanes and plotted
+#'   separately. If the moderator is a factor, then the way this happens will
+#'   be very intuitive since it's obvious which values go in which pane. The
+#'   rest of this section will address the case of continuous moderators.
+#'
+#'   My recommendation is that you use `modxvals = "terciles"`` or
+#'   `mod2vals = "terciles"` when you want to plot observed data on multi-pane
+#'   plots. When you do, the data are split into three approximately
+#'   equal-sized groups with the lowest third, middle third, and highest third
+#'   of the data split accordingly. You can replicate this procedure using
+#'   [Hmisc::cut2()] with `g = 3` from the `Hmisc` package. Sometimes, the
+#'   groups will not be equal in size because the number of observations is
+#'   not divisible by 3 and/or there are multiple observations with the same
+#'   value at one of the cut points.
+#'
+#'   Otherwise, a more ad hoc procedure is used to split the data. Quantiles
+#'   are found for each `mod2vals` or `modxvals` value. These are not the
+#'   quantiles used to split the data, however, since we want the plotted lines
+#'   to represent the slope at a typical value in the group. The next step,
+#'   then, is to take the mean of each pair of neighboring quantiles and use
+#'   these as the cut points.
+#'
+#'   For example, if the `mod2vals` are at the 25th, 50th, and 75th percentiles
+#'   of the distribution of the moderator, the data will be split at the
+#'   37.5th and and 62.5th percentiles. When the variable is
+#'   normally distributed, this will correspond fairly closely to using
+#'   terciles.
+#'
 #'   \emph{Info about offsets:}
 #'
 #'   Offsets are partially supported by this function with important
@@ -180,22 +223,28 @@
 #' regression/correlation analyses for the behavioral sciences} (3rd ed.).
 #' Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
+#' Hainmueller, J., Mummolo, J., & Xu, Y. (2016). How much should we trust
+#'   estimates from multiplicative interaction models? Simple tools to improve
+#'   empirical practice. SSRN Electronic Journal.
+#'   \url{https://doi.org/10.2139/ssrn.2739221}
+
+#'
 #' @examples
 #' # Using a fitted lm model
 #' states <- as.data.frame(state.x77)
 #' states$HSGrad <- states$`HS Grad`
-#' fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
+#' fit <- lm(Income ~ HSGrad + Murder * Illiteracy,
 #'   data = states)
 #' interact_plot(model = fit, pred = Murder,
 #'   modx = Illiteracy)
 #'
 #' # Using interval feature
-#' fit <- lm(accel ~ mag*dist, data=attenu)
+#' fit <- lm(accel ~ mag * dist, data = attenu)
 #' interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
 #'
 #' # Using second moderator
-#' fit <- lm(Income ~ HSGrad*Murder*Illiteracy,
+#' fit <- lm(Income ~ HSGrad * Murder * Illiteracy,
 #'   data = states)
 #' interact_plot(model = fit, pred = Murder,
 #'   modx = Illiteracy, mod2 = HSGrad)
@@ -205,7 +254,7 @@
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                     data = apistrat, fpc = ~fpc)
-#' regmodel <- svyglm(api00~ell*meals,design=dstrat)
+#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #' interact_plot(regmodel, pred = ell, modx = meals)
 #'
 #' # With lme4
@@ -219,7 +268,7 @@
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median
+#' @importFrom stats median ecdf quantile
 #' @import ggplot2
 #' @export interact_plot
 
@@ -228,6 +277,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           n.sd = 1, plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence","prediction"),
                           int.width = .95, outcome.scale = "response",
+                          linearity.check = FALSE,
                           set.offset = 1,
                           x.label = NULL, y.label = NULL,
                           pred.labels = NULL, modx.labels = NULL,
@@ -283,7 +333,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
       mixed <- TRUE
       if (interval == TRUE) {
-        warning("Confidence intervals cannot be provided for random effects models.")
+        warning("Confidence intervals cannot be provided for random effects",
+                " models.")
         interval <- FALSE
       }
 
@@ -327,7 +378,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   if (!is.null(model.offset(model.frame(model)))) {
 
     off <- TRUE
-    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare varname
+    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare name
 
     # Getting/setting offset name depending on whether it was specified in
     # argument or formula
@@ -380,7 +431,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     }
     # Unrelated, but good place to throw a warning
     if (!is.null(modxvals)) {
-      warning("All levels of factor must be used. Ignoring modxvals argument...")
+      warning("All levels of factor must be used. Ignoring modxvals",
+              " argument...")
       modxvals <- NULL
     }
   } else {
@@ -448,9 +500,72 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     predfac <- TRUE
   } else if (is.factor(d[,pred]) & length(unique(d[,pred] != 2))) {
     # I could assume the factor is properly ordered, but that's too risky
-    stop("Focal predictor (\"pred\") cannot have more than two levels. Either use it as modx or convert it to a continuous or single dummy variable.")
+    stop("Focal predictor (\"pred\") cannot have more than two levels. Either",
+         " use it as modx or convert it to a continuous or single dummy",
+         " variable.")
   } else {
     predfac <- FALSE
+  }
+
+### Prep original data for splitting into groups ##############################
+
+  # Only do this if going to plot points
+  if ((!is.null(mod2) | linearity.check == TRUE) & !is.factor(d[[modx]]) &
+      plot.points == TRUE) {
+
+    # Use ecdf function to get quantile of the modxvals
+    mod_val_qs <- ecdf(d[[modx]])(sort(modxvals2))
+
+    # Now I am going to split the data in a way that roughly puts each modxval
+    # in the middle of each group. mod_val_qs is a vector of quantiles for each
+    # modxval, so I will now build a vector of the midpoint between each
+    # neighboring pair of quantiles — they will become the cutpoints for
+    # splitting the data into groups that roughly correspond to the modxvals
+    cut_points <- c() # empty vector
+    # Iterate to allow this to work regardless of number of modxvals
+    for (i in 1:(length(modxvals2) - 1)) {
+
+      cut_points <- c(cut_points, mean(mod_val_qs[i:(i + 1)]))
+
+    }
+
+    # Add Inf to both ends to encompass all values outside the cut points
+    cut_points <- c(-Inf, quantile(d[[modx]], cut_points), Inf)
+
+    # Create variable storing this info as a factor
+    d$modx_group <- cut(d[[modx]], cut_points, labels = names(sort(modxvals2)))
+
+    if (!is.null(modxvals) && modxvals == "terciles") {
+      d$modx_group <- factor(cut2(d[[modx]], g = 3, levels.mean = TRUE),
+                             labels = c("Lower tercile", "Middle tercile",
+                                        "Upper tercile"))
+    }
+
+  }
+
+  if (!is.null(mod2) && !is.factor(d[[mod2]]) & plot.points == TRUE) {
+
+    mod_val_qs <- ecdf(d[[mod2]])(sort(mod2vals2))
+
+
+    cut_points2 <- c()
+    for (i in 1:(length(mod2vals2) - 1)) {
+
+      cut_points2 <- c(cut_points2, mean(mod_val_qs[i:(i + 1)]))
+
+    }
+
+    cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
+
+    d$mod2_group <- cut(d[[mod2]], cut_points2, labels = names(sort(mod2vals2)))
+
+    if (!is.null(mod2vals) && mod2vals == "terciles") {
+      d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
+                             labels = c(paste("Lower tercile of", mod2),
+                                        paste("Middle tercile of", mod2),
+                                        paste("Upper tercile of", mod2)))
+    }
+
   }
 
 #### Creating predicted frame #################################################
@@ -507,9 +622,11 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Naming columns
   if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d), "ymax", "ymin")
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin%
+                                    c("modx_group","mod2_group")],
+                      "ymax", "ymin")
   } else {
-    colnames(pm) <- colnames(d)
+    colnames(pm) <- colnames(d)[colnames(d) %nin% c("modx_group","mod2_group")]
   }
   # Convert to dataframe
   pm <- as.data.frame(pm)
@@ -638,12 +755,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Labels for values of moderator
   pm[,modx] <- factor(pm[,modx], levels = modxvals2, labels = modx.labels)
-
+  pm$modx_group <- pm[,modx]
 
   # Setting labels for second moderator
   if (!is.null(mod2)) {
 
     pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2, labels = mod2.labels)
+
+    # Setting mod2 in OG data to the factor if plot.points == TRUE
+    if (plot.points == TRUE) {
+
+      d[[mod2]] <- d$mod2_group
+
+    }
 
   }
 
@@ -661,6 +785,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   if (is.null(mod2)) {
     colors <- rev(colors)
+    pp_color <- first(colors) # Darkest color used for plotting points
+  } else {
+    pp_color <- last(colors)
   }
 
   names(colors) <- modx.labels
@@ -692,7 +819,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # If third mod, facet by third mod
   if (!is.null(mod2)) {
-    p <- p + facet_grid(. ~ pm[,mod2]) # don't think can programmatically do it
+    facets <- facet_grid(paste(". ~", mod2))
+    p <- p + facets
+  } else if (linearity.check == TRUE) {
+    facets <- facet_grid(paste(". ~ modx_group"))
+    p <- p + facets + stat_smooth(data = d, aes_string(x = pred, y = resp),
+                                  method = "loess", size = 1,
+                                  show.legend = FALSE, inherit.aes = FALSE,
+                                  se = FALSE, span = 2, geom = "line",
+                                  alpha = 0.5, color = "black")
   }
 
   # For factor vars, plotting the observed points
@@ -714,13 +849,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       p <- p + geom_point(data = d,
                           aes_string(x = pred, y = resp, alpha = modx,
                                     size = "the_weights"),
-                          colour = first(colors), inherit.aes = FALSE,
+                          colour = pp_color, inherit.aes = FALSE,
                           position = "jitter", show.legend = FALSE) +
           scale_alpha_continuous(range = c(0.25, 1), guide = "none")
     }
+
     # Add size aesthetic to avoid giant points
-    # p <- p + scale_size(range = c(0.3, 4))
     p <- p + scale_size_identity()
+
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
@@ -805,7 +941,8 @@ print.interact_plot <- function(x, ...) {
 #'
 #' @param pred The name of the predictor variable you want on the x-axis.
 #'
-#' @param centered A vector of quoted variable names that are to be mean-centered.
+#' @param centered A vector of quoted variable names that are to be
+#'   mean-centered.
 #'   If \code{NULL}, all non-focal predictors are centered. If not \code{NULL},
 #'   only the user-specified predictors are centered. User can also use "none"
 #'   or "all" arguments. The response variable is not centered unless specified
@@ -823,7 +960,8 @@ print.interact_plot <- function(x, ...) {
 #' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
 #'   scatterplot on top of the interaction lines.
 #'
-#' @param interval Logical. If \code{TRUE}, plots confidence/prediction intervals
+#' @param interval Logical. If \code{TRUE}, plots confidence/prediction
+#'   intervals
 #'   the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
 #'   \code{merMod} models.
 #'
@@ -1179,7 +1317,8 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     message(msg)
   }
 
-  # Back-ticking variable names in formula to prevent problems with transformed preds
+  # Back-ticking variable names in formula to prevent problems with
+  # transformed preds
   formc <- as.character(deparse(formula(model)))
   for (var in all.vars) {
 
