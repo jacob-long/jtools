@@ -1477,3 +1477,692 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
 print.effect_plot <- function(x, ...) {
   print(x)
 }
+
+##### Categorical plot #######################################################
+
+#' Plot interaction effects between categorical predictors.
+#'
+#' `cat_plot` is a complementary function to [interact_plot()] that is designed
+#' for plotting interactions when both predictor and moderator(s) are
+#' categorical (or, in R terms, factors).
+#'
+#' @param pred A categorical predictor variable that will appear on the x-axis.
+#' @param modx A categorical moderator variable.
+#' @param mod2 For three-way interactions, the second categorical moderator.
+#'
+#' @param geom What type of plot should this be? There are several options
+#'   here since the best way to visualize categorical interactions varies by
+#'   context. Here are the options:
+#'
+#'   * `"bar"`: A bar chart, the default. Some call this a "dynamite plot."
+#'     Many applied researchers advise against this type of plot because it
+#'     does not represent the distribution of the observed data or the
+#'     uncertainty of the predictions very well. It is best to at least use the
+#'     `interval = TRUE` argument with this geom.
+#'   * `"point"`: Simply plot the point estimates. You may want to use
+#'     `point.shape = TRUE` with this and you should also consider
+#'     `interval = TRUE` to visualize uncertainty.
+#'   * `"line"`: This connects observations across levels of the `pred`
+#'     variable with a line. This is a good option when the `pred` variable
+#'     is ordinal (ordered). You may still consider `point.shape = TRUE` and
+#'     `interval = TRUE` is still a good idea.
+#'   * `"boxplot"`: This geom plots a dot and whisker plot. These can be useful
+#'     for understanding the distribution of the observed data without having
+#'     to plot all the observed points (especially helpful with larger data
+#'     sets). **However**, it is important to note the boxplots are not based
+#'     on the model whatsoever.
+#'
+#' @param interval Logical. If \code{TRUE}, plots confidence/prediction
+#'   intervals. Not supported for \code{merMod} models.
+#'
+#' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
+#'   scatterplot on top of the interaction lines. Note that if
+#'   `geom = "bar"`, this will cause the bars to become transparent so you can
+#'   see the points.
+#'
+#' @param point.shape For plotted points---either of observed data or predicted
+#'   values with the "point" or "line" geoms---should the shape of the points
+#'   vary by the values of the factor? This is especially useful if you aim to
+#'   be black and white printing- or colorblind-friendly.
+#'
+#' @param color.class Any palette argument accepted by
+#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
+#'    moderators.
+#'
+#' @inheritParams interact_plot
+#'
+#' @details This function provides a means for plotting conditional effects
+#'   for the purpose of exploring interactions in the context of regression.
+#'   You must have the
+#'   package \code{ggplot2} installed to benefit from these plotting functions.
+#'
+#'   The function is designed for two and three-way interactions. For
+#'   additional terms, the
+#'   \code{\link[effects]{effects}} package may be better suited to the task.
+#'
+#'   This function supports nonlinear and generalized linear models and by
+#'   default will plot them on
+#'   their original scale (\code{outcome.scale = "response"}).
+#'
+#'   While mixed effects models from \code{lme4} are supported, only the fixed
+#'   effects are plotted. \code{lme4} does not provide confidence intervals,
+#'   so they are not supported with this function either.
+#'
+#'   Note: to use transformed predictors, e.g., \code{log(variable)},
+#'   put its name in quotes or backticks in the argument.
+#'
+#'   \emph{Info about offsets:}
+#'
+#'   Offsets are partially supported by this function with important
+#'   limitations. First of all, only a single offset per model is supported.
+#'   Second, it is best in general to specify offsets with the offset argument
+#'   of the model fitting function rather than in the formula. If it is
+#'   specified in the formula with a svyglm, this function will stop with an
+#'   error message.
+#'
+#'   It is also advised not to do any transformations to the offset other than
+#'   the common log transformation. If you apply a log transform, this function
+#'   will deal with it sensibly. So if your offset is a logged count, the
+#'   exposure you set will be the non-logged version, which is much easeir to
+#'   wrap one's head around. For any other transformation you may apply, or
+#'   if you apply no transformation at all, the exposures used will be the
+#'   post-tranformation number (which is by default 1).
+#'
+#' @return The functions returns a \code{ggplot} object, which can be treated
+#'   like a user-created plot and expanded upon as such.
+#'
+#' @examples
+#'
+#' library(ggplot2)
+#' fit <- lm(price ~ cut * color, data = diamonds)
+#' cat_plot(fit, pred = color, modx = cut, interval = TRUE)
+#'
+#' # 3-way interaction
+#'
+#' ## Will first create a couple dichotomous factors to ensure full rank
+#' mpg2 <- mpg
+#' mpg2$auto <- "auto"
+#' mpg2$auto[mpg2$trans %in% c("manual(m5)", "manual(m6)")] <- "manual"
+#' mpg2$fwd <- "2wd"
+#' mpg2$fwd[mpg2$drv == "4"] <- "4wd"
+#' ## Drop the two cars with 5 cylinders (rest are 4, 6, or 8)
+#' mpg2 <- mpg2[mpg2$cyl != "5",]
+#' ## Fit the model
+#' fit3 <- lm(cty ~ cyl * fwd * auto, data = mpg2)
+#'
+#' # The line geom looks good for an ordered factor predictor
+#' cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
+#'  interval = TRUE)
+#'
+#' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
+#' @importFrom stats median
+#' @export cat_plot
+#' @import ggplot2
+#'
+
+cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
+                     geom = c("bar","point","line","boxplot"),
+                     interval = FALSE, plot.points = FALSE,
+                     point.shape = FALSE, vary.lty = FALSE,
+                     centered = NULL,
+                     int.type = c("confidence","prediction"),
+                     int.width = .95, outcome.scale = "response",
+                     set.offset = 1, x.label = NULL, y.label = NULL,
+                     main.title = NULL, legend.main = NULL,
+                     color.class = NULL) {
+
+  # Legacy commands from interact_plot
+  scale <- FALSE
+  n.sd <- 1
+
+  # Evaluate the modx, mod2, pred args
+  pred <- as.character(substitute(pred))
+  modx <- as.character(substitute(modx))
+  # To avoid unexpected behavior, need to un-un-parse modx when it is NULL
+  if (length(modx) == 0) {
+    modx <- NULL
+  }
+  mod2 <- as.character(substitute(mod2))
+  # To avoid unexpected behavior, need to un-un-parse mod2 when it is NULL
+  if (length(mod2) == 0) {
+    mod2 <- NULL
+  }
+
+  # Get the geom if not specified
+  geom <- geom[1]
+
+  # Duplicating the dataframe so it can be manipulated as needed
+  d <- model.frame(model)
+
+  # Coerce focal vars to factor if they aren't already
+  if (!is.factor(d[[pred]])) {
+    d[[pred]] <- factor(d[[pred]])
+  }
+  if (!is.null(modx)) {
+    if (!is.factor(d[[modx]])) {
+      d[[modx]] <- factor(d[[modx]])
+    }
+  }
+  if (!is.null(mod2)) {
+    if (!is.factor(d[[mod2]])) {
+      d[[mod2]] <- factor(d[[mod2]])
+    }
+  }
+
+  # Is it a svyglm?
+  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
+    survey <- TRUE
+    mixed <- FALSE
+    design <- model$survey.design
+    d <- design$variables
+
+    wts <- weights(design) # for use with points.plot aesthetic
+
+    # Focal vars so the weights don't get centered
+    fvars <- as.character(attributes(terms(model))$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
+
+    facvars <- c()
+    for (v in fvars) {
+      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
+        facvars <- c(facvars, v)
+      }
+    }
+
+  } else {
+    survey <- FALSE
+    if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
+
+      mixed <- TRUE
+      if (interval == TRUE) {
+        warning("Confidence intervals cannot be provided for random effects",
+                " models.")
+        interval <- FALSE
+      }
+
+    } else {
+      mixed <- FALSE
+    }
+
+    fvars <- as.character(attributes(terms(model))$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars <- fvars[2:length(fvars)]
+    all.vars <- fvars
+
+    facvars <- c()
+    for (v in fvars) {
+      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
+        facvars <- c(facvars, v)
+      }
+    }
+
+  }
+
+  # weights?
+  if (survey == FALSE && ("(weights)" %in% names(d) |
+                          !is.null(getCall(model)$weights))) {
+    weights <- TRUE
+    wname <- as.character(getCall(model)["weights"])
+    if (any(colnames(d) == "(weights)")) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
+    wts <- d[,wname]
+
+  } else {
+
+    weights <- FALSE
+    wname <- NULL
+    if (survey == FALSE) {wts <- rep(1, times = nrow(d))}
+
+  }
+
+  # offset?
+  if (!is.null(model.offset(model.frame(model)))) {
+
+    off <- TRUE
+    # subset gives bare varname
+    offname <- as.character(getCall(model)$offset[-1])
+
+    # Getting/setting offset name depending on whether it was specified in
+    # argument or formula
+    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
+      colnames(d)[which(colnames(d) == "(offset)")] <- offname
+    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
+
+      offname <- "(offset)"
+
+      # This strategy won't work for svyglm
+      if (survey == TRUE) {
+
+        stop("For svyglm with offsets, please specify the offset with the
+             'offset =' argument rather than in the model formula.")
+
+      }
+
+    }
+
+    # See if offset term was logged
+    if (offname == "(offset)") {
+      offterm <- regmatches(as.character(formula(model)),
+                            regexpr("(?<=(offset\\()).*(?=(\\)))",
+                                    as.character(formula(model)), perl = TRUE))
+      if (grepl("log(", offterm, fixed = TRUE)) {
+
+        d[,offname] <- exp(d[,offname])
+
+      }
+
+    }
+
+    # Exponentiate offset if it was logged
+    if ("log" %in% as.character(getCall(model)$offset)) {
+      d[,offname] <- exp(d[,offname])
+    }
+
+  } else {
+
+      off <- FALSE
+      offname <- NULL
+
+  }
+
+  # Setting default for colors
+  facmod <- TRUE
+  if (is.null(color.class)) {
+    color.class <- "Set2"
+  }
+
+  # For setting dimensions correctly later
+  nc <- ncol(d)
+
+  # Get the formula from lm object if given
+  formula <- formula(model)
+  formula <- paste(formula[2], formula[1], formula[3])
+
+  # Pulling the name of the response variable for labeling
+  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
+  resp <- trimws(resp)
+
+##### Centering ###############################################################
+
+  # Update facvars by pulling out all non-focals
+  facvars <-
+    facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
+
+  # Use utility function shared by all interaction functions
+  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
+                       fvars = fvars, pred = pred,
+                       resp = resp, modx = modx, survey = survey,
+                       design = design, mod2 = mod2, wname = wname,
+                       offname = offname, centered = centered,
+                       scale = scale, n.sd = n.sd)
+
+  design <- c_out$design
+  d <- c_out$d
+  fvars <- c_out$fvars
+  facvars <- c_out$facvars
+
+##### Creating predicted frame #################################################
+
+  # Creating a set of dummy values of the focal predictor for use in predict()
+  pred_len <- nlevels(d[[pred]])
+
+  if (!is.null(modx)) {
+    combos <- expand.grid(levels(d[[pred]]), levels(d[[modx]]))
+    combo_pairs <- paste(combos[[1]],combos[[2]])
+    og_pairs <- paste(d[[pred]], d[[modx]])
+    combos <- combos[combo_pairs %in% og_pairs,]
+    xpred_len <- nrow(combos)
+  } else {
+    xpred_len <- pred_len
+    combos <- as.data.frame(levels(d[[pred]]))
+  }
+
+  # Takes some rejiggering to get this right with second moderator
+  if (!is.null(mod2)) {
+    combos <- expand.grid(levels(d[[pred]]), levels(d[[modx]]),
+                          levels(d[[mod2]]))
+    combo_pairs <- paste(combos[[1]],combos[[2]],combos[[3]])
+    og_pairs <- paste(d[[pred]], d[[modx]], d[[mod2]])
+    combos <- combos[combo_pairs %in% og_pairs,]
+    xpred_len <- nrow(combos)
+  }
+
+  # Creating matrix for use in predict()
+  if (interval == TRUE) { # Only create SE columns if intervals needed
+    pm <- matrix(rep(0, xpred_len * (nc + 2)), ncol = (nc + 2))
+  } else {
+    pm <- matrix(rep(0, xpred_len * nc), ncol = nc)
+  }
+
+  # Naming columns
+  if (interval == TRUE) { # if intervals, name the SE columns
+    colnames(pm) <- c(colnames(d), "ymax", "ymin")
+  } else {
+    colnames(pm) <- colnames(d)
+  }
+
+  # Convert to dataframe
+  pm <- as.data.frame(pm)
+
+  # Add values of moderator to df
+  if (!is.null(modx)) {
+    pm[,modx] <- combos[[2]]
+  }
+  if (!is.null(mod2)) { # if second moderator
+    pm[,mod2] <- combos[[3]]
+  }
+
+  # Add values of focal predictor to df
+  pm[,pred] <- combos[[1]]
+
+  # Set factor predictors arbitrarily to their first level
+  if (length(facvars) > 0) {
+    for (v in facvars) {
+      pm[,v] <- levels(d[,v])[1]
+    }
+  }
+
+  if (off == TRUE) {
+    if (is.null(set.offset)) {
+      offset.num <- median(d[,offname])
+    } else {
+      offset.num <- set.offset
+    }
+
+    pm[,offname] <- offset.num
+    msg <- paste("Count is based on a total of", offset.num, "exposures")
+    message(msg)
+  }
+
+#### Predicting with update models ############################################
+
+  # Create predicted values based on specified levels of the moderator,
+  # focal predictor
+
+  ## This is passed to predict(), but for svyglm needs to be TRUE always
+  interval_arg <- interval
+
+  # Back-ticking variable names in formula to prevent problems with
+  # transformed preds
+  formc <- as.character(deparse(formula(model)))
+  for (var in all.vars) {
+
+    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
+                           "(?=($|~|\\s|\\*|\\+))", sep = "")
+
+    bt_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(regex_pattern, bt_name, formc, perl = TRUE)
+
+  }
+  form <- as.formula(formc)
+
+  ## Don't update model if no vars were centered
+  if (!is.null(centered) && centered == "none") {
+    modelu <- model
+  } else {
+    if (survey == FALSE) {
+      if (mixed == FALSE) {
+        modelu <- update(model, formula = form, data = d)
+      } else {
+        optimiz <- model@optinfo$optimizer
+        if (class(model) == "glmerMod") {
+          modelu <- update(model, formula = form, data = d,
+                           control = lme4::glmerControl(optimizer = optimiz,
+                                                        calc.derivs = FALSE))
+        } else {
+          modelu <- update(model, formula = form, data = d,
+                           control = lme4::lmerControl(optimizer = optimiz,
+                                                       calc.derivs = FALSE))
+        }
+      }
+    } else {
+      # Have to do all this to avoid adding survey to dependencies
+      interval_arg <- TRUE
+      call <- getCall(model)
+      call$design <- design
+      call$formula <- form
+      call[[1]] <- survey::svyglm
+      modelu <- eval(call)
+    }
+  }
+
+  if (mixed == TRUE) {
+    predicted <- as.data.frame(predict(modelu, newdata = pm,
+                                       type = outcome.scale,
+                                       allow.new.levels = F,
+                                       re.form = ~0))
+  } else {
+    predicted <- as.data.frame(predict(modelu, newdata = pm,
+                                       se.fit = interval_arg,
+                                       interval = int.type[1],
+                                       type = outcome.scale))
+  }
+  pm[,resp] <- predicted[,1] # this is the actual values
+
+  ## Convert the confidence percentile to a number of S.E. to multiply by
+  intw <- 1 - ((1 - int.width)/2)
+  ses <- qnorm(intw, 0, 1)
+
+  # See minimum and maximum values for plotting intervals
+  if (interval == TRUE) { # only create SE columns if intervals are needed
+    if (mixed == TRUE) {
+      # No SEs
+      warning("Standard errors cannot be calculated for mixed effect models.")
+    } else if (survey == FALSE) {
+      pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
+      pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
+    } else if (survey == TRUE) {
+      pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
+      pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+    }
+  } else {
+    # Do nothing
+  }
+
+  # Saving x-axis label
+  if (is.null(x.label)) {
+    x.label <- pred
+  }
+
+  # Saving y-axis label
+  if (is.null(y.label)) {
+    y.label <- resp
+  }
+
+  # Labels for values of predictor and moderator
+  if (!is.null(modx)) {
+
+    pm[[modx]] <- factor(pm[[modx]], levels = levels(d[[modx]]))
+
+  }
+  pm[[pred]] <- factor(pm[[pred]], levels = levels(d[[pred]]))
+
+  # Setting labels for second moderator
+  if (!is.null(mod2)) {
+
+    pm[[mod2]] <- factor(pm[[mod2]], levels = levels(d[[mod2]]))
+
+  }
+
+#### Plotting #################################################################
+
+  # If no user-supplied legend title, set it to name of moderator
+  if (is.null(legend.main)) {
+    legend.main <- modx
+  }
+
+  # Get palette from RColorBrewer myself so I can use darker values
+  colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
+  colors <- colors[-1]
+
+  names(colors) <- levels(d[[pred]])
+
+  a_level <- 1
+  if (plot.points == TRUE) {
+    if (!is.null(modx)) {
+      a_level <- 0
+    } else {
+      a_level <- 0.5
+    }
+  } else if (interval == TRUE) {
+    a_level <- 0.7
+  }
+
+  if (!is.null(modx)) {
+    if (point.shape == FALSE & vary.lty == FALSE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
+                               colour = modx, fill = modx))
+    } else if (point.shape == TRUE & vary.lty == FALSE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
+                                 colour = modx, fill = modx,
+                                 shape = modx))
+    } else if (point.shape == FALSE & vary.lty == TRUE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
+                                 colour = modx, fill = modx,
+                                 linetype = modx))
+    } else if (point.shape == TRUE & vary.lty == TRUE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
+                                 colour = modx, fill = modx,
+                                 shape = modx, linetype = modx))
+    }
+  } else {
+    if (point.shape == FALSE & vary.lty == FALSE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp,
+                                 colour = pred, fill = pred))
+    } else if (point.shape == TRUE & vary.lty == FALSE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp,
+                                 colour = pred, fill = pred,
+                                 shape = pred))
+    } else if (point.shape == FALSE & vary.lty == TRUE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp,
+                                 colour = pred, fill = pred))
+    } else if (point.shape == TRUE & vary.lty == TRUE) {
+      p <- ggplot(pm, aes_string(x = pred, y = resp,
+                                 colour = pred, fill = pred,
+                                 shape = pred))
+    }
+  }
+
+  if (geom == "bar") {
+    p <- p + geom_bar(stat = "identity", position = "dodge", alpha = a_level)
+  } else if (geom == "boxplot") {
+    if (!is.null(modx)) {
+      p <- ggplot(d, aes_string(x = pred, y = resp,
+                              colour = modx)) +
+      geom_boxplot(position = position_dodge(0.9))
+    } else {
+      p <- ggplot(d, aes_string(x = pred, y = resp,
+                                colour = pred)) +
+        geom_boxplot(position = position_dodge(0.9))
+    }
+  } else if (geom == "line") {
+    p <- p + geom_path() + geom_point(size = 2.5)
+  } else if (geom == "point") {
+    p <- p + geom_point(size = 2.5)
+  }
+
+  # Plot intervals if requested
+  if (interval == TRUE & geom == "bar") {
+
+    p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
+                         alpha = 1, show.legend = FALSE,
+                         position = position_dodge(0.9), width = 0.5)
+
+  } else if (interval == TRUE & geom %in% c("line","point")) {
+
+    p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
+                           alpha = 0.8, show.legend = FALSE, width = 0.5)
+
+  }
+
+  # If third mod, facet by third mod
+  if (!is.null(mod2)) {
+    facets <- facet_grid(paste(". ~", mod2))
+    p <- p + facets
+  }
+
+  # For factor vars, plotting the observed points
+  # and coloring them by factor looks great
+  if (plot.points == TRUE) {
+    # Transform weights so they have mean = 1
+    const <- length(wts)/sum(wts) # scaling constant
+    const <- const * 2 # make the range of values larger
+    wts <- const * wts
+    # Append weights to data
+    d[,"the_weights"] <- wts
+
+    if (point.shape == TRUE & !is.null(modx)) {
+      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
+                                               colour = modx,
+                                               size = "the_weights",
+                                               shape = modx),
+                          position = position_jitterdodge(dodge.width = 0.9,
+                                                          jitter.width = 0,
+                                                          jitter.height = 0.1),
+                          inherit.aes = FALSE,
+                          show.legend = FALSE)
+    } else if (point.shape == FALSE & !is.null(modx)) {
+      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
+                                               colour = modx,
+                                               size = "the_weights"),
+                          position = position_jitterdodge(dodge.width = 0.9,
+                                                          jitter.width = 0,
+                                                          jitter.height = 0.1),
+                          inherit.aes = FALSE,
+                          show.legend = FALSE)
+    } else if (point.shape == TRUE & is.null(modx)) {
+      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
+                                               colour = pred,
+                                               size = "the_weights",
+                                               shape = modx),
+                          position = position_jitterdodge(dodge.width = 0.9,
+                                                          jitter.width = 0,
+                                                          jitter.height = 0.1),
+                          inherit.aes = FALSE,
+                          show.legend = FALSE)
+    } else if (point.shape == FALSE & is.null(modx)) {
+      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
+                                               colour = pred,
+                                               size = "the_weights"),
+                          position = position_jitterdodge(dodge.width = 0.9,
+                                                          jitter.width = 0,
+                                                          jitter.height = 0.1),
+                          inherit.aes = FALSE,
+                          show.legend = FALSE)
+    }
+
+
+    # Add size aesthetic to avoid giant points
+    p <- p + scale_size_identity()
+
+  }
+
+  # Using theme_apa for theming...but using legend title and side positioning
+  if (is.null(mod2)) {
+    p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
+  } else {
+    # make better use of space by putting legend on bottom for facet plots
+    p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
+                       facet.title.size = 10)
+  }
+  p <- p + labs(x = x.label, y = y.label) # better labels for axes
+
+  # Get scale colors, provide better legend title
+  p <- p + scale_colour_brewer(name = legend.main, palette = color.class)
+  p <- p + scale_fill_brewer(name = legend.main, palette = color.class)
+
+  # Need some extra width to show the linetype pattern fully
+  p <- p + theme(legend.key.width = grid::unit(2, "lines"))
+
+  # Give the plot the user-specified title if there is one
+  if (!is.null(main.title)) {
+    p <- p + ggtitle(main.title)
+  }
+
+  # Return the plot
+  return(p)
+
+}
