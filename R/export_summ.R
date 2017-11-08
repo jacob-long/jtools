@@ -427,6 +427,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   }
 
+  # Nasty workaround for R CMD Check warnings for global variable bindings
+  model <- term <- estimate <- conf.low <- conf.high <- NULL
+
   # Capture arguments
   dots <- list(...)
 
@@ -559,9 +562,6 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   tidies$model <- factor(tidies$model, levels = rev(model.names))
   tidies$term <- factor(tidies$term, levels = unique(tidies$term))
 
-  # Gross way of avoiding CRAN complaining about undefined global variables
-  conf.high <- conf.low <- estimate <- model <- term <- NULL
-
   p <- ggplot(data = tidies)
 
   if (length(jsumms) > 1) {
@@ -618,6 +618,9 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
     stop("Install the plyr package to use the plot_summs function.")
 
   }
+
+  # Nasty workaround for R CMD Check warnings for global variable bindings
+  model <- term <- estimate <- conf.low <- conf.high <- NULL
 
   # Capture arguments
   dots <- list(...)
@@ -710,9 +713,6 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   # scale_colour_brewer...no clue why that has to be the case
   tidies$model <- factor(tidies$model, levels = rev(model.names))
   tidies$term <- factor(tidies$term, levels = coefs, labels = names(coefs))
-
-  # Gross way of avoiding CRAN complaining about undefined global variables
-  conf.high <- conf.low <- estimate <- model <- term <- NULL
 
   p <- ggplot(data = tidies)
 

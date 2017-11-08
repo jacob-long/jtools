@@ -6,7 +6,8 @@
 #'
 #' @usage probe_interaction(model, pred, modx, mod2 = NULL, ...)
 #'
-#' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
+#' @param model A regression model of type \code{lm} or
+#'    \code{\link[survey]{svyglm}}.
 #'    It should contain the interaction of interest.
 #'
 #' @param pred The predictor variable involved in the interaction.
@@ -24,24 +25,24 @@
 #' This function simply merges the nearly-equivalent arguments needed to call
 #' both \code{\link{sim_slopes}} and \code{\link{interact_plot}} without the
 #' need for re-typing their common arguments. Note that each function is called
-#' separately and they re-fit a separate model for each level of each 
-#' moderator; therefore, the runtime may be considerably longer than the 
+#' separately and they re-fit a separate model for each level of each
+#' moderator; therefore, the runtime may be considerably longer than the
 #' original model fit. For larger models, this is worth keeping in mind.
 #'
-#' Sometimes, you may want different parameters when doing simple slopes 
-#' analysis compared to when plotting interaction effects. For instance, it is 
-#' often easier to interpret the regression output when variables are 
-#' standardized; but plots are often easier to understand when the variables 
-#' are in their original units of measure. 
-#' 
-#' \code{probe_interaction} does not 
+#' Sometimes, you may want different parameters when doing simple slopes
+#' analysis compared to when plotting interaction effects. For instance, it is
+#' often easier to interpret the regression output when variables are
+#' standardized; but plots are often easier to understand when the variables
+#' are in their original units of measure.
+#'
+#' \code{probe_interaction} does not
 #' support providing different arguments to each function. If that is needed,
 #' use \code{sim_slopes} and \code{interact_plot} directly.
 #'
 #' @return
 #'
 #' \item{simslopes}{The \code{sim_slopes} object created.}
-#' \item{interactplot}{The \code{ggplot} object created by 
+#' \item{interactplot}{The \code{ggplot} object created by
 #' \code{interact_plot}.}
 #'
 #' @family interaction tools
@@ -68,7 +69,7 @@
 #'                     data = apistrat, fpc = ~fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals + sch.wide, design = dstrat)
 #' probe_interaction(model = regmodel, pred = ell, modx = meals,
-#'                   modxvals = "plus-minus", cond.int = TRUE) 
+#'                   modxvals = "plus-minus", cond.int = TRUE)
 #'
 #' # 3-way with survey and factor input
 #' regmodel3 <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)

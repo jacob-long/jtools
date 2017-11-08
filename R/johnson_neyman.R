@@ -106,7 +106,7 @@
 #' johnson_neyman(model = fit, pred = Murder,
 #'   modx = Illiteracy)
 #'
-#' @importFrom stats vcov
+#' @importFrom stats vcov qt
 #' @export
 #'
 
