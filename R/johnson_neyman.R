@@ -29,6 +29,14 @@
 #'   line is created, you cannot use `geom_path` to modify the output plot
 #'   yourself.
 #'
+#' @param df How should the degrees of freedom be calculated for the critical
+#'   test statistic? Previous versions used the large sample approximation; if
+#'   alpha was .05, the critical test statistic was 1.96 regardless of sample
+#'   size and model complexity. The default is now "residual", meaning the same
+#'   degrees of freedom used to calculate p values for regression coefficients.
+#'   You may instead choose any number or "normal", which reverts to the
+#'   previous behavior. The argument is not used if `control.fdr = TRUE`.
+#'
 #' @param digits An integer specifying the number of digits past the decimal to
 #'   report in the output. Default is 2. You can change the default number of
 #'   digits for all jtools functions with
@@ -112,7 +120,7 @@
 
 johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
                            plot = TRUE, control.fdr = FALSE,
-                           line.thickness = 0.5,
+                           line.thickness = 0.5, df = "residual",
                            digits = getOption("jtools-digits", 2)) {
 
   # Parse unquoted variable names
@@ -126,6 +134,15 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   } else {
     pred <- predt
     modx <- modxt
+  }
+
+  # Handling df argument
+  if (df == "residual") {
+    df <- df.residual(model)
+  } else if (df == "normal") {
+    df <- Inf
+  } else if (!is.numeric(df)) {
+    stop("df argument must be 'residual', 'normal', or a number.")
   }
 
   # Structure
@@ -156,7 +173,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   if (control.fdr == FALSE) {
     # Set critical t value
     alpha <- alpha / 2
-    tcrit <- qnorm(alpha, 0, 1)
+    tcrit <- qt(alpha, df = df)
     # Reverse the sign since it gives negative at these low vals
     tcrit <- abs(tcrit)
   } else if (control.fdr == TRUE) { # Use Esarey & Sumner (2017) correction
