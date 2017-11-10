@@ -407,7 +407,7 @@ export_summs <- function(...,
 #'                      "Murder Rate" = "Murder"),
 #'            scale = TRUE, robust = TRUE)
 #'
-#' @rdname plot_coefs
+#' @rdname plot_summs
 #' @export
 #' @importFrom ggplot2 ggplot aes_string geom_vline scale_colour_brewer theme
 #' @importFrom ggplot2 element_blank element_text ylab
@@ -600,7 +600,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 }
 
 #' @export
-#' @rdname plot_coefs
+#' @rdname plot_summs
 #' @importFrom ggplot2 ggplot aes_string geom_vline scale_colour_brewer theme
 #' @importFrom ggplot2 element_blank element_text ylab
 
