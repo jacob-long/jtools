@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r echo=FALSE}
-knitr::opts_chunk$set(message = F, warning = F)
+knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 5)
 library(jtools)
 ```
 
@@ -35,18 +35,6 @@ Like any output, this one is somewhat opinionated—some information is shown th
 perhaps not everyone would be interested in, some may be missing. That,
 of course, was the motivation behind the creation of the function; I didn't 
 like the choices made by R's core team with `summary`!
-
-## Adding and removing written output
-
-Much of the output with `summ` can be removed while there are several other
-pieces of information under the hood that users can ask for. 
-
-To remove the written output at the beginning, set `model.info = FALSE` and/or 
-`model.fit = FALSE`.
-
-```{r}
-summ(fit, model.info = FALSE, model.fit = FALSE)
-```
 
 ## Report robust standard errors
 
@@ -192,9 +180,164 @@ I won't run through any examples here, but `svyglm` models are supported and
 provide near-equivalent output to what you see here depending on whether they
 are linear models or generalized linear models.
 
-## Other options
+# Plotting coefficients and predicted lines
 
-### Choose how many digits past the decimal to round to
+When it comes time to share your findings, especially in talks, tables are 
+often not the best way to capture people's attention and quickly convey the
+results. Variants on what are known by some as "forest plots" have been 
+gaining popularity for presenting regression results. 
+
+For that, `jtools` provides `plot_summs` and `plot_coefs`. `plot_summs` 
+gives you a plotting interface to `summ` and allows you to do so with 
+multiple models simultaneously (assuming you want to apply the same 
+arguments to each model). 
+
+Here's a basic, single-model use case.
+
+```{r}
+plot_summs(fit)
+```
+
+Note that the intercept is omitted by default because it often distorts the 
+scale and generally isn't of theoretical interest. You can change this behavior
+or omit other coefficients with the `omit.coefs` argument.
+
+In the above example, the differing scales of the variables makes it kind of
+difficult to make a quick assessment. No problem, we can just use the tools
+built into `summ` for that.
+
+```{r}
+plot_summs(fit, scale = TRUE)
+```
+
+See? Now we have a better idea of how the uncertainty and magnitude of effect
+differs for these variables. Note that by default the width of the confidence
+interval is .95, but this can be changed with the `ci_level` argument.
+
+Another compelling use case for `plot_summs` is robust standard errors.
+
+Comparison of multiple models simultaneously is another benefit of plotting.
+This is especially true when the models are nested. Let's fit a second model
+and compare.
+
+```{r}
+fit2 <- lm(Income ~ Frost + Illiteracy + Murder + `HS Grad`,
+           data = as.data.frame(state.x77))
+plot_summs(fit, fit2, scale = TRUE)
+```
+
+This is a classic case in which adding a new predictor causes another one's
+estimate to get much closer to zero. 
+
+`plot_coefs` is very similar to `plot_summs`, but does not offer the features
+that `summ` does. The tradeoff, though, is that it allows for model types that
+`summ` does not — any model supported by `tidy` from the `broom` package 
+should work. Additionally, if you want to compare summ outputs with 
+different arguments, you can use `plot_coefs` for that because `plot_coefs`
+treats `summ` objects as a model type.
+
+Let's look at how we can use `plot_coefs` to look at what happens when we
+use non-robust standard errors and two different robust standard error 
+specifications.
+
+First, we save the `summ` objects:
+
+```{r}
+s1 <- summ(fit, scale = TRUE)
+s2 <- summ(fit, scale = TRUE, robust = TRUE, robust.type = "HC0")
+s3 <- summ(fit, scale = TRUE, robust = TRUE, robust.type = "HC3")
+```
+
+Now we give the `summ` objects to `plot_coefs`. Note the use of the 
+`model.names` argument to make which model is which clearer.
+
+```{r}
+plot_coefs(s1, s2, s3, model.names = c("OLS","HC0","HC3"))
+```
+
+So in this case we can see that for `Frost` and `Murder`, each subsequent 
+standard error specification increases the standard errors. The pattern doesn't
+quite hold for `Illiteracy`.
+
+# Table output for Word and RMarkdown documents
+
+Sometimes you really do want a table, but it can't be standard R output. 
+For that, you can use `export_summs`. It is a wrapper around `huxtable`'s 
+`huxreg` function that will give you nice looking output if used in 
+RMarkdown documents or, if requested, printed to a Word file. In the latter 
+case, complicated models often need more fine-tuning in Word, but it gets
+you started.
+
+Like `plot_summs`, `export_summs` is designed to give you the features 
+available in `summ`, so you can request things like robust standard errors 
+and variable scaling.
+
+Here's an example of what to expect in a document like this one:
+
+```{r eval = FALSE}
+export_summs(fit, fit2, scale = TRUE)
+```
+
+```{r echo = FALSE, results = 'asis'}
+export_summs(fit, fit2, scale = TRUE)
+```
+
+When using RMarkdown, set `results = 'asis'` for the chunk with `export_summs`
+to get the right formatting for whatever type of output document (HTML, PDF,
+etc.)
+
+To format the error statistics, simply put the statistics desired in curly 
+braces wherever you want them in a character string. For example, if you want
+the standard error in parentheses, the argument would be `"({std.error})"`,
+which is the default. Some other ideas:
+
+* `"({statistic})"`, which gives you the test statistic in parentheses.
+
+* `"({statistic}, p = {p.value})"`, which gives the test statistic followed by
+a "p =" p value all in parentheses. Note that you'll have to pay special
+attention to rounding if you do this to keep cells sufficiently narrow.
+
+* `"[{conf.low}, {conf.high}]"`, which gives the confidence interval in the
+standard bracket notation. You could also explicitly write the confidence 
+level, e.g., `"95% CI [{conf.low}, {conf.high}]"`.
+
+Here's an example with confidence intervals instead of standard errors:
+
+```{r eval = FALSE}
+export_summs(fit, fit2, scale = TRUE,
+             error_format = "[{conf.low}, {conf.high}]")
+```
+
+```{r echo = FALSE, results = 'asis'}
+export_summs(fit, fit2, scale = TRUE,
+             error_format = "[{conf.low}, {conf.high}]")
+```
+
+There's a lot more customization that I'm not covering here: Renaming the 
+columns, renaming/excluding coefficients, realigning the errors, and so on.
+
+If you want to save to a Word doc, use the `to.word` argument (requires
+the `officer` and `flextable` packages):
+
+```{r eval = FALSE}
+export_summs(fit, fit2, scale = TRUE, to.word = TRUE, word.file = "test.docx")
+```
+
+# Other options
+
+## Adding and removing written output
+
+Much of the output with `summ` can be removed while there are several other
+pieces of information under the hood that users can ask for. 
+
+To remove the written output at the beginning, set `model.info = FALSE` and/or 
+`model.fit = FALSE`.
+
+```{r}
+summ(fit, model.info = FALSE, model.fit = FALSE)
+```
+
+## Choose how many digits past the decimal to round to
 
 With the `digits =` argument, you can decide how precise you want the outputted 
 numbers to be. It is often inappropriate or distracting to report quantities with
@@ -232,7 +375,7 @@ j <- summ(fit, digits = 3)
 j$coeftable
 ```
 
-### Calculate and report variance inflation factors (VIF)
+## Calculate and report variance inflation factors (VIF)
 
 When multicollinearity is a concern, it can be useful to have VIFs reported
 alongside each variable. This can be particularly helpful for model comparison
