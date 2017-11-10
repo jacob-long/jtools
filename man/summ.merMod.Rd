@@ -14,7 +14,7 @@
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
 
-\item{scale}{If \code{TRUE}, reports standardized regression 
+\item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
 
 \item{confint}{Show confidence intervals instead of standard errors? Default
@@ -25,9 +25,9 @@ desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in the output. Default is 2. You can change the default number of 
-digits for all jtools functions with 
-\code{options("jtools-digits" = digits)} where digits is the desired 
+report in the output. Default is 2. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
 \item{model.info}{Toggles printing of basic information on sample size,
@@ -63,7 +63,7 @@ freedom used in conducting t-tests. See details for options.}
 types of models.}
 }
 \value{
-If saved, users can access most of the items that are returned in 
+If saved, users can access most of the items that are returned in
   the output (and without rounding).
 
  \item{coeftable}{The outputted table of variables and coefficients}
@@ -77,7 +77,7 @@ If saved, users can access most of the items that are returned in
 \code{summary}, but formatted differently with more options.
 }
 \details{
-By default, this function will print the following items to the 
+By default, this function will print the following items to the
 console:
 \itemize{
   \item The sample size

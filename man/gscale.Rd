@@ -84,7 +84,7 @@ gscale(x2, binary.inputs = "center") # mean center it
 
 # Data frame as input
 # loops through each numeric column
-gscale(data = mtcars, binary.inputs = "-0.5/0.5") 
+gscale(data = mtcars, binary.inputs = "-0.5/0.5")
 
 # Specified vars in data frame
 gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
@@ -106,7 +106,7 @@ data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
                      data = apistrat, fpc=~fpc)
 # Creating test binary variable
-dstrat$variables$binary <- rbinom(200, 1, 0.5) 
+dstrat$variables$binary <- rbinom(200, 1, 0.5)
 
 gscale(data = dstrat, binary.inputs = "-0.5/0.5")
 gscale(c("api00","meals","binary"), data = dstrat,

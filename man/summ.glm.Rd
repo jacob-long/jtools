@@ -14,7 +14,7 @@
 \arguments{
 \item{model}{A `glm` object.}
 
-\item{scale}{If \code{TRUE}, reports standardized regression 
+\item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
@@ -27,8 +27,8 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard 
-  errors instead of conventional SEs. These are also known as Huber-White 
+\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard
+  errors instead of conventional SEs. These are also known as Huber-White
   standard errors.
 
   Default is \code{FALSE}.
@@ -45,9 +45,9 @@ the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in the output. Default is 2. You can change the default number of 
-digits for all jtools functions with 
-\code{options("jtools-digits" = digits)} where digits is the desired 
+report in the output. Default is 2. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
 \item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
@@ -77,7 +77,7 @@ Default is \code{FALSE}.}
 types of models.}
 }
 \value{
-If saved, users can access most of the items that are returned in 
+If saved, users can access most of the items that are returned in
   the output (and without rounding).
 
  \item{coeftable}{The outputted table of variables and coefficients}
@@ -100,8 +100,8 @@ By default, this function will print the following items to the console:
    p values.
 }
 
- There are several options available for \code{robust.type}. The heavy 
- lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better 
+ There are several options available for \code{robust.type}. The heavy
+ lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
  described.
  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
  recommendation of the developers of \pkg{sandwich}, the default is set to
@@ -111,7 +111,7 @@ By default, this function will print the following items to the console:
  if \code{cluster} is set to the name of the input data's cluster variable
  or is a vector of clusters.
 
- The \code{scale} and \code{center} options are performed via 
+ The \code{scale} and \code{center} options are performed via
  refitting
  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
  respectively. Each of those in turn uses \code{\link{gscale}} for the
@@ -124,15 +124,15 @@ By default, this function will print the following items to the console:
  treatment <- gl(3,3)
  print(d.AD <- data.frame(treatment, outcome, counts))
  glm.D93 <- glm(counts ~ outcome + treatment, family = poisson)
- 
- # Summarize with standardized coefficients 
+
+ # Summarize with standardized coefficients
  summ(glm.D93, scale = TRUE)
 
 }
 \references{
-King, G., & Roberts, M. E. (2015). How robust standard errors expose 
- methodological problems they do not fix, and what to do about it. 
- \emph{Political Analysis}, \emph{23}(2), 159–179. 
+King, G., & Roberts, M. E. (2015). How robust standard errors expose
+ methodological problems they do not fix, and what to do about it.
+ \emph{Political Analysis}, \emph{23}(2), 159–179.
  \url{https://doi.org/10.1093/pan/mpu015}
 
 Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the

@@ -1,10 +1,10 @@
 ---
-title: "Exploring interactions in regression models"
+title: "Exploring interactions with continuous predictors in regression models"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Exploring interactions in regression models}
+  %\VignetteIndexEntry{Exploring interactions with continuous predictors in regression models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,6 +18,11 @@ Understanding an interaction effect in a linear regression model is usually
 difficult when using just the basic output tables and looking at the
 coefficients. The `jtools` package provides several functions that can help
 analysts probe more deeply.
+
+**Categorical by categorical interactions**: All the tools described here 
+require at least one variable to be continuous. A separate vignette describes
+`cat_plot`, which handles the plotting of interactions in which all the focal
+predictors are categorical variables. 
 
 ## Plotting interactions
 
@@ -92,7 +97,7 @@ interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRU
 ```
 
 If your original data are weighted, then the points will be sized based on the
-weight. For the purposes of our example, we'll wait the same model we've been
+weight. For the purposes of our example, we'll weight the same model we've been
 using with the population of each state.
 
 ```{r}
@@ -216,8 +221,7 @@ the Johnson-Neyman technique. But if you read the output carefully and take it
 literally, you'll get the hang of it.
 
 ```{r}
-sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10),
-           johnson_neyman = TRUE)
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, johnson_neyman = TRUE)
 ```
 
 So in the example above, we can see that the Johnson-Neyman interval and the 
@@ -248,6 +252,40 @@ case, the only justifiable interpretation is that Illiteracy has no effect on
 the outcome variable except when Murder is higher than 9.12. You wouldn't 
 interpret the lower boundary because your dataset doesn't contain any values 
 near it.
+
+#### False discovery rate adjustment
+
+A recent publication (Esarey & Sumner, 2017) explored ways to calculate the
+Johnson-Neyman interval that properly manages the Type I and II error rates.
+Others have noted that the alpha level implied by the Johnson-Neyman interval
+won't be quite right (e.g., Bauer & Curran, 2005), but there hasn't been any
+general solution that has gotten wide acceptance in the research literature 
+just yet. 
+
+The basic problem is that the Johnson-Neyman interval is essentially
+doing a bunch of comparisons across all the values of the moderator,
+each one inflating the Type I error rate. The issue isn't so much that 
+you can't possibly address it, but many solutions are far too conservative and
+others aren't broadly applicable. Esarey and Sumner (2017), among other 
+contributions, suggested an adjustment that seems to do a good job of 
+balancing the desire to be a conservative test without missing a lot of 
+true effects in the process. I won't go into the details here. The 
+implementation in `johnson_neyman` is based on code adapted from Esarey and
+Sumner's `interactionTest` package, but any errors should be assumed to be
+from `jtools`, not them.
+
+To use this feature, simply set `control.fdr = TRUE` in the call to 
+`johnson_neyman` or `sim_slopes`.
+
+```{r}
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, johnson_neyman = TRUE,
+           control.fdr = TRUE)
+```
+
+In this case, you can see that the interval is just a little bit wider. The
+output reports the adjusted test statistic, which is 2.33, not much different
+than the (approximately) 2 that would be used otherwise. In other cases it may
+be quite a bit larger.
 
 ### Additional options
 
@@ -347,6 +385,7 @@ out <- probe_interaction(regmodel, pred = growth, modx = avg.ed,
                          cond.int = TRUE, interval = TRUE, jnplot = TRUE)
 names(out)
 ```
+
 ## 3-way interactions
 
 If 2-way interactions can be hard to grasp by looking at regular regression 
@@ -430,3 +469,22 @@ interact_plot(logit_fit, pred = x, modx = m)
 ```
 
 A beautiful transverse interaction with the familiar logistic curve.
+
+## References
+
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+multilevel regression: Inferential and graphical techniques. *Multivariate
+Behavioral Research*, *40*, 373–400.
+
+Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:
+Determining and controlling the false positive rate. *Comparative Political
+Studies*, 1–33. [https://doi.org/10.1177/00410141041017730080](https://doi.org/10.1177/00410141041017730080)
+
+Hainmueller, J., Mummolo, J., & Xu, Y. (2016). How much should we trust 
+estimates from multiplicative interaction models? Simple tools to improve
+empirical practice. *SSRN Electronic Journal*. 
+[https://doi.org/10.2139/ssrn.2739221](https://doi.org/10.2139/ssrn.2739221)
+
+Johnson, P. O., & Fay, L. C. (1950). The Johnson-Neyman technique, its theory
+and application. *Psychometrika*, *15*, 349–367.
+

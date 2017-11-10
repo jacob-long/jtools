@@ -1,10 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-jtools [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools) [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools)
-====================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+jtools
+======
+
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools) [![GitHub tag](https://img.shields.io/github/tag/jacob-long/jtools.svg?label=Github)](https://github.com/jacob-long/jtools) [![Build Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools)
 
 <!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT) -->
-This package consists of a series of functions created by the author (Jacob) to automate otherwise tedious research tasks. At this juncture, the unifying theme is the more efficient presentation of regression analyses, including those with interactions. Support for the `survey` package's `svyglm` objects is a common theme throughout.
+This package consists of a series of functions created by the author (Jacob) to automate otherwise tedious research tasks. At this juncture, the unifying theme is the more efficient presentation of regression analyses. There are a number of functions for visualizing and doing inference for interaction terms. Support for the `survey` package's `svyglm` objects as well as weighted regressions is a common theme throughout.
 
 **Note**: This is beta software. Bugs are possible, both in terms of code-breaking errors and more pernicious errors of mistaken computation.
 
@@ -34,12 +36,14 @@ Usage
 
 Here's a brief synopsis of the current functions in the package:
 
-#### `summ`
+### Summarizing regressions (`summ`, `plot_summs`, `export_summs`)
 
-This is a replacement for `summary` that provides the user several options for formatting regression summaries. It supports `glm`, `svyglm`, and `merMod` objects as input as well. It supports calculation and reporting of robust standard errors via the `sandwich` and `lmtest` packages.
+`summ` is a replacement for `summary` that provides the user several options for formatting regression summaries. It supports `glm`, `svyglm`, and `merMod` objects as input as well. It supports calculation and reporting of robust standard errors via the `sandwich` package.
+
+Basic use:
 
 ``` r
-fit <- lm(mpg ~ hp*wt, data=mtcars)
+fit <- lm(mpg ~ hp + wt, data = mtcars)
 summ(fit)
 ```
 
@@ -48,191 +52,280 @@ summ(fit)
     #> Dependent Variable: mpg
     #> 
     #> MODEL FIT: 
-    #> F(3,28) = 71.66, p = 0
-    #> R-squared = 0.885
-    #> Adj. R-squared = 0.872
+    #> F(2,29) = 69.21, p = 0
+    #> R-squared = 0.83
+    #> Adj. R-squared = 0.81
     #> 
     #> Standard errors: OLS 
-    #>             Est.   S.E.  t val. p        
-    #> (Intercept) 49.808 3.605 13.816 0     ***
-    #> hp          -0.12  0.025 -4.863 0     ***
-    #> wt          -8.217 1.27  -6.471 0     ***
-    #> hp:wt       0.028  0.007 3.753  0.001 ***
+    #>             Est.  S.E. t val. p    
+    #> (Intercept) 37.23 1.6  23.28  0 ***
+    #> hp          -0.03 0.01 -3.52  0 ** 
+    #> wt          -3.88 0.63 -6.13  0 ***
 
-It has some other conveniences as well, like re-fitting your model with standardized variables. I'm a fan of Andrew Gelman's 2 SD standardization method. You can also get a couple diagnostic checks for linear models along with multicollinearity information.
+It has several conveniences, like re-fitting your model with scaled variables (`scale = TRUE`). You have the option to leave the outcome variable in its original scale (`scale.response = TRUE`), which is the default for scaled models. I'm a fan of Andrew Gelman's 2 SD standardization method, so you can specify by how many standard deviations you would like to rescale (`n.sd = 2`).
+
+You can also get variance inflation factors (VIFs) and partial/semipartial (AKA part) correlations. Partial correlations are only available for OLS models. You may also substitute confidence intervals in place of standard errors and you can choose whether to show p values.
 
 ``` r
-fit2 <- lm(Murder ~ Assault + UrbanPop, data = USArrests)
-summ(fit2, standardize = TRUE, n.sd = 2, vifs = TRUE, robust = TRUE,
-       model.check = TRUE)
+summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE,
+     pvals = FALSE)
 ```
 
     #> MODEL INFO:
-    #> Observations: 50
-    #> Dependent Variable: Murder
+    #> Observations: 32
+    #> Dependent Variable: mpg
     #> 
     #> MODEL FIT: 
-    #> F(2,47) = 46.319, p = 0
-    #> R-squared = 0.663
-    #> Adj. R-squared = 0.649
+    #> F(2,29) = 69.21, p = 0
+    #> R-squared = 0.83
+    #> Adj. R-squared = 0.81
     #> 
-    #> MODEL CHECKING:
-    #> Homoskedasticity (Breusch-Pagan) = Assumption not violated (p = 0.144)
-    #> Number of high-leverage observations = 5
+    #> Standard errors: OLS 
+    #>              Est.  2.5% 97.5% t val.   VIF partial.r part.r
+    #> (Intercept) 20.09 19.19 20.99  43.82                       
+    #> hp          -2.18 -3.39 -0.97  -3.52  1.77     -0.55  -0.27
+    #> wt          -3.79 -5.01 -2.58  -6.13  1.77     -0.75  -0.47
     #> 
-    #> Standard errors: Robust, type = HC3
-    #>             Est.   S.E.  t val. p         VIF  
-    #> (Intercept) 7.788  0.376 20.719 0     ***      
-    #> Assault     7.319  0.815 8.982  0     *** 1.072
-    #> UrbanPop    -1.289 0.802 -1.608 0.115     1.072
-    #> 
-    #> All continuous variables are mean-centered and scaled by 2 s.d.
+    #> All continuous predictors are mean-centered and scaled by 1 s.d.
 
-#### `sim_slopes`
-
-This is an interface for simple slopes analysis for 2- and 3-way interactions. Users can specify values of the moderator to test or use the default +/- 1 SD values. Johnson-Neyman intervals are also calculated and, if requested, Johnson-Neyman plots are returned.
+Cluster-robust standard errors:
 
 ``` r
-fiti <- lm(Murder ~ Assault*UrbanPop, data = USArrests)
-sim_slopes(fiti, pred = UrbanPop, modx = Assault, jnplot = TRUE)
+data("PetersenCL", package = "sandwich")
+fit2 <- lm(y ~ x, data = PetersenCL)
+summ(fit2, robust = TRUE, cluster = "firm", robust.type = "HC3")
+```
+
+    #> MODEL INFO:
+    #> Observations: 5000
+    #> Dependent Variable: y
+    #> 
+    #> MODEL FIT: 
+    #> F(1,4998) = 1310.74, p = 0
+    #> R-squared = 0.21
+    #> Adj. R-squared = 0.21
+    #> 
+    #> Standard errors: Cluster-robust, type = HC3
+    #>             Est. S.E. t val. p       
+    #> (Intercept) 0.03 0.07 0.44   0.66    
+    #> x           1.03 0.05 20.36  0    ***
+
+Of course, `summ` like `summary` is best-suited for interactive use. When it comes to share results with others, you want sharper output and probably graphics. `jtools` has some options for that, too.
+
+First, for tabular output, `export_summs` is an interface to the `huxtable` package's `huxreg` function that preserves the niceties of `summ`, particularly its facilities for robust standard errors and standardization. It also concatenates multiple models into a single table.
+
+``` r
+fit <- lm(mpg ~ hp + wt, data = mtcars)
+fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
+fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
+export_summs(fit, fit_b, fit_c, scale = TRUE, scale.response = TRUE,
+             note = "")
+```
+
+<table style="width:60%;">
+<colgroup>
+<col width="18%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th align="center">(1)</th>
+<th align="center">(2)</th>
+<th align="center">(3)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="center">0.00    </td>
+<td align="center">0.00    </td>
+<td align="center">0.00    </td>
+</tr>
+<tr class="even">
+<td></td>
+<td align="center">(0.08)   </td>
+<td align="center">(0.08)   </td>
+<td align="center">(0.08)   </td>
+</tr>
+<tr class="odd">
+<td>hp</td>
+<td align="center">-0.36 ***</td>
+<td align="center">-0.35 ** </td>
+<td align="center">-0.40 ** </td>
+</tr>
+<tr class="even">
+<td></td>
+<td align="center">(0.10)   </td>
+<td align="center">(0.13)   </td>
+<td align="center">(0.13)   </td>
+</tr>
+<tr class="odd">
+<td>wt</td>
+<td align="center">-0.63 ***</td>
+<td align="center">-0.62 ***</td>
+<td align="center">-0.56 ***</td>
+</tr>
+<tr class="even">
+<td></td>
+<td align="center">(0.10)   </td>
+<td align="center">(0.17)   </td>
+<td align="center">(0.18)   </td>
+</tr>
+<tr class="odd">
+<td>disp</td>
+<td align="center">       </td>
+<td align="center">-0.02    </td>
+<td align="center">0.08    </td>
+</tr>
+<tr class="even">
+<td></td>
+<td align="center">       </td>
+<td align="center">(0.21)   </td>
+<td align="center">(0.22)   </td>
+</tr>
+<tr class="odd">
+<td>drat</td>
+<td align="center">       </td>
+<td align="center">       </td>
+<td align="center">0.16    </td>
+</tr>
+<tr class="even">
+<td></td>
+<td align="center">       </td>
+<td align="center">       </td>
+<td align="center">(0.12)   </td>
+</tr>
+<tr class="odd">
+<td>N</td>
+<td align="center">32       </td>
+<td align="center">32       </td>
+<td align="center">32       </td>
+</tr>
+<tr class="even">
+<td>R2</td>
+<td align="center">0.83    </td>
+<td align="center">0.83    </td>
+<td align="center">0.84    </td>
+</tr>
+</tbody>
+</table>
+
+In RMarkdown documents, using `export_summs` and the chunk option `results = 'asis'` will give you nice-looking tables in HTML and PDF output. Using the `to.word = TRUE` argument will create a Microsoft Word document with the table in it.
+
+Another way to get a quick gist of your regression analysis is to plot the values of the coefficients and their corresponding uncertainties with `plot_summs` (or the closely related `plot_coefs`). `jtools` has made some slight changes to `ggplot2` geoms to make everything look nice; and like with `export_summs`, you can still get your scaled models and robust standard errors.
+
+``` r
+plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = TRUE, 
+    coefs = c("Horsepower" = "hp", "Weight (tons)" = "wt", 
+        "Displacement" = "disp", "Rear axle ratio" = "drat"))
+```
+
+![](tools/README-unnamed-chunk-7-1.png)
+
+And since you get a `ggplot` object in return, you can tweak and theme as you wish.
+
+`plot_coefs` works much the same way, but without support for `summ` arguments like `robust` and `scale`. This enables a wider range of models that have support from the `broom` package but not for `summ`. And you can give `summ` objects to `plot_coefs` since this package defines tidy methods for `summ` objects.
+
+For instance, I could compare the confidence bands with different robust standard error specifications using `plot_coefs` by giving the `summ` objects as arguments.
+
+``` r
+summ_fit_1 <- summ(fit_b, scale = TRUE)
+summ_fit_2 <- summ(fit_b, scale = TRUE, robust = TRUE,
+                    robust.type = "HC0")
+summ_fit_3 <- summ(fit_b, scale = TRUE, robust = TRUE,
+                    robust.type = "HC3")
+plot_coefs(summ_fit_1, summ_fit_2, summ_fit_3, 
+           model.names = c("OLS","HC0","HC3"),
+           coefs = c("Horsepower" = "hp", "Weight (tons)" = "wt", 
+                    "Displacement" = "disp"))
+```
+
+![](tools/README-unnamed-chunk-8-1.png)
+
+### Exploring interactions
+
+Unless you have a really keen eye and good familiarity with both the underlying mathematics and the scale of your variables, it can be very difficult to look at the ouput of regression model that includes an interaction and actually understand what the model is telling you.
+
+This package contains several means of aiding understanding and doing statistical inference with interactions.
+
+#### Johnson-Neyman intervals and simple slopes analysis
+
+The "classic" way of probing an interaction effect is to calculate the slope of the focal predictor at different values of the moderator. When the moderator is binary, this is especially informative---e.g., what is the slope for men vs. women? But you can also arbitrarily choose points for continuous moderators.
+
+With that said, the more statistically rigorous way to explore these effects is to find the Johnson-Neyman interval, which tells you the range of values of the moderator in which the slope of the predictor is significant vs. nonsignificant at a specified alpha level.
+
+The `sim_slopes` function will by default find the Johnson-Neyman interval and tell you the predictor's slope at specified values of the moderator; by default either both values of binary predictors or the mean and the mean +/- one standard deviation for continuous moderators.
+
+``` r
+fiti <- lm(mpg ~ hp * wt, data = mtcars)
+sim_slopes(fiti, pred = hp, modx = wt, jnplot = TRUE)
 ```
 
     #> JOHNSON-NEYMAN INTERVAL
     #> 
-    #> The slope of UrbanPop is p < .05 when Assault is INSIDE this interval:
-    #> [193.5072, 363.9215]
-    #> Note: The range of observed values of Assault is [45, 337]
+    #> The slope of hp is p < .05 when wt is OUTSIDE this interval:
+    #> [3.69, 5.9]
+    #> Note: The range of observed values of wt is [1.51, 5.42]
 
 ![](tools/README-j-n-plot-1.png)
 
     #> SIMPLE SLOPES ANALYSIS
     #> 
-    #> Slope of UrbanPop when Assault = 254.098 (+ 1 SD): 
-    #>   Est.   S.E.      p 
-    #> -0.075  0.035  0.035 
+    #> Slope of hp when wt = 4.2 (+ 1 SD): 
+    #> Est. S.E.    p 
+    #> 0.00 0.01 0.76 
     #> 
-    #> Slope of UrbanPop when Assault = 170.76 (Mean): 
-    #>   Est.   S.E.      p 
-    #> -0.044  0.026  0.100 
+    #> Slope of hp when wt = 3.22 (Mean): 
+    #>  Est.  S.E.     p 
+    #> -0.03  0.01  0.00 
     #> 
-    #> Slope of UrbanPop when Assault = 87.422 (- 1 SD): 
-    #>   Est.   S.E.      p 
-    #> -0.012  0.035  0.730
+    #> Slope of hp when wt = 2.24 (- 1 SD): 
+    #>  Est.  S.E.     p 
+    #> -0.06  0.01  0.00
 
-#### `interact_plot`
+The Johnson-Neyman plot can really help you get a handle on what the interval is telling you, too. Note that you can look at the Johnson-Neyman interval directly with the `johnson_neyman` function.
 
-This function plots two-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
+The above all generalize to three-way interactions, too.
+
+#### Visualizing interaction effects
+
+This function plots two- and three-way interactions using `ggplot2` with a similar interface to the aforementioned `sim_slopes` function. Users can customize the appearance with familiar `ggplot2` commands. It supports several customizations, like confidence intervals.
 
 ``` r
-interact_plot(fit, pred="wt", modx = "hp", interval = T, int.width = .95)
+interact_plot(fiti, pred = hp, modx = wt, interval = TRUE)
 ```
 
 ![](tools/README-interact_plot_continuous-1.png)
 
-The function also supports categorical moderators and plotting observed data points alongside best-fitting lines.
+You can also plot the observed data for comparison:
 
 ``` r
-fitiris <- lm(Petal.Length ~ Petal.Width*Species, data = iris)
-interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
+interact_plot(fiti, pred = hp, modx = wt, plot.points = TRUE)
+```
+
+![](tools/README-interact_plot_continuous_points-1.png)
+
+The function also supports categorical moderators---plotting observed data in these cases can reveal striking patterns.
+
+``` r
+fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
+interact_plot(fitiris, pred = Petal.Width, modx = Species, plot.points = TRUE)
 ```
 
 ![](tools/README-interact_plot_factor-1.png)
 
-#### `probe_interaction`
+You may also combine the plotting and simple slopes functions by using `probe_interaction`, which calls both functions simultaneously. Categorical by categorical interactions can be investigated using the `cat_plot` function.
 
-This function allows you to use the two above functions simultaneously, owing to their common syntax. Here is an example, which can also serve to show off how the 3-way interaction output looks.
-
-``` r
-fita3 <- lm(rating ~ privileges*critical*learning, data = attitude)
-probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
-```
-
-    #> #######################################################
-    #> While privileges (2nd moderator) = 40.898 (Mean of privileges - 1 SD)
-    #> #######################################################
-    #> 
-    #> JOHNSON-NEYMAN INTERVAL
-    #> 
-    #> The slope of critical is p < .05 when learning is INSIDE this interval:
-    #> [52.8623, 73.5881]
-    #> Note: The range of observed values of learning is [34, 75]
-    #> 
-    #> SIMPLE SLOPES ANALYSIS
-    #> 
-    #> Slope of critical when learning = 44.63 (- 1 SD): 
-    #>  Est.  S.E.     p 
-    #> 0.242 0.237 0.318 
-    #> 
-    #> Slope of critical when learning = 56.367 (Mean): 
-    #>  Est.  S.E.     p 
-    #> 0.675 0.329 0.052 
-    #> 
-    #> Slope of critical when learning = 68.104 (+ 1 SD): 
-    #>  Est.  S.E.     p 
-    #> 1.109 0.553 0.057 
-    #> 
-    #> #######################################################
-    #> While privileges (2nd moderator) = 53.133 (Mean of privileges)
-    #> #######################################################
-    #> 
-    #> The Johnson-Neyman interval could not be found. Is your interaction term significant?
-    #> 
-    #> SIMPLE SLOPES ANALYSIS
-    #> 
-    #> Slope of critical when learning = 44.63 (- 1 SD): 
-    #>  Est.  S.E.     p 
-    #> 0.093 0.340 0.788 
-    #> 
-    #> Slope of critical when learning = 56.367 (Mean): 
-    #>  Est.  S.E.     p 
-    #> 0.058 0.239 0.811 
-    #> 
-    #> Slope of critical when learning = 68.104 (+ 1 SD): 
-    #>  Est.  S.E.     p 
-    #> 0.023 0.330 0.946 
-    #> 
-    #> #######################################################
-    #> While privileges (2nd moderator) = 65.369 (Mean of privileges + 1 SD)
-    #> #######################################################
-    #> 
-    #> The Johnson-Neyman interval could not be found. Is your interaction term significant?
-    #> 
-    #> SIMPLE SLOPES ANALYSIS
-    #> 
-    #> Slope of critical when learning = 44.63 (- 1 SD): 
-    #>   Est.   S.E.      p 
-    #> -0.057  0.614  0.927 
-    #> 
-    #> Slope of critical when learning = 56.367 (Mean): 
-    #>   Est.   S.E.      p 
-    #> -0.560  0.502  0.276 
-    #> 
-    #> Slope of critical when learning = 68.104 (+ 1 SD): 
-    #>   Est.   S.E.      p 
-    #> -1.063  0.658  0.120
-
-![](tools/README-probe_interaction_ex-1.png)
-
-#### `svycor`
-
-This function extends the `survey` package by calculating correlations with complex survey designs, a feature absent from `survey`. Users may request significance tests, which are calculated via bootstrap by calling the `weights` package.
-
-``` r
-library(survey)
-data(api)
-dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat, fpc=~fpc)
-
-svycor(~api00+api99+dnum, design = dstrat, digits = 3, sig.stats = T, bootn = 2000)
-```
-
-    #>       api00  api99  dnum  
-    #> api00 1      0.976* 0.254*
-    #> api99 0.976* 1      0.244*
-    #> dnum  0.254* 0.244* 1
+### Other stuff
 
 #### `theme_apa`
 
-This will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications. There's no drop-in, perfect way to get plots into APA format sight unseen, but this gets you close and returns a `ggplot` object that can be further tweaked to your specification. The plots produced by other functions in this package use `theme_apa`, but use its options to position the plots and alter other details to make them more in line with `ggplot2` defaults than APA norms.
+This will format your `ggplot2` graphics to make them (mostly) appropriate for APA style publications. There's no drop-in, perfect way to get plots into APA format sight unseen, but this gets you close and returns a `ggplot` object that can be further tweaked to your specification.
+
+The plots produced by other functions in this package use `theme_apa`, but use its options to position the plots and alter other details to make them more in line with `ggplot2` defaults than APA norms.
 
 You might start with something like the above interaction plots and then use `theme_apa` to tune it to APA specification. Note the `legend.pos` option:
 
@@ -243,17 +336,24 @@ p + theme_apa(legend.pos = "topleft")
 
 ![](tools/README-theme_apa_ex-1.png)
 
-Facet grids like those produced by `interact_plot` for 3-way interactions are also supported, though APA guidance on these kinds of constructions is less than clear. The embedded legend has a nice space-saving quality, though some trial and error may be needed before finding the ideal `legend.pos` argument.
+You may need to make further changes to please your publisher, of course. Since these are regular `ggplot` theme changes, it shouldn't be a problem.
+
+#### `svycor`
+
+This function extends the `survey` package by calculating correlations with complex survey designs, a feature absent from `survey`. Users may request significance tests, which are calculated via bootstrap by calling the `weights` package.
 
 ``` r
-p2 <- probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
-p2 <- p2$interactplot
-p2 + theme_apa(legend.pos = "topmiddle") 
+library(survey)
+data(api)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat, fpc = ~fpc)
+
+svycor(~ api00 + api99 + dnum, design = dstrat, sig.stats = TRUE)
 ```
 
-![](tools/README-theme_apa_facet_ex-1.png)
-
-You may need to make further changes to please your publisher, of course. Since these are regular `ggplot` theme changes, it shouldn't be a problem.
+    #>       api00 api99 dnum 
+    #> api00 1     0.98* 0.25*
+    #> api99 0.98* 1     0.24*
+    #> dnum  0.25* 0.24* 1
 
 #### Tests for survey weight ignorability
 

@@ -18,7 +18,8 @@ other classes may work as well but are not officially supported.}
 
 \item{pred}{The name of the predictor variable you want on the x-axis.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered.
+\item{centered}{A vector of quoted variable names that are to be
+mean-centered.
 If \code{NULL}, all non-focal predictors are centered. If not \code{NULL},
 only the user-specified predictors are centered. User can also use "none"
 or "all" arguments. The response variable is not centered unless specified
@@ -27,7 +28,7 @@ directly.}
 \item{scale}{Logical. Would you like to standardize the variables
 that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
 standardize variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its 
+non-focal predictors are centered when \code{centered = NULL}, its
 default.}
 
 \item{n.sd}{How many standard deviations should be used if \code{scale
@@ -36,7 +37,8 @@ default.}
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines.}
 
-\item{interval}{Logical. If \code{TRUE}, plots confidence/prediction intervals
+\item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
+intervals
 the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
 \code{merMod} models.}
 
@@ -79,8 +81,8 @@ plot. If \code{NULL}, no main title is used.}
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
 
-\item{standardize}{Deprecated. Equivalent to `scale`. Please change your 
-scripts to use `scale` instead as this argument will be removed in the 
+\item{standardize}{Deprecated. Equivalent to `scale`. Please change your
+scripts to use `scale` instead as this argument will be removed in the
 future.}
 }
 \value{

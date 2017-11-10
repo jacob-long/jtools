@@ -8,10 +8,11 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   mod2vals = NULL, centered = NULL, scale = FALSE, n.sd = 1,
   plot.points = FALSE, interval = FALSE, int.type = c("confidence",
   "prediction"), int.width = 0.95, outcome.scale = "response",
-  set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
-  modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
-  legend.main = NULL, color.class = NULL, line.thickness = 1.1,
-  vary.lty = TRUE, standardize = NULL)
+  linearity.check = FALSE, set.offset = 1, x.label = NULL,
+  y.label = NULL, pred.labels = NULL, modx.labels = NULL,
+  mod2.labels = NULL, main.title = NULL, legend.main = NULL,
+  color.class = NULL, line.thickness = 1.1, vary.lty = TRUE,
+  standardize = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -31,7 +32,9 @@ deviation from the mean as well as the mean itself are used for continuous
 moderators. If the moderator is a factor variable and \code{modxvals} is
 \code{NULL}, each level of the factor is included. If
 \code{"plus-minus"}, plots lines when the moderator is at +/- 1 standard
-deviation without the mean.}
+deviation without the mean. You may also choose `"terciles"` to split
+the data into equally-sized groups and choose the point at the mean of
+each of those groups.}
 
 \item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction.}
@@ -40,10 +43,11 @@ variable involved in the interaction.}
 facetted by? That is, there will be a separate plot for each level of this
 moderator. Defaults are the same as \code{modxvals}.}
 
-\item{centered}{A vector of quoted variable names that are to be mean-centered. If
-\code{NULL}, all non-focal predictors are centered. If not \code{NULL}, only
-the user-specified predictors are centered. User can also use "none" or "all"
-arguments. The response variable is not centered unless specified directly.}
+\item{centered}{A vector of quoted variable names that are to be
+mean-centered. If \code{NULL}, all non-focal predictors are centered. If
+not \code{NULL}, only the user-specified predictors are centered. User can
+also use "none" or "all" arguments. The response variable is not centered
+unless specified directly.}
 
 \item{scale}{Logical. Would you like to standardize the variables
 that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
@@ -55,11 +59,11 @@ default.}
 = TRUE}? Default is 1, but some prefer 2.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
-scatterplot on top of the interaction lines. If moderator is a factor, the dots
-will be the same color as their parent factor.}
+scatterplot on top of the interaction lines. The color of the dots will be
+based on their moderator value.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
-intervals the line using \code{\link[ggplot2]{geom_ribbon}}. Not
+intervals around the line using \code{\link[ggplot2]{geom_ribbon}}. Not
 supported for \code{merMod} models.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or
@@ -77,6 +81,14 @@ default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
 
+\item{linearity.check}{For two-way interactions only. If `TRUE`, plots a
+pane for each level of the moderator and superimposes a loess smoothed
+line (in gray) over the plot. This enables you to see if the effect is
+linear through the span of the moderator. See Hainmuller et al. (2016) in
+the references for more details on the intuition behind this. It is
+recommended that you also set `plot.points = TRUE` and use
+`modxvals = "terciles"` with this option.}
+
 \item{set.offset}{For models with an offset (e.g., Poisson models), sets a
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
@@ -89,26 +101,26 @@ proportion. See details for more about offset support.}
 \code{NULL}, the variable name is used.}
 
 \item{pred.labels}{A character vector of 2 labels for the predictor if it is
-a 2-level factor or a continuous variable with only 2 values. If 
+a 2-level factor or a continuous variable with only 2 values. If
 \code{NULL}, the default, the factor labels are used.}
 
 \item{modx.labels}{A character vector of labels for each level of the
-moderator values, provided in the same order as the \code{modxvals} 
+moderator values, provided in the same order as the \code{modxvals}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
-\item{mod2.labels}{A character vector of labels for each level of the 2nd 
+\item{mod2.labels}{A character vector of labels for each level of the 2nd
 moderator values, provided in the same order as the \code{mod2vals}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD" 
+\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{main.title}{A character object that will be used as an overall title
 for the plot. If \code{NULL}, no main title is used.}
 
 \item{legend.main}{A character object that will be used as the title that
-appears above the legend. If \code{NULL}, the name of the moderating 
+appears above the legend. If \code{NULL}, the name of the moderating
 variable is used.}
 
 \item{color.class}{Any palette argument accepted by
@@ -118,25 +130,25 @@ variable is used.}
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
 
-\item{vary.lty}{Should the resulting plot have different shapes for each 
+\item{vary.lty}{Should the resulting plot have different shapes for each
 line in addition to colors? Defaults to \code{TRUE}.}
 
-\item{standardize}{Deprecated. Equivalent to `scale`. Please change your 
-scripts to use `scale` instead as this argument will be removed in the 
+\item{standardize}{Deprecated. Equivalent to `scale`. Please change your
+scripts to use `scale` instead as this argument will be removed in the
 future.}
 }
 \value{
-The functions returns a \code{ggplot} object, which can be treated 
+The functions returns a \code{ggplot} object, which can be treated
   like a user-created plot and expanded upon as such.
 }
 \description{
-\code{interact_plot()} plots regression lines at user-specified levels of a moderator
-variable to explore interactions. The plotting is done with \code{ggplot2} rather than
-base graphics, which some similar functions use.
+\code{interact_plot()} plots regression lines at user-specified levels of a
+ moderator variable to explore interactions. The plotting is done with
+ \code{ggplot2} rather than base graphics, which some similar functions use.
 }
 \details{
 This function provides a means for plotting conditional effects
-  for the purpose of exploring interactions in the context of regression. 
+  for the purpose of exploring interactions in the context of regression.
   You must have the
   package \code{ggplot2} installed to benefit from these plotting functions.
 
@@ -154,6 +166,38 @@ This function provides a means for plotting conditional effects
 
   Note: to use transformed predictors, e.g., \code{log(variable)},
   put its name in quotes or backticks in the argument.
+
+  \emph{Details on how observed data are split in multi-pane plots}:
+
+  If you set `plot.points = TRUE` and request a multi-pane (facetted) plot
+  either with a second moderator or `linearity.check = TRUE`, the observed
+  data are split into as many groups as there  arepanes and plotted
+  separately. If the moderator is a factor, then the way this happens will
+  be very intuitive since it's obvious which values go in which pane. The
+  rest of this section will address the case of continuous moderators.
+
+  My recommendation is that you use `modxvals = "terciles"`` or
+  `mod2vals = "terciles"` when you want to plot observed data on multi-pane
+  plots. When you do, the data are split into three approximately
+  equal-sized groups with the lowest third, middle third, and highest third
+  of the data split accordingly. You can replicate this procedure using
+  [Hmisc::cut2()] with `g = 3` from the `Hmisc` package. Sometimes, the
+  groups will not be equal in size because the number of observations is
+  not divisible by 3 and/or there are multiple observations with the same
+  value at one of the cut points.
+
+  Otherwise, a more ad hoc procedure is used to split the data. Quantiles
+  are found for each `mod2vals` or `modxvals` value. These are not the
+  quantiles used to split the data, however, since we want the plotted lines
+  to represent the slope at a typical value in the group. The next step,
+  then, is to take the mean of each pair of neighboring quantiles and use
+  these as the cut points.
+
+  For example, if the `mod2vals` are at the 25th, 50th, and 75th percentiles
+  of the distribution of the moderator, the data will be split at the
+  37.5th and and 62.5th percentiles. When the variable is
+  normally distributed, this will correspond fairly closely to using
+  terciles.
 
   \emph{Info about offsets:}
 
@@ -176,18 +220,18 @@ This function provides a means for plotting conditional effects
 # Using a fitted lm model
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
-fit <- lm(Income ~ HSGrad + Murder*Illiteracy,
+fit <- lm(Income ~ HSGrad + Murder * Illiteracy,
   data = states)
 interact_plot(model = fit, pred = Murder,
   modx = Illiteracy)
 
 # Using interval feature
-fit <- lm(accel ~ mag*dist, data=attenu)
+fit <- lm(accel ~ mag * dist, data = attenu)
 interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
   int.type = "confidence", int.width = .8)
 
 # Using second moderator
-fit <- lm(Income ~ HSGrad*Murder*Illiteracy,
+fit <- lm(Income ~ HSGrad * Murder * Illiteracy,
   data = states)
 interact_plot(model = fit, pred = Murder,
   modx = Illiteracy, mod2 = HSGrad)
@@ -197,7 +241,7 @@ library(survey)
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
                     data = apistrat, fpc = ~fpc)
-regmodel <- svyglm(api00~ell*meals,design=dstrat)
+regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 interact_plot(regmodel, pred = ell, modx = meals)
 
 # With lme4
@@ -213,15 +257,20 @@ interact_plot(mv, pred = Anger, modx = mode)
 }
 \references{
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
- multilevel regression: Inferential and graphical techniques. 
+ multilevel regression: Inferential and graphical techniques.
  \emph{Multivariate Behavioral
  Research}, \emph{40}(3), 373-400.
  \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
 multiple
 regression/correlation analyses for the behavioral sciences} (3rd ed.).
 Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
+
+Hainmueller, J., Mummolo, J., & Xu, Y. (2016). How much should we trust
+  estimates from multiplicative interaction models? Simple tools to improve
+  empirical practice. SSRN Electronic Journal.
+  \url{https://doi.org/10.2139/ssrn.2739221}
 }
 \seealso{
 \code{\link[rockchalk]{plotSlopes}} from \pkg{rockchalk} performs a

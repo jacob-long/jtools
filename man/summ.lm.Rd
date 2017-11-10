@@ -21,7 +21,7 @@
 \arguments{
 \item{model}{A \code{lm} object.}
 
-\item{scale}{If \code{TRUE}, reports standardized regression 
+\item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
@@ -34,8 +34,8 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard 
-  errors instead of conventional SEs. These are also known as Huber-White 
+\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard
+  errors instead of conventional SEs. These are also known as Huber-White
   standard errors.
 
   Default is \code{FALSE}.
@@ -52,9 +52,9 @@ the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in the output. Default is 2. You can change the default number of 
-digits for all jtools functions with 
-\code{options("jtools-digits" = digits)} where digits is the desired 
+report in the output. Default is 2. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
@@ -70,7 +70,7 @@ want to standardize, set this to \code{TRUE}.}
 \item{scale.response}{Should standardization apply to response variable?
 Default is \code{FALSE}.}
 
-\item{part.corr}{Print partial (labeled "partial.r") and 
+\item{part.corr}{Print partial (labeled "partial.r") and
 semipartial (labeled "part.r") correlations with the table?
 Default is \code{FALSE}. See details about these quantities when robust
 standard errors are used.}
@@ -80,7 +80,7 @@ name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
-\item{model.check}{Toggles whether to perform Breusch-Pagan test for 
+\item{model.check}{Toggles whether to perform Breusch-Pagan test for
 heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
 
@@ -88,7 +88,7 @@ and print number of high-leverage observations. See details for more info.}
 types of models.}
 }
 \value{
-If saved, users can access most of the items that are returned in 
+If saved, users can access most of the items that are returned in
   the output (and without rounding).
 
  \item{coeftable}{The outputted table of variables and coefficients}
@@ -112,18 +112,18 @@ By default, this function will print the following items to the
    p values.
 }
 
- There are several options available for \code{robust.type}. The heavy 
- lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better 
+ There are several options available for \code{robust.type}. The heavy
+ lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
  described.
  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
  recommendation of the developers of \pkg{sandwich}, the default is set to
  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
- if the goal is to replicate Stata's output. Any option that is understood 
- by \code{vcovHC} will be accepted. Cluster-robust standard errors are 
- computed if \code{cluster} is set to the name of the input data's cluster 
+ if the goal is to replicate Stata's output. Any option that is understood
+ by \code{vcovHC} will be accepted. Cluster-robust standard errors are
+ computed if \code{cluster} is set to the name of the input data's cluster
  variable or is a vector of clusters.
 
- The \code{scale} and \code{center} options are performed via 
+ The \code{scale} and \code{center} options are performed via
  refitting
  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
  respectively. Each of those in turn uses \code{\link{gscale}} for the
@@ -142,16 +142,16 @@ By default, this function will print the following items to the
  not report the "robust" partial and semipartial correlations in
  publications.
 
- There are two pieces of information given for \code{model.check}, provided 
- that the model is an \code{lm} object. First, a Breusch-Pagan test is 
+ There are two pieces of information given for \code{model.check}, provided
+ that the model is an \code{lm} object. First, a Breusch-Pagan test is
  performed with \code{\link[car]{ncvTest}}. This is a
- hypothesis test for which the alternative hypothesis is heteroskedastic 
- errors. The test becomes much more likely to be statistically significant 
- as the sample size increases; however, the homoskedasticity assumption 
- becomes less important to inference as sample size increases (Lumley, 
+ hypothesis test for which the alternative hypothesis is heteroskedastic
+ errors. The test becomes much more likely to be statistically significant
+ as the sample size increases; however, the homoskedasticity assumption
+ becomes less important to inference as sample size increases (Lumley,
  Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
- graphical checks rather than a definitive decision. Note that the use of 
- robust standard errors can account for heteroskedasticity, though some 
+ graphical checks rather than a definitive decision. Note that the use of
+ robust standard errors can account for heteroskedasticity, though some
  oppose this approach (see King & Roberts, 2015).
 
  The second piece of information provided by setting \code{model.check} to
@@ -159,7 +159,7 @@ By default, this function will print the following items to the
  and fast rules for determining high leverage either, but in this case it is
  based on Cook's Distance. All Cook's Distance values greater than (4/N) are
  included in the count. Again, this is not a recommendation to locate and
- remove such observations, but rather to look more closely with graphical 
+ remove such observations, but rather to look more closely with graphical
  and other methods.
 }
 \examples{
@@ -167,7 +167,7 @@ By default, this function will print the following items to the
 fit <- lm(Income ~ Frost + Illiteracy + Murder,
           data = as.data.frame(state.x77))
 
-# Print the output with standardized coefficients and 3 digits 
+# Print the output with standardized coefficients and 3 digits
 summ(fit, scale = TRUE, digits = 3)
 
 }

@@ -17,7 +17,7 @@ library(jtools)
 When sharing analyses with colleagues unfamiliar with R, I found that the output
 generally was not clear to them. Things were even worse if I wanted to give
 them information that is not included in the `summary` like robust
-standard errors, standardized coefficients, and VIFs since the functions for 
+standard errors, scaled coefficients, and VIFs since the functions for 
 estimating these don't append them to a typical regression table. After creating
 output tables "by hand" on multiple occasions, I thought it best to pack things
 into a reusable function: It became `summ`.
@@ -50,29 +50,30 @@ summ(fit, model.info = FALSE, model.fit = FALSE)
 
 ## Report robust standard errors
 
-One of the problems that originally motivated the creation of this function was the
-desire to efficiently report robust standard errors—while it is easy enough for an
-experienced R user to calculate robust standard errors, there are not many simple ways
-to include the results in a regression table as is common with the likes of
-Stata, SPSS, etc.
+One of the problems that originally motivated the creation of this function was
+the desire to efficiently report robust standard errors—while it is easy enough
+for an experienced R user to calculate robust standard errors, there are not 
+many simple ways to include the results in a regression table as is common with
+the likes of Stata, SPSS, etc.
 
-Robust standard errors require the user to have both `lmtest` and `sandwich` packages
-installed. They do not need to be loaded.
+Robust standard errors require the user to have the `sandwich`
+package installed. They do not need to be loaded.
 
-There are multiple types of robust standard errors that you may use, ranging from 
-"HC0" to "HC5". Per the recommendation of the authors of the `sandwich` package, the
-default is "HC3". Stata's default is "HC1", so you may want to use that if your goal
-is to replicate Stata analyses.
+There are multiple types of robust standard errors that you may use, ranging
+from "HC0" to "HC5". Per the recommendation of the authors of the `sandwich`
+package, the default is "HC3". Stata's default is "HC1", so you may want to use
+that if your goal is to replicate Stata analyses.
 
 ```{r}
 summ(fit, robust = TRUE, robust.type = "HC3")
 ```
 
 Robust standard errors can also be calculated for generalized linear models
-(i.e., `glm` objects) though some debate whether they should be used for models
-fit iteratively with non-normal errors. In the case of `svyglm`, the standard
-errors that package calculates are already robust to heteroskedasticity,
-so a `robust = TRUE` parameter will be ignored with a warning.
+(i.e., `glm` objects) though there is some debate whether they should be used
+for models fit iteratively with non-normal errors. In the case of `svyglm`, the
+standard errors that package calculates are already robust to 
+heteroskedasticity, so a `robust = TRUE` parameter will be ignored with a
+warning.
 
 You may also specify with `cluster` argument the name of a variable in the input
 data or a vector of clusters to get cluster-robust standard errors.
@@ -80,16 +81,16 @@ data or a vector of clusters to get cluster-robust standard errors.
 
 ## Standardized beta coefficients
 
-Some prefer to use standardized coefficients in order to avoid dismissing an effect
-as "small" when it is just the units of measure that are small. Standardized betas
-are used instead when `standardize = TRUE`. To be clear, since the meaning of
-"standardized beta" can vary depending on who you talk to, this option mean-centers
-the predictors as well but does not alter the dependent variable whatsoever. 
-If you want to standardize the dependent variable too, just add the 
-`standardize.response = TRUE` argument.
+Some prefer to use scaled coefficients in order to avoid dismissing an
+effect as "small" when it is just the units of measure that are small.
+scaled betas are used instead when `scale = TRUE`. To be clear,
+since the meaning of "standardized beta" can vary depending on who you talk to,
+this option mean-centers the predictors as well but does not alter the dependent
+variable whatsoever. If you want to scale the dependent variable too,
+just add the `scale.response = TRUE` argument.
 
 ```{r}
-summ(fit, standardize = TRUE)
+summ(fit, scale = TRUE)
 ```
 
 You can also choose a different number of standard deviations to divide by for
@@ -97,7 +98,7 @@ standardization. Andrew Gelman has been a proponent of dividing by 2 standard
 deviations; if you want to do things that way, give the argument `n.sd = 2`. 
 
 ```{r}
-summ(fit, standardize = TRUE, n.sd = 2)
+summ(fit, scale = TRUE, n.sd = 2)
 ```
 
 Note that this is achieved by refitting the model. If the model took a long time
@@ -176,8 +177,14 @@ treating the t-values like you would for OLS models will lead to
 inflated Type 1 error rates. Confidence intervals are 
 better, but not perfect. Kenward-Roger calculated degrees of freedom are 
 fairly good under many circumstances and those are used by default when
-\code{pbkrtest} package is installed.
+\code{pbkrtest} package is installed. Be aware that for larger datasets, this
+procedure can take a long time.
 See the documentation (`?summ.merMod`) for more info.
+
+You can also get an estimated model R-squared for mixed models using the 
+Nakagawa & Schielzeth (2013) procedure with code adapted from the `MuMIn`
+package. To get those, simply set `r.squared = TRUE` but note that it sometimes
+takes a long time to run and is a bit error-prone. 
 
 ### svyglm
 
@@ -192,10 +199,10 @@ are linear models or generalized linear models.
 With the `digits =` argument, you can decide how precise you want the outputted 
 numbers to be. It is often inappropriate or distracting to report quantities with
 many digits past the decimal due to the inability to measure them so precisely or 
-interpret them in applied settings. In other cases, it may be necessary to use more
-digits due to the way measures are calculated.
+interpret them in applied settings. In other cases, it may be necessary to use
+more digits due to the way measures are calculated.
 
-The default argument is `digits = 3`.
+The default argument is `digits = 2`.
 
 ```{r}
 summ(fit, model.info = FALSE, digits = 5)
@@ -227,10 +234,10 @@ j$coeftable
 
 ### Calculate and report variance inflation factors (VIF)
 
-When multicollinearity is a concern, it can be useful to have VIFs reported alongside
-each variable. This can be particularly helpful for model comparison and checking for
-the impact of newly-added variables. To get VIFs reported in the output table, just
-set `vifs = TRUE`.
+When multicollinearity is a concern, it can be useful to have VIFs reported
+alongside each variable. This can be particularly helpful for model comparison
+and checking for the impact of newly-added variables. To get VIFs reported in
+the output table, just set `vifs = TRUE`.
 
 Note that the `car` package is needed to calculate VIFs.
 
@@ -238,10 +245,10 @@ Note that the `car` package is needed to calculate VIFs.
 summ(fit, vifs = TRUE)
 ```
 
-There are many standards researchers apply for deciding whether a VIF is too large.
-In some domains, a VIF over 2 is worthy of suspicion. Others set the bar higher, at 
-5 or 10. Ultimately, the main thing to consider is that small effects are more likely
-to be "drowned out" by higher VIFs.
+There are many standards researchers apply for deciding whether a VIF is too
+large. In some domains, a VIF over 2 is worthy of suspicion. Others set the bar
+higher, at  5 or 10. Ultimately, the main thing to consider is that small
+effects are more likely to be "drowned out" by higher VIFs.
 
 
 

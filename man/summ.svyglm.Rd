@@ -14,7 +14,7 @@
 \arguments{
 \item{model}{A `svyglm` object.}
 
-\item{scale}{If \code{TRUE}, reports standardized regression 
+\item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
@@ -28,9 +28,9 @@ desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
-report in the output. Default is 2. You can change the default number of 
-digits for all jtools functions with 
-\code{options("jtools-digits" = digits)} where digits is the desired 
+report in the output. Default is 2. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
 \item{model.info}{Toggles printing of basic information on sample size,
@@ -38,7 +38,7 @@ name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
-\item{model.check}{Toggles whether to perform Breusch-Pagan test for 
+\item{model.check}{Toggles whether to perform Breusch-Pagan test for
 heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
 
@@ -78,7 +78,7 @@ If saved, users can access most of the items that are returned in the
 \code{summary}, but formatted differently with more options.
 }
 \details{
-By default, this function will print the following items to the 
+By default, this function will print the following items to the
 console:
 \itemize{
   \item The sample size

@@ -4,7 +4,9 @@
 \alias{johnson_neyman}
 \title{Calculate Johnson-Neyman intervals for 2-way interactions}
 \usage{
-johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05, plot = TRUE)
+johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05, plot = TRUE,
+  control.fdr = FALSE, line.thickness = 0.5, df = "residual",
+  digits = getOption("jtools-digits", 2))
 }
 \arguments{
 \item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
@@ -22,6 +24,29 @@ errors, as you could if using the \pkg{sandwich} package.}
 
 \item{plot}{Should a plot of the results be printed? Default is \code{TRUE}.
 The \code{ggplot2} object is returned either way.}
+
+\item{control.fdr}{Logical. Use the procedure described in Esarey & Sumner
+(2017) to limit the false discovery rate? Default is FALSE. See details
+for more on this method.}
+
+\item{line.thickness}{How thick should the predicted line be? This is
+passed to `geom_path` as the `size` argument, but because of the way the
+line is created, you cannot use `geom_path` to modify the output plot
+yourself.}
+
+\item{df}{How should the degrees of freedom be calculated for the critical
+test statistic? Previous versions used the large sample approximation; if
+alpha was .05, the critical test statistic was 1.96 regardless of sample
+size and model complexity. The default is now "residual", meaning the same
+degrees of freedom used to calculate p values for regression coefficients.
+You may instead choose any number or "normal", which reverts to the
+previous behavior. The argument is not used if `control.fdr = TRUE`.}
+
+\item{digits}{An integer specifying the number of digits past the decimal to
+report in the output. Default is 2. You can change the default number of
+digits for all jtools functions with
+\code{options("jtools-digits" = digits)} where digits is the desired
+number.}
 }
 \value{
 \item{bounds}{The two numbers that make up the interval.}
@@ -50,6 +75,17 @@ The interpretation of the values given by this function is important and not
  range given by the function. The output of this function will make it clear
  either way.
 
+ One weakness of this method of probing interactions is that it is analagous
+ to making multiple comparisons without any adjustment to the alpha level.
+ Esarey & Sumner (2017) proposed a method for addressing this, which is
+ implemented in the `interactionTest` package. This function implements that
+ procedure with modifications to the `interactionTest` code (that package is
+ not required to use this function). If you set `control.fdr = TRUE`, an
+ alternative *t* statistic will be calculated based on your specified alpha
+ level and the data. This will always be a more conservative test than when
+ `control.fdr = FALSE`. The printed output will report the calculated
+ critical *t* statistic.
+
  This technique is not easily ported to 3-way interaction contexts. You could,
  however, look at the J-N interval at two different levels of a second
  moderator. This does forgo a benefit of the J-N technique, which is not
@@ -71,11 +107,16 @@ johnson_neyman(model = fit, pred = Murder,
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
  Research}, \emph{40}(3), 373-400.
- \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
+ \url{http://doi.org/10.1207/s15327906mbr4003_5}
+
+Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:
+ Determining and controlling the false positive rate. Comparative Political
+ Studies, 1–33. Advance online publication.
+ \url{https://doi.org/10.1177/0010414017730080}
 
 Johnson, P.O. & Fay, L.C. (1950). The Johnson-Neyman technique, its theory
  and application. \emph{Psychometrika}, \emph{15}, 349-367.
- \url{http://dx.doi.org/10.1007/BF02288864}
+ \url{http://doi.org/10.1007/BF02288864}
 }
 \seealso{
 Other interaction tools: \code{\link{interact_plot}},
