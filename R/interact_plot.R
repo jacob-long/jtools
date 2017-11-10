@@ -122,6 +122,14 @@
 #' @param vary.lty Should the resulting plot have different shapes for each
 #'   line in addition to colors? Defaults to \code{TRUE}.
 #'
+#' @param jitter How much should `plot.points` observed values be "jittered"
+#'    via [ggplot2::position_jitter()]? When there are many points near each
+#'    other, jittering moves them a small amount to keep them from
+#'    totally overlapping. In some cases, though, it can add confusion since
+#'    it may make points appear to be outside the boundaries of observed
+#'    values or cause other visual issues. Default is 0.1, but set to 0 if
+#'    you want no jittering.
+#'
 #' @param standardize Deprecated. Equivalent to `scale`. Please change your
 #'  scripts to use `scale` instead as this argument will be removed in the
 #'  future.
@@ -284,7 +292,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE,
-                          standardize = NULL) {
+                          jitter = 0.1, standardize = NULL) {
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
@@ -843,14 +851,17 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     if (is.factor(d[,modx])) {
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                           colour = modx, size = "the_weights"),
-               position = "jitter", inherit.aes = FALSE, show.legend = FALSE)
+               position = position_jitter(width = jitter, height = jitter),
+               inherit.aes = FALSE, show.legend = FALSE)
     } else if (!is.factor(d[,modx])) {
       # using alpha for same effect with continuous vars
       p <- p + geom_point(data = d,
                           aes_string(x = pred, y = resp, alpha = modx,
                                     size = "the_weights"),
                           colour = pp_color, inherit.aes = FALSE,
-                          position = "jitter", show.legend = FALSE) +
+                          position = position_jitter(width = jitter,
+                                                     height = jitter),
+                          show.legend = FALSE) +
           scale_alpha_continuous(range = c(0.25, 1), guide = "none")
     }
 
@@ -1004,6 +1015,14 @@ print.interact_plot <- function(x, ...) {
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
 #'
+#' @param jitter How much should `plot.points` observed values be "jittered"
+#'    via [ggplot2::position_jitter()]? When there are many points near each
+#'    other, jittering moves them a small amount to keep them from
+#'    totally overlapping. In some cases, though, it can add confusion since
+#'    it may make points appear to be outside the boundaries of observed
+#'    values or cause other visual issues. Default is 0.1, but set to 0 if
+#'    you want no jittering.
+#'
 #' @param standardize Deprecated. Equivalent to `scale`. Please change your
 #'  scripts to use `scale` instead as this argument will be removed in the
 #'  future.
@@ -1049,15 +1068,16 @@ print.interact_plot <- function(x, ...) {
 #' effect_plot(model = fit, pred = Murder)
 #'
 #' # Using interval feature
-#' fit <- lm(accel ~ mag + dist, data=attenu)
+#' fit <- lm(accel ~ mag + dist, data = attenu)
 #' effect_plot(fit, pred = mag, interval = TRUE,
 #'   int.type = "confidence", int.width = .8)
 #'
 #' # With svyglm
 #' library(survey)
 #' data(api)
-#' dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-#' regmodel <- svyglm(api00~ell + meals, design = dstrat)
+#' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+#'                     data = apistrat, fpc = ~fpc)
+#' regmodel <- svyglm(api00 ~ ell + meals, design = dstrat)
 #' effect_plot(regmodel, pred = ell, interval = TRUE)
 #'
 #' # With lme4
@@ -1083,6 +1103,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
+                        jitter = 0.1,
                         standardize = NULL) {
 
   # Check for deprecated argument
@@ -1227,7 +1248,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
   resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
   resp <- trimws(resp)
 
-  ### Centering ##################################################################
+### Centering ##################################################################
 
   # Update facvars by pulling out all non-focals
   facvars <-
@@ -1397,14 +1418,16 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
   }
 
   # Saving x-axis label
-  if (is.null(x.label)){
+  if (is.null(x.label)) {
     x.label <- pred
   }
 
   # Saving y-axis label
-  if (is.null(y.label)){
+  if (is.null(y.label)) {
     y.label <- resp
   }
+
+#### Plotting #################################################################
 
   # Starting plot object
   p <- ggplot(pm, aes_string(x = pred, y = resp))
@@ -1429,7 +1452,8 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     d[,"the_weights"] <- wts
       p <- p + geom_point(data = d,
                           aes_string(x = pred, y = resp, size = "the_weights"),
-               position = "jitter", inherit.aes = FALSE, show.legend = FALSE)
+               position = position_jitter(width = jitter, height = jitter),
+               inherit.aes = FALSE, show.legend = FALSE)
     # Add size aesthetic to avoid giant points
     # p <- p + scale_size(range = c(0.3, 4))
     p <- p + scale_size_identity()
@@ -2010,7 +2034,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
     colors <- rev(colors)[-1]
   } else {
-    colors <- RColorBrewer::brewer.pal(pred_len, color.class)
+    suppressWarnings(colors <- RColorBrewer::brewer.pal(pred_len, color.class))
   }
 
   names(colors) <- levels(d[[pred]])

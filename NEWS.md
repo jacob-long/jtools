@@ -35,6 +35,10 @@ level of the (continuous) moderator.
 * When the model used weights, like survey sampling weights, the observed data
 points are resized according to the observation's weight when 
 `plot.points = TRUE`.
+* New `jitter` argument added for those using `plot.points`. If you don't want 
+the points jittered, you can set `jitter = 0`. If you want more or less, you
+can play with the value until it looks right. This applies to `effect_plot` as
+well.
 
 summ:
 
