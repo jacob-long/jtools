@@ -86,6 +86,28 @@ test_that("interact_plot accepts user-specified values and labels", {
                               pred.labels = c("Under","Over")))
 })
 
+test_that("interact_plot terciles modxval/mod2val works", {
+  expect_silent(interact_plot(model = fit,
+                              pred = Murder,
+                              modx = Illiteracy,
+                              mod2 = HSGrad,
+                modxvals = "terciles",
+                mod2vals = "terciles",
+                centered = "none"))
+})
+
+test_that("interact_plot linearity.check works", {
+  expect_silent(interact_plot(model = fit,
+                              pred = Murder,
+                              modx = Illiteracy,
+                              modxvals = "terciles",
+                              linearity.check = TRUE))
+  expect_silent(interact_plot(model = fit,
+                              pred = Murder,
+                              modx = Illiteracy,
+                              linearity.check = TRUE))
+})
+
 test_that("effect_plot works for lm", {
   expect_silent(effect_plot(model = fit,
                               pred = Murder,
@@ -142,6 +164,10 @@ pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
 
 test_that("interact_plot handles offsets", {
   expect_message(interact_plot(pmod, pred = talent, modx = money))
+})
+
+test_that("sim_slopes handles offsets", {
+  expect_s3_class(sim_slopes(pmod, pred = talent, modx = money), "sim_slopes")
 })
 
 test_that("effect_plot handles offsets", {
@@ -230,6 +256,28 @@ test_that("cat_plot handles simple plot (boxplot)", {
 test_that("cat_plot handles plotted points (boxplot)", {
   expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "boxplot"))
+})
+
+set.seed(100)
+exposures <- rpois(50, 50)
+counts <- exposures - rpois(50, 25)
+money <- (counts/exposures) + rnorm(50, sd = 1)
+talent <- rbinom(50, 1, .5)
+talent <- factor(talent)
+poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
+pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
+            family = poisson)
+
+test_that("cat_plot handles offsets", {
+  expect_s3_class(cat_plot(pmod, pred = talent), "gg")
+})
+
+test_that("cat_plot handles svyglm", {
+  expect_silent(cat_plot(regmodel, pred = both))
+})
+
+test_that("cat_plot handles merMod", {
+  expect_silent(cat_plot(mv, pred = mode, modx = Gender, interval = FALSE))
 })
 
 # 3-way interaction
