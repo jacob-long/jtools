@@ -182,6 +182,8 @@ are linear models or generalized linear models.
 
 # Plotting coefficients and predicted lines
 
+## `plot_summs` and `plot_coefs`
+
 When it comes time to share your findings, especially in talks, tables are 
 often not the best way to capture people's attention and quickly convey the
 results. Variants on what are known by some as "forest plots" have been 
@@ -258,6 +260,61 @@ plot_coefs(s1, s2, s3, model.names = c("OLS","HC0","HC3"))
 So in this case we can see that for `Frost` and `Murder`, each subsequent 
 standard error specification increases the standard errors. The pattern doesn't
 quite hold for `Illiteracy`.
+
+## `effect_plot`
+
+Sometimes to really understand what your model is telling you, you need to 
+see the kind of predictions it will give you. For that, you can use
+`effect_plot`, which is similar to `interact_plot` (see other vignette) but
+for main effects in particular.
+
+Here's the most basic use with our linear model:
+
+```{r}
+effect_plot(fit, pred = Illiteracy)
+```
+
+Okay, not so illuminating. Let's see the uncertainty around this line.
+
+```{r}
+effect_plot(fit, pred = Illiteracy, interval = TRUE)
+```
+
+Now we're getting somewhere.
+
+How does this compare to the observed data? Let's see!
+
+```{r}
+effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE)
+```
+
+Now we're really learning something about our model---and it looks like the
+linear fit is basically correct. 
+
+Another time that `effect_plot` is useful is for non-linear (generalized)
+models. Let's plot our logit model from earlier.
+
+```{r}
+effect_plot(fitg, pred = mpg)
+```
+
+Aha! A lovely logistic curve. Now you know that when `mpg` is from about 30
+and higher, it no longer is giving any appreciable increase in probability
+because it has already reached 1. 
+
+Next, we'll plot the observed values. Note the `jitter = 0`; by default, a 
+small "jitter" is applied to the plotted
+points in case they overlap, but with a logit model it would make it appear 
+that some of the points are something other than 0 or 1.
+
+```{r}
+effect_plot(fitg, pred = mpg, plot.points = TRUE, jitter = 0)
+```
+
+Now you can see how at the low and high ends of `mpg`, there are clusters of
+0 and 1 values while near the middle of the range, there are values of both 0 
+and 1. 
+
 
 # Table output for Word and RMarkdown documents
 

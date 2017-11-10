@@ -4,7 +4,7 @@
 \alias{summ.lm}
 \alias{j_summ.lm}
 \alias{summ.default}
-\title{Regression summaries with options}
+\title{Linear regression summaries with options}
 \usage{
 \method{summ}{lm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
   ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,

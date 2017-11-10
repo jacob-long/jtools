@@ -12,7 +12,7 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   y.label = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL,
   color.class = NULL, line.thickness = 1.1, vary.lty = TRUE,
-  standardize = NULL)
+  jitter = 0.1, standardize = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -132,6 +132,14 @@ ggplot's default is 1.}
 
 \item{vary.lty}{Should the resulting plot have different shapes for each
 line in addition to colors? Defaults to \code{TRUE}.}
+
+\item{jitter}{How much should `plot.points` observed values be "jittered"
+via [ggplot2::position_jitter()]? When there are many points near each
+other, jittering moves them a small amount to keep them from
+totally overlapping. In some cases, though, it can add confusion since
+it may make points appear to be outside the boundaries of observed
+values or cause other visual issues. Default is 0.1, but set to 0 if
+you want no jittering.}
 
 \item{standardize}{Deprecated. Equivalent to `scale`. Please change your
 scripts to use `scale` instead as this argument will be removed in the

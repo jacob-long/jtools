@@ -9,7 +9,7 @@ effect_plot(model, pred, centered = NULL, scale = FALSE, n.sd = 1,
   "prediction"), int.width = 0.95, outcome.scale = "response",
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   main.title = NULL, color.class = NULL, line.thickness = 1.1,
-  standardize = NULL)
+  jitter = 0.1, standardize = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -81,6 +81,14 @@ plot. If \code{NULL}, no main title is used.}
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
 
+\item{jitter}{How much should `plot.points` observed values be "jittered"
+via [ggplot2::position_jitter()]? When there are many points near each
+other, jittering moves them a small amount to keep them from
+totally overlapping. In some cases, though, it can add confusion since
+it may make points appear to be outside the boundaries of observed
+values or cause other visual issues. Default is 0.1, but set to 0 if
+you want no jittering.}
+
 \item{standardize}{Deprecated. Equivalent to `scale`. Please change your
 scripts to use `scale` instead as this argument will be removed in the
 future.}
@@ -125,15 +133,16 @@ fit <- lm(Income ~ HSGrad + Murder,
 effect_plot(model = fit, pred = Murder)
 
 # Using interval feature
-fit <- lm(accel ~ mag + dist, data=attenu)
+fit <- lm(accel ~ mag + dist, data = attenu)
 effect_plot(fit, pred = mag, interval = TRUE,
   int.type = "confidence", int.width = .8)
 
 # With svyglm
 library(survey)
 data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-regmodel <- svyglm(api00~ell + meals, design = dstrat)
+dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                    data = apistrat, fpc = ~fpc)
+regmodel <- svyglm(api00 ~ ell + meals, design = dstrat)
 effect_plot(regmodel, pred = ell, interval = TRUE)
 
 # With lme4
