@@ -400,12 +400,12 @@ export_summs <- function(...,
 #'            Population + Area + `Life Exp` + `HS Grad`,
 #'            data = states, weights = runif(50, 0.1, 3))
 #'
-#' # Export all 3 regressions with "Model #" labels,
+#' # Plot all 3 regressions with custom predictor labels,
 #' # standardized coefficients, and robust standard errors
-#' export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
-#'              coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
-#'              "Murder Rate" = "Murder"),
-#'              scale = TRUE, robust = TRUE)
+#' plot_summs(fit1, fit2, fit3,
+#'            coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
+#'                      "Murder Rate" = "Murder"),
+#'            scale = TRUE, robust = TRUE)
 #'
 #' @rdname plot_coefs
 #' @export
