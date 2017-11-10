@@ -1,0 +1,39 @@
+template:
+  params:
+    bootswatch: flatly
+
+reference:
+ - title: Summarizing and visualizing regression models
+   contents:
+    - summ
+    - summ.lm
+    - summ.glm
+    - summ.svyglm
+    - summ.merMod
+    - export_summs
+    - plot_summs
+    - plot_coefs
+    - effect_plot
+    - j_summ
+ - title: Understanding and visualizing interaction effects
+   contents:
+    - interact_plot
+    - sim_slopes
+    - probe_interaction
+    - johnson_neyman
+    - cat_plot
+ - title: Data centering and scaling tools
+   contents:
+    - gscale
+    - scale_lm
+    - center_lm
+ - title: Survey data tools
+   contents:
+    - svycor
+    - svysd
+    - weights_tests
+    - wgttest
+    - pf_sv_test
+ - title: Miscellaneous
+   contents:
+    - theme_apa
