@@ -52,7 +52,7 @@ j_summ <- summ
 
 #### lm ########################################################################
 
-#' Regression summaries with options
+#' Linear regression summaries with options
 #'
 #' \code{summ} prints output for a regression model in a fashion similar to
 #' \code{summary}, but formatted differently with more options.
