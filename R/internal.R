@@ -201,7 +201,8 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
 ### cut2 ######################################################################
 
 ## Taken from Hmisc package to avoid importing for a minor feature
-
+#' @importFrom stats approx
+#'
 cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE, digits,
                  minmax = TRUE, oneval = TRUE, onlycuts = FALSE) {
   method <- 1
