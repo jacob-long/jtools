@@ -1494,18 +1494,22 @@ print.effect_plot <- function(x, ...) {
 #'   here since the best way to visualize categorical interactions varies by
 #'   context. Here are the options:
 #'
-#'   * `"bar"`: A bar chart, the default. Some call this a "dynamite plot."
-#'     Many applied researchers advise against this type of plot because it
-#'     does not represent the distribution of the observed data or the
-#'     uncertainty of the predictions very well. It is best to at least use the
-#'     `interval = TRUE` argument with this geom.
-#'   * `"point"`: Simply plot the point estimates. You may want to use
+#'   * `"dot"`: The default. Simply plot the point estimates. You may want to
+#'      use
 #'     `point.shape = TRUE` with this and you should also consider
 #'     `interval = TRUE` to visualize uncertainty.
+#'
 #'   * `"line"`: This connects observations across levels of the `pred`
 #'     variable with a line. This is a good option when the `pred` variable
 #'     is ordinal (ordered). You may still consider `point.shape = TRUE` and
 #'     `interval = TRUE` is still a good idea.
+#'
+#'   * `"bar"`: A bar chart. Some call this a "dynamite plot."
+#'     Many applied researchers advise against this type of plot because it
+#'     does not represent the distribution of the observed data or the
+#'     uncertainty of the predictions very well. It is best to at least use the
+#'     `interval = TRUE` argument with this geom.
+#'
 #'   * `"boxplot"`: This geom plots a dot and whisker plot. These can be useful
 #'     for understanding the distribution of the observed data without having
 #'     to plot all the observed points (especially helpful with larger data
@@ -1601,15 +1605,15 @@ print.effect_plot <- function(x, ...) {
 #'
 
 cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
-                     geom = c("bar","point","line","boxplot"),
-                     interval = FALSE, plot.points = FALSE,
+                     geom = c("dot","line","bar","boxplot"),
+                     interval = TRUE, plot.points = FALSE,
                      point.shape = FALSE, vary.lty = FALSE,
                      centered = NULL,
                      int.type = c("confidence","prediction"),
                      int.width = .95, outcome.scale = "response",
                      set.offset = 1, x.label = NULL, y.label = NULL,
                      main.title = NULL, legend.main = NULL,
-                     color.class = NULL) {
+                     color.class = "Set2") {
 
   # Legacy commands from interact_plot
   scale <- FALSE
@@ -1630,6 +1634,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
   # Get the geom if not specified
   geom <- geom[1]
+  if (geom == "point") {geom <- "dot"}
 
   # Duplicating the dataframe so it can be manipulated as needed
   d <- model.frame(model)
@@ -1994,9 +1999,19 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     legend.main <- modx
   }
 
+  # Sequential palettes get different treatment
+  sequentials <-
+    c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd",
+      "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu",
+      "YlOrBr", "YlOrRd")
+
   # Get palette from RColorBrewer myself so I can use darker values
-  colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
-  colors <- colors[-1]
+  if (color.class %in% sequentials) {
+    colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
+    colors <- rev(colors)[-1]
+  } else {
+    colors <- RColorBrewer::brewer.pal(pred_len, color.class)
+  }
 
   names(colors) <- levels(d[[pred]])
 
@@ -2008,7 +2023,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
       a_level <- 0.5
     }
   } else if (interval == TRUE) {
-    a_level <- 0.7
+    a_level <- 0.5
   }
 
   if (!is.null(modx)) {
@@ -2059,19 +2074,19 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
         geom_boxplot(position = position_dodge(0.9))
     }
   } else if (geom == "line") {
-    p <- p + geom_path() + geom_point(size = 2.5)
-  } else if (geom == "point") {
-    p <- p + geom_point(size = 2.5)
+    p <- p + geom_path() + geom_point(size = 4)
+  } else if (geom == "dot") {
+    p <- p + geom_point(size = 3, position = position_dodge(0.9))
   }
 
   # Plot intervals if requested
-  if (interval == TRUE & geom == "bar") {
+  if (interval == TRUE & geom %in% c("bar", "dot")) {
 
     p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
                          alpha = 1, show.legend = FALSE,
-                         position = position_dodge(0.9), width = 0.5)
+                         position = position_dodge(0.9), width = 0.8)
 
-  } else if (interval == TRUE & geom %in% c("line","point")) {
+  } else if (interval == TRUE & geom %in% c("line")) {
 
     p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
                            alpha = 0.8, show.legend = FALSE, width = 0.5)
@@ -2100,38 +2115,42 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                                                size = "the_weights",
                                                shape = modx),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0,
-                                                          jitter.height = 0.1),
+                                                          jitter.width = 0.25,
+                                                          jitter.height = 0.25),
                           inherit.aes = FALSE,
-                          show.legend = FALSE)
+                          show.legend = FALSE,
+                          alpha = 0.6)
     } else if (point.shape == FALSE & !is.null(modx)) {
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                                                colour = modx,
                                                size = "the_weights"),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0,
-                                                          jitter.height = 0.1),
+                                                          jitter.width = 0.25,
+                                                          jitter.height = 0.25),
                           inherit.aes = FALSE,
-                          show.legend = FALSE)
+                          show.legend = FALSE,
+                          alpha = 0.6)
     } else if (point.shape == TRUE & is.null(modx)) {
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                                                colour = pred,
                                                size = "the_weights",
                                                shape = modx),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0,
-                                                          jitter.height = 0.1),
+                                                          jitter.width = 0.25,
+                                                          jitter.height = 0.25),
                           inherit.aes = FALSE,
-                          show.legend = FALSE)
+                          show.legend = FALSE,
+                          alpha = 0.6)
     } else if (point.shape == FALSE & is.null(modx)) {
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                                                colour = pred,
                                                size = "the_weights"),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0,
-                                                          jitter.height = 0.1),
+                                                          jitter.width = 0.25,
+                                                          jitter.height = 0.25),
                           inherit.aes = FALSE,
-                          show.legend = FALSE)
+                          show.legend = FALSE,
+                          alpha = 0.6)
     }
 
 
