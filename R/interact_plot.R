@@ -158,12 +158,12 @@
 #'
 #'   If you set `plot.points = TRUE` and request a multi-pane (facetted) plot
 #'   either with a second moderator or `linearity.check = TRUE`, the observed
-#'   data are split into as many groups as there  arepanes and plotted
+#'   data are split into as many groups as there  are panes and plotted
 #'   separately. If the moderator is a factor, then the way this happens will
 #'   be very intuitive since it's obvious which values go in which pane. The
 #'   rest of this section will address the case of continuous moderators.
 #'
-#'   My recommendation is that you use `modxvals = "terciles"`` or
+#'   My recommendation is that you use `modxvals = "terciles"` or
 #'   `mod2vals = "terciles"` when you want to plot observed data on multi-pane
 #'   plots. When you do, the data are split into three approximately
 #'   equal-sized groups with the lowest third, middle third, and highest third
@@ -1598,6 +1598,8 @@ print.effect_plot <- function(x, ...) {
 #'
 #' @return The functions returns a \code{ggplot} object, which can be treated
 #'   like a user-created plot and expanded upon as such.
+#'
+#' @family interaction tools
 #'
 #' @examples
 #'

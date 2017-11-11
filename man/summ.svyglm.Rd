@@ -12,7 +12,7 @@
   odds.ratio = FALSE, ...)
 }
 \arguments{
-\item{model}{A `svyglm` object.}
+\item{model}{A \code{svyglm} object.}
 
 \item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
@@ -65,13 +65,13 @@ types of models.}
 }
 \value{
 If saved, users can access most of the items that are returned in the
-  output (and without rounding).
+output (and without rounding).
 
- \item{coeftable}{The outputted table of variables and coefficients}
- \item{model}{The model for which statistics are displayed. This would be
-   most useful in cases in which \code{scale = TRUE}.}
+\item{coeftable}{The outputted table of variables and coefficients}
+\item{model}{The model for which statistics are displayed. This would be
+most useful in cases in which \code{scale = TRUE}.}
 
- Much other information can be accessed as attributes.
+Much other information can be accessed as attributes.
 }
 \description{
 \code{summ} prints output for a regression model in a fashion similar to
@@ -81,21 +81,21 @@ If saved, users can access most of the items that are returned in the
 By default, this function will print the following items to the
 console:
 \itemize{
-  \item The sample size
-  \item The name of the outcome variable
-  \item The (Pseudo-)R-squared value and AIC.
-  \item A table with regression coefficients, standard errors, t-values, and
-   p values.
+\item The sample size
+\item The name of the outcome variable
+\item The (Pseudo-)R-squared value and AIC.
+\item A table with regression coefficients, standard errors, t-values, and
+p values.
 }
 
- The \code{scale} and \code{center} options are performed via refitting
- the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
- respectively. Each of those in turn uses \code{\link{gscale}} for the
- mean-centering and scaling. These functions can handle \code{svyglm} objects
- correctly by calling \code{svymean} and \code{svyvar} to compute means and
- standard deviations. Weights are not altered. The fact that the model is
- refit means the runtime will be similar to the original time it took to fit
- the model.
+The \code{scale} and \code{center} options are performed via refitting
+the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+respectively. Each of those in turn uses \code{\link{gscale}} for the
+mean-centering and scaling. These functions can handle \code{svyglm} objects
+correctly by calling \code{svymean} and \code{svyvar} to compute means and
+standard deviations. Weights are not altered. The fact that the model is
+refit means the runtime will be similar to the original time it took to fit
+the model.
 }
 \examples{
 library(survey)
@@ -108,10 +108,10 @@ summ(regmodel)
 }
 \seealso{
 \code{\link{scale_lm}} can simply perform the standardization if
- preferred.
+preferred.
 
- \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
- behind the scenes.
+\code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+behind the scenes.
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

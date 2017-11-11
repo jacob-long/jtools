@@ -32,7 +32,7 @@ deviation from the mean as well as the mean itself are used for continuous
 moderators. If the moderator is a factor variable and \code{modxvals} is
 \code{NULL}, each level of the factor is included. If
 \code{"plus-minus"}, plots lines when the moderator is at +/- 1 standard
-deviation without the mean. You may also choose `"terciles"` to split
+deviation without the mean. You may also choose \code{"terciles"} to split
 the data into equally-sized groups and choose the point at the mean of
 each of those groups.}
 
@@ -81,13 +81,13 @@ default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
 
-\item{linearity.check}{For two-way interactions only. If `TRUE`, plots a
+\item{linearity.check}{For two-way interactions only. If \code{TRUE}, plots a
 pane for each level of the moderator and superimposes a loess smoothed
 line (in gray) over the plot. This enables you to see if the effect is
 linear through the span of the moderator. See Hainmuller et al. (2016) in
 the references for more details on the intuition behind this. It is
-recommended that you also set `plot.points = TRUE` and use
-`modxvals = "terciles"` with this option.}
+recommended that you also set \code{plot.points = TRUE} and use
+\code{modxvals = "terciles"} with this option.}
 
 \item{set.offset}{For models with an offset (e.g., Poisson models), sets a
 offset for the predicted values. All predicted values will have the same
@@ -125,7 +125,7 @@ variable is used.}
 
 \item{color.class}{Any palette argument accepted by
 \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
- moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
+moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
@@ -133,96 +133,96 @@ ggplot's default is 1.}
 \item{vary.lty}{Should the resulting plot have different shapes for each
 line in addition to colors? Defaults to \code{TRUE}.}
 
-\item{jitter}{How much should `plot.points` observed values be "jittered"
-via [ggplot2::position_jitter()]? When there are many points near each
+\item{jitter}{How much should \code{plot.points} observed values be "jittered"
+via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
 other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
 you want no jittering.}
 
-\item{standardize}{Deprecated. Equivalent to `scale`. Please change your
-scripts to use `scale` instead as this argument will be removed in the
+\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
+scripts to use \code{scale} instead as this argument will be removed in the
 future.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
-  like a user-created plot and expanded upon as such.
+like a user-created plot and expanded upon as such.
 }
 \description{
 \code{interact_plot()} plots regression lines at user-specified levels of a
- moderator variable to explore interactions. The plotting is done with
- \code{ggplot2} rather than base graphics, which some similar functions use.
+moderator variable to explore interactions. The plotting is done with
+\code{ggplot2} rather than base graphics, which some similar functions use.
 }
 \details{
 This function provides a means for plotting conditional effects
-  for the purpose of exploring interactions in the context of regression.
-  You must have the
-  package \code{ggplot2} installed to benefit from these plotting functions.
+for the purpose of exploring interactions in the context of regression.
+You must have the
+package \code{ggplot2} installed to benefit from these plotting functions.
 
-  The function is designed for two and three-way interactions. For
-   additional terms, the
-  \code{\link[effects]{effects}} package may be better suited to the task.
+The function is designed for two and three-way interactions. For
+additional terms, the
+\code{\link[effects]{effects}} package may be better suited to the task.
 
-  This function supports nonlinear and generalized linear models and by
-  default will plot them on
-  their original scale (\code{outcome.scale = "response"}).
+This function supports nonlinear and generalized linear models and by
+default will plot them on
+their original scale (\code{outcome.scale = "response"}).
 
-  While mixed effects models from \code{lme4} are supported, only the fixed
-  effects are plotted. \code{lme4} does not provide confidence intervals,
-  so they are not supported with this function either.
+While mixed effects models from \code{lme4} are supported, only the fixed
+effects are plotted. \code{lme4} does not provide confidence intervals,
+so they are not supported with this function either.
 
-  Note: to use transformed predictors, e.g., \code{log(variable)},
-  put its name in quotes or backticks in the argument.
+Note: to use transformed predictors, e.g., \code{log(variable)},
+put its name in quotes or backticks in the argument.
 
-  \emph{Details on how observed data are split in multi-pane plots}:
+\emph{Details on how observed data are split in multi-pane plots}:
 
-  If you set `plot.points = TRUE` and request a multi-pane (facetted) plot
-  either with a second moderator or `linearity.check = TRUE`, the observed
-  data are split into as many groups as there  arepanes and plotted
-  separately. If the moderator is a factor, then the way this happens will
-  be very intuitive since it's obvious which values go in which pane. The
-  rest of this section will address the case of continuous moderators.
+If you set \code{plot.points = TRUE} and request a multi-pane (facetted) plot
+either with a second moderator or \code{linearity.check = TRUE}, the observed
+data are split into as many groups as there  are panes and plotted
+separately. If the moderator is a factor, then the way this happens will
+be very intuitive since it's obvious which values go in which pane. The
+rest of this section will address the case of continuous moderators.
 
-  My recommendation is that you use `modxvals = "terciles"`` or
-  `mod2vals = "terciles"` when you want to plot observed data on multi-pane
-  plots. When you do, the data are split into three approximately
-  equal-sized groups with the lowest third, middle third, and highest third
-  of the data split accordingly. You can replicate this procedure using
-  [Hmisc::cut2()] with `g = 3` from the `Hmisc` package. Sometimes, the
-  groups will not be equal in size because the number of observations is
-  not divisible by 3 and/or there are multiple observations with the same
-  value at one of the cut points.
+My recommendation is that you use \code{modxvals = "terciles"} or
+\code{mod2vals = "terciles"} when you want to plot observed data on multi-pane
+plots. When you do, the data are split into three approximately
+equal-sized groups with the lowest third, middle third, and highest third
+of the data split accordingly. You can replicate this procedure using
+\code{\link[Hmisc:cut2]{Hmisc::cut2()}} with \code{g = 3} from the \code{Hmisc} package. Sometimes, the
+groups will not be equal in size because the number of observations is
+not divisible by 3 and/or there are multiple observations with the same
+value at one of the cut points.
 
-  Otherwise, a more ad hoc procedure is used to split the data. Quantiles
-  are found for each `mod2vals` or `modxvals` value. These are not the
-  quantiles used to split the data, however, since we want the plotted lines
-  to represent the slope at a typical value in the group. The next step,
-  then, is to take the mean of each pair of neighboring quantiles and use
-  these as the cut points.
+Otherwise, a more ad hoc procedure is used to split the data. Quantiles
+are found for each \code{mod2vals} or \code{modxvals} value. These are not the
+quantiles used to split the data, however, since we want the plotted lines
+to represent the slope at a typical value in the group. The next step,
+then, is to take the mean of each pair of neighboring quantiles and use
+these as the cut points.
 
-  For example, if the `mod2vals` are at the 25th, 50th, and 75th percentiles
-  of the distribution of the moderator, the data will be split at the
-  37.5th and and 62.5th percentiles. When the variable is
-  normally distributed, this will correspond fairly closely to using
-  terciles.
+For example, if the \code{mod2vals} are at the 25th, 50th, and 75th percentiles
+of the distribution of the moderator, the data will be split at the
+37.5th and and 62.5th percentiles. When the variable is
+normally distributed, this will correspond fairly closely to using
+terciles.
 
-  \emph{Info about offsets:}
+\emph{Info about offsets:}
 
-  Offsets are partially supported by this function with important
-  limitations. First of all, only a single offset per model is supported.
-  Second, it is best in general to specify offsets with the offset argument
-  of the model fitting function rather than in the formula. If it is
-  specified in the formula with a svyglm, this function will stop with an
-  error message.
+Offsets are partially supported by this function with important
+limitations. First of all, only a single offset per model is supported.
+Second, it is best in general to specify offsets with the offset argument
+of the model fitting function rather than in the formula. If it is
+specified in the formula with a svyglm, this function will stop with an
+error message.
 
-  It is also advised not to do any transformations to the offset other than
-  the common log transformation. If you apply a log transform, this function
-  will deal with it sensibly. So if your offset is a logged count, the
-  exposure you set will be the non-logged version, which is much easeir to
-  wrap one's head around. For any other transformation you may apply, or
-  if you apply no transformation at all, the exposures used will be the
-  post-tranformation number (which is by default 1).
+It is also advised not to do any transformations to the offset other than
+the common log transformation. If you apply a log transform, this function
+will deal with it sensibly. So if your offset is a logged count, the
+exposure you set will be the non-logged version, which is much easeir to
+wrap one's head around. For any other transformation you may apply, or
+if you apply no transformation at all, the exposures used will be the
+post-tranformation number (which is by default 1).
 }
 \examples{
 # Using a fitted lm model
@@ -265,10 +265,10 @@ interact_plot(mv, pred = Anger, modx = mode)
 }
 \references{
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
- multilevel regression: Inferential and graphical techniques.
- \emph{Multivariate Behavioral
- Research}, \emph{40}(3), 373-400.
- \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
+multilevel regression: Inferential and graphical techniques.
+\emph{Multivariate Behavioral
+Research}, \emph{40}(3), 373-400.
+\url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 
 Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
 multiple
@@ -276,20 +276,21 @@ regression/correlation analyses for the behavioral sciences} (3rd ed.).
 Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 
 Hainmueller, J., Mummolo, J., & Xu, Y. (2016). How much should we trust
-  estimates from multiplicative interaction models? Simple tools to improve
-  empirical practice. SSRN Electronic Journal.
-  \url{https://doi.org/10.2139/ssrn.2739221}
+estimates from multiplicative interaction models? Simple tools to improve
+empirical practice. SSRN Electronic Journal.
+\url{https://doi.org/10.2139/ssrn.2739221}
 }
 \seealso{
 \code{\link[rockchalk]{plotSlopes}} from \pkg{rockchalk} performs a
-  similar function, but
-  with R's base graphics---this function is meant, in part, to emulate
-  its features.
+similar function, but
+with R's base graphics---this function is meant, in part, to emulate
+its features.
 
-  \code{\link{sim_slopes}} performs a simple slopes analysis with a similar
-  argument syntax to this function.
+\code{\link{sim_slopes}} performs a simple slopes analysis with a similar
+argument syntax to this function.
 
-Other interaction tools: \code{\link{johnson_neyman}},
+Other interaction tools: \code{\link{cat_plot}},
+  \code{\link{johnson_neyman}},
   \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
 }
 \author{

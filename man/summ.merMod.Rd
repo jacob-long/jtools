@@ -64,13 +64,13 @@ types of models.}
 }
 \value{
 If saved, users can access most of the items that are returned in
-  the output (and without rounding).
+the output (and without rounding).
 
- \item{coeftable}{The outputted table of variables and coefficients}
- \item{model}{The model for which statistics are displayed. This would be
-   most useful in cases in which \code{scale = TRUE}.}
+\item{coeftable}{The outputted table of variables and coefficients}
+\item{model}{The model for which statistics are displayed. This would be
+most useful in cases in which \code{scale = TRUE}.}
 
- Much other information can be accessed as attributes.
+Much other information can be accessed as attributes.
 }
 \description{
 \code{summ} prints output for a regression model in a fashion similar to
@@ -80,55 +80,55 @@ If saved, users can access most of the items that are returned in
 By default, this function will print the following items to the
 console:
 \itemize{
-  \item The sample size
-  \item The name of the outcome variable
-  \item The (Pseudo-)R-squared value and AIC/BIC.
-  \item A table with regression coefficients, standard errors, and t-values.
+\item The sample size
+\item The name of the outcome variable
+\item The (Pseudo-)R-squared value and AIC/BIC.
+\item A table with regression coefficients, standard errors, and t-values.
 }
 
- The \code{scale} and \code{center} options are performed via refitting
- the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
- respectively. Each of those in turn uses \code{\link{gscale}} for the
- mean-centering and scaling.
+The \code{scale} and \code{center} options are performed via refitting
+the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+respectively. Each of those in turn uses \code{\link{gscale}} for the
+mean-centering and scaling.
 
- \code{merMod} models are a bit different than the others. The \code{lme4}
- package developers have, for instance, made a decision not to report or
- compute p values for \code{lmer} models. There are good reasons for this,
- most notably that the t-values produced are not "accurate" in the sense of
- the Type I error rate. For certain large, balanced samples with many
- groups, this is no big deal. What's
- a "big" or "small" sample? How much balance is necessary? What type of
- random effects structure is okay? Good luck getting a statistician to
- give you any clear guidelines on this.
- Some simulation studies have been done on fewer than 100 observations, so
- for sure if your sample is around 100 or fewer you should not interpret
- the t-values. A large number of groups is also crucial for avoiding bias
- using t-values. If groups are nested or crossed in a linear model,
- it is best to just get the \pkg{pbkrtest} package.
+\code{merMod} models are a bit different than the others. The \code{lme4}
+package developers have, for instance, made a decision not to report or
+compute p values for \code{lmer} models. There are good reasons for this,
+most notably that the t-values produced are not "accurate" in the sense of
+the Type I error rate. For certain large, balanced samples with many
+groups, this is no big deal. What's
+a "big" or "small" sample? How much balance is necessary? What type of
+random effects structure is okay? Good luck getting a statistician to
+give you any clear guidelines on this.
+Some simulation studies have been done on fewer than 100 observations, so
+for sure if your sample is around 100 or fewer you should not interpret
+the t-values. A large number of groups is also crucial for avoiding bias
+using t-values. If groups are nested or crossed in a linear model,
+it is best to just get the \pkg{pbkrtest} package.
 
- By default, this function follows \code{lme4}'s lead and does not report
- the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
- installed, however, p values are reported using the Kenward-Roger
- d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
- set to something other than \code{NULL}.
+By default, this function follows \code{lme4}'s lead and does not report
+the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
+installed, however, p values are reported using the Kenward-Roger
+d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
+set to something other than \code{NULL}.
 
- See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
- If you're looking for a simple test with no extra packages installed,
- it is better to use the confidence
- intervals and check to see if they exclude zero than use the t-test.
- For users of \code{glmer}, see some of the advice there as well. While
- \code{lme4} and by association \code{summ} does as well, they are
- still imperfect.
+See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
+If you're looking for a simple test with no extra packages installed,
+it is better to use the confidence
+intervals and check to see if they exclude zero than use the t-test.
+For users of \code{glmer}, see some of the advice there as well. While
+\code{lme4} and by association \code{summ} does as well, they are
+still imperfect.
 
- You have some options to customize the output in this regard with the
- \code{t.df} argument. If \code{NULL}, the default, the
- degrees of freedom used depends on whether the user has \pkg{pbkrtest}
- installed. If installed, the Kenward-Roger approximation is used. If not,
- and user sets \code{pvals = TRUE}, then the residual degrees of freedom
- is used. If \code{t.df = "residual"}, then the residual d.f. is used
- without a message. If the user prefers to use some other method to
- determine the d.f., then any number provided as the argument will be
- used.
+You have some options to customize the output in this regard with the
+\code{t.df} argument. If \code{NULL}, the default, the
+degrees of freedom used depends on whether the user has \pkg{pbkrtest}
+installed. If installed, the Kenward-Roger approximation is used. If not,
+and user sets \code{pvals = TRUE}, then the residual degrees of freedom
+is used. If \code{t.df = "residual"}, then the residual d.f. is used
+without a message. If the user prefers to use some other method to
+determine the d.f., then any number provided as the argument will be
+used.
 }
 \examples{
 
@@ -152,35 +152,35 @@ summ(mv, t.df = "residual")
 }
 \references{
 Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth’s
- $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
- Evolution}, \emph{5}, 944–946. https://doi.org/10.1111/2041-210X.12225
+$R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
+Evolution}, \emph{5}, 944–946. https://doi.org/10.1111/2041-210X.12225
 
 Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
- effects from restricted maximum likelihood. \emph{Biometrics},
- \emph{53}, 983.
- https://doi.org/10.2307/2533558
+effects from restricted maximum likelihood. \emph{Biometrics},
+\emph{53}, 983.
+https://doi.org/10.2307/2533558
 
 Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
- in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
- https://doi.org/10.3758/s13428-016-0809-y
+in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
+https://doi.org/10.3758/s13428-016-0809-y
 
 Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
- obtaining $R^2$ from generalized linear mixed-effects models.
- \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
- https://doi.org/10.1111/j.2041-210x.2012.00261.x
+obtaining $R^2$ from generalized linear mixed-effects models.
+\emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
+https://doi.org/10.1111/j.2041-210x.2012.00261.x
 }
 \seealso{
 \code{\link{scale_lm}} can simply perform the standardization if
- preferred.
+preferred.
 
- \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
- behind the scenes.
+\code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+behind the scenes.
 
- \code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
- freedom if you have \pkg{pbkrtest} installed.
+\code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
+freedom if you have \pkg{pbkrtest} installed.
 
- A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
- generate the pseudo-R-squared estimates for linear models.
+A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
+generate the pseudo-R-squared estimates for linear models.
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

@@ -62,15 +62,15 @@ weights_tests(model = fit, data = states, weights = wts, sims = 100)
 }
 \references{
 DuMouchel, W. H. & Duncan, D.J. (1983). Using sample survey weights in
-  multiple regression analyses of stratified samples. \emph{Journal of the
-  American Statistical Association}, \emph{78}. 535-543.
+multiple regression analyses of stratified samples. \emph{Journal of the
+American Statistical Association}, \emph{78}. 535-543.
 
 Nordberg, L. (1989). Generalized linear modeling of sample survey data.
-  \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223-239.
+\emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223-239.
 
 Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
- estimation of regression models fitted to survey data.
- \emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
+estimation of regression models fitted to survey data.
+\emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
 }
 \seealso{
 Other survey tools: \code{\link{pf_sv_test}},

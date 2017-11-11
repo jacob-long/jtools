@@ -92,14 +92,14 @@ wgttest(glm.D93, weights = wts)
 }
 \references{
 DuMouchel, W. H. & Duncan, D.J. (1983). Using sample survey weights in
-  multiple regression analyses of stratified samples. \emph{Journal of the
-  American Statistical Association}, \emph{78}. 535-543.
+multiple regression analyses of stratified samples. \emph{Journal of the
+American Statistical Association}, \emph{78}. 535-543.
 
 Nordberg, L. (1989). Generalized linear modeling of sample survey data.
-  \emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
+\emph{Journal of Official Statistics; Stockholm}, \emph{5}, 223–239.
 
 Winship, C. & Radbill, L. (1994). Sampling weights and regression
-  analysis. \emph{Sociological Methods and Research}, \emph{23}, 230-257.
+analysis. \emph{Sociological Methods and Research}, \emph{23}, 230-257.
 }
 \seealso{
 Other survey tools: \code{\link{pf_sv_test}},

@@ -30,8 +30,8 @@ The \code{ggplot2} object is returned either way.}
 for more on this method.}
 
 \item{line.thickness}{How thick should the predicted line be? This is
-passed to `geom_path` as the `size` argument, but because of the way the
-line is created, you cannot use `geom_path` to modify the output plot
+passed to \code{geom_path} as the \code{size} argument, but because of the way the
+line is created, you cannot use \code{geom_path} to modify the output plot
 yourself.}
 
 \item{df}{How should the degrees of freedom be calculated for the critical
@@ -40,7 +40,7 @@ alpha was .05, the critical test statistic was 1.96 regardless of sample
 size and model complexity. The default is now "residual", meaning the same
 degrees of freedom used to calculate p values for regression coefficients.
 You may instead choose any number or "normal", which reverts to the
-previous behavior. The argument is not used if `control.fdr = TRUE`.}
+previous behavior. The argument is not used if \code{control.fdr = TRUE}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
@@ -50,11 +50,11 @@ number.}
 }
 \value{
 \item{bounds}{The two numbers that make up the interval.}
- \item{cbands}{A dataframe with predicted values of the predictor's slope
-   and lower/upper bounds of confidence bands if you would like to make your
-   own plots}
- \item{plot}{The \code{ggplot} object used for plotting. You can tweak the
-   plot like you could any other from \code{ggplot}.}
+\item{cbands}{A dataframe with predicted values of the predictor's slope
+and lower/upper bounds of confidence bands if you would like to make your
+own plots}
+\item{plot}{The \code{ggplot} object used for plotting. You can tweak the
+plot like you could any other from \code{ggplot}.}
 }
 \description{
 \code{johnson_neyman} finds so-called "Johnson-Neyman" intervals for
@@ -63,35 +63,35 @@ interactions in multiple linear regression.
 }
 \details{
 The interpretation of the values given by this function is important and not
- always immediately intuitive. For an interaction between a predictor variable
- and moderator variable, it is often the case that the slope of the predictor
- is statistically significant at only some values of the moderator. For
- example, perhaps the effect of your predictor is only significant when the
- moderator is set at some high value.
+always immediately intuitive. For an interaction between a predictor variable
+and moderator variable, it is often the case that the slope of the predictor
+is statistically significant at only some values of the moderator. For
+example, perhaps the effect of your predictor is only significant when the
+moderator is set at some high value.
 
- The Johnson-Neyman interval provides the two values of the moderator at
- which the slope of the predictor goes from non-significant to significant.
- Usually, the predictor's slope is only significant \emph{outside} of the
- range given by the function. The output of this function will make it clear
- either way.
+The Johnson-Neyman interval provides the two values of the moderator at
+which the slope of the predictor goes from non-significant to significant.
+Usually, the predictor's slope is only significant \emph{outside} of the
+range given by the function. The output of this function will make it clear
+either way.
 
- One weakness of this method of probing interactions is that it is analagous
- to making multiple comparisons without any adjustment to the alpha level.
- Esarey & Sumner (2017) proposed a method for addressing this, which is
- implemented in the `interactionTest` package. This function implements that
- procedure with modifications to the `interactionTest` code (that package is
- not required to use this function). If you set `control.fdr = TRUE`, an
- alternative *t* statistic will be calculated based on your specified alpha
- level and the data. This will always be a more conservative test than when
- `control.fdr = FALSE`. The printed output will report the calculated
- critical *t* statistic.
+One weakness of this method of probing interactions is that it is analagous
+to making multiple comparisons without any adjustment to the alpha level.
+Esarey & Sumner (2017) proposed a method for addressing this, which is
+implemented in the \code{interactionTest} package. This function implements that
+procedure with modifications to the \code{interactionTest} code (that package is
+not required to use this function). If you set \code{control.fdr = TRUE}, an
+alternative \emph{t} statistic will be calculated based on your specified alpha
+level and the data. This will always be a more conservative test than when
+\code{control.fdr = FALSE}. The printed output will report the calculated
+critical \emph{t} statistic.
 
- This technique is not easily ported to 3-way interaction contexts. You could,
- however, look at the J-N interval at two different levels of a second
- moderator. This does forgo a benefit of the J-N technique, which is not
- having to pick arbitrary points. If you want to do this, just use the
- \code{\link{sim_slopes}} function's ability to handle 3-way interactions
- and request Johnson-Neyman intervals for each.
+This technique is not easily ported to 3-way interaction contexts. You could,
+however, look at the J-N interval at two different levels of a second
+moderator. This does forgo a benefit of the J-N technique, which is not
+having to pick arbitrary points. If you want to do this, just use the
+\code{\link{sim_slopes}} function's ability to handle 3-way interactions
+and request Johnson-Neyman intervals for each.
 }
 \examples{
 # Using a fitted lm model
@@ -105,21 +105,22 @@ johnson_neyman(model = fit, pred = Murder,
 }
 \references{
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
- regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
- Research}, \emph{40}(3), 373-400.
- \url{http://doi.org/10.1207/s15327906mbr4003_5}
+regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
+Research}, \emph{40}(3), 373-400.
+\url{http://doi.org/10.1207/s15327906mbr4003_5}
 
 Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:
- Determining and controlling the false positive rate. Comparative Political
- Studies, 1–33. Advance online publication.
- \url{https://doi.org/10.1177/0010414017730080}
+Determining and controlling the false positive rate. Comparative Political
+Studies, 1–33. Advance online publication.
+\url{https://doi.org/10.1177/0010414017730080}
 
 Johnson, P.O. & Fay, L.C. (1950). The Johnson-Neyman technique, its theory
- and application. \emph{Psychometrika}, \emph{15}, 349-367.
- \url{http://doi.org/10.1007/BF02288864}
+and application. \emph{Psychometrika}, \emph{15}, 349-367.
+\url{http://doi.org/10.1007/BF02288864}
 }
 \seealso{
-Other interaction tools: \code{\link{interact_plot}},
+Other interaction tools: \code{\link{cat_plot}},
+  \code{\link{interact_plot}},
   \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
 }
 \author{

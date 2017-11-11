@@ -35,13 +35,13 @@ desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard
-  errors instead of conventional SEs. These are also known as Huber-White
-  standard errors.
+errors instead of conventional SEs. These are also known as Huber-White
+standard errors.
 
-  Default is \code{FALSE}.
+Default is \code{FALSE}.
 
-  This requires the \code{sandwich} package to compute the
-   standard errors.}
+This requires the \code{sandwich} package to compute the
+standard errors.}
 
 \item{robust.type}{Only used if \code{robust = TRUE}. Specifies the type of
 robust standard errors to be used by \code{sandwich}. By default, set to
@@ -89,13 +89,13 @@ types of models.}
 }
 \value{
 If saved, users can access most of the items that are returned in
-  the output (and without rounding).
+the output (and without rounding).
 
- \item{coeftable}{The outputted table of variables and coefficients}
- \item{model}{The model for which statistics are displayed. This would be
-   most useful in cases in which \code{scale = TRUE}.}
+\item{coeftable}{The outputted table of variables and coefficients}
+\item{model}{The model for which statistics are displayed. This would be
+most useful in cases in which \code{scale = TRUE}.}
 
- Much other information can be accessed as attributes.
+Much other information can be accessed as attributes.
 }
 \description{
 \code{summ} prints output for a regression model in a fashion similar to
@@ -103,64 +103,64 @@ If saved, users can access most of the items that are returned in
 }
 \details{
 By default, this function will print the following items to the
- console:
+console:
 \itemize{
-  \item The sample size
-  \item The name of the outcome variable
-  \item The R-squared value plus adjusted R-squared
-  \item A table with regression coefficients, standard errors, t-values, and
-   p values.
+\item The sample size
+\item The name of the outcome variable
+\item The R-squared value plus adjusted R-squared
+\item A table with regression coefficients, standard errors, t-values, and
+p values.
 }
 
- There are several options available for \code{robust.type}. The heavy
- lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
- described.
- Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
- recommendation of the developers of \pkg{sandwich}, the default is set to
- \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
- if the goal is to replicate Stata's output. Any option that is understood
- by \code{vcovHC} will be accepted. Cluster-robust standard errors are
- computed if \code{cluster} is set to the name of the input data's cluster
- variable or is a vector of clusters.
+There are several options available for \code{robust.type}. The heavy
+lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
+described.
+Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
+recommendation of the developers of \pkg{sandwich}, the default is set to
+\code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
+if the goal is to replicate Stata's output. Any option that is understood
+by \code{vcovHC} will be accepted. Cluster-robust standard errors are
+computed if \code{cluster} is set to the name of the input data's cluster
+variable or is a vector of clusters.
 
- The \code{scale} and \code{center} options are performed via
- refitting
- the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
- respectively. Each of those in turn uses \code{\link{gscale}} for the
- mean-centering and scaling.
+The \code{scale} and \code{center} options are performed via
+refitting
+the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+respectively. Each of those in turn uses \code{\link{gscale}} for the
+mean-centering and scaling.
 
- If using \code{part.corr = TRUE}, then you will get these two common
- effect size metrics on the far right two columns of the output table.
- However, it should be noted that these do not go hand in hand with
- robust standard error estimators. The standard error of the coefficient
- doesn't change the point estimate, just the uncertainty. However,
- this function uses \emph{t}-statistics in its calculation of the
- partial and semipartial correlation. This provides what amounts to a
- heteroskedasticity-adjusted set of estimates, but I am unaware of any
- statistical publication that validates this type of use. Please
- use these as a heuristic when used alongside robust standard errors; do
- not report the "robust" partial and semipartial correlations in
- publications.
+If using \code{part.corr = TRUE}, then you will get these two common
+effect size metrics on the far right two columns of the output table.
+However, it should be noted that these do not go hand in hand with
+robust standard error estimators. The standard error of the coefficient
+doesn't change the point estimate, just the uncertainty. However,
+this function uses \emph{t}-statistics in its calculation of the
+partial and semipartial correlation. This provides what amounts to a
+heteroskedasticity-adjusted set of estimates, but I am unaware of any
+statistical publication that validates this type of use. Please
+use these as a heuristic when used alongside robust standard errors; do
+not report the "robust" partial and semipartial correlations in
+publications.
 
- There are two pieces of information given for \code{model.check}, provided
- that the model is an \code{lm} object. First, a Breusch-Pagan test is
- performed with \code{\link[car]{ncvTest}}. This is a
- hypothesis test for which the alternative hypothesis is heteroskedastic
- errors. The test becomes much more likely to be statistically significant
- as the sample size increases; however, the homoskedasticity assumption
- becomes less important to inference as sample size increases (Lumley,
- Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
- graphical checks rather than a definitive decision. Note that the use of
- robust standard errors can account for heteroskedasticity, though some
- oppose this approach (see King & Roberts, 2015).
+There are two pieces of information given for \code{model.check}, provided
+that the model is an \code{lm} object. First, a Breusch-Pagan test is
+performed with \code{\link[car]{ncvTest}}. This is a
+hypothesis test for which the alternative hypothesis is heteroskedastic
+errors. The test becomes much more likely to be statistically significant
+as the sample size increases; however, the homoskedasticity assumption
+becomes less important to inference as sample size increases (Lumley,
+Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
+graphical checks rather than a definitive decision. Note that the use of
+robust standard errors can account for heteroskedasticity, though some
+oppose this approach (see King & Roberts, 2015).
 
- The second piece of information provided by setting \code{model.check} to
- \code{TRUE} is the number of high leverage observations. There are no hard
- and fast rules for determining high leverage either, but in this case it is
- based on Cook's Distance. All Cook's Distance values greater than (4/N) are
- included in the count. Again, this is not a recommendation to locate and
- remove such observations, but rather to look more closely with graphical
- and other methods.
+The second piece of information provided by setting \code{model.check} to
+\code{TRUE} is the number of high leverage observations. There are no hard
+and fast rules for determining high leverage either, but in this case it is
+based on Cook's Distance. All Cook's Distance values greater than (4/N) are
+included in the count. Again, this is not a recommendation to locate and
+remove such observations, but rather to look more closely with graphical
+and other methods.
 }
 \examples{
 # Create lm object
@@ -173,23 +173,23 @@ summ(fit, scale = TRUE, digits = 3)
 }
 \references{
 King, G., & Roberts, M. E. (2015). How robust standard errors expose
- methodological
- problems they do not fix, and what to do about it. \emph{Political
-  Analysis},
-  \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
+methodological
+problems they do not fix, and what to do about it. \emph{Political
+Analysis},
+\emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
 
 Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
 Normality Assumption in Large Public Health Data Sets.
- \emph{Annual Review of
- Public Health}, \emph{23}, 151–169.
- \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
+\emph{Annual Review of
+Public Health}, \emph{23}, 151–169.
+\url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 }
 \seealso{
 \code{\link{scale_lm}} can simply perform the standardization if
- preferred.
+preferred.
 
- \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
- behind the scenes.
+\code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+behind the scenes.
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

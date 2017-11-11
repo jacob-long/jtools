@@ -81,7 +81,8 @@ probe_interaction(model = regmodel3, pred = ell, modx = sch.wide,
 
 }
 \seealso{
-Other interaction tools: \code{\link{interact_plot}},
+Other interaction tools: \code{\link{cat_plot}},
+  \code{\link{interact_plot}},
   \code{\link{johnson_neyman}}, \code{\link{sim_slopes}}
 }
 \author{

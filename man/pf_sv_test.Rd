@@ -56,8 +56,8 @@ pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
 }
 \references{
 Pfeffermann, D., & Sverchkov, M. (1999). Parametric and semi-parametric
- estimation of regression models fitted to survey data.
- \emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
+estimation of regression models fitted to survey data.
+\emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
 }
 \seealso{
 Other survey tools: \code{\link{svycor}},

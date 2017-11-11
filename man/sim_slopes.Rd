@@ -23,22 +23,22 @@ It should contain the interaction of interest.}
 variable involved in the interaction.}
 
 \item{modxvals}{For which values of the moderator should simple slopes
-  analysis be performed? Default is \code{NULL}. If \code{NULL}, then the
-  values will be the customary +/- 1 standard deviation from the mean as
-  well as the mean itself. There is no specific limit on the number of
-  variables provided. If
-  \code{"plus-minus"}, uses just +/- 1 standard
-  deviation without the mean. You may also choose `"terciles"` to split
-  the data into equally-sized groups and choose the point at the mean of
-  each of those groups.
+analysis be performed? Default is \code{NULL}. If \code{NULL}, then the
+values will be the customary +/- 1 standard deviation from the mean as
+well as the mean itself. There is no specific limit on the number of
+variables provided. If
+\code{"plus-minus"}, uses just +/- 1 standard
+deviation without the mean. You may also choose \code{"terciles"} to split
+the data into equally-sized groups and choose the point at the mean of
+each of those groups.
 
-  Factor variables
-  are not particularly suited to simple slopes analysis, but you could have
-  a numeric moderator with values of 0 and 1 and give \code{c(0,1)} to
-  compare the slopes at the different conditions. Two-level factor
-  variables are coerced to numeric 0/1 variables, but are not
-  standardized/centered like they could be if your input data had a numeric
-  0/1 variable.}
+Factor variables
+are not particularly suited to simple slopes analysis, but you could have
+a numeric moderator with values of 0 and 1 and give \code{c(0,1)} to
+compare the slopes at the different conditions. Two-level factor
+variables are coerced to numeric 0/1 variables, but are not
+standardized/centered like they could be if your input data had a numeric
+0/1 variable.}
 
 \item{mod2vals}{For which values of the second moderator should the plot be
 facetted by? That is, there will be a separate plot for each level of this
@@ -85,25 +85,27 @@ number.}
 \item{n.sd}{How many standard deviations should be used if \code{scale
 = TRUE}? Default is 1, but some prefer 2.}
 
-\item{standardize}{Deprecated. Equivalent to `scale`. Please change your
-scripts to use `scale` instead as this argument will be removed in the
+\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
+scripts to use \code{scale} instead as this argument will be removed in the
 future.}
 
 \item{...}{Arguments passed to \code{\link{johnson_neyman}}.}
 }
 \value{
 \item{slopes}{A table of coefficients for the focal predictor at each
- value of the moderator}
- \item{ints}{A table of coefficients for the intercept at each value of the
-   moderator}
- \item{modxvals}{The values of the moderator used in the analysis}
- \item{mods}{A list containing each regression model created to estimate
-    the conditional coefficients.}
- \item{jn}{If \code{johnson_neyman = TRUE}, a list of `johnson_neyman`
- objects from \code{\link{johnson_neyman}}. These contain the values of the
- interval and the plots. If a 2-way interaction, the list will be of length
- 1. Otherwise, there will be 1 `johnson_neyman` object for each value of the
- 2nd moderator for 3-way interactions.}
+value of the moderator}
+\item{ints}{A table of coefficients for the intercept at each value of the
+moderator}
+\item{modxvals}{The values of the moderator used in the analysis}
+\item{mods}{A list containing each regression model created to estimate
+the conditional coefficients.}
+\item{jn}{If \code{johnson_neyman = TRUE}, a list of \code{johnson_neyman}
+objects from \code{\link{johnson_neyman}}. These contain the values of the
+interval and the plots. If a 2-way interaction, the list will be of length
+\enumerate{
+\item Otherwise, there will be 1 \code{johnson_neyman} object for each value of the
+2nd moderator for 3-way interactions.}
+}
 }
 \description{
 \code{sim_slopes} conducts a simple slopes analysis for the purposes of
@@ -111,22 +113,22 @@ understanding two- and three-way interaction effects in linear regression.
 }
 \details{
 This allows the user to perform a simple slopes analysis for the
-  purpose of probing interaction effects in a linear regression. Two- and
-  three-way interactions are supported, though one should be warned that
-  three-way interactions are not easy to interpret in this way.
+purpose of probing interaction effects in a linear regression. Two- and
+three-way interactions are supported, though one should be warned that
+three-way interactions are not easy to interpret in this way.
 
-  For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
+For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 
-  The function accepts a \code{lm} object and uses it to recompute models
-  with the moderating variable set to the levels requested.
-  \code{\link[survey]{svyglm}} objects are also accepted, though users
-  should be cautioned against using simple slopes analysis with non-linear
-  models (\code{svyglm} also estimates linear models).
+The function accepts a \code{lm} object and uses it to recompute models
+with the moderating variable set to the levels requested.
+\code{\link[survey]{svyglm}} objects are also accepted, though users
+should be cautioned against using simple slopes analysis with non-linear
+models (\code{svyglm} also estimates linear models).
 
-  Factor moderators are coerced to a 0/1 numeric variable and are not
-  centered, even when requested in arguments. To avoid this, modify your
-  data to change the factor to a binary numeric variable. Factors with more
-  than 2 levels trigger an error.
+Factor moderators are coerced to a 0/1 numeric variable and are not
+centered, even when requested in arguments. To avoid this, modify your
+data to change the factor to a binary numeric variable. Factors with more
+than 2 levels trigger an error.
 }
 \examples{
 
@@ -150,9 +152,9 @@ sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
 }
 \references{
 Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
- multilevel regression: Inferential and graphical techniques.
- \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
- \url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
+multilevel regression: Inferential and graphical techniques.
+\emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
+\url{http://dx.doi.org/10.1207/s15327906mbr4003_5}
 
 Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
 multiple regression/correlation analyses for the behavioral sciences} (3rd
@@ -160,15 +162,16 @@ ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{interact_plot}} accepts similar syntax and will plot the
-  results with \code{\link[ggplot2]{ggplot}}.
+results with \code{\link[ggplot2]{ggplot}}.
 
-  \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of
-      differences and provides Johnson-Neyman intervals.
+\code{\link[rockchalk]{testSlopes}} performs a hypothesis test of
+differences and provides Johnson-Neyman intervals.
 
-  \code{\link[pequod]{simpleSlope}} performs a similar analysis and can
-       also analyze a second moderator.
+\code{\link[pequod]{simpleSlope}} performs a similar analysis and can
+also analyze a second moderator.
 
-Other interaction tools: \code{\link{interact_plot}},
+Other interaction tools: \code{\link{cat_plot}},
+  \code{\link{interact_plot}},
   \code{\link{johnson_neyman}},
   \code{\link{probe_interaction}}
 }

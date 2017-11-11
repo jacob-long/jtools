@@ -25,37 +25,35 @@ well but are not officially supported.}
 \item{mod2}{For three-way interactions, the second categorical moderator.}
 
 \item{geom}{What type of plot should this be? There are several options
-  here since the best way to visualize categorical interactions varies by
-  context. Here are the options:
-
-  * `"dot"`: The default. Simply plot the point estimates. You may want to
-     use
-    `point.shape = TRUE` with this and you should also consider
-    `interval = TRUE` to visualize uncertainty.
-
-  * `"line"`: This connects observations across levels of the `pred`
-    variable with a line. This is a good option when the `pred` variable
-    is ordinal (ordered). You may still consider `point.shape = TRUE` and
-    `interval = TRUE` is still a good idea.
-
-  * `"bar"`: A bar chart. Some call this a "dynamite plot."
-    Many applied researchers advise against this type of plot because it
-    does not represent the distribution of the observed data or the
-    uncertainty of the predictions very well. It is best to at least use the
-    `interval = TRUE` argument with this geom.
-
-  * `"boxplot"`: This geom plots a dot and whisker plot. These can be useful
-    for understanding the distribution of the observed data without having
-    to plot all the observed points (especially helpful with larger data
-    sets). **However**, it is important to note the boxplots are not based
-    on the model whatsoever.}
+here since the best way to visualize categorical interactions varies by
+context. Here are the options:
+\itemize{
+\item \code{"dot"}: The default. Simply plot the point estimates. You may want to
+use
+\code{point.shape = TRUE} with this and you should also consider
+\code{interval = TRUE} to visualize uncertainty.
+\item \code{"line"}: This connects observations across levels of the \code{pred}
+variable with a line. This is a good option when the \code{pred} variable
+is ordinal (ordered). You may still consider \code{point.shape = TRUE} and
+\code{interval = TRUE} is still a good idea.
+\item \code{"bar"}: A bar chart. Some call this a "dynamite plot."
+Many applied researchers advise against this type of plot because it
+does not represent the distribution of the observed data or the
+uncertainty of the predictions very well. It is best to at least use the
+\code{interval = TRUE} argument with this geom.
+\item \code{"boxplot"}: This geom plots a dot and whisker plot. These can be useful
+for understanding the distribution of the observed data without having
+to plot all the observed points (especially helpful with larger data
+sets). \strong{However}, it is important to note the boxplots are not based
+on the model whatsoever.
+}}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals. Not supported for \code{merMod} models.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines. Note that if
-`geom = "bar"`, this will cause the bars to become transparent so you can
+\code{geom = "bar"}, this will cause the bars to become transparent so you can
 see the points.}
 
 \item{point.shape}{For plotted points---either of observed data or predicted
@@ -107,54 +105,54 @@ variable is used.}
 
 \item{color.class}{Any palette argument accepted by
 \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
- moderators.}
+moderators.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
-  like a user-created plot and expanded upon as such.
+like a user-created plot and expanded upon as such.
 }
 \description{
-`cat_plot` is a complementary function to [interact_plot()] that is designed
+\code{cat_plot} is a complementary function to \code{\link[=interact_plot]{interact_plot()}} that is designed
 for plotting interactions when both predictor and moderator(s) are
 categorical (or, in R terms, factors).
 }
 \details{
 This function provides a means for plotting conditional effects
-  for the purpose of exploring interactions in the context of regression.
-  You must have the
-  package \code{ggplot2} installed to benefit from these plotting functions.
+for the purpose of exploring interactions in the context of regression.
+You must have the
+package \code{ggplot2} installed to benefit from these plotting functions.
 
-  The function is designed for two and three-way interactions. For
-  additional terms, the
-  \code{\link[effects]{effects}} package may be better suited to the task.
+The function is designed for two and three-way interactions. For
+additional terms, the
+\code{\link[effects]{effects}} package may be better suited to the task.
 
-  This function supports nonlinear and generalized linear models and by
-  default will plot them on
-  their original scale (\code{outcome.scale = "response"}).
+This function supports nonlinear and generalized linear models and by
+default will plot them on
+their original scale (\code{outcome.scale = "response"}).
 
-  While mixed effects models from \code{lme4} are supported, only the fixed
-  effects are plotted. \code{lme4} does not provide confidence intervals,
-  so they are not supported with this function either.
+While mixed effects models from \code{lme4} are supported, only the fixed
+effects are plotted. \code{lme4} does not provide confidence intervals,
+so they are not supported with this function either.
 
-  Note: to use transformed predictors, e.g., \code{log(variable)},
-  put its name in quotes or backticks in the argument.
+Note: to use transformed predictors, e.g., \code{log(variable)},
+put its name in quotes or backticks in the argument.
 
-  \emph{Info about offsets:}
+\emph{Info about offsets:}
 
-  Offsets are partially supported by this function with important
-  limitations. First of all, only a single offset per model is supported.
-  Second, it is best in general to specify offsets with the offset argument
-  of the model fitting function rather than in the formula. If it is
-  specified in the formula with a svyglm, this function will stop with an
-  error message.
+Offsets are partially supported by this function with important
+limitations. First of all, only a single offset per model is supported.
+Second, it is best in general to specify offsets with the offset argument
+of the model fitting function rather than in the formula. If it is
+specified in the formula with a svyglm, this function will stop with an
+error message.
 
-  It is also advised not to do any transformations to the offset other than
-  the common log transformation. If you apply a log transform, this function
-  will deal with it sensibly. So if your offset is a logged count, the
-  exposure you set will be the non-logged version, which is much easeir to
-  wrap one's head around. For any other transformation you may apply, or
-  if you apply no transformation at all, the exposures used will be the
-  post-tranformation number (which is by default 1).
+It is also advised not to do any transformations to the offset other than
+the common log transformation. If you apply a log transform, this function
+will deal with it sensibly. So if your offset is a logged count, the
+exposure you set will be the non-logged version, which is much easeir to
+wrap one's head around. For any other transformation you may apply, or
+if you apply no transformation at all, the exposures used will be the
+post-tranformation number (which is by default 1).
 }
 \examples{
 
@@ -180,3 +178,9 @@ cat_plot(fit3, pred = cyl, modx = fwd, mod2 = auto, geom = "line",
  interval = TRUE)
 
 }
+\seealso{
+Other interaction tools: \code{\link{interact_plot}},
+  \code{\link{johnson_neyman}},
+  \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
+}
+\concept{interaction tools}

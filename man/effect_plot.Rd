@@ -81,48 +81,48 @@ plot. If \code{NULL}, no main title is used.}
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
 
-\item{jitter}{How much should `plot.points` observed values be "jittered"
-via [ggplot2::position_jitter()]? When there are many points near each
+\item{jitter}{How much should \code{plot.points} observed values be "jittered"
+via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
 other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
 you want no jittering.}
 
-\item{standardize}{Deprecated. Equivalent to `scale`. Please change your
-scripts to use `scale` instead as this argument will be removed in the
+\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
+scripts to use \code{scale} instead as this argument will be removed in the
 future.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
-  like
-  a user-created plot and expanded upon as such.
+like
+a user-created plot and expanded upon as such.
 }
 \description{
 \code{effect_plot()} plots regression paths. The plotting is done with
- \code{ggplot2} rather than base graphics, which some similar functions use.
+\code{ggplot2} rather than base graphics, which some similar functions use.
 }
 \details{
 This function provides a means for plotting effects for the
-  purpose of exploring regression estimates. You must have the
-  package \code{ggplot2} installed to benefit from these plotting functions.
+purpose of exploring regression estimates. You must have the
+package \code{ggplot2} installed to benefit from these plotting functions.
 
-  By default, all numeric predictors other than the one specified in the
-  \code{pred} argument are mean-centered, which usually produces more
-  intuitive plots. This only affects the y-axis in linear models, but
-  maybe especially important/influential in non-linear/generalized linear
-  models.
+By default, all numeric predictors other than the one specified in the
+\code{pred} argument are mean-centered, which usually produces more
+intuitive plots. This only affects the y-axis in linear models, but
+maybe especially important/influential in non-linear/generalized linear
+models.
 
-  This function supports nonlinear and generalized linear models and by
-  default will plot them on
-  their original scale (\code{outcome.scale = "response"}).
+This function supports nonlinear and generalized linear models and by
+default will plot them on
+their original scale (\code{outcome.scale = "response"}).
 
-  While mixed effects models from \code{lme4} are supported, only the fixed
-  effects are plotted. \code{lme4} does not provide confidence intervals,
-  so they are not supported with this function either.
+While mixed effects models from \code{lme4} are supported, only the fixed
+effects are plotted. \code{lme4} does not provide confidence intervals,
+so they are not supported with this function either.
 
-  Note: to use transformed predictors, e.g., \code{log(variable)},
-  put its name in quotes or backticks in the argument.
+Note: to use transformed predictors, e.g., \code{log(variable)},
+put its name in quotes or backticks in the argument.
 }
 \examples{
 # Using a fitted lm model
@@ -158,8 +158,8 @@ effect_plot(mv, pred = Anger)
 }
 \seealso{
 \code{\link[jtools]{interact_plot}} plots interaction effects,
-  producing plots like this function but with separate lines for different
-  levels of a moderator.
+producing plots like this function but with separate lines for different
+levels of a moderator.
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

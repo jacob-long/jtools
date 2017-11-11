@@ -13,34 +13,34 @@ tested.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{0/1};
 \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1
-as 0.5; \code{center} subtracts the mean; and \code{full} treats them 
+as 0.5; \code{center} subtracts the mean; and \code{full} treats them
 like other continuous variables.}
 
-\item{center.response}{Should the response variable also be centered? 
+\item{center.response}{Should the response variable also be centered?
 Default is \code{FALSE}.}
 }
 \value{
-The functions returns a \code{lm} or \code{glm} object, inheriting 
-  from whichever class was supplied.
+The functions returns a \code{lm} or \code{glm} object, inheriting
+from whichever class was supplied.
 }
 \description{
-\code{center_lm} takes fitted regression models and mean-centers the 
-  continuous variables in the model to aid interpretation, especially in 
-  the case of models with interactions. It is a wrapper to 
-  \code{\link{scale_lm}}.
+\code{center_lm} takes fitted regression models and mean-centers the
+continuous variables in the model to aid interpretation, especially in
+the case of models with interactions. It is a wrapper to
+\code{\link{scale_lm}}.
 }
 \details{
-This function will mean-center all continuous variables in a 
-  regression model for ease of interpretation, especially for those models 
-  that have
-  interaction terms. The mean for \code{svyglm} objects is calculated using
-  \code{svymean}, so reflects the survey-weighted mean. The weight variables
-  in \code{svyglm} are not centered, nor are they in other \code{lm} family
-  models.
+This function will mean-center all continuous variables in a
+regression model for ease of interpretation, especially for those models
+that have
+interaction terms. The mean for \code{svyglm} objects is calculated using
+\code{svymean}, so reflects the survey-weighted mean. The weight variables
+in \code{svyglm} are not centered, nor are they in other \code{lm} family
+models.
 
-  This function re-estimates the model, so for large models one should 
-  expect
-  a runtime equal to the first run.
+This function re-estimates the model, so for large models one should
+expect
+a runtime equal to the first run.
 }
 \examples{
 
@@ -64,19 +64,19 @@ regmodel_center <- center_lm(regmodel)
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
- multilevel regression: Inferential and graphical techniques. 
- \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+multilevel regression: Inferential and graphical techniques.
+\emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
-multiple regression/correlation analyses for the behavioral sciences} (3rd 
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
+multiple regression/correlation analyses for the behavioral sciences} (3rd
 ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{sim_slopes}} performs a simple slopes analysis.
 
-  \code{\link{interact_plot}} creates attractive, user-configurable plots of
-  interaction models.
+\code{\link{interact_plot}} creates attractive, user-configurable plots of
+interaction models.
 
 Other standardization, scaling, and centering tools: \code{\link{gscale}},
   \code{\link{scale_lm}}

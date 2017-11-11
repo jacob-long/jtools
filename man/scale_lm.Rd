@@ -33,7 +33,7 @@ them.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting
-  from whichever class was supplied.
+from whichever class was supplied.
 }
 \description{
 \code{scale_lm()} takes fitted regression models and scales all predictors
@@ -41,17 +41,17 @@ by dividing each by 1 or 2 standard deviations (as chosen by the user).
 }
 \details{
 This function will scale all continuous variables in a regression
-  model for ease of interpretation, especially for those models that have
-  interaction terms. It can also mean-center all of them as well, if 
-  requested.
+model for ease of interpretation, especially for those models that have
+interaction terms. It can also mean-center all of them as well, if
+requested.
 
-  The scaling happens on the input data, not the terms themselves. That 
-  means interaction terms are still properly calculated because they are
-  the product of standardized predictors, not a standardized product of 
-  predictors.
+The scaling happens on the input data, not the terms themselves. That
+means interaction terms are still properly calculated because they are
+the product of standardized predictors, not a standardized product of
+predictors.
 
-  This function re-estimates the model, so for large models one should 
-  expect a runtime equal to the first run.
+This function re-estimates the model, so for large models one should
+expect a runtime equal to the first run.
 }
 \examples{
 
@@ -77,19 +77,19 @@ regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
- multilevel regression: Inferential and graphical techniques. 
- \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+multilevel regression: Inferential and graphical techniques.
+\emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 
-Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
-multiple regression/correlation analyses for the behavioral sciences} (3rd 
+Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
+multiple regression/correlation analyses for the behavioral sciences} (3rd
 ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 }
 \seealso{
 \code{\link{sim_slopes}} performs a simple slopes analysis.
 
-  \code{\link{interact_plot}} creates attractive, user-configurable plots of
-  interaction models.
+\code{\link{interact_plot}} creates attractive, user-configurable plots of
+interaction models.
 
 Other standardization, scaling, and centering tools: \code{\link{center_lm}},
   \code{\link{gscale}}

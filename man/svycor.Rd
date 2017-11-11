@@ -39,13 +39,13 @@ total number of observations (FALSE)?}
 \value{
 If significance tests are not requested, there is one returned value:
 
- \item{cors}{The correlation matrix (without rounding)}
+\item{cors}{The correlation matrix (without rounding)}
 
- If significance tests are requested, the following are also returned:
+If significance tests are requested, the following are also returned:
 
- \item{p.values}{A matrix of p values}
- \item{t.values}{A matrix of t values}
- \item{std.err}{A matrix of standard errors}
+\item{p.values}{A matrix of p values}
+\item{t.values}{A matrix of t values}
+\item{std.err}{A matrix of standard errors}
 }
 \description{
 \code{svycor} extends the \code{survey} package by calculating correlations
@@ -54,23 +54,23 @@ such a function.
 }
 \details{
 This function extends the \code{survey} package by calculating the correlations
-  for user-specified variables in survey design and returning a correlation matrix.
+for user-specified variables in survey design and returning a correlation matrix.
 
-  Using the \code{\link[weights]{wtd.cor}} function, this function also returns
-  standard errors and p-values for the correlation terms using a sample-weighted
-  bootstrapping procedure. While correlations do not require distributional
-  assumptions, hypothesis testing (i.e., \eqn{r > 0}) does. The appropriate way to
-  calculate standard errors and use them to define a probability is not straightforward
-  in this scenario since the weighting causes heteroskedasticity, thereby violating
-  an assumption inherent in the commonly used methods for converting Pearson's
-  correlations into t-values. The method provided here is defensible, but if
-  reporting in scientific publications the method should be spelled out.
+Using the \code{\link[weights]{wtd.cor}} function, this function also returns
+standard errors and p-values for the correlation terms using a sample-weighted
+bootstrapping procedure. While correlations do not require distributional
+assumptions, hypothesis testing (i.e., \eqn{r > 0}) does. The appropriate way to
+calculate standard errors and use them to define a probability is not straightforward
+in this scenario since the weighting causes heteroskedasticity, thereby violating
+an assumption inherent in the commonly used methods for converting Pearson's
+correlations into t-values. The method provided here is defensible, but if
+reporting in scientific publications the method should be spelled out.
 }
 \note{
 This function was designed in part on the procedure recommended by Thomas
-  Lumley, the author of the survey package, on
-  \href{http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has not reviewed or endorsed this implementation.
-  All defects are attributed to the author.
+Lumley, the author of the survey package, on
+\href{http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has not reviewed or endorsed this implementation.
+All defects are attributed to the author.
 }
 \examples{
  library(survey)

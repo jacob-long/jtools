@@ -21,9 +21,9 @@ type of model that you want to summarize from the details section.
 \itemize{
 
 \item \code{\link{summ.lm}}
-  \item \code{\link{summ.glm}}
-  \item \code{\link{summ.svyglm}}
-  \item \code{\link{summ.merMod}}
+\item \code{\link{summ.glm}}
+\item \code{\link{summ.svyglm}}
+\item \code{\link{summ.merMod}}
 
 }
 }

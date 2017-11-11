@@ -27,36 +27,36 @@ in place of the variable names. See details for examples. Default: NULL}
 
 \item{omit.coefs}{If you'd like to specify some coefficients to not include
 in the plot, provide them as a vector. This argument is overridden by
-`coefs` if both are provided. By default, the intercept term is omitted.
+\code{coefs} if both are provided. By default, the intercept term is omitted.
 To include the intercept term, just set omit.coefs to NULL.}
 
 \item{color.class}{A color class understood by
-[ggplot2::scale_colour_brewer()] for differentiating multiple models.
+\code{\link[ggplot2:scale_colour_brewer]{ggplot2::scale_colour_brewer()}} for differentiating multiple models.
 Not used if only one model is plotted. Default: 'Set2'}
 }
 \value{
 A ggplot object.
 }
 \description{
-`plot_summs` and `plot_coefs` create regression coefficient
-  plots with ggplot2.
+\code{plot_summs} and \code{plot_coefs} create regression coefficient
+plots with ggplot2.
 }
 \details{
-A note on the distinction between `plot_summs` and `plot_coefs`:
-  `plot_summs` only accepts models supported by [summ()] and allows users
-  to take advantage of the standardization and robust standard error features
-  (among others as may be relevant). `plot_coefs` supports any models that
-  have a [broom::tidy()] method defined in the broom package, but of course
-  lacks any additional features like robust standard errors. To get a mix
-  of the two, you can pass `summ` objects to `plot_coefs` too.
+A note on the distinction between \code{plot_summs} and \code{plot_coefs}:
+\code{plot_summs} only accepts models supported by \code{\link[=summ]{summ()}} and allows users
+to take advantage of the standardization and robust standard error features
+(among others as may be relevant). \code{plot_coefs} supports any models that
+have a \code{\link[broom:tidy]{broom::tidy()}} method defined in the broom package, but of course
+lacks any additional features like robust standard errors. To get a mix
+of the two, you can pass \code{summ} objects to \code{plot_coefs} too.
 
-  For \code{coefs}, if you provide a named vector of coefficients, then
-  the plot will refer to the selected coefficients by the names of the
-  vector rather than the coefficient names. For instance, if I want to
-  include only the coefficients for the \code{hp} and \code{mpg} but have
-  the plot refer to them as "Horsepower" and "Miles/gallon", I'd provide
-  the argument like this:
-  \code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
+For \code{coefs}, if you provide a named vector of coefficients, then
+the plot will refer to the selected coefficients by the names of the
+vector rather than the coefficient names. For instance, if I want to
+include only the coefficients for the \code{hp} and \code{mpg} but have
+the plot refer to them as "Horsepower" and "Miles/gallon", I'd provide
+the argument like this:
+\code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
 }
 \examples{
 states <- as.data.frame(state.x77)
