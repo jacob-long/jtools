@@ -478,7 +478,7 @@ Behavioral Research*, *40*, 373–400.
 
 Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:
 Determining and controlling the false positive rate. *Comparative Political
-Studies*, 1–33. [https://doi.org/10.1177/00410141041017730080](https://doi.org/10.1177/00410141041017730080)
+Studies*, 1–33. [https://doi.org/10.1177/0010414017730080](https://doi.org/10.1177/0010414017730080)
 
 Hainmueller, J., Mummolo, J., & Xu, Y. (2016). How much should we trust 
 estimates from multiplicative interaction models? Simple tools to improve
