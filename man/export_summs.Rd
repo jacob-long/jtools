@@ -94,19 +94,14 @@ To format the error statistics, simply put the statistics desired in
 curly braces wherever you want them in a character string. For example,
 if you want the standard error in parentheses, the argument would be
 \code{"({std.error})"}, which is the default. Some other ideas:
-
-\itemize{\preformatted{\item \code{"({statistic})"}, which gives you the test statistic in
+\itemize{
+\item \code{"({statistic})"}, which gives you the test statistic in
 parentheses.
 \item \code{"({statistic}, p = {p.value})"}, which gives the test
 statistic followed by a "p =" p value all in parentheses. Note that
 you'll have to pay special attention to rounding if you do this to keep
 cells sufficiently narrow.
-\item \code{"[{conf.low}, {conf.high}]"}, which gives the confidence
-interval in the standard bracket notation. You could also explicitly
-write the confidence level, e.g.,
- \code{"95\% CI [{conf.low}, {conf.high}]"}.
-}
-
+\item \code{"[{conf.low}, {conf.high}]"``, which gives the confidence interval in the standard bracket notation. You could also explicitly write the confidence level, e.g.,}"95% CI \link{{conf.low}, {conf.high}}"`.
 }
 
 For \code{coefs}, the argument is slightly different than what is default
