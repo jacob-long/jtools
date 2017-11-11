@@ -37,3 +37,31 @@ reference:
  - title: Miscellaneous
    contents:
     - theme_apa
+
+
+navbar:
+  left:
+    - icon: fa-home
+      href: index.html
+    - icon: fa-newspaper-o
+      text: "News"
+      href: news/index.html
+    - icon: fa-file-code-o
+      text: "Documentation"
+      href: reference/index.html
+    - icon: fa-book
+      text: "Vignettes"
+      menu:
+      -  text: Tools for summarizing and visualizing regression models
+         href: articles/summ.html
+      -  text: Exploring interactions with continuous predictors in regression models
+         href: articles/interactions.html
+      -  text: Plotting interactions among categorical variables in regression models
+         href: articles/categorical.html
+      -  text: Calculate correlations and correlation tables with complex survey data
+         href: articles/svycor.html
+  right:
+    - icon: fa-github fa-lg
+      text: "Github"
+      href: https://github.com/jacob-long/jtools
+
