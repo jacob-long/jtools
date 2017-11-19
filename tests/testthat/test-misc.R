@@ -19,16 +19,18 @@ dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat,
 regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide, design = dstrat)
 
 test_that("interact_plot works for lm", {
-  expect_silent(interact_plot(model = fit,
+  expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
                               centered = "all"))
-  expect_silent(interact_plot(model = fit,
+  expect_silent(print(p))
+  expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
                               centered = "HSGrad"))
+  expect_silent(print(p))
 })
 
 test_that("sim_slopes works for lm", {
@@ -58,20 +60,22 @@ test_that("sim_slopes works for weighted lm", {
 })
 
 test_that("interact_plot works for weighted lm", {
-  expect_silent(interact_plot(model = fitw,
+  expect_silent(p <- interact_plot(model = fitw,
                              pred = Murder,
                              modx = Illiteracy,
                              mod2 = HSGrad,
                              centered = "all"))
-  expect_silent(interact_plot(model = fitw,
+  expect_silent(print(p))
+  expect_silent(p <- interact_plot(model = fitw,
                              pred = Murder,
                              modx = Illiteracy,
                              mod2 = HSGrad,
                              centered = "all"))
+  expect_silent(print(p))
 })
 
 test_that("interact_plot accepts user-specified values and labels", {
-  expect_silent(interact_plot(model = fit,
+  expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
@@ -80,65 +84,80 @@ test_that("interact_plot accepts user-specified values and labels", {
                               modx.labels = c("None","Low","High"),
                               mod2vals = c(40, 60, 80),
                               mod2.labels = c("Low","Average","High")))
-  expect_silent(interact_plot(model = fit2,
+  expect_silent(print(p))
+  expect_silent(p <- interact_plot(model = fit2,
                               pred = o70,
                               modx = HSGrad,
                               pred.labels = c("Under","Over")))
+  expect_silent(print(p))
 })
 
 test_that("interact_plot terciles modxval/mod2val works", {
-  expect_silent(interact_plot(model = fit,
+  expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
                 modxvals = "terciles",
                 mod2vals = "terciles",
                 centered = "none"))
+  expect_silent(print(p))
 })
 
 test_that("interact_plot linearity.check works", {
-  expect_silent(interact_plot(model = fit,
+  expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               modxvals = "terciles",
                               linearity.check = TRUE))
-  expect_silent(interact_plot(model = fit,
+  expect_silent(print(p))
+  expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               linearity.check = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("effect_plot works for lm", {
-  expect_silent(effect_plot(model = fit,
+  expect_silent(p <- effect_plot(model = fit,
                               pred = Murder,
                               centered = "all"))
-  expect_silent(effect_plot(model = fit,
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
                               pred = Murder,
                               centered = "HSGrad"))
+  expect_silent(print(p))
 })
 
 test_that("effect_plot works for weighted lm", {
-  expect_silent(effect_plot(model = fitw,
+  expect_silent(p <- effect_plot(model = fitw,
                             pred = Murder,
                             centered = "all"))
-  expect_silent(effect_plot(model = fitw,
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
                             pred = Murder,
                             centered = "HSGrad"))
+  expect_silent(print(p))
 })
 
 test_that("interact_plot works for svyglm", {
-  expect_silent(interact_plot(regmodel, pred = ell, modx = meals, mod2 = both,
+  expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
+                                   mod2 = both,
                               centered = "all"))
-  expect_silent(interact_plot(regmodel, pred = ell, modx = meals, mod2 = both,
+  expect_silent(print(p))
+  expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
+                                   mod2 = both,
                               centered = "ell"))
+  expect_silent(print(p))
 })
 
 
 test_that("effect_plot works for svyglm", {
-  expect_silent(effect_plot(regmodel, pred = meals,
+  expect_silent(p <- effect_plot(regmodel, pred = meals,
                               centered = "all"))
-  expect_silent(effect_plot(regmodel, pred = meals,
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(regmodel, pred = meals,
                               centered = "ell"))
+  expect_silent(print(p))
 })
 
 library(lme4, quietly = TRUE)
@@ -146,11 +165,13 @@ data(VerbAgg)
 mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
 
 test_that("interact_plot works for lme4", {
-  expect_silent(interact_plot(mv, pred = mode, modx = Gender))
+  expect_silent(p <- interact_plot(mv, pred = mode, modx = Gender))
+  expect_silent(print(p))
 })
 
 test_that("effect_plot works for lme4", {
-  expect_silent(effect_plot(mv, pred = mode))
+  expect_silent(p <- effect_plot(mv, pred = mode))
+  expect_silent(print(p))
 })
 
 set.seed(100)
@@ -163,7 +184,8 @@ pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
             family = poisson)
 
 test_that("interact_plot handles offsets", {
-  expect_message(interact_plot(pmod, pred = talent, modx = money))
+  expect_message(p <- interact_plot(pmod, pred = talent, modx = money))
+  expect_silent(print(p))
 })
 
 test_that("sim_slopes handles offsets", {
@@ -171,7 +193,8 @@ test_that("sim_slopes handles offsets", {
 })
 
 test_that("effect_plot handles offsets", {
-  expect_message(effect_plot(pmod, pred = money))
+  expect_message(p <- effect_plot(pmod, pred = money))
+  expect_silent(print(p))
 })
 
 ### johnson_neyman ###########################################################
@@ -192,70 +215,84 @@ diamond <- diamond[samps,]
 fit <- lm(price ~ cut * color, data = diamond)
 
 test_that("cat_plot handles simple plot (bar)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut))
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles intervals (bar)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE))
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles plotted points (bar)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles simple plot (line)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, geom = "line"))
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, geom = "line"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles intervals (line)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          geom = "line"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles plotted points (line)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "line"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles point.shape (line)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "line", point.shape = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles point.shape (line)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "line", point.shape = TRUE,
                          vary.lty = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles simple plot (point)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, geom = "point"))
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, geom = "point"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles intervals (point)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          geom = "point"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles plotted points (point)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "point"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles point.shape (point)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "point",
                          point.shape = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles simple plot (boxplot)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, geom = "boxplot"))
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, geom = "boxplot"))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles plotted points (boxplot)", {
-  expect_silent(cat_plot(fit, pred = color, modx = cut, interval = TRUE,
+  expect_silent(p <- cat_plot(fit, pred = color, modx = cut, interval = TRUE,
                          plot.points = TRUE, geom = "boxplot"))
+  expect_silent(print(p))
 })
 
 set.seed(100)
@@ -269,15 +306,18 @@ pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
             family = poisson)
 
 test_that("cat_plot handles offsets", {
-  expect_s3_class(cat_plot(pmod, pred = talent), "gg")
+  expect_s3_class(p <- cat_plot(pmod, pred = talent), "gg")
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles svyglm", {
-  expect_silent(cat_plot(regmodel, pred = both))
+  expect_silent(p <- cat_plot(regmodel, pred = both))
+  expect_silent(print(p))
 })
 
 test_that("cat_plot handles merMod", {
-  expect_silent(cat_plot(mv, pred = mode, modx = Gender, interval = FALSE))
+  expect_silent(p <- cat_plot(mv, pred = mode, modx = Gender, interval = FALSE))
+  expect_silent(print(p))
 })
 
 # 3-way interaction

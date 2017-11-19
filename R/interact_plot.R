@@ -73,7 +73,7 @@
 #' @param linearity.check For two-way interactions only. If `TRUE`, plots a
 #'   pane for each level of the moderator and superimposes a loess smoothed
 #'   line (in gray) over the plot. This enables you to see if the effect is
-#'   linear through the span of the moderator. See Hainmuller et al. (2016) in
+#'   linear through the span of the moderator. See Hainmueller et al. (2016) in
 #'   the references for more details on the intuition behind this. It is
 #'   recommended that you also set `plot.points = TRUE` and use
 #'   `modxvals = "terciles"` with this option.
@@ -763,6 +763,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Labels for values of moderator
   pm[,modx] <- factor(pm[,modx], levels = modxvals2, labels = modx.labels)
+  if (facmod == TRUE) {
+    d[,modx] <- factor(d[,modx], levels = modxvals2, labels = modx.labels)
+  }
   pm$modx_group <- pm[,modx]
 
   # Setting labels for second moderator
@@ -788,17 +791,33 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Get palette from RColorBrewer myself so I can use darker values
-  colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
-  colors <- colors[-1]
+  if (facmod == FALSE) {
+    colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
+    colors <- colors[-1]
+  } else {
+    if (length(modxvals2) == 2) {
+      num_colors <- 3
+    } else {
+      num_colors <- length(modxvals2)
+    }
+    colors <- RColorBrewer::brewer.pal(num_colors, color.class)
+    colors <- colors[1:length(modxvals2)]
+  }
+
+  # Manually set linetypes
+  types <- c("solid", "4242", "2222", "dotdash", "dotted", "twodash")
+  ltypes <- types[1:length(modxvals2)]
 
   if (is.null(mod2)) {
     colors <- rev(colors)
     pp_color <- first(colors) # Darkest color used for plotting points
   } else {
+    ltypes <- rev(ltypes)
     pp_color <- last(colors)
   }
 
   names(colors) <- modx.labels
+  names(ltypes) <- modx.labels
 
   # Defining linetype here
   if (vary.lty == TRUE) {
@@ -813,16 +832,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Plot intervals if requested
   if (interval == TRUE) {
-    p <- p + geom_ribbon(aes_string(ymin = "ymin", ymax = "ymax",
-                                    fill = modx, group = modx,
-                                    colour = modx, linetype = NA),
-                                  alpha = 1/5, show.legend = FALSE)
-    if (facmod == TRUE) {
-      p <- p + scale_fill_brewer(palette = color.class)
-    } else {
-      p <- p + scale_fill_manual(values = colors,
-                                 breaks = levels(pm[,modx]))
-    }
+    p <- p + geom_ribbon(data = pm, aes_string(x = pred,
+                                               ymin = "ymin", ymax = "ymax",
+                                               fill = modx, group = modx,
+                                               colour = modx, linetype = NA),
+                         alpha = 1/5, show.legend = FALSE,
+                         inherit.aes = FALSE)
+
+    p <- p + scale_fill_manual(values = colors, breaks = names(colors))
   }
 
   # If third mod, facet by third mod
@@ -852,7 +869,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                           colour = modx, size = "the_weights"),
                position = position_jitter(width = jitter, height = jitter),
-               inherit.aes = FALSE, show.legend = FALSE)
+               inherit.aes = TRUE, show.legend = FALSE)
     } else if (!is.factor(d[,modx])) {
       # using alpha for same effect with continuous vars
       p <- p + geom_point(data = d,
@@ -872,11 +889,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Using theme_apa for theming...but using legend title and side positioning
   if (is.null(mod2)) {
-    p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
+    p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE,
+                       legend.font.size = 11)
   } else {
     # make better use of space by putting legend on bottom for facet plots
     p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
-                       facet.title.size = 10)
+                       facet.title.size = 10, legend.font.size = 11)
   }
   p <- p + labs(x = x.label, y = y.label) # better labels for axes
 
@@ -904,19 +922,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Get scale colors, provide better legend title
-  if (facmod == TRUE) {
-    p <- p + scale_colour_brewer(name = legend.main, palette = color.class)
-  } else {
-    p <- p + scale_colour_manual(name = legend.main, values = colors,
-                                 breaks = pm[,modx])
-  }
+  p <- p + scale_colour_manual(name = legend.main, values = colors,
+                               breaks = names(colors))
 
   if (vary.lty == TRUE) { # Add line-specific changes
-    if (facmod == FALSE) {
-      p <- p + scale_linetype_discrete(name = legend.main, breaks = pm[,modx])
-    } else {
-      p <- p + scale_linetype_discrete(name = legend.main)
-    }
+    p <- p + scale_linetype_manual(name = legend.main, values = ltypes,
+                                   breaks = names(ltypes),
+                                   na.value = "blank")
     # Need some extra width to show the linetype pattern fully
     p <- p + theme(legend.key.width = grid::unit(2, "lines"))
   }
