@@ -1,3 +1,14 @@
+## jtools 0.9.1 (CRAN release)
+
+Bugfix update:
+
+Jonas Kunst helpfully pointed out some odd behavior of `interact_plot` with 
+factor moderators. No longer should there be occasions in which you have two
+different legends appear. The linetype and colors also should now be consistent
+whether there is a second moderator or not. For continuous moderators, the 
+darkest line should also be a solid line and it is by default the highest 
+value of the moderator.
+
 ## jtools 0.9.0 (CRAN release)
 
 This may be the single biggest update yet. If you downloaded from CRAN, be sure

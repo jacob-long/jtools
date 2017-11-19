@@ -73,7 +73,7 @@
 #' @param linearity.check For two-way interactions only. If `TRUE`, plots a
 #'   pane for each level of the moderator and superimposes a loess smoothed
 #'   line (in gray) over the plot. This enables you to see if the effect is
-#'   linear through the span of the moderator. See Hainmuller et al. (2016) in
+#'   linear through the span of the moderator. See Hainmueller et al. (2016) in
 #'   the references for more details on the intuition behind this. It is
 #'   recommended that you also set `plot.points = TRUE` and use
 #'   `modxvals = "terciles"` with this option.
