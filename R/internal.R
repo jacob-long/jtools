@@ -45,7 +45,7 @@ add_stars <- function(table, digits, p_vals) {
   }
 
   # Round the values
-  table <- round(table, digits)
+  table <- round_df_char(table, digits)
 
   # Can't do this in the first conditional because of the need to round
   if (p_vals == TRUE) {
@@ -57,10 +57,58 @@ add_stars <- function(table, digits, p_vals) {
     colnames(table) <- c(tnames, "")
   }
 
-  table <- as.table(table)
+  #table <- as.table(table)
 
   return(table)
 
+}
+
+## Creates clean data frames for printing. Aligns decimal points,
+## padding extra space with " " (or another value), and rounds values. 
+## Outputs a data.frame of character vectors containing the corrected 
+## values.
+
+round_df_char <- function(df, digits, pad = " ") {
+  nas <- is.na(df)
+  if (!is.data.frame(df)) df <- as.data.frame(df, stringsAsFactors = FALSE)
+  rn <- rownames(df)
+  cn <- colnames(df)
+  df <- as.data.frame(lapply(df, function(col) {
+    if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
+      as.numeric(as.character(col))
+    } else {
+      col
+    }
+  }), stringsAsFactors = FALSE)
+  nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
+  df[nums] <- round(df[nums], digits = digits)
+  df[nas] <- ""
+  
+  df <- as.data.frame(lapply(df, as.character), stringsAsFactors = FALSE)
+  
+  for (i in which(nums)) {
+    if (any(grepl(".", df[[i]], fixed = TRUE))) {
+      s <- strsplit(df[[i]], ".", fixed = TRUE)
+      lengths <- lengths(s)
+      digits.r.of.. <- sapply(seq_along(s), function(x) {
+        if (lengths[x] > 1) nchar(s[[x]][lengths[x]])
+        else 0 })
+      df[[i]] <- sapply(seq_along(df[[i]]), function(x) {
+        if (df[[i]][x] == "") ""
+        else if (lengths[x] <= 1) {
+          paste0(c(df[[i]][x], rep(".", pad == 0), rep(pad, max(digits.r.of..) - digits.r.of..[x] + as.numeric(pad != 0))),
+                 collapse = "")
+        }
+        else paste0(c(df[[i]][x], rep(pad, max(digits.r.of..) - digits.r.of..[x])),
+                    collapse = "")
+      })
+    }
+  }
+  
+  if (length(rn) > 0) rownames(df) <- rn
+  if (length(cn) > 0) names(df) <- cn
+  
+  return(df)
 }
 
 ### pseudo-R2 ################################################################
