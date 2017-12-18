@@ -1105,7 +1105,7 @@ print.summ.glm <- function(x, ...) {
 
   }
 
-  print(as.table(ctable))
+  print(ctable)
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1542,7 +1542,7 @@ print.summ.svyglm <- function(x, ...) {
     cat("Standard errors: Robust\n")
   }
 
-  print(as.table(ctable))
+  print(ctable)
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -2097,7 +2097,7 @@ print.summ.merMod <- function(x, ...) {
   }
 
   cat("FIXED EFFECTS:\n")
-  print(as.table(ctable))
+  print(ctable)
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
@@ -2130,18 +2130,14 @@ package \"pbkrtest\" to get more accurate p values.")
   }
 
   cat("\nRANDOM EFFECTS:\n")
-  rtable <- j$rcoeftable
-  rtable[,3] <- round(as.numeric(rtable[,3]), digits = x$digits)
-  rtable <- as.table(rtable)
-  rownames(rtable) <- rep("", times = nrow(rtable))
-  print(rtable)
+  rtable <- round_df_char(j$rcoeftable, digits = x$digits)
+  #rownames(rtable) <- rep("", times = nrow(rtable))
+  print(rtable, row.names = FALSE)
 
   cat("\nGrouping variables:\n")
-  gtable <- j$gvars
-  gtable[,2:3] <- round(as.numeric(gtable[,2:3]), digits = x$digits)
-  gtable <- as.table(gtable)
-  rownames(gtable) <- rep("", times = nrow(gtable))
-  print(gtable)
+  gtable <- round_df_char(j$gvars, digits = x$digits)
+  #rownames(gtable) <- rep("", times = nrow(gtable))
+  print(gtable, row.names = FALSE)
 
   # Notifying user if variables altered from original fit
   if (x$scale == TRUE) {
@@ -2603,7 +2599,7 @@ print.summ.default <- function(x, ...) {
 
   }
 
-  print(as.table(ctable))
+  print(ctable)
 
   # Notifying user if variables altered from original fit
   if (x$scale == TRUE) {
