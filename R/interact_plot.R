@@ -115,6 +115,8 @@
 #' @param color.class Any palette argument accepted by
 #'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
 #'    moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
+#'    Alternately, you may provide a vector of color values in any format
+#'    accepted by `ggplot2`.
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
@@ -791,17 +793,24 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Get palette from RColorBrewer myself so I can use darker values
-  if (facmod == FALSE) {
-    colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
-    colors <- colors[-1]
-  } else {
-    if (length(modxvals2) == 2) {
-      num_colors <- 3
+  if (length(color.class) == 1) {
+    if (facmod == FALSE) {
+      colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
+      colors <- colors[-1]
     } else {
-      num_colors <- length(modxvals2)
+      if (length(modxvals2) == 2) {
+        num_colors <- 3
+      } else {
+        num_colors <- length(modxvals2)
+      }
+      colors <- RColorBrewer::brewer.pal(num_colors, color.class)
+      colors <- colors[1:length(modxvals2)]
     }
-    colors <- RColorBrewer::brewer.pal(num_colors, color.class)
-    colors <- colors[1:length(modxvals2)]
+  } else { # Allow manually defined colors
+    colors <- color.class
+    if (length(colors) != length(modxvals2)) {
+      stop("Manually defined colors must be of same length as modxvals.")
+    }
   }
 
   # Manually set linetypes
@@ -1567,7 +1576,8 @@ print.effect_plot <- function(x, ...) {
 #'
 #' @param color.class Any palette argument accepted by
 #'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-#'    moderators.
+#'    moderators. You may also simply supply a vector of colors accepted by
+#'    `ggplot2` and of equal length to the number of moderator levels.
 #'
 #' @inheritParams interact_plot
 #'
@@ -2043,12 +2053,16 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
       "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu",
       "YlOrBr", "YlOrRd")
 
-  # Get palette from RColorBrewer myself so I can use darker values
-  if (color.class %in% sequentials) {
-    colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
-    colors <- rev(colors)[-1]
-  } else {
-    suppressWarnings(colors <- RColorBrewer::brewer.pal(pred_len, color.class))
+  # Checking if user provided the colors his/herself
+  if (length(color.class) == 1 |
+      length(color.class) != length(levels(d[[pred]]))) {
+    # Get palette from RColorBrewer myself so I can use darker values
+    if (color.class %in% sequentials) {
+      colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
+      colors <- rev(colors)[-1]
+    } else {
+      suppressWarnings(colors <- RColorBrewer::brewer.pal(pred_len, color.class))
+    }
   }
 
   names(colors) <- levels(d[[pred]])
