@@ -64,13 +64,13 @@ add_stars <- function(table, digits, p_vals) {
 }
 
 ## Creates clean data frames for printing. Aligns decimal points,
-## padding extra space with " " (or another value), and rounds values. 
-## Outputs a data.frame of character vectors containing the corrected 
+## padding extra space with " " (or another value), and rounds values.
+## Outputs a data.frame of character vectors containing the corrected
 ## values.
 
 round_df_char <- function(df, digits, pad = " ") {
   nas <- is.na(df)
-  if (!is.data.frame(df)) df <- as.data.frame(df, stringsAsFactors = FALSE)
+  if (!is.data.frame(df)) df <- as.data.frame.matrix(df, stringsAsFactors = FALSE)
   rn <- rownames(df)
   cn <- colnames(df)
   df <- as.data.frame(lapply(df, function(col) {
@@ -82,10 +82,12 @@ round_df_char <- function(df, digits, pad = " ") {
   }), stringsAsFactors = FALSE)
   nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
   df[nums] <- round(df[nums], digits = digits)
-  df[nas] <- ""
-  
+  if (any(nas)) {
+    df[nas] <- ""
+  }
+
   df <- as.data.frame(lapply(df, as.character), stringsAsFactors = FALSE)
-  
+
   for (i in which(nums)) {
     if (any(grepl(".", df[[i]], fixed = TRUE))) {
       s <- strsplit(df[[i]], ".", fixed = TRUE)
@@ -104,10 +106,10 @@ round_df_char <- function(df, digits, pad = " ") {
       })
     }
   }
-  
+
   if (length(rn) > 0) rownames(df) <- rn
   if (length(cn) > 0) names(df) <- cn
-  
+
   return(df)
 }
 
