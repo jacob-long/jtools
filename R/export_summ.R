@@ -188,7 +188,7 @@ export_summs <- function(...,
   if (!grepl("conf.low", error_format, fixed = TRUE) &
     !grepl("conf.high", error_format, fixed = TRUE)) {
 
-    ci_level <- NULL
+    ci_level <- NaN
 
   } else {
 

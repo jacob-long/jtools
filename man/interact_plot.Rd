@@ -125,7 +125,9 @@ variable is used.}
 
 \item{color.class}{Any palette argument accepted by
 \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
+moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
+Alternately, you may provide a vector of color values in any format
+accepted by \code{ggplot2}.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
