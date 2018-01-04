@@ -57,10 +57,10 @@ summ(fit)
     #> Adj. R-squared = 0.81
     #> 
     #> Standard errors: OLS 
-    #>             Est.  S.E. t val. p    
-    #> (Intercept) 37.23 1.6  23.28  0 ***
-    #> hp          -0.03 0.01 -3.52  0 ** 
-    #> wt          -3.88 0.63 -6.13  0 ***
+    #>              Est. S.E. t val. p    
+    #> (Intercept) 37.23 1.6   23.28 0 ***
+    #> hp          -0.03 0.01  -3.52 0  **
+    #> wt          -3.88 0.63  -6.13 0 ***
 
 It has several conveniences, like re-fitting your model with scaled variables (`scale = TRUE`). You have the option to leave the outcome variable in its original scale (`scale.response = TRUE`), which is the default for scaled models. I'm a fan of Andrew Gelman's 2 SD standardization method, so you can specify by how many standard deviations you would like to rescale (`n.sd = 2`).
 
@@ -81,10 +81,10 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE,
     #> Adj. R-squared = 0.81
     #> 
     #> Standard errors: OLS 
-    #>              Est.  2.5% 97.5% t val.   VIF partial.r part.r
-    #> (Intercept) 20.09 19.19 20.99  43.82                       
-    #> hp          -2.18 -3.39 -0.97  -3.52  1.77     -0.55  -0.27
-    #> wt          -3.79 -5.01 -2.58  -6.13  1.77     -0.75  -0.47
+    #>              Est.  2.5% 97.5% t val.  VIF partial.r part.r
+    #> (Intercept) 20.09 19.19 20.99  43.82                      
+    #> hp          -2.18 -3.39 -0.97  -3.52 1.77     -0.55  -0.27
+    #> wt          -3.79 -5.01 -2.58  -6.13 1.77     -0.75  -0.47
     #> 
     #> All continuous predictors are mean-centered and scaled by 1 s.d.
 
@@ -106,9 +106,9 @@ summ(fit2, robust = TRUE, cluster = "firm", robust.type = "HC3")
     #> Adj. R-squared = 0.21
     #> 
     #> Standard errors: Cluster-robust, type = HC3
-    #>             Est. S.E. t val. p       
-    #> (Intercept) 0.03 0.07 0.44   0.66    
-    #> x           1.03 0.05 20.36  0    ***
+    #>             Est. S.E. t val.    p    
+    #> (Intercept) 0.03 0.07   0.44 0.66    
+    #> x           1.03 0.05  20.36 0    ***
 
 Of course, `summ` like `summary` is best-suited for interactive use. When it comes to share results with others, you want sharper output and probably graphics. `jtools` has some options for that, too.
 
@@ -122,93 +122,93 @@ export_summs(fit, fit_b, fit_c, scale = TRUE, scale.response = TRUE,
              note = "")
 ```
 
-<table style="width:60%;">
+<table style="width:82%;">
 <colgroup>
 <col width="18%" />
-<col width="13%" />
-<col width="13%" />
-<col width="13%" />
+<col width="22%" />
+<col width="20%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th></th>
-<th align="center">(1)</th>
-<th align="center">(2)</th>
-<th align="center">(3)</th>
+<th align="center">( 1)</th>
+<th align="center">( 2)</th>
+<th align="center">( 3)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>(Intercept)</td>
-<td align="center">0.00    </td>
-<td align="center">0.00    </td>
-<td align="center">0.00    </td>
+<td align="center">2.51e-17.00   </td>
+<td align="center">2.34e-17.00  </td>
+<td align="center">7.45e-17.00  </td>
 </tr>
 <tr class="even">
 <td></td>
 <td align="center">(0.08)   </td>
-<td align="center">(0.08)   </td>
-<td align="center">(0.08)   </td>
+<td align="center">(0.08)  </td>
+<td align="center">(0.08)  </td>
 </tr>
 <tr class="odd">
 <td>hp</td>
-<td align="center">-0.36 ***</td>
-<td align="center">-0.35 ** </td>
-<td align="center">-0.40 ** </td>
+<td align="center">-0.36 ** </td>
+<td align="center">-0.35 * </td>
+<td align="center">-0.40 **</td>
 </tr>
 <tr class="even">
 <td></td>
 <td align="center">(0.10)   </td>
-<td align="center">(0.13)   </td>
-<td align="center">(0.13)   </td>
+<td align="center">(0.13)  </td>
+<td align="center">(0.13)  </td>
 </tr>
 <tr class="odd">
 <td>wt</td>
 <td align="center">-0.63 ***</td>
-<td align="center">-0.62 ***</td>
-<td align="center">-0.56 ***</td>
+<td align="center">-0.62 **</td>
+<td align="center">-0.56 **</td>
 </tr>
 <tr class="even">
 <td></td>
 <td align="center">(0.10)   </td>
-<td align="center">(0.17)   </td>
-<td align="center">(0.18)   </td>
+<td align="center">(0.17)  </td>
+<td align="center">(0.18)  </td>
 </tr>
 <tr class="odd">
 <td>disp</td>
 <td align="center">       </td>
-<td align="center">-0.02    </td>
-<td align="center">0.08    </td>
+<td align="center">-0.02  </td>
+<td align="center">0.08  </td>
 </tr>
 <tr class="even">
 <td></td>
 <td align="center">       </td>
-<td align="center">(0.21)   </td>
-<td align="center">(0.22)   </td>
+<td align="center">(0.21)  </td>
+<td align="center">(0.22)  </td>
 </tr>
 <tr class="odd">
 <td>drat</td>
 <td align="center">       </td>
-<td align="center">       </td>
-<td align="center">0.16    </td>
+<td align="center">      </td>
+<td align="center">0.16  </td>
 </tr>
 <tr class="even">
 <td></td>
 <td align="center">       </td>
-<td align="center">       </td>
-<td align="center">(0.12)   </td>
+<td align="center">      </td>
+<td align="center">(0.12)  </td>
 </tr>
 <tr class="odd">
 <td>N</td>
 <td align="center">32       </td>
-<td align="center">32       </td>
-<td align="center">32       </td>
+<td align="center">32      </td>
+<td align="center">32      </td>
 </tr>
 <tr class="even">
-<td>R2</td>
+<td>R 2</td>
 <td align="center">0.83    </td>
-<td align="center">0.83    </td>
-<td align="center">0.84    </td>
+<td align="center">0.83   </td>
+<td align="center">0.84   </td>
 </tr>
 </tbody>
 </table>

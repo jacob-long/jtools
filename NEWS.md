@@ -9,6 +9,18 @@ whether there is a second moderator or not. For continuous moderators, the
 darkest line should also be a solid line and it is by default the highest 
 value of the moderator.
 
+Other fixes:
+
+* An update to `huxtable` broke `export_summs`, but that has been fixed.
+
+Feature updates:
+
+* You can now manually provide colors to `interact_plot` and `cat_plot` by 
+providing a vector of colors (any format that `ggplot2` accepts) for the 
+`color.class` argument.
+* Noah Greifer wrote up a tweak to `summ` that formats the output in a way that
+lines up the decimal points. It looks great.
+
 ## jtools 0.9.0 (CRAN release)
 
 This may be the single biggest update yet. If you downloaded from CRAN, be sure
