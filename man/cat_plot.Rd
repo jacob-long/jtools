@@ -105,7 +105,8 @@ variable is used.}
 
 \item{color.class}{Any palette argument accepted by
 \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators.}
+moderators. You may also simply supply a vector of colors accepted by
+\code{ggplot2} and of equal length to the number of moderator levels.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
