@@ -1,3 +1,14 @@
+## jtools 0.9.2 
+
+Bugfix:
+
+* Johnson-Neyman plots misreported the alpha level if `control.fdr` was `TRUE`.
+It was reporting `alpha * 2` in the legend, but now it is accurate again.
+
+Feature update:
+
+* `johnson_neyman` now handles multilevel models from `lme4`. 
+
 ## jtools 0.9.1 (CRAN release)
 
 Bugfix update:

@@ -153,10 +153,24 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   # Construct interaction term
 
   ## Hard to predict which order lm() will have the predictors in
-  intterm1 <- paste(pred, ":", modx, sep = "") # first possible ordering
-  intterm1tf <- any(intterm1 %in% names(coef(model))) # is it in the coef names?
-  intterm2 <- paste(modx, ":", pred, sep = "") # second possible ordering
-  intterm2tf <- any(intterm2 %in% names(coef(model))) # is it in the coef names?
+  ### First, have to handle the weirdness of merMods
+  if (inherits(model, "merMod")) {
+    intterm1 <- paste(pred, ":", modx, sep = "") # first possible ordering
+    intterm1tf <- any(intterm1 %in% names(lme4::fixef(model))) # is it in the coef names?
+    intterm2 <- paste(modx, ":", pred, sep = "") # second possible ordering
+    intterm2tf <- any(intterm2 %in% names(lme4::fixef(model))) # is it in the coef names?
+
+    # Taking care of other business, creating coefs object for later
+    coefs <- lme4::fixef(model)
+  } else {
+    intterm1 <- paste(pred, ":", modx, sep = "") # first possible ordering
+    intterm1tf <- any(intterm1 %in% names(coef(model))) # is it in the coef names?
+    intterm2 <- paste(modx, ":", pred, sep = "") # second possible ordering
+    intterm2tf <- any(intterm2 %in% names(coef(model))) # is it in the coef names?
+
+    # Taking care of other business, creating coefs object for later
+    coefs <- coef(model)
+  }
 
   ## Now we know which of the two is found in the coefficents
   inttermstf <- c(intterm1tf, intterm2tf) # Using this to get the index of the TRUE one
@@ -170,16 +184,15 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   modrange[1] <- modrange[1] - modsd
   modrange[2] <- modrange[2] + modsd
 
+  alpha <- alpha / 2
+
   if (control.fdr == FALSE) {
     # Set critical t value
-    alpha <- alpha / 2
     tcrit <- qt(alpha, df = df)
     # Reverse the sign since it gives negative at these low vals
     tcrit <- abs(tcrit)
   } else if (control.fdr == TRUE) { # Use Esarey & Sumner (2017) correction
 
-    ## Model coefficients
-    coefs <- coef(model)
     ## Predictor beta
     predb <- coefs[pred]
     ## Interaction term beta
@@ -221,11 +234,11 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     while (test == 0 & i > 1) {
 
       i <- i - 1
-      test <- min(ps[ps_o][1:i] <= multipliers[i] * alpha)
+      test <- min(ps[ps_o][1:i] <= multipliers[i] * (alpha * 2))
 
     }
 
-    tcrit <- abs(qt(multipliers[i] * (alpha / 2), df))
+    tcrit <- abs(qt(multipliers[i] * alpha, df))
 
   }
 
@@ -242,9 +255,9 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     # Covariance of predictor and interaction terms (gamma_1 by gamma_3)
     covy1y3 <- vmat[intterm,pred]
     # Actual interaction coefficient (gamma_3)
-    y3 <- coef(model)[intterm]
+    y3 <- coefs[intterm]
     # Actual predictor coefficient (gamma_1)
-    y1 <- coef(model)[pred]
+    y1 <- coefs[pred]
 
   } else { # user-supplied vcov, useful for robust calculation
 
