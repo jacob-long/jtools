@@ -197,7 +197,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   ss <- structure(ss, digits = digits)
 
   if (!is.null(modxvals) && !is.vector(modxvals)) {
-    stop("The modxvals argument must be a vector of at least length 2 if it is used.")
+    stop("The modxvals argument must be a vector of at least length 2 if it is",
+         " used.")
   }
 
   # Save data from model object
@@ -491,6 +492,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     }
 
+    if (robust == FALSE) {covmat <- NULL}
+
     jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
                                   vmat = covmat, plot = jnplot,
                                   alpha = jnalpha, digits = digits, ...),
@@ -716,7 +719,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   # Now we put it all together--vjust is at a non-default level
   ss$jnplot <- with_legend
 
-  } else if (johnson_neyman == TRUE) {
+  } else if (johnson_neyman == TRUE & jnplot == TRUE) {
 
     ss$jnplot <- jns[[1]]$plot
 
