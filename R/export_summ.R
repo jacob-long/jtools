@@ -83,7 +83,7 @@
 #'   you'll have to pay special attention to rounding if you do this to keep
 #'   cells sufficiently narrow.
 #'
-#'   * `"[{conf.low}, {conf.high}]"``, which gives the confidence
+#'   * `"[{conf.low}, {conf.high}]"`, which gives the confidence
 #'   interval in the standard bracket notation. You could also explicitly
 #'   write the confidence level, e.g.,
 #'    `"95% CI [{conf.low}, {conf.high}]"`.

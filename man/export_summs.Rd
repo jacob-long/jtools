@@ -101,7 +101,10 @@ parentheses.
 statistic followed by a "p =" p value all in parentheses. Note that
 you'll have to pay special attention to rounding if you do this to keep
 cells sufficiently narrow.
-\item \code{"[{conf.low}, {conf.high}]"``, which gives the confidence interval in the standard bracket notation. You could also explicitly write the confidence level, e.g.,}"95% CI \link{{conf.low}, {conf.high}}"`.
+\item \code{"[{conf.low}, {conf.high}]"}, which gives the confidence
+interval in the standard bracket notation. You could also explicitly
+write the confidence level, e.g.,
+\code{"95\% CI [{conf.low}, {conf.high}]"}.
 }
 
 For \code{coefs}, the argument is slightly different than what is default
