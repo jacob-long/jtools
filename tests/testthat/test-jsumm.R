@@ -1,5 +1,7 @@
 library(jtools)
 
+context("summ")
+
 # GLM test
 set.seed(1)
 output <- rpois(100, 5)
@@ -100,8 +102,8 @@ test_that("jsumm: svyglm CIs work", {
 })
 
 test_that("jsumm: merMod CIs work", {
-  expect_is(summ(mv, confint = TRUE), "summ.merMod")
-  expect_output(print(summ(mv, confint = TRUE)))
+  expect_is(summ(mv, confint = TRUE, pvals = FALSE), "summ.merMod")
+  expect_output(print(summ(mv, confint = TRUE, pvals = FALSE)))
 })
 
 test_that("jsumm: lm dropping pvals works", {
@@ -135,8 +137,9 @@ test_that("jsumm and center_lm: centering works", {
 })
 
 test_that("jsumm and merMod objects: everything works", {
-  expect_is(suppressWarnings(summ(mv, center = TRUE, n.sd = 2)), "summ.merMod")
-  expect_is(summ(mv, scale = TRUE, n.sd = 2), "summ.merMod")
+  expect_is(suppressWarnings(summ(mv, center = TRUE, n.sd = 2,
+                                  pvals = FALSE)), "summ.merMod")
+  expect_is(summ(mv, scale = TRUE, n.sd = 2, pvals = FALSE), "summ.merMod")
   expect_warning(summ(mv, robust = TRUE))
 })
 
@@ -194,13 +197,13 @@ test_that("jsumm: Printing isn't borked", {
   expect_output(print(summ(regmodell, model.check = TRUE, vifs = TRUE)))
   expect_output(print(summ(fit, scale = TRUE, n.sd = 2)))
   expect_output(print(summ(fit, model.check = TRUE, vifs = TRUE)))
-  expect_output(print(summ(mv, scale = TRUE, n.sd = 2)))
+  expect_output(print(summ(mv, scale = TRUE, n.sd = 2, pvals = FALSE)))
 
 })
 
 test_that("summ.merMod: r.squared works", {
   skip_on_cran()
-  expect_is(j <- summ(mv, r.squared = T), "summ.merMod")
+  expect_is(j <- summ(mv, pvals = FALSE, r.squared = TRUE), "summ.merMod")
   expect_output(print(j))
 })
 

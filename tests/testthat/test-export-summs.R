@@ -1,5 +1,7 @@
 library(jtools)
 
+context("export_summs")
+
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
@@ -142,6 +144,8 @@ test_that("Export can take manual coefficient names", {
 
 #### plot_summs ############################################################
 
+context("plot_summs")
+
 test_that("plot_summs doesn't fail with lm", {
   expect_is(p <- plot_summs(fit,fit2,fitw), "ggplot")
   expect_silent(print(p))
@@ -203,6 +207,8 @@ test_that("plot_summs can omit coefficients", {
                          coefs = c("HSGrad","Murder")), "ggplot")
   expect_silent(print(p))
 })
+
+context("plot_coefs")
 
 test_that("plot_coefs can take manual coefficient names", {
   expect_is(p <- plot_coefs(fit,fit2,fitw,

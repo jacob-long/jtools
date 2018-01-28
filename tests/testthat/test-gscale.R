@@ -1,3 +1,5 @@
+context("gscale")
+
 x <- rnorm(100, 2, 1)
 x2 <- rbinom(100, 1, .5)
 wts <- runif(100, 0, 1)

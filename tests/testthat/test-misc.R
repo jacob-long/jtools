@@ -1,5 +1,7 @@
 library(jtools)
 
+context("interactions lm")
+
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
@@ -139,6 +141,8 @@ test_that("effect_plot works for weighted lm", {
   expect_silent(print(p))
 })
 
+context("interactions svyglm")
+
 test_that("interact_plot works for svyglm", {
   expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
                                    mod2 = both,
@@ -160,6 +164,8 @@ test_that("effect_plot works for svyglm", {
   expect_silent(print(p))
 })
 
+context("interactions merMod")
+
 library(lme4, quietly = TRUE)
 data(VerbAgg)
 mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
@@ -173,6 +179,9 @@ test_that("effect_plot works for lme4", {
   expect_silent(p <- effect_plot(mv, pred = mode))
   expect_silent(print(p))
 })
+
+
+context("interactions offsets")
 
 set.seed(100)
 exposures <- rpois(50, 50)
@@ -199,12 +208,16 @@ test_that("effect_plot handles offsets", {
 
 ### johnson_neyman ###########################################################
 
+context("j_n specific")
+
 test_that("johnson_neyman control.fdr argument works", {
   expect_s3_class(johnson_neyman(fit, pred = Murder, modx = Illiteracy,
                                  control.fdr = TRUE), "johnson_neyman")
 })
 
 ### cat_plot ##################################################################
+
+context("cat_plot")
 
 library(ggplot2)
 diamond <- diamonds
