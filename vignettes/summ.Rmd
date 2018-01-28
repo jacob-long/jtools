@@ -45,7 +45,7 @@ many simple ways to include the results in a regression table as is common with
 the likes of Stata, SPSS, etc.
 
 Robust standard errors require the user to have the `sandwich`
-package installed. They do not need to be loaded.
+package installed. It does not need to be loaded.
 
 There are multiple types of robust standard errors that you may use, ranging
 from "HC0" to "HC5". Per the recommendation of the authors of the `sandwich`
