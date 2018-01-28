@@ -282,16 +282,16 @@ if (is.numeric(x)) {
       wname <- as.character(substitute(weights))
       wname2 <- weights
 
-      suppressWarnings({if (wname %in% names(d)) {
+      if (length(wname) == 1 && wname %in% names(d)) {
 
         weights <- d[[wname]]
 
-      } else if (wname2 %in% names(d)) {
+      } else if (length(wname2) == 1 && wname2 %in% names(d)) {
 
         weights <- d[[wname2]]
 
       }
-      })
+
 
     }
 
