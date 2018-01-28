@@ -239,6 +239,10 @@ export_summs <- function(...,
 
     names(jsumms) <- model.names
 
+  } else {
+
+    names(jsumms) <- as.character(seq_along(jsumms))
+
   }
 
   ## Setting statistics option
