@@ -117,6 +117,16 @@ GeomPointrangeh <-
 #'
 #' @export
 #' @rdname ggplot2-exts
+#' @details
+#'
+#' I wish I didn't have to document these functions, but I must obey CRAN. So
+#' here's this for a little fun:
+#'
+#' \if{html}{
+#' \out{
+#'<iframe width="420" height="345" src="http://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" allowfullscreen></iframe>
+#' }}
+#'
 
 geom_linerange_h <- function(mapping = NULL, data = NULL, stat = "identity",
                              position = "identity", na.rm = FALSE,

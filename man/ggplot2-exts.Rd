@@ -84,4 +84,13 @@ geoms.}
 These are lightly documented tweaks to ggplot2 geoms for
 jtools functions.
 }
+\details{
+I wish I didn't have to document these functions, but I must obey CRAN. So
+here's this for a little fun:
+
+\if{html}{
+\out{
+<iframe width="420" height="345" src="http://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" allowfullscreen></iframe>
+}}
+}
 \keyword{datasets}
