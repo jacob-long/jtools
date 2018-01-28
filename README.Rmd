@@ -105,14 +105,14 @@ package's `huxreg` function that preserves the niceties of `summ`, particularly
 its facilities for robust standard errors and standardization. It also 
 concatenates multiple models into a single table.
 
-```{r eval = FALSE}
+```{r eval = F}
 fit <- lm(mpg ~ hp + wt, data = mtcars)
 fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
 fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
 export_summs(fit, fit_b, fit_c, scale = TRUE, scale.response = TRUE,
              note = "")
 ```
-```{r echo = FALSE, results = 'asis', warning = FALSE}
+```{r echo = FALSE, results = 'asis', warning = FALSE, eval = T}
 # huxtable doesn't render right for the github_document, seems to thinks it's
 # in the console
 fit <- lm(mpg ~ hp + wt, data = mtcars)

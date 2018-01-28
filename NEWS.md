@@ -1,3 +1,15 @@
+## jtools 0.9.3 (CRAN release)
+
+Bugfixes:
+
+* `johnson_neyman` and `sim_slopes` were both encountering errors with 
+`merMod` input. Thanks to Seongho Bae for reporting these issues and testing
+out development versions. 
+* An upcoming version of R will change a common warning to an error, causing
+a need to change the internals of `gscale`. 
+* The default model names in `export_summs` had an extra space (e.g., `( 1)`) 
+due to changes in `huxtable`. The defaults are now just single numbers.
+
 ## jtools 0.9.2 
 
 Bugfix:
