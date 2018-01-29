@@ -6,19 +6,23 @@ states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
 states$o70[states$`Life Exp` > 70] <- 1
+states$o70n <- states$o70
 states$o70 <- factor(states$o70)
 set.seed(3)
 states$wts <- runif(50, 0, 3)
-fit <- lm(Income ~ HSGrad*Murder*Illiteracy + o70, data = states)
+fit <- lm(Income ~ HSGrad*Murder*Illiteracy + o70 + Area, data = states)
 fit2 <- lm(Income ~ HSGrad*o70, data = states)
-fitw <- lm(Income ~ HSGrad*Murder*Illiteracy + o70, data = states, weights = wts)
+fit2n <- lm(Income ~ HSGrad*o70n, data = states)
+fitw <- lm(Income ~ HSGrad*Murder*Illiteracy + o70 + Area, data = states,
+           weights = wts)
 
 
 suppressMessages(library(survey, quietly = TRUE))
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat,
                     fpc = ~fpc)
-regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide, design = dstrat)
+regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide + pcttest,
+                   design = dstrat)
 
 test_that("interact_plot works for lm", {
   expect_silent(p <- interact_plot(model = fit,
@@ -27,12 +31,25 @@ test_that("interact_plot works for lm", {
                               mod2 = HSGrad,
                               centered = "all"))
   expect_silent(print(p))
-  expect_silent(p <- interact_plot(model = fit,
+  expect_warning(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
                               centered = "HSGrad"))
   expect_silent(print(p))
+  expect_silent(p <- interact_plot(model = fit,
+                                   pred = Murder,
+                                   modx = Illiteracy,
+                                   mod2 = HSGrad,
+                                   centered = "Area"))
+  expect_silent(print(p))
+  expect_silent(p <- interact_plot(model = fit,
+                                   pred = Murder,
+                                   modx = Illiteracy,
+                                   mod2 = HSGrad,
+                                   centered = "none"))
+  expect_silent(print(p))
+
 })
 
 test_that("sim_slopes works for lm", {
@@ -41,7 +58,7 @@ test_that("sim_slopes works for lm", {
                               modx = Illiteracy,
                               mod2 = HSGrad,
                               centered = "all"))
-  expect_silent(sim_slopes(model = fit,
+  expect_warning(sim_slopes(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
@@ -68,12 +85,6 @@ test_that("interact_plot works for weighted lm", {
                              mod2 = HSGrad,
                              centered = "all"))
   expect_silent(print(p))
-  expect_silent(p <- interact_plot(model = fitw,
-                             pred = Murder,
-                             modx = Illiteracy,
-                             mod2 = HSGrad,
-                             centered = "all"))
-  expect_silent(print(p))
 })
 
 test_that("interact_plot accepts user-specified values and labels", {
@@ -87,10 +98,14 @@ test_that("interact_plot accepts user-specified values and labels", {
                               mod2vals = c(40, 60, 80),
                               mod2.labels = c("Low","Average","High")))
   expect_silent(print(p))
-  expect_silent(p <- interact_plot(model = fit2,
+  expect_error(p <- interact_plot(model = fit2,
                               pred = o70,
                               modx = HSGrad,
                               pred.labels = c("Under","Over")))
+  expect_silent(p <- interact_plot(model = fit2n,
+                                  pred = o70n,
+                                  modx = HSGrad,
+                                  pred.labels = c("Under","Over")))
   expect_silent(print(p))
 })
 
@@ -119,28 +134,6 @@ test_that("interact_plot linearity.check works", {
   expect_silent(print(p))
 })
 
-test_that("effect_plot works for lm", {
-  expect_silent(p <- effect_plot(model = fit,
-                              pred = Murder,
-                              centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(model = fit,
-                              pred = Murder,
-                              centered = "HSGrad"))
-  expect_silent(print(p))
-})
-
-test_that("effect_plot works for weighted lm", {
-  expect_silent(p <- effect_plot(model = fitw,
-                            pred = Murder,
-                            centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(model = fitw,
-                            pred = Murder,
-                            centered = "HSGrad"))
-  expect_silent(print(p))
-})
-
 context("interactions svyglm")
 
 test_that("interact_plot works for svyglm", {
@@ -148,18 +141,8 @@ test_that("interact_plot works for svyglm", {
                                    mod2 = both,
                               centered = "all"))
   expect_silent(print(p))
-  expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
+  expect_warning(p <- interact_plot(regmodel, pred = ell, modx = meals,
                                    mod2 = both,
-                              centered = "ell"))
-  expect_silent(print(p))
-})
-
-
-test_that("effect_plot works for svyglm", {
-  expect_silent(p <- effect_plot(regmodel, pred = meals,
-                              centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(regmodel, pred = meals,
                               centered = "ell"))
   expect_silent(print(p))
 })
@@ -168,18 +151,20 @@ context("interactions merMod")
 
 library(lme4, quietly = TRUE)
 data(VerbAgg)
-mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
+VerbAgg$nmode <- as.numeric(VerbAgg$mode)
+mv <- lmer(Anger ~ Gender*nmode + btype +  (1 | item), data = VerbAgg)
 
 test_that("interact_plot works for lme4", {
-  expect_silent(p <- interact_plot(mv, pred = mode, modx = Gender))
+  expect_silent(p <- interact_plot(mv, pred = nmode, modx = Gender))
   expect_silent(print(p))
 })
 
-test_that("effect_plot works for lme4", {
-  expect_silent(p <- effect_plot(mv, pred = mode))
-  expect_silent(print(p))
-})
-
+# data("cake")
+#
+# data("grouseticks")
+# g <- grouseticks
+# g$YEAR <- as.numeric(g$YEAR)
+# lf <- lmer(TICKS ~ HEIGHT * YEAR + (1 | BROOD), data = g)
 
 context("interactions offsets")
 
@@ -201,6 +186,47 @@ test_that("sim_slopes handles offsets", {
   expect_s3_class(sim_slopes(pmod, pred = talent, modx = money), "sim_slopes")
 })
 
+
+### effect_plot ###############################################################
+
+context("effect_plot")
+
+test_that("effect_plot works for lm", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "all"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot works for weighted lm", {
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "all"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "HSGrad"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot works for svyglm", {
+  expect_silent(p <- effect_plot(regmodel, pred = meals,
+                                 centered = "all"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(regmodel, pred = meals,
+                                 centered = "ell"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot works for lme4", {
+  expect_silent(p <- effect_plot(mv, pred = nmode))
+  expect_silent(print(p))
+})
+
 test_that("effect_plot handles offsets", {
   expect_message(p <- effect_plot(pmod, pred = money))
   expect_silent(print(p))
@@ -219,6 +245,7 @@ test_that("johnson_neyman control.fdr argument works", {
 
 context("cat_plot")
 
+mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
 library(ggplot2)
 diamond <- diamonds
 diamond <- diamond[diamond$color != "D",]
@@ -313,8 +340,8 @@ exposures <- rpois(50, 50)
 counts <- exposures - rpois(50, 25)
 money <- (counts/exposures) + rnorm(50, sd = 1)
 talent <- rbinom(50, 1, .5)
-talent <- factor(talent)
 poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
+poisdat$talent <- factor(poisdat$talent)
 pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
             family = poisson)
 

@@ -283,8 +283,8 @@
 #' @export interact_plot
 
 interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
-                          mod2vals = NULL, centered = NULL, scale = FALSE,
-                          n.sd = 1, plot.points = FALSE, interval = FALSE,
+                          mod2vals = NULL, centered = "all", data = NULL,
+                          plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence","prediction"),
                           int.width = .95, outcome.scale = "response",
                           linearity.check = FALSE,
@@ -294,7 +294,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE,
-                          jitter = 0.1, standardize = NULL) {
+                          jitter = 0.1) {
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
@@ -305,16 +305,6 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     mod2 <- NULL
   }
 
-  # Check for deprecated argument
-  if (!is.null(standardize)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- standardize
-  }
-
-  # Duplicating the dataframe so it can be manipulated as needed
-  d <- model.frame(model)
-
   # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
     survey <- TRUE
@@ -323,6 +313,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     d <- design$variables
 
     wts <- weights(design) # for use with points.plot aesthetic
+    wname <- "(weights)"
 
     # Focal vars so the weights don't get centered
     fvars <- as.character(attributes(terms(model))$variables)
@@ -330,15 +321,27 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     fvars <- fvars[2:length(fvars)]
     all.vars <- fvars
 
-    facvars <- c()
-    for (v in fvars) {
-      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
-        facvars <- c(facvars, v)
-      }
-    }
+    facvars <- names(which(sapply(d, is.factor)))
 
   } else {
     survey <- FALSE
+
+    # Duplicating the dataframe so it can be manipulated as needed
+    if (is.null(data)) {
+      d <- model.frame(model)
+      # Check to see if model.frame names match formula names
+      varnames <- names(d)
+      # Drop weights and offsets
+      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+      if (any(varnames %nin% all.vars(formula(model)))) {
+        warning("Variable transformations in the model formula detected. ",
+                "This will likely cause an error. To fix, pass the original ",
+                "data to the \"data =\" argument.")
+      }
+    } else {
+      d <- data
+    }
+
     if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
 
       mixed <- TRUE
@@ -357,13 +360,17 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     fvars <- fvars[2:length(fvars)]
     all.vars <- fvars
 
-    facvars <- c()
-    for (v in fvars) {
-      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
-        facvars <- c(facvars, v)
-      }
-    }
+    facvars <- names(which(sapply(d, is.factor)))
 
+  }
+
+  # Check for factor predictor
+  if (is.factor(d[[pred]])) {
+    # I could assume the factor is properly ordered, but that's too risky
+    stop("Focal predictor (\"pred\") cannot be a factor. Either",
+         " use it as modx, convert it to a numeric dummy variable,",
+         " or use the cat_plot function for factor by factor interaction",
+         " plots.")
   }
 
   # weights?
@@ -374,7 +381,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     if (any(colnames(d) == "(weights)")) {
       colnames(d)[which(colnames(d) == "(weights)")] <- wname
     }
-    wts <- d[,wname]
+    wts <- d[[wname]]
 
   } else {
 
@@ -401,8 +408,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       # This strategy won't work for svyglm
       if (survey == TRUE) {
 
-        stop("For svyglm with offsets, please specify the offset with the
-'offset =' argument rather than in the model formula.")
+        stop("For svyglm with offsets, please specify the offset with the",
+             " 'offset =' argument rather than in the model formula.")
 
       }
 
@@ -415,7 +422,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                             as.character(formula(model)), perl = TRUE))
       if (grepl("log(", offterm, fixed = TRUE)) {
 
-        d[,offname] <- exp(d[,offname])
+        d[[offname]] <- exp(d[[offname]])
 
       }
 
@@ -423,7 +430,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
     # Exponentiate offset if it was logged
     if ("log" %in% as.character(getCall(model)$offset)) {
-      d[,offname] <- exp(d[,offname])
+      d[[offname]] <- exp(d[[offname]])
     }
 
   } else {
@@ -434,7 +441,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Setting default for colors
-  if (is.factor(d[,modx])) {
+  if (is.factor(d[[modx]])) {
     facmod <- TRUE
     if (is.null(color.class)) {
       color.class <- "Set2"
@@ -469,18 +476,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   facvars <-
     facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
 
-  # Use utility function shared by all interaction functions
-  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
-                       fvars = fvars, pred = pred,
-                       resp = resp, modx = modx, survey = survey,
-                       design = design, mod2 = mod2, wname = wname,
-                       offname = offname, centered = centered,
-                       scale = scale, n.sd = n.sd)
+  # Create omitvars variable; we don't center any of these
+  omitvars <- c(pred, resp, modx, mod2, wname, offname, facvars,
+                "(weights)", "(offset)")
 
-  design <- c_out$design
-  d <- c_out$d
-  fvars <- c_out$fvars
-  facvars <- c_out$facvars
+  if (survey == FALSE) {
+    design <- NULL
+  }
+
+  # Use utility function shared by all interaction functions
+  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
+                         survey = survey, design = design, centered = centered)
+
+  vals <- c_out$vals
 
 ### Getting moderator values ##################################################
 
@@ -497,31 +505,10 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   }
 
-### 2-level factor as predictor ###############################################
-
-  # Support for factor input for pred term, but only if it has two levels
-  if (is.factor(d[,pred]) & length(unique(d[,pred] == 2))) {
-    # Getting the labels from the factor
-    predlabs <- levels(d[,pred])
-    # Now convert it to a numeric variable, subtracting 1 to make it 0/1 rather
-    # than 1/2
-    d[,pred] <- as.numeric(d[,pred]) - 1
-    # Set this indicator so it is treated properly later
-    predfac <- TRUE
-  } else if (is.factor(d[,pred]) & length(unique(d[,pred] != 2))) {
-    # I could assume the factor is properly ordered, but that's too risky
-    stop("Focal predictor (\"pred\") cannot have more than two levels. Either",
-         " use it as modx or convert it to a continuous or single dummy",
-         " variable.")
-  } else {
-    predfac <- FALSE
-  }
-
 ### Prep original data for splitting into groups ##############################
 
   # Only do this if going to plot points
-  if ((!is.null(mod2) | linearity.check == TRUE) & !is.factor(d[[modx]]) &
-      plot.points == TRUE) {
+  if ((!is.null(mod2) | linearity.check == TRUE) & !is.factor(d[[modx]])) {
 
     # Use ecdf function to get quantile of the modxvals
     mod_val_qs <- ecdf(d[[modx]])(sort(modxvals2))
@@ -553,7 +540,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   }
 
-  if (!is.null(mod2) && !is.factor(d[[mod2]]) & plot.points == TRUE) {
+  if (!is.null(mod2) && !is.factor(d[[mod2]])) {
 
     mod_val_qs <- ecdf(d[[mod2]])(sort(mod2vals2))
 
@@ -581,8 +568,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 #### Creating predicted frame #################################################
 
   # Creating a set of dummy values of the focal predictor for use in predict()
-  xpreds <- seq(from = range(d[!is.na(d[,pred]),pred])[1],
-                to = range(d[!is.na(d[,pred]),pred])[2],
+  xpreds <- seq(from = range(d[!is.na(d[[pred]]), pred])[1],
+                to = range(d[!is.na(d[[pred]]), pred])[2],
                 length.out = 100)
   xpreds <- rep(xpreds, length(modxvals2))
 
@@ -641,31 +628,39 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Convert to dataframe
   pm <- as.data.frame(pm)
   # Add values of moderator to df
-  pm[,modx] <- facs
+  pm[[modx]] <- facs
   if (!is.null(mod2)) { # if second moderator
-    pm[,mod2] <- facs2
+    pm[[mod2]] <- facs2
   }
 
   # Add values of focal predictor to df
-  pm[,pred] <- xpreds
+  pm[[pred]] <- xpreds
 
   # Set factor predictors arbitrarily to their first level
   if (length(facvars) > 0) {
     for (v in facvars) {
-      pm[,v] <- levels(d[,v])[1]
+      pm[[v]] <- levels(d[[v]])[1]
     }
   }
 
   if (off == TRUE) {
     if (is.null(set.offset)) {
-      offset.num <- median(d[,offname])
+      offset.num <- median(d[[offname]])
     } else {
       offset.num <- set.offset
     }
 
-    pm[,offname] <- offset.num
+    pm[[offname]] <- offset.num
     msg <- paste("Count is based on a total of", offset.num, "exposures")
     message(msg)
+  }
+
+  # Adding mean values to newdata in lieu of actually re-fitting model
+  if (!is.null(vals)) {
+    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
+    for (var in names(vals)) {
+      pm[[var]] <- rep(vals[var], times = nrow(pm))
+    }
   }
 
 #### Predicting with update models ############################################
@@ -675,63 +670,22 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   ## This is passed to predict(), but for svyglm needs to be TRUE always
   interval_arg <- interval
-
-  # Back-ticking variable names in formula to prevent problems with
-  # transformed preds
-  formc <- as.character(deparse(formula(model)))
-  for (var in all.vars) {
-
-    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
-                             "(?=($|~|\\s|\\*|\\+))", sep = "")
-
-    bt_name <- paste("`", var, "`", sep = "")
-    formc <- gsub(regex_pattern, bt_name, formc, perl = TRUE)
-
-  }
-  form <- as.formula(formc)
-
-  ## Don't update model if no vars were centered
-  if (!is.null(centered) && centered == "none") {
-    modelu <- model
-  } else {
-    if (survey == FALSE) {
-      if (mixed == FALSE) {
-        modelu <- update(model, formula = form, data = d)
-      } else {
-        optimiz <- model@optinfo$optimizer
-        if (class(model) == "glmerMod") {
-          modelu <- update(model, formula = form, data = d,
-                           control = lme4::glmerControl(optimizer = optimiz,
-                                                        calc.derivs = FALSE))
-        } else {
-          modelu <- update(model, formula = form, data = d,
-                           control = lme4::lmerControl(optimizer = optimiz,
-                                                        calc.derivs = FALSE))
-        }
-      }
-    } else {
-      # Have to do all this to avoid adding survey to dependencies
-      interval_arg <- TRUE
-      call <- getCall(model)
-      call$design <- design
-      call$formula <- form
-      call[[1]] <- survey::svyglm
-      modelu <- eval(call)
-    }
+  if (survey == TRUE) {
+    interval_arg <- TRUE
   }
 
   if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(modelu, newdata = pm,
+    predicted <- as.data.frame(predict(model, newdata = pm,
                                        type = outcome.scale,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(modelu, newdata = pm,
+    predicted <- as.data.frame(predict(model, newdata = pm,
                                        se.fit = interval_arg,
                                        interval = int.type[1],
                                        type = outcome.scale))
   }
-  pm[,resp] <- predicted[,1] # this is the actual values
+  pm[[resp]] <- predicted[[1]] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
   intw <- 1 - ((1 - int.width)/2)
@@ -743,11 +697,11 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       # No SEs
       warning("Standard errors cannot be calculated for mixed effect models.")
     } else if (survey == FALSE) {
-      pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
-      pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
+      pm[["ymax"]] <- pm[[resp]] + (predicted[["se.fit"]]) * ses
+      pm[["ymin"]] <- pm[[resp]] - (predicted[["se.fit"]]) * ses
     } else if (survey == TRUE) {
-      pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
-      pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+      pm[["ymax"]] <- pm[[resp]] + (predicted[["SE"]]) * ses
+      pm[["ymin"]] <- pm[[resp]] - (predicted[["SE"]]) * ses
     }
   } else {
     # Do nothing
@@ -764,16 +718,16 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   }
 
   # Labels for values of moderator
-  pm[,modx] <- factor(pm[,modx], levels = modxvals2, labels = modx.labels)
+  pm[[modx]] <- factor(pm[[modx]], levels = modxvals2, labels = modx.labels)
   if (facmod == TRUE) {
-    d[,modx] <- factor(d[,modx], levels = modxvals2, labels = modx.labels)
+    d[[modx]] <- factor(d[[modx]], levels = modxvals2, labels = modx.labels)
   }
-  pm$modx_group <- pm[,modx]
+  pm$modx_group <- pm[[modx]]
 
   # Setting labels for second moderator
   if (!is.null(mod2)) {
 
-    pm[,mod2] <- factor(pm[,mod2], levels = mod2vals2, labels = mod2.labels)
+    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
 
     # Setting mod2 in OG data to the factor if plot.points == TRUE
     if (plot.points == TRUE) {
@@ -857,7 +811,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     p <- p + facets
   } else if (linearity.check == TRUE) {
     facets <- facet_grid(paste(". ~ modx_group"))
-    p <- p + facets + stat_smooth(data = d, aes_string(x = pred, y = resp),
+    modxgroup <- "modx_group"
+    p <- p + facets + stat_smooth(data = d, aes_string(x = pred, y = resp,
+                                                       group = modxgroup),
                                   method = "loess", size = 1,
                                   show.legend = FALSE, inherit.aes = FALSE,
                                   se = FALSE, span = 2, geom = "line",
@@ -872,14 +828,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     const <- const * 2 # make the range of values larger
     wts <- const * wts
     # Append weights to data
-    d[,"the_weights"] <- wts
+    d[["the_weights"]] <- wts
 
-    if (is.factor(d[,modx])) {
+    if (is.factor(d[[modx]])) {
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                           colour = modx, size = "the_weights"),
                position = position_jitter(width = jitter, height = jitter),
                inherit.aes = TRUE, show.legend = FALSE)
-    } else if (!is.factor(d[,modx])) {
+    } else if (!is.factor(d[[modx]])) {
       # using alpha for same effect with continuous vars
       p <- p + geom_point(data = d,
                           aes_string(x = pred, y = resp, alpha = modx,
@@ -908,16 +864,10 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   p <- p + labs(x = x.label, y = y.label) # better labels for axes
 
   # Getting rid of tick marks for factor predictor
-  if (predfac == TRUE) {
-    if (is.null(pred.labels)) { # Let pred.labels override factor labels
-      p <- p + scale_x_continuous(breaks = c(0,1), labels = predlabs)
-    } else { # Use the factor labels
-      p <- p + scale_x_continuous(breaks = c(0,1), labels = pred.labels)
-    }
-  } else if (length(unique(d[,pred])) == 2) {
+  if (length(unique(d[[pred]])) == 2) {
     # Predictor has only two unique values
     # Make sure those values are in increasing order
-    brks <- sort(unique(d[,pred]), decreasing = F)
+    brks <- sort(unique(d[[pred]]), decreasing = F)
     if (is.null(pred.labels)) {
       p <- p + scale_x_continuous(breaks = brks)
     } else {
@@ -1116,29 +1066,18 @@ print.interact_plot <- function(x, ...) {
 #' @import ggplot2
 #' @export effect_plot
 
-effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
-                        n.sd = 1, plot.points = FALSE, interval = FALSE,
+effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
+                        interval = FALSE, data = NULL,
                         int.type = c("confidence","prediction"),
                         int.width = .95, outcome.scale = "response",
                         set.offset = 1,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
-                        jitter = 0.1,
-                        standardize = NULL) {
+                        jitter = 0.1) {
 
-  # Check for deprecated argument
-  if (!is.null(standardize)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- standardize
-  }
-
-  # Evaluate the modx, mod2, pred args
+  # Evaluate the pred arg
   pred <- as.character(substitute(pred))
-
-  # Duplicating the dataframe so it can be manipulated as needed
-  d <- model.frame(model)
 
   # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
@@ -1155,20 +1094,33 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     fvars <- fvars[2:length(fvars)]
     all.vars <- fvars
 
-    facvars <- c()
-    for (v in fvars) {
-      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
-        facvars <- c(facvars, v)
-      }
-    }
+    facvars <- names(which(sapply(d, is.factor)))
 
   } else {
     survey <- FALSE
+
+    # Duplicating the dataframe so it can be manipulated as needed
+    if (is.null(data)) {
+      d <- model.frame(model)
+      # Check to see if model.frame names match formula names
+      varnames <- names(d)
+      # Drop weights and offsets
+      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+      if (any(varnames %nin% all.vars(formula(model)))) {
+        warning("Variable transformations in the model formula detected. ",
+                "This will likely cause an error. To fix, pass the original ",
+                "data to the \"data =\" argument.")
+      }
+    } else {
+      d <- data
+    }
+
     if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
 
       mixed <- TRUE
       if (interval == TRUE) {
-        warning("Confidence intervals cannot be provided for random effects models.")
+        warning("Confidence intervals cannot be provided for random effects",
+                " models.")
         interval <- FALSE
       }
 
@@ -1181,13 +1133,17 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     fvars <- fvars[2:length(fvars)]
     all.vars <- fvars
 
-    facvars <- c()
-    for (v in fvars) {
-      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
-        facvars <- c(facvars, v)
-      }
-    }
+    facvars <- names(which(sapply(d, is.factor)))
 
+  }
+
+  # Check for factor predictor
+  if (is.factor(d[[pred]])) {
+    # I could assume the factor is properly ordered, but that's too risky
+    stop("Focal predictor (\"pred\") cannot be a factor. Either",
+         " convert it to a numeric dummy variable",
+         " or use the cat_plot function for factor by factor interaction",
+         " plots.")
   }
 
   # weights?
@@ -1198,7 +1154,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     if (any(colnames(d) == "(weights)")) {
       colnames(d)[which(colnames(d) == "(weights)")] <- wname
     }
-    wts <- d[,wname]
+    wts <- d[[wname]]
 
   } else {
 
@@ -1240,7 +1196,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
                                     as.character(formula(model)), perl = TRUE))
       if (grepl("log(", offterm, fixed = TRUE)) {
 
-        d[,offname] <- exp(d[,offname])
+        d[[offname]] <- exp(d[[offname]])
 
       }
 
@@ -1248,7 +1204,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
 
     # Exponentiate offset if it was logged
     if ("log" %in% as.character(getCall(model)$offset)) {
-      d[,offname] <- exp(d[,offname])
+      d[[offname]] <- exp(d[[offname]])
     }
 
     } else {
@@ -1275,49 +1231,33 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
   facvars <-
     facvars[facvars %nin% c(pred, resp, wname, offname)]
 
-  # Use utility function shared by all interaction functions
-  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
-                       fvars = fvars, pred = pred,
-                       resp = resp, modx = NULL, survey = survey,
-                       design = design, mod2 = NULL, wname = wname,
-                       offname = offname, centered = centered,
-                       scale = scale, n.sd = n.sd)
+  # Create omitvars variable; we don't center any of these
+  omitvars <- c(pred, resp, wname, offname, facvars,
+                "(weights)", "(offset)")
 
-  design <- c_out$design
-  d <- c_out$d
-  fvars <- c_out$fvars
-  facvars <- c_out$facvars
-
-  # Support for factor input for pred term, but only if it has two levels
-  if (is.factor(d[,pred]) & length(unique(d[,pred] == 2))) {
-    # Getting the labels from the factor
-    predlabs <- levels(d[,pred])
-    # Now convert it to a numeric variable, subtracting 1 to make it 0/1 rather
-    # than 1/2
-    d[,pred] <- as.numeric(d[,pred]) - 1
-    # Set this indicator so it is treated properly later
-    predfac <- TRUE
-  } else if (is.factor(d[,pred]) & length(unique(d[,pred] != 2))) {
-    # I could assume the factor is properly ordered, but that's too risky
-    stop("Focal predictor (\"pred\") cannot have more than two levels. Either use it as modx or convert it to a continuous or single dummy variable.")
-  } else {
-    predfac <- FALSE
+  if (survey == FALSE) {
+    design <- NULL
   }
 
+  # Use utility function shared by all interaction functions
+  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
+                         survey = survey, design = design, centered = centered)
+
+  vals <- c_out$vals
 
   # Creating a set of dummy values of the focal predictor for use in predict()
-  xpreds <- seq(from = range(d[!is.na(d[,pred]),pred])[1],
-                to = range(d[!is.na(d[,pred]),pred])[2],
+  xpreds <- seq(from = range(d[!is.na(d[[pred]]), pred])[1],
+                to = range(d[!is.na(d[[pred]]), pred])[2],
                 length.out = 1000)
 
   # Creating matrix for use in predict()
   if (interval == TRUE) { # Only create SE columns if intervals needed
 
-    pm <- matrix(rep(0, 1000*(nc + 2)), ncol = (nc + 2))
+    pm <- matrix(rep(0, 1000 * (nc + 2)), ncol = (nc + 2))
 
   } else {
 
-    pm <- matrix(rep(0, 1000*(nc)), ncol = (nc))
+    pm <- matrix(rep(0, 1000 * (nc)), ncol = (nc))
 
   }
 
@@ -1325,7 +1265,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
   if (off == TRUE) {
     # Avoiding the variable not found stuff
     colnames(d)[colnames(d) %in% "(offset)"] <- offname
-    d[,offname] <- exp(d[,offname])
+    d[[offname]] <- exp(d[[offname]])
   }
 
   # Naming columns
@@ -1338,85 +1278,52 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
   pm <- as.data.frame(pm)
 
   # Add values of focal predictor to df
-  pm[,pred] <- xpreds
+  pm[[pred]] <- xpreds
 
   # Set factor predictors arbitrarily to their first level
   if (length(facvars) > 0) {
     for (v in facvars) {
-      pm[,v] <- levels(d[,v])[1]
+      pm[[v]] <- levels(d[[v]])[1]
     }
   }
 
   if (off == TRUE) {
     if (is.null(set.offset)) {
-      offset.num <- median(d[,offname])
+      offset.num <- median(d[[offname]])
     } else {
       offset.num <- set.offset
     }
 
-    pm[,offname] <- offset.num
+    pm[[offname]] <- offset.num
     msg <- paste("Count is based on a total of", offset.num, "exposures")
     message(msg)
   }
 
-  # Back-ticking variable names in formula to prevent problems with
-  # transformed preds
-  formc <- as.character(deparse(formula(model)))
-  for (var in all.vars) {
-
-    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
-                           "(?=($|~|\\s|\\*|\\+))", sep = "")
-
-    bt_name <- paste("`", var, "`", sep = "")
-    formc <- gsub(regex_pattern, bt_name, formc, perl = TRUE)
-
-  }
-  form <- as.formula(formc)
-
-  # Create predicted values based on specified levels of the focal predictor
-
-  ## Don't update model if no vars were centered
-  if (!is.null(centered) && centered == "none") {
-    modelu <- model
-  } else {
-    if (survey == FALSE) {
-      if (mixed == FALSE) {
-        modelu <- update(model, formula = form, data = d)
-      } else {
-        optimiz <- model@optinfo$optimizer
-        if (class(model) == "glmerMod") {
-          modelu <- update(model, formula = form, data = d,
-                           control = lme4::glmerControl(optimizer = optimiz,
-                                                        calc.derivs = FALSE))
-        } else {
-          modelu <- update(model, formula = form, data = d,
-                           control = lme4::lmerControl(optimizer = optimiz,
-                                                       calc.derivs = FALSE))
-        }
-      }
-    } else {
-      # Have to do all this to avoid adding survey to dependencies
-      call <- getCall(model)
-      call$design <- design
-      call$formula <- form
-      call[[1]] <- survey::svyglm
-      modelu <- eval(call)
-      interval <- TRUE # predict.svyglm doesn't like se.fit = FALSE
+  # Adding mean values to newdata in lieu of actually re-fitting model
+  if (!is.null(vals)) {
+    vals <- vals[names(vals) %nin% c(offname, wname, pred, resp)]
+    for (var in names(vals)) {
+      pm[[var]] <- rep(vals[var], times = nrow(pm))
     }
   }
 
+#### Predictions ############################################################
+
+  # Set SEs to TRUE for svyglm
+  if (survey == TRUE) {interval.arg <- TRUE} else {interval.arg <- interval}
+
   if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(modelu, newdata = pm,
+    predicted <- as.data.frame(predict(model, newdata = pm,
                                        type = outcome.scale,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(modelu, newdata = pm,
-                                       se.fit = interval,
+    predicted <- as.data.frame(predict(model, newdata = pm,
+                                       se.fit = interval.arg,
                                        interval = int.type[1],
                                        type = outcome.scale))
   }
-  pm[,resp] <- predicted[,1] # this is the actual values
+  pm[[resp]] <- predicted[[1]] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
   intw <- 1 - ((1 - int.width)/2)
@@ -1428,11 +1335,11 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
       # No SEs
       warning("Standard errors cannot be calculated for mixed effect models.")
     } else if (survey == FALSE) {
-      pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
-      pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
+      pm[["ymax"]] <- pm[[resp]] + (predicted[["se.fit"]]) * ses
+      pm[["ymin"]] <- pm[[resp]] - (predicted[["se.fit"]]) * ses
     } else if (survey == TRUE) {
-      pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
-      pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+      pm[["ymax"]] <- pm[[resp]] + (predicted[["SE"]]) * ses
+      pm[["ymin"]] <- pm[[resp]] - (predicted[["SE"]]) * ses
     }
   } else {
     # Do nothing
@@ -1470,7 +1377,7 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
     const <- const * 2 # make the range of values larger
     wts <- const * wts
     # Append weights to data
-    d[,"the_weights"] <- wts
+    d[["the_weights"]] <- wts
       p <- p + geom_point(data = d,
                           aes_string(x = pred, y = resp, size = "the_weights"),
                position = position_jitter(width = jitter, height = jitter),
@@ -1485,16 +1392,10 @@ effect_plot <- function(model, pred, centered = NULL, scale = FALSE,
 
   p <- p + labs(x = x.label, y = y.label) # better labels for axes
 
-  # Getting rid of tick marks for factor predictor
-  if (predfac == TRUE) {
-    if (is.null(pred.labels)) { # Let pred.labels override factor labels
-      p <- p + scale_x_continuous(breaks = c(0,1), labels = predlabs)
-    } else { # Use the factor labels
-      p <- p + scale_x_continuous(breaks = c(0,1), labels = pred.labels)
-    }
-  } else if (length(unique(d[,pred])) == 2) { # Predictor has only two unique values
+  # Getting rid of tick marks for two-level predictor
+  if (length(unique(d[[pred]])) == 2) { # Predictor has only two unique values
     # Make sure those values are in increasing order
-    brks <- sort(unique(d[,pred]), decreasing = F)
+    brks <- sort(unique(d[[pred]]), decreasing = F)
     if (is.null(pred.labels)) {
       p <- p + scale_x_continuous(breaks = brks)
     } else {
@@ -1656,16 +1557,12 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                      geom = c("dot","line","bar","boxplot"),
                      interval = TRUE, plot.points = FALSE,
                      point.shape = FALSE, vary.lty = FALSE,
-                     centered = NULL,
+                     centered = "all",
                      int.type = c("confidence","prediction"),
                      int.width = .95, outcome.scale = "response",
                      set.offset = 1, x.label = NULL, y.label = NULL,
                      main.title = NULL, legend.main = NULL,
                      color.class = "Set2") {
-
-  # Legacy commands from interact_plot
-  scale <- FALSE
-  n.sd <- 1
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(substitute(pred))
@@ -1761,7 +1658,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     if (any(colnames(d) == "(weights)")) {
       colnames(d)[which(colnames(d) == "(weights)")] <- wname
     }
-    wts <- d[,wname]
+    wts <- d[[wname]]
 
   } else {
 
@@ -1803,7 +1700,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                                     as.character(formula(model)), perl = TRUE))
       if (grepl("log(", offterm, fixed = TRUE)) {
 
-        d[,offname] <- exp(d[,offname])
+        d[[offname]] <- exp(d[[offname]])
 
       }
 
@@ -1811,7 +1708,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
     # Exponentiate offset if it was logged
     if ("log" %in% as.character(getCall(model)$offset)) {
-      d[,offname] <- exp(d[,offname])
+      d[[offname]] <- exp(d[[offname]])
     }
 
   } else {
@@ -1850,7 +1747,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                        resp = resp, modx = modx, survey = survey,
                        design = design, mod2 = mod2, wname = wname,
                        offname = offname, centered = centered,
-                       scale = scale, n.sd = n.sd)
+                       scale = FALSE, n.sd = 1)
 
   design <- c_out$design
   d <- c_out$d
@@ -1902,30 +1799,30 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
   # Add values of moderator to df
   if (!is.null(modx)) {
-    pm[,modx] <- combos[[2]]
+    pm[[modx]] <- combos[[2]]
   }
   if (!is.null(mod2)) { # if second moderator
-    pm[,mod2] <- combos[[3]]
+    pm[[mod2]] <- combos[[3]]
   }
 
   # Add values of focal predictor to df
-  pm[,pred] <- combos[[1]]
+  pm[[pred]] <- combos[[1]]
 
   # Set factor predictors arbitrarily to their first level
   if (length(facvars) > 0) {
     for (v in facvars) {
-      pm[,v] <- levels(d[,v])[1]
+      pm[[v]] <- levels(d[[v]])[1]
     }
   }
 
   if (off == TRUE) {
     if (is.null(set.offset)) {
-      offset.num <- median(d[,offname])
+      offset.num <- median(d[[offname]])
     } else {
       offset.num <- set.offset
     }
 
-    pm[,offname] <- offset.num
+    pm[[offname]] <- offset.num
     msg <- paste("Count is based on a total of", offset.num, "exposures")
     message(msg)
   }
@@ -2005,11 +1902,11 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
       # No SEs
       warning("Standard errors cannot be calculated for mixed effect models.")
     } else if (survey == FALSE) {
-      pm[,"ymax"] <- pm[,resp] + (predicted[,"se.fit"])*ses
-      pm[,"ymin"] <- pm[,resp] - (predicted[,"se.fit"])*ses
+      pm[["ymax"]] <- pm[[resp]] + (predicted[["se.fit"]]) * ses
+      pm[["ymin"]] <- pm[[resp]] - (predicted[["se.fit"]]) * ses
     } else if (survey == TRUE) {
-      pm[,"ymax"] <- pm[,resp] + (predicted[,"SE"])*ses
-      pm[,"ymin"] <- pm[,resp] - (predicted[,"SE"])*ses
+      pm[["ymax"]] <- pm[[resp]] + (predicted[["SE"]]) * ses
+      pm[["ymin"]] <- pm[[resp]] - (predicted[["SE"]]) * ses
     }
   } else {
     # Do nothing

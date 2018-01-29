@@ -354,10 +354,17 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
   fv2 <- fvars[fvars %nin% omitvars]
 
   # Handling user-requested centered vars
-  if (!is.null(centered) && centered != "all" && centered != "none") {
+  if (centered != "all" && centered != "none") {
 
-    d <- gscale(x = centered, data = d, center.only = !scale,
-                weights = weights, n.sd = n.sd)
+    if (any(omitvars %in% centered)) {
+      warning("Focal predictors, outcome variables, and weights/offsets",
+              " cannot be centered.")
+      centered <- centered[centered %nin% omitvars]
+    }
+    if (length(centered) > 0) {
+      d <- gscale(x = centered, data = d, center.only = !scale,
+                  weights = weights, n.sd = n.sd)
+    }
 
     for (v in fv2) {
 
@@ -369,15 +376,15 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 
     }
 
-  } else if (!is.null(centered) && centered == "all") {
+  } else if (centered == "all") {
 
     # saving all vars except response
-    vars <- names(d)[names(d) %nin% all_omitvars]
+    vars <- names(d)[names(d) %nin% omitvars]
 
     d <- gscale(x = vars, data = d, center.only = !scale,
                 weights = weights, n.sd = n.sd)
 
-  } else if (!is.null(centered) && centered == "none") {
+  } else if (centered == "none") {
 
     # Dealing with two-level factors that aren't part
     # of an interaction/focal pred
@@ -388,13 +395,6 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 
       }
     }
-
-  } else {
-    # Centering the non-focal variables to make the slopes more interpretable
-    vars <- names(d)[names(d) %nin% omitvars]
-
-    d <- gscale(x = vars, data = d, center.only = !scale, weights = wname,
-                n.sd = n.sd)
 
   }
 
@@ -415,15 +415,19 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
                                scale, n.sd) {
 
   omitvars <- c(pred, resp, modx, mod2, wname, offname)
-  all_omitvars <- c(resp, wname, offname)
 
   # Dealing with two-level factors that aren't part of an interaction
   # /focal pred
   fv2 <- fvars[fvars %nin% omitvars]
 
   # Handling user-requested centered vars
-  if (!is.null(centered) && centered != "all" && centered != "none") {
+  if (centered != "all" && centered != "none") {
 
+    if (any(omitvars %in% centered)) {
+      warning("Focal predictors, outcome variables, and weights/offsets",
+              " cannot be centered.")
+      centered <- centered[centered %nin% omitvars]
+    }
     design <- gscale(x = centered, data = design, center.only = !scale,
                      n.sd = n.sd)
     d <- design$variables
@@ -438,7 +442,7 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
       }
     }
 
-  } else if (!is.null(centered) && centered == "none") {
+  } else if (centered == "none") {
 
     # Dealing with two-level factors that aren't part
     # of an interaction/focal pred
@@ -450,9 +454,10 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
       }
     }
 
-  } else if (!is.null(centered) && centered == "all") {
+  } else if (centered == "all") {
 
-    ndfvars <- fvars[fvars %nin% all_omitvars]
+    # Center all non-focal
+    ndfvars <- fvars[fvars %nin% omitvars]
 
     if (length(ndfvars) > 0) {
       design <- gscale(x = ndfvars, data = design, center.only = !scale,
@@ -460,15 +465,6 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
       d <- design$variables
     }
 
-  } else {
-    # Center all non-focal
-    nfvars <- fvars[fvars %nin% omitvars]
-
-    if (length(nfvars) > 0) {
-      design <- gscale(x = nfvars, data = design, center.only = !scale,
-                       n.sd = n.sd)
-      d <- design$variables
-    }
   }
 
   out <- list(d = d, design = design, facvars = facvars, fvars = fvars)
@@ -477,3 +473,113 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
 
 }
 
+## Centering (w/o data change)
+
+center_values <- function(d, weights, omitvars, survey, design = NULL,
+                          centered) {
+
+  # Just need to pick a helper function based on survey vs no survey
+  if (survey == TRUE) {
+
+    out <- center_values_survey(d, omitvars, design = design, centered)
+
+  } else {
+
+    out <- center_values_non_survey(d, weights, omitvars, centered)
+
+  }
+
+  return(out)
+
+
+}
+
+## If not svydesign, centering is fairly straightforward
+
+center_values_non_survey <- function(d, weights, omitvars, centered) {
+
+  # Handling user-requested centered vars
+  if (centered != "all" && centered != "none") {
+
+    if (any(omitvars %in% centered)) {
+      warning("Focal predictors, outcome variables, and weights/offsets",
+              " cannot be centered.")
+      centered <- centered[centered %nin% omitvars]
+    }
+    if (length(centered) > 0) {
+      vals <- sapply(d[centered], weighted.mean, weights = weights,
+                     na.rm = TRUE)
+    }
+
+  } else if (centered == "all") {
+
+    # Centering the non-focal variables to make the slopes more interpretable
+    vars <- names(d)[names(d) %nin% omitvars]
+
+    if (length(vars) > 0) {
+      vals <- sapply(d[vars], weighted.mean, weights = weights)
+    }
+
+  } else if (centered == "none") {
+
+    # Do nothing
+
+  }
+
+  if (!exists("vals")) {
+    vals <- NULL
+  }
+
+  out <- list(vals = vals)
+
+  return(out)
+
+}
+
+## Svydesigns get their own function to make control flow easier to follow
+
+center_values_survey <- function(d, omitvars, design = NULL,
+                                 centered) {
+
+  # Handling user-requested centered vars
+  if (centered != "all" && centered != "none") {
+
+    if (any(omitvars %in% centered)) {
+      warning("Focal predictors, outcome variables, and weights/offsets",
+              " cannot be centered.")
+      centered <- centered[centered %nin% omitvars]
+    }
+
+    if (length(centered) > 0) {
+      vals <- survey::svymean(survey::make.formula(centered), design)
+    }
+    d <- design$variables
+
+  } else if (centered == "all") {
+
+    vars <- names(d)[names(d) %nin% omitvars]
+
+    if (length(vars) > 0) {
+      vals <- survey::svymean(survey::make.formula(vars), design)
+    }
+
+  } else if (centered == "none") {
+
+    # Do nothing
+
+  }
+
+  # Need to coerce svystat object to vector, which makes it lose names
+  if (exists("vals")) {
+    valnames <- names(vals)
+    vals <- as.vector(vals)
+    names(vals) <- valnames
+  } else {
+    vals <- NULL
+  }
+
+  out <- list(vals = vals)
+
+  return(out)
+
+}
