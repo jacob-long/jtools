@@ -164,7 +164,7 @@
 #'
 
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
-                       mod2vals = NULL, centered = NULL, scale = FALSE,
+                       mod2vals = NULL, centered = "all", scale = FALSE,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE, robust.type = "HC3",
                        digits = getOption("jtools-digits", default = 2),
