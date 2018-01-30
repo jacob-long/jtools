@@ -316,20 +316,20 @@ auto_mod_vals <-
 
 ## Centering
 
-center_vals <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
+center_ss <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
                         survey, design = NULL, mod2, wname, offname, centered,
                         scale, n.sd) {
 
   # Just need to pick a helper function based on survey vs no survey
   if (survey == TRUE) {
 
-    out <- center_vals_survey(d, weights, facvars, fvars, pred, resp, modx,
+    out <- center_ss_survey(d, weights, facvars, fvars, pred, resp, modx,
                               survey, design, mod2, wname, offname, centered,
                               scale, n.sd)
 
   } else {
 
-    out <- center_vals_non_survey(d, weights, facvars, fvars, pred, resp, modx,
+    out <- center_ss_non_survey(d, weights, facvars, fvars, pred, resp, modx,
                                   mod2, wname, offname, centered,
                                   scale, n.sd)
 
@@ -342,12 +342,11 @@ center_vals <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
 
 ## If not svydesign, centering is fairly straightforward
 
-center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
+center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
                                    resp, modx, mod2, wname, offname, centered,
                                    scale, n.sd) {
 
   omitvars <- c(pred, resp, modx, mod2, wname, offname)
-  all_omitvars <- c(resp, wname, offname)
 
   # Dealing with two-level factors that aren't part of an interaction
   # /focal pred
@@ -368,7 +367,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 
     for (v in fv2) {
 
-      if (is.factor(d[,v]) && length(unique(d[,v])) == 2 && v %nin% centered) {
+      if (is.factor(d[[v]]) && length(unique(d[[v]])) == 2 && v %nin% centered) {
 
         facvars <- c(facvars, v)
 
@@ -389,7 +388,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
     # Dealing with two-level factors that aren't part
     # of an interaction/focal pred
     for (v in fv2) {
-      if (is.factor(d[,v]) & length(unique(d[,v])) == 2) {
+      if (is.factor(d[[v]]) & length(unique(d[[v]])) == 2) {
 
         facvars <- c(facvars, v)
 
@@ -409,7 +408,7 @@ center_vals_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 
 ## Svydesigns get their own function to make control flow easier to follow
 
-center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
+center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
                                modx, survey, design, mod2, wname, offname,
                                centered,
                                scale, n.sd) {
@@ -435,7 +434,7 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     # Dealing with two-level factors that aren't part
     # of an interaction/focal pred
     for (v in fv2) {
-      if (is.factor(d[,v]) && length(unique(d[,v])) == 2 && v %nin% centered) {
+      if (is.factor(d[[v]]) && length(unique(d[[v]])) == 2 && v %nin% centered) {
 
         facvars <- c(facvars, v)
 
@@ -447,7 +446,7 @@ center_vals_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     # Dealing with two-level factors that aren't part
     # of an interaction/focal pred
     for (v in fv2) {
-      if (is.factor(d[,v]) && length(unique(d[,v])) == 2) {
+      if (is.factor(d[[v]]) && length(unique(d[[v]])) == 2) {
 
         facvars <- c(facvars, v)
 

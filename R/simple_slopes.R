@@ -164,7 +164,7 @@
 #'
 
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
-                       mod2vals = NULL, centered = "all", scale = FALSE,
+                       mod2vals = NULL, centered = "all", data = NULL, scale = FALSE,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE, robust.type = "HC3",
                        digits = getOption("jtools-digits", default = 2),
@@ -201,9 +201,6 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
          " used.")
   }
 
-  # Save data from model object
-  d <- model.frame(model)
-
   # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
 
@@ -227,6 +224,21 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   } else {
 
     survey <- FALSE
+    # Duplicating the dataframe so it can be manipulated as needed
+    if (is.null(data)) {
+      d <- model.frame(model)
+      # Check to see if model.frame names match formula names
+      varnames <- names(d)
+      # Drop weights and offsets
+      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+      if (any(varnames %nin% all.vars(formula(model)))) {
+        warning("Variable transformations in the model formula detected. ",
+                "This will likely cause an error. To fix, pass the original ",
+                "data to the \"data =\" argument.")
+      }
+    } else {
+      d <- data
+    }
     design <- NULL
 
     fvars <- as.character(attributes(terms(model))$variables)
@@ -243,6 +255,15 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   }
 
+  # Check for factor predictor
+  if (is.factor(d[[pred]])) {
+    # I could assume the factor is properly ordered, but that's too risky
+    stop("Focal predictor (\"pred\") cannot be a factor. Either",
+         " use it as modx, convert it to a numeric dummy variable,",
+         " or use the cat_plot function for factor by factor interaction",
+         " plots.")
+  }
+
   # weights?
   if (survey == FALSE && ("(weights)" %in% names(d) |
                           !is.null(getCall(model)$weights))) {
@@ -251,7 +272,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     if (any(colnames(d) == "(weights)")) {
       colnames(d)[which(colnames(d) == "(weights)")] <- wname
     }
-    wts <- d[,wname]
+    wts <- d[[wname]]
 
   } else {
 
@@ -292,7 +313,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                                     as.character(formula(model)), perl = TRUE))
       if (grepl("log(", offterm, fixed = TRUE)) {
 
-        d[,offname] <- exp(d[,offname])
+        d[[offname]] <- exp(d[[offname]])
 
       }
 
@@ -300,7 +321,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     # Exponentiate offset if it was logged
     if ("log" %in% as.character(getCall(model)$offset)) {
-      d[,offname] <- exp(d[,offname])
+      d[[offname]] <- exp(d[[offname]])
     }
 
   } else {
@@ -328,7 +349,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     facvars[!(facvars %in% c(pred, resp, modx, mod2, wname, offname))]
 
   # Use utility function shared by all interaction functions
-  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
+  c_out <- center_ss(d = d, weights = wts, facvars = facvars,
               fvars = fvars, pred = pred,
               resp = resp, modx = modx, survey = survey,
               design = design, mod2 = mod2, wname = wname,
@@ -342,22 +363,27 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
 ### Getting moderator values ##################################################
 
-  modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
-                        modx.labels = NULL, any.mod2 = !is.null(mod2),
-                        sims = TRUE)
+  if (!is.factor(d[[modx]])) { # Requires helper function
+    modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
+                          modx.labels = NULL, any.mod2 = !is.null(mod2),
+                          sims = TRUE)
+  } else { # Use factor levels unless user specified a subset of them
 
-  # Dealing with two-level factors
-  if (is.factor(d[,modx]) && length(levels(d[,modx])) != 2) {
-
-    stop("Factor moderators can only have 2 levels.")
-
-  } else if (is.factor(d[,modx]) & length(unique(d[,modx])) == 2) {
-
-    d[,modx] <- as.numeric(d[,modx]) - 1
+    if (is.null(modxvals)) {
+      modxvals2 <- levels(d[[modx]])
+    } else {
+      if (all(modxvals %in% levels(d[[modx]]))) {
+        modxvals2 <- modxvals
+      } else {
+        warning("modxvals argument must include only levels of the factor.",
+                " Using all factor levels instead.")
+        modxvals2 <- levels(d[[modx]])
+      }
+    }
 
   }
 
-  # Now specify def or not
+  # Now specify def or not (for labeling w/ print method)
   if (is.character(modxvals) | is.null(modxvals)) {
 
     ss <- structure(ss, def = TRUE)
@@ -368,20 +394,28 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   }
 
+  # Don't want def = TRUE for factors even though they are character
+  if (is.factor(d[[modx]])) {ss <- structure(ss, def = FALSE)}
+
   if (!is.null(mod2)) {
 
-    mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
-                          modx.labels = NULL, any.mod2 = !is.null(mod2),
-                          is.mod2 = TRUE, sims = TRUE)
+    if (!is.factor(d[[mod2]])) {
+      mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
+                            modx.labels = NULL, any.mod2 = !is.null(mod2),
+                            sims = TRUE)
+    } else {
 
-    # Dealing with two-level factors
-    if (is.factor(d[,mod2]) && length(levels(d[,mod2])) != 2) {
-
-      stop("Factor moderators can only have 2 levels.")
-
-    } else if (is.factor(d[,mod2]) & length(unique(d[,mod2])) == 2) {
-
-      d[,mod2] <- as.numeric(d[,mod2]) - 1
+      if (is.null(mod2vals)) {
+        mod2vals2 <- levels(d[[mod2]])
+      } else {
+        if (all(mod2vals %in% levels(d[[mod2]]))) {
+          mod2vals2 <- mod2vals
+        } else {
+          warning("mod2vals argument must include only levels of the factor.",
+                  " Using all factor levels instead.")
+          mod2vals2 <- levels(d[[mod2]])
+        }
+      }
 
     }
 
@@ -396,11 +430,16 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     }
 
+    # Don't want def = TRUE for factors even though they are character
+    if (is.factor(d[[mod2]])) {ss <- structure(ss, def2 = FALSE)}
+
   }
 
+#### Fit models ##############################################################
+
   # Need to make a matrix filled with NAs to store values from looped model-making
-  holdvals <- rep(NA, length(modxvals2)*4)
-  retmat <- matrix(holdvals, nrow=length(modxvals2))
+  holdvals <- rep(NA, length(modxvals2) * 4)
+  retmat <- matrix(holdvals, nrow = length(modxvals2))
 
   # Create another matrix to hold intercepts (no left-hand column needed)
   retmati <- retmat
@@ -434,58 +473,49 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     # We don't want to do the J-N interval with the 1st moderator adjusted,
     # so we do it here. Requires an extra model fit.
 
+    # Creating extra "copy" of model frame to change for model update
     if (survey == FALSE) {
-
-      # Creating extra "copy" of model frame to change for model update
       dt <- d
-
-      if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
-
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-      }
-
-      # Creating the model
-      newmod <- update(model, data = dt)
-
-      # Getting SEs, robust or otherwise
-      if (robust == TRUE) {
-
-        # For J-N
-        covmat <- sandwich::vcovHC(newmod, type = robust.type)
-
-      } else {
-
-        # For J-N
-        covmat <- vcov(newmod)
-
-      }
-
-    } else if (survey == TRUE) {
-
+    } else {
       # Create new design to modify
       designt <- design
 
       # Create new df to modify
       dt <- d
+    }
 
-      if (!is.null(mod2)) {
+    if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
 
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
+      # The moderator value-adjusted variable
+      if (!is.factor(dt[[mod2]])) {
+        dt[[mod2]] <- dt[[mod2]] - mod2vals2[j]
+      } else {
+        dt[[mod2]] <- relevel(dt[[mod2]], ref = mod2vals2[j])
       }
 
-      # Update design
-      designt$variables <- dt
+    }
 
+    # Update design
+    if (survey == TRUE) {
+      designt$variables <- dt
       # Update model
       ## Have to do all this to avoid adding survey to dependencies
       call <- getCall(model)
       call$design <- designt
       call[[1]] <- survey::svyglm
       newmod <- eval(call)
+    } else {
+      # Creating the model
+      newmod <- update(model, data = dt)
+    }
+
+    # Getting SEs, robust or otherwise
+    if (robust == TRUE) {
+
+      # For J-N
+      covmat <- sandwich::vcovHC(newmod, type = robust.type)
+
+    } else {
 
       # For J-N
       covmat <- vcov(newmod)
@@ -494,90 +524,51 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     if (robust == FALSE) {covmat <- NULL}
 
-    jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
+    if (johnson_neyman == TRUE) {
+      jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
                                   vmat = covmat, plot = jnplot,
                                   alpha = jnalpha, digits = digits, ...),
                    error = function(e) {return("No values")},
                    warning = function(w) {return("No values")})
+    } else {
+
+      jn <- NULL
+
+    }
 
     if (j != 0) {
         jns[[j]] <- jn
     }
 
   # Looping so any amount of moderator values can be used
-  for (i in seq_len(length(modxvals2))) {
+  for (i in seq_along(modxvals2)) {
 
-    # Update works differently for svyglm objects, so needs to be done separately
-    if (survey == FALSE) {
+    dt <- d
 
-      # Creating extra "copy" of model frame to change for model update
-      dt <- d
+    # Create new design to modify
+    if (survey == TRUE) {designt <- design}
+
+    # The moderator value-adjusted variable
+    if (!is.factor(dt[[modx]])) {
+      dt[[modx]] <- dt[[modx]] - modxvals2[i]
+    } else {
+      dt[[modx]] <- relevel(dt[[modx]], ref = modxvals2[i])
+    }
+
+    if (!is.null(mod2)) {
 
       # The moderator value-adjusted variable
-      dt[,modx] <- dt[,modx] - modxvals2[i]
-
-      if (!is.null(mod2)) {
-
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-
-      }
-
-      # Creating the model
-      newmod <- update(model, data = dt)
-
-      # Getting SEs, robust or otherwise
-      if (robust == TRUE) {
-
-        # Use j_summ to get the coefficients
-        sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type,
-                              model.fit = F)
-        summat <- sum$coeftable
-
-        slopep <- summat[pred,c("Est.","S.E.","p")]
-        intp <- summat["(Intercept)",c("Est.","S.E.","p")]
-
-        retmat[i,1] <- modxvals2[i]
-        retmat[i,2:4] <- slopep[]
-
-        retmati[i,1] <- modxvals2[i]
-        retmati[i,2:4] <- intp[]
-
+      if (!is.factor(dt[[mod2]])) {
+        dt[[mod2]] <- dt[[mod2]] - mod2vals2[j]
       } else {
-
-        sum <- jtools::j_summ(newmod, model.fit = F)
-        summat <- sum$coeftable
-
-        slopep <- summat[pred,c("Est.","S.E.","p")]
-        intp <- summat["(Intercept)",c("Est.","S.E.","p")]
-
-        retmat[i,1] <- modxvals2[i]
-        retmat[i,2:4] <- slopep[]
-
-        retmati[i,1] <- modxvals2[i]
-        retmati[i,2:4] <- intp[]
-
+        dt[[mod2]] <- relevel(dt[[mod2]], ref = mod2vals2[j])
       }
 
-    } else if (survey == TRUE) {
 
-      # Create new design to modify
-      designt <- design
+    }
 
-      # Create new df to modify
-      dt <- d
-
-      # Set the moderator at the given value
-      dt[,modx] <- dt[,modx] - modxvals2[i]
-
-      if (!is.null(mod2)) {
-
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-      }
-
+    # Creating the model
+    if (survey == TRUE) {
       # Update design
       designt$variables <- dt
 
@@ -587,9 +578,30 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       call$design <- designt
       call[[1]] <- survey::svyglm
       newmod <- eval(call)
+    } else {
+      newmod <- update(model, data = dt)
+    }
 
-      # Get the coefs
-      sum <- j_summ(newmod, model.fit = F)
+    # Getting SEs, robust or otherwise
+    if (robust == TRUE) {
+
+      # Use j_summ to get the coefficients
+      sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type,
+                              model.fit = F)
+      summat <- sum$coeftable
+
+      slopep <- summat[pred,c("Est.","S.E.","p")]
+      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
+
+      retmat[i,1] <- modxvals2[i]
+      retmat[i,2:4] <- slopep[]
+
+      retmati[i,1] <- modxvals2[i]
+      retmati[i,2:4] <- intp[]
+
+    } else {
+
+      sum <- jtools::j_summ(newmod, model.fit = F)
       summat <- sum$coeftable
 
       slopep <- summat[pred,c("Est.","S.E.","p")]
@@ -603,7 +615,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     }
 
-    mods[[i + (j - 1)*modxval_len]] <- newmod
+    mods[[i + (j - 1) * modxval_len]] <- newmod
 
   }
 
@@ -613,7 +625,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       imats[[j]] <- retmati
 
       # Now reset the return matrices
-      holdvals <- rep(NA, length(modxvals2)*4)
+      holdvals <- rep(NA, length(modxvals2) * 4)
       retmat <- matrix(holdvals, nrow=length(modxvals2))
 
       # Create another matrix to hold intercepts (no left-hand column needed)
@@ -736,10 +748,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 }
 
 
-
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
+#### PRINT METHOD ############################################################
 
 #' @export
 
@@ -768,7 +777,9 @@ print.sim_slopes <- function(x, ...) {
       m$slopes <- ss$slopes[[j]]
       m$ints <- ss$ints[[j]]
 
-      x$mod2vals <- round(x$mod2vals, x$digits)
+      if (class(x$mod2vals) != "character") {
+        x$mod2vals <- round(x$mod2vals, x$digits)
+      }
 
       # Printing output to make it clear where each batch of second moderator
       # slopes begins
@@ -808,18 +819,22 @@ print.sim_slopes <- function(x, ...) {
 
     for (i in seq_len(length(x$modxvals))) {
 
-      # Use the labels for the automatic +/- 1 SD, factors
+      if (class(x$modxvals) != "character") {
+        x$modxvals <- round(x$modxvals, x$digits)
+      }
+
+      # Use the labels for the automatic +/- 1 SD
       if (x$def == TRUE) {
 
         cat("Slope of ", x$pred, " when ", x$modx, " = ",
-            round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
+            x$modxvals[i], " (", names(x$modxvals)[i], ")",
             ": \n", sep = "")
         print(round(m$slopes[i,2:4], x$digits))
 
         # Print conditional intercept
         if (x$cond.int == TRUE) {
           cat("Conditional intercept"," when ", x$modx, " = ",
-              round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
+              x$modxvals[i], " (", names(x$modxvals)[i], ")",
               ": \n", sep = "")
           print(round(m$ints[i,2:4], x$digits))
           cat("\n")
@@ -827,16 +842,23 @@ print.sim_slopes <- function(x, ...) {
 
       } else { # otherwise don't use labels
 
+        slopes <- as.numeric(m$slopes[i,2:4])
+        names(slopes) <- c("Est","S.E.","p")
+
         cat("Slope of ", x$pred, " when ", x$modx, " = ",
-            round(x$modxvals[i],x$digits),
+            x$modxvals[i],
             ": \n", sep = "")
-        print(round(m$slopes[i,2:4], x$digits))
+        print(round(slopes, x$digits))
 
         # Print conditional intercept
         if (x$cond.int == TRUE) {
+
+          ints <- as.numeric(m$ints[i,2:4])
+          names(ints) <- c("Est","S.E.","p")
+
           cat("Conditional intercept", " when ", x$modx, " = ",
-              round(x$modxvals[i],x$digits), ": \n", sep = "")
-          print(round(m$ints[i,2:4], x$digits))
+              x$modxvals[i], ": \n", sep = "")
+          print(round(ints, x$digits))
           cat("\n")
         } else {cat("\n")}
 
