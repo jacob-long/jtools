@@ -33,19 +33,11 @@
 #'   moderator. Defaults are the same as \code{modxvals}.
 #'
 #' @param centered A vector of quoted variable names that are to be
-#'   mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-#'   not \code{NULL}, only the user-specified predictors are centered. User can
-#'   also use "none" or "all" arguments. The response variable is not centered
-#'   unless specified directly.
-#'
-#' @param scale Logical. Would you like to standardize the variables
-#'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-#'   standardize variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its
-#'   default.
-#'
-#' @param n.sd How many standard deviations should be used if \code{scale
-#'   = TRUE}? Default is 1, but some prefer 2.
+#'   mean-centered. If `"all"`, all non-focal predictors are centered. You
+#'   may instead pass a character vector of variables to center. User can
+#'   also use "none" to base all predictions on variables set at 0.
+#'   The response variable, `pred`, `modx`, and `mod2` variables are never
+#'   centered.
 #'
 #' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
 #'   scatterplot on top of the interaction lines. The color of the dots will be
@@ -131,10 +123,6 @@
 #'    it may make points appear to be outside the boundaries of observed
 #'    values or cause other visual issues. Default is 0.1, but set to 0 if
 #'    you want no jittering.
-#'
-#' @param standardize Deprecated. Equivalent to `scale`. Please change your
-#'  scripts to use `scale` instead as this argument will be removed in the
-#'  future.
 #'
 #' @details This function provides a means for plotting conditional effects
 #'   for the purpose of exploring interactions in the context of regression.
@@ -1536,10 +1524,13 @@ print.effect_plot <- function(x, ...) {
 #' mpg2 <- mpg
 #' mpg2$auto <- "auto"
 #' mpg2$auto[mpg2$trans %in% c("manual(m5)", "manual(m6)")] <- "manual"
+#' mpg2$auto <- factor(mpg2$auto)
 #' mpg2$fwd <- "2wd"
 #' mpg2$fwd[mpg2$drv == "4"] <- "4wd"
+#' mpg2$fwd <- factor(mpg2$fwd)
 #' ## Drop the two cars with 5 cylinders (rest are 4, 6, or 8)
 #' mpg2 <- mpg2[mpg2$cyl != "5",]
+#' mpg2$cyl <- factor(mpg2$cyl)
 #' ## Fit the model
 #' fit3 <- lm(cty ~ cyl * fwd * auto, data = mpg2)
 #'
@@ -1554,6 +1545,7 @@ print.effect_plot <- function(x, ...) {
 #'
 
 cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
+                     data = NULL,
                      geom = c("dot","line","bar","boxplot"),
                      interval = TRUE, plot.points = FALSE,
                      point.shape = FALSE, vary.lty = FALSE,
@@ -1581,24 +1573,6 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   geom <- geom[1]
   if (geom == "point") {geom <- "dot"}
 
-  # Duplicating the dataframe so it can be manipulated as needed
-  d <- model.frame(model)
-
-  # Coerce focal vars to factor if they aren't already
-  if (!is.factor(d[[pred]])) {
-    d[[pred]] <- factor(d[[pred]])
-  }
-  if (!is.null(modx)) {
-    if (!is.factor(d[[modx]])) {
-      d[[modx]] <- factor(d[[modx]])
-    }
-  }
-  if (!is.null(mod2)) {
-    if (!is.factor(d[[mod2]])) {
-      d[[mod2]] <- factor(d[[mod2]])
-    }
-  }
-
   # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
     survey <- TRUE
@@ -1614,15 +1588,27 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     fvars <- fvars[2:length(fvars)]
     all.vars <- fvars
 
-    facvars <- c()
-    for (v in fvars) {
-      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
-        facvars <- c(facvars, v)
-      }
-    }
+    facvars <- names(which(sapply(d, is.factor)))
 
   } else {
     survey <- FALSE
+
+    # Duplicating the dataframe so it can be manipulated as needed
+    if (is.null(data)) {
+      d <- model.frame(model)
+      # Check to see if model.frame names match formula names
+      varnames <- names(d)
+      # Drop weights and offsets
+      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+      if (any(varnames %nin% all.vars(formula(model)))) {
+        warning("Variable transformations in the model formula detected. ",
+                "This will likely cause an error. To fix, pass the original ",
+                "data to the \"data =\" argument.")
+      }
+    } else {
+      d <- data
+    }
+
     if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
 
       mixed <- TRUE
@@ -1641,14 +1627,39 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     fvars <- fvars[2:length(fvars)]
     all.vars <- fvars
 
-    facvars <- c()
-    for (v in fvars) {
-      if (is.factor((d[,v])) && length(unique(d[,v])) > 2) {
-        facvars <- c(facvars, v)
-      }
-    }
+    facvars <- names(which(sapply(d, is.factor)))
 
   }
+
+### Checking for factor input ################################################
+
+  if (!is.factor(d[[pred]])) {
+    # I could assume the factor is properly ordered, but that's too risky
+    stop("Focal predictors (\"pred\") must be a factor. Either",
+         " convert it to a factor and re-fit the model",
+         " or use the interact_plot or effect_plot functions for interactions ",
+         "with continuous variables.")
+  }
+  if (!is.null(modx)) {
+    if (!is.factor(d[[modx]])) {
+      # I could assume the factor is properly ordered, but that's too risky
+      stop("Moderator (\"modx\") must be a factor. Either",
+           " convert it to a factor and re-fit the model",
+           " or use the interact_plot or effect_plot functions for ",
+           "interactions with continuous variables.")
+    }
+  }
+  if (!is.null(mod2)) {
+    if (!is.factor(d[[mod2]])) {
+      # I could assume the factor is properly ordered, but that's too risky
+      stop("Moderator (\"mod2\") must be a factor. Either",
+           " convert it to a factor and re-fit the model",
+           " or use the interact_plot or effect_plot functions for ",
+           "interactions with continuous variables.")
+    }
+  }
+
+#### Data checking ###########################################################
 
   # weights?
   if (survey == FALSE && ("(weights)" %in% names(d) |
@@ -1719,7 +1730,6 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   }
 
   # Setting default for colors
-  facmod <- TRUE
   if (is.null(color.class)) {
     color.class <- "Set2"
   }
@@ -1741,18 +1751,19 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   facvars <-
     facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
 
-  # Use utility function shared by all interaction functions
-  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
-                       fvars = fvars, pred = pred,
-                       resp = resp, modx = modx, survey = survey,
-                       design = design, mod2 = mod2, wname = wname,
-                       offname = offname, centered = centered,
-                       scale = FALSE, n.sd = 1)
+  # Create omitvars variable; we don't center any of these
+  omitvars <- c(pred, resp, modx, mod2, wname, offname, facvars,
+                "(weights)", "(offset)")
 
-  design <- c_out$design
-  d <- c_out$d
-  fvars <- c_out$fvars
-  facvars <- c_out$facvars
+  if (survey == FALSE) {
+    design <- NULL
+  }
+
+  # Use utility function shared by all interaction functions
+  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
+                         survey = survey, design = design, centered = centered)
+
+  vals <- c_out$vals
 
 ##### Creating predicted frame #################################################
 
@@ -1808,7 +1819,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   # Add values of focal predictor to df
   pm[[pred]] <- combos[[1]]
 
-  # Set factor predictors arbitrarily to their first level
+  # Set factor covariates arbitrarily to their first level
   if (length(facvars) > 0) {
     for (v in facvars) {
       pm[[v]] <- levels(d[[v]])[1]
@@ -1827,6 +1838,14 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     message(msg)
   }
 
+  # Adding mean values to newdata in lieu of actually re-fitting model
+  if (!is.null(vals)) {
+    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
+    for (var in names(vals)) {
+      pm[[var]] <- rep(vals[var], times = nrow(pm))
+    }
+  }
+
 #### Predicting with update models ############################################
 
   # Create predicted values based on specified levels of the moderator,
@@ -1834,63 +1853,20 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
   ## This is passed to predict(), but for svyglm needs to be TRUE always
   interval_arg <- interval
-
-  # Back-ticking variable names in formula to prevent problems with
-  # transformed preds
-  formc <- as.character(deparse(formula(model)))
-  for (var in all.vars) {
-
-    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
-                           "(?=($|~|\\s|\\*|\\+))", sep = "")
-
-    bt_name <- paste("`", var, "`", sep = "")
-    formc <- gsub(regex_pattern, bt_name, formc, perl = TRUE)
-
-  }
-  form <- as.formula(formc)
-
-  ## Don't update model if no vars were centered
-  if (!is.null(centered) && centered == "none") {
-    modelu <- model
-  } else {
-    if (survey == FALSE) {
-      if (mixed == FALSE) {
-        modelu <- update(model, formula = form, data = d)
-      } else {
-        optimiz <- model@optinfo$optimizer
-        if (class(model) == "glmerMod") {
-          modelu <- update(model, formula = form, data = d,
-                           control = lme4::glmerControl(optimizer = optimiz,
-                                                        calc.derivs = FALSE))
-        } else {
-          modelu <- update(model, formula = form, data = d,
-                           control = lme4::lmerControl(optimizer = optimiz,
-                                                       calc.derivs = FALSE))
-        }
-      }
-    } else {
-      # Have to do all this to avoid adding survey to dependencies
-      interval_arg <- TRUE
-      call <- getCall(model)
-      call$design <- design
-      call$formula <- form
-      call[[1]] <- survey::svyglm
-      modelu <- eval(call)
-    }
-  }
+  if (survey == TRUE) {interval_arg <- TRUE}
 
   if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(modelu, newdata = pm,
+    predicted <- as.data.frame(predict(model, newdata = pm,
                                        type = outcome.scale,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(modelu, newdata = pm,
+    predicted <- as.data.frame(predict(model, newdata = pm,
                                        se.fit = interval_arg,
                                        interval = int.type[1],
                                        type = outcome.scale))
   }
-  pm[,resp] <- predicted[,1] # this is the actual values
+  pm[[resp]] <- predicted[[1]] # this is the actual values
 
   ## Convert the confidence percentile to a number of S.E. to multiply by
   intw <- 1 - ((1 - int.width)/2)
