@@ -1,3 +1,68 @@
+## jtools 1.0.0.9000
+
+**Major release**
+
+This release has several big changes embedded within, side projects that needed
+a lot of work to implement and required some user-facing changes. Overall
+these are improvements, but in some edge cases they could break old code.
+
+`interact_plot`, `cat_plot`, and `effect_plot`:
+
+These functions no longer re-fit the inputted model to center covariates,
+impose labels on factors, and so on. This generally has several key positives,
+including
+
+* Major speed gains (15% faster for small `lm` models, 60% for `svyglm`,
+and 80% for `merMod` in my testing). The speed gains increase as the models
+become more complicated and the source data become larger.
+* More model types are supported. In the past, some models failed because
+the update method was not defined correctly or there was more information needed
+to refit the model than what can be provided by these functions.
+* More complicated formula input is supported, with a caveat. If you have,
+for instance, log-transformed a predictor (with `log`) in the formula, 
+the function would previously would have a lot of trouble and usually 
+have errors. Now this is supported, provided you input the data used to fit
+the model via the `data` argument. You'll receive a warning if the function
+thinks this is needed to work right.
+
+As noted, there is a new `data` argument for these functions. You do not 
+normally need to use this if your model is fit with a `y ~ x + z` type of
+formula. But if you start doing things like `y ~ factor(x) + z`, then 
+you need to provide the source data frame. Another benefit is that this 
+allows for fitting polynomials with `effect_plot` or even interactions with
+polynomials with `interact_plot`. For instance, if my model was fit using
+this kind of formula --- `y ~ poly(x, 2) + z` --- I could then plot the 
+predicted curve with `effect_plot(fit, pred = x, data = data)` substituting
+`fit` with whatever my model is called and `data` with whatever data frame
+I used is called.
+
+There some possible drawbacks for these changes. One is that no longer are 
+factor predictors supported in `interact_plot` and `effect_plot`,
+even two-level ones. This worked before by coercing
+them to 0/1 continuous variables and re-fitting the model. Since the model is
+no longer re-fit, this can't be done. To work around it, either transform the
+predictor to numeric before fitting the model or use `cat_plot`. Relatedly,
+two-level factor covariates are no longer centered and are simply
+set to their reference value.
+
+*All interaction tools*:
+
+All these tools have a new default `centered` argument. They are now set to
+`centered = "all"`, but `"all"` no longer means what it used to. Now it refers
+to *all variables not included in the interaction, including the dependent
+variable*. This means that in effect, the default option does the same thing
+that previous versions did. But instead of having that occur when 
+`cenetered = NULL`, that's what `centered = "all"` means. There is no 
+`NULL` option any longer. Note that with `sim_slopes`, the focal predictor
+(`pred`) will now be centered --- this only affects the conditional intercept.
+
+`sim_slopes`:
+
+This function now supports categorical (factor) moderators, though there is
+no option for Johnson-Neyman intervals in these cases. You can use the 
+significance of the interaction term(s) for inference about whether the slopes
+differ at each level of the factor when the moderator is a factor.
+
 ## jtools 0.9.3 (CRAN release)
 
 Bugfixes:
