@@ -1,6 +1,6 @@
 #' Plot interaction effects in regression models
 #'
-#' \code{interact_plot()} plots regression lines at user-specified levels of a
+#' \code{interact_plot} plots regression lines at user-specified levels of a
 #'  moderator variable to explore interactions. The plotting is done with
 #'  \code{ggplot2} rather than base graphics, which some similar functions use.
 #'
@@ -38,6 +38,13 @@
 #'   also use "none" to base all predictions on variables set at 0.
 #'   The response variable, `pred`, `modx`, and `mod2` variables are never
 #'   centered.
+#'
+#' @param data Optional, default is NULL. You may provide the data used to
+#'   fit the model. This can be a better way to get mean values for centering
+#'   and can be crucial for models with variable transformations in the formula
+#'   (e.g., `log(x)`) or polynomial terms (e.g., `poly(x, 2)`). You will
+#'   see a warning if the function detects problems that would likely be
+#'   solved by providing the data with this argument.
 #'
 #' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
 #'   scatterplot on top of the interaction lines. The color of the dots will be
@@ -905,87 +912,7 @@ print.interact_plot <- function(x, ...) {
 #' \code{effect_plot()} plots regression paths. The plotting is done with
 #'  \code{ggplot2} rather than base graphics, which some similar functions use.
 #'
-#' @param model A regression model of type \code{lm}, \code{glm},
-#'   \code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. Models from
-#'   other classes may work as well but are not officially supported.
-#'
-#' @param pred The name of the predictor variable you want on the x-axis.
-#'
-#' @param centered A vector of quoted variable names that are to be
-#'   mean-centered.
-#'   If \code{NULL}, all non-focal predictors are centered. If not \code{NULL},
-#'   only the user-specified predictors are centered. User can also use "none"
-#'   or "all" arguments. The response variable is not centered unless specified
-#'   directly.
-#'
-#' @param scale Logical. Would you like to standardize the variables
-#'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-#'   standardize variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its
-#'   default.
-#'
-#' @param n.sd How many standard deviations should be used if \code{scale
-#'   = TRUE}? Default is 1, but some prefer 2.
-#'
-#' @param plot.points Logical. If \code{TRUE}, plots the actual data points as a
-#'   scatterplot on top of the interaction lines.
-#'
-#' @param interval Logical. If \code{TRUE}, plots confidence/prediction
-#'   intervals
-#'   the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
-#'   \code{merMod} models.
-#'
-#' @param int.type Type of interval to plot. Options are "confidence" or
-#'  "prediction". Default is confidence interval.
-#'
-#' @param int.width How large should the interval be, relative to the standard error?
-#'   The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
-#'   level for values outside the range. In other words, for a confidence interval,
-#'   .95 is analogous to a 95\% confidence interval.
-#'
-#' @param outcome.scale For nonlinear models (i.e., GLMs), should the outcome
-#'   variable be plotted on the link scale (e.g., log odds for logit models) or
-#'   the original scale (e.g., predicted probabilities for logit models)? The
-#'   default is \code{"response"}, which is the original scale. For the link
-#'   scale, which will show straight lines rather than curves, use
-#'   \code{"link"}.
-#'
-#' @param set.offset For models with an offset (e.g., Poisson models), sets a
-#'   offset for the predicted values. All predicted values will have the same
-#'   offset. By default, this is set to 1, which makes the predicted values a
-#'   proportion.
-#'
-#' @param x.label A character object specifying the desired x-axis label.
-#'   If \code{NULL}, the variable name is used.
-#'
-#' @param y.label A character object specifying the desired x-axis label.
-#'   If \code{NULL}, the variable name is used.
-#'
-#' @param pred.labels A character vector of 2 labels for the predictor if it is
-#'   a 2-level factor or a continuous variable with only 2 values. If \code{NULL},
-#'   the default, the factor labels are used.
-#'
-#' @param main.title A character object that will be used as an overall title for the
-#'   plot. If \code{NULL}, no main title is used.
-#'
-#' @param color.class Any palette argument accepted by
-#'   \code{\link[ggplot2]{scale_colour_brewer}}.
-#'
-#' @param line.thickness How thick should the plotted lines be? Default is 1.1;
-#'   ggplot's default is 1.
-#'
-#' @param jitter How much should `plot.points` observed values be "jittered"
-#'    via [ggplot2::position_jitter()]? When there are many points near each
-#'    other, jittering moves them a small amount to keep them from
-#'    totally overlapping. In some cases, though, it can add confusion since
-#'    it may make points appear to be outside the boundaries of observed
-#'    values or cause other visual issues. Default is 0.1, but set to 0 if
-#'    you want no jittering.
-#'
-#' @param standardize Deprecated. Equivalent to `scale`. Please change your
-#'  scripts to use `scale` instead as this argument will be removed in the
-#'  future.
-#'
+#' @inheritParams interact_plot
 #'
 #' @details This function provides a means for plotting effects for the
 #'   purpose of exploring regression estimates. You must have the
@@ -994,7 +921,7 @@ print.interact_plot <- function(x, ...) {
 #'   By default, all numeric predictors other than the one specified in the
 #'   \code{pred} argument are mean-centered, which usually produces more
 #'   intuitive plots. This only affects the y-axis in linear models, but
-#'   maybe especially important/influential in non-linear/generalized linear
+#'   may be especially important/influential in non-linear/generalized linear
 #'   models.
 #'
 #'   This function supports nonlinear and generalized linear models and by
@@ -1005,8 +932,10 @@ print.interact_plot <- function(x, ...) {
 #'   effects are plotted. \code{lme4} does not provide confidence intervals,
 #'   so they are not supported with this function either.
 #'
-#'   Note: to use transformed predictors, e.g., \code{log(variable)},
-#'   put its name in quotes or backticks in the argument.
+#'   Note: to use transformed predictors, e.g., `log(x)`, or polynomials,
+#'   e.g., `poly(x, 2)`, provide the raw variable name (`x`) to the `pred =`
+#'   argument. You will need to input the data frame used to fit the model with
+#'   the `data =` argument.
 #'
 #' @return The functions returns a \code{ggplot} object, which can be treated
 #'   like
@@ -1026,10 +955,10 @@ print.interact_plot <- function(x, ...) {
 #'   data = states)
 #' effect_plot(model = fit, pred = Murder)
 #'
-#' # Using interval feature
-#' fit <- lm(accel ~ mag + dist, data = attenu)
+#' # Using polynomial predictor, plus intervals
+#' fit <- lm(accel ~ poly(mag,3) + dist, data = attenu)
 #' effect_plot(fit, pred = mag, interval = TRUE,
-#'   int.type = "confidence", int.width = .8)
+#'   int.type = "confidence", int.width = .8, data = attenu) # note data arg.
 #'
 #' # With svyglm
 #' library(survey)

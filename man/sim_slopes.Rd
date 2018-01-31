@@ -5,15 +5,16 @@
 \title{Perform a simple slopes analysis.}
 \usage{
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
-  mod2vals = NULL, centered = NULL, scale = FALSE, cond.int = FALSE,
+  mod2vals = NULL, centered = "all", data = NULL, cond.int = FALSE,
   johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
   robust.type = "HC3", digits = getOption("jtools-digits", default = 2),
-  n.sd = 1, standardize = NULL, ...)
+  ...)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm} or
-\code{\link[survey]{svyglm}}.
-It should contain the interaction of interest.}
+\item{model}{A regression model of type \code{lm}, \code{glm},
+\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
+contain the interaction of interest. Models from other classes may work as
+well but are not officially supported.}
 
 \item{pred}{The predictor variable involved in the interaction.}
 
@@ -45,16 +46,19 @@ facetted by? That is, there will be a separate plot for each level of this
 moderator. Defaults are the same as \code{modxvals}.}
 
 \item{centered}{A vector of quoted variable names that are to be
-mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-not \code{NULL}, only the user-specified predictors are centered. User
-can also use "none" or "all" arguments. The response variable is not
-centered unless specified directly.}
+mean-centered. If \code{"all"}, all non-focal predictors as well as
+the \code{pred} variable are centered. You
+may instead pass a character vector of variables to center. User can
+also use "none" to base all predictions on variables set at 0.
+The response variable, \code{modx}, and \code{mod2} variables are never
+centered.}
 
-\item{scale}{Logical. Would you like to standardize the variables
-that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-scale variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its
-default.}
+\item{data}{Optional, default is NULL. You may provide the data used to
+fit the model. This can be a better way to get mean values for centering
+and can be crucial for models with variable transformations in the formula
+(e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
+see a warning if the function detects problems that would likely be
+solved by providing the data with this argument.}
 
 \item{cond.int}{Should conditional intercepts be printed in addition to the
 slopes? Default is \code{FALSE}.}
@@ -81,13 +85,6 @@ report in the output. Default is 2. You can change the default number of
 digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
-
-\item{n.sd}{How many standard deviations should be used if \code{scale
-= TRUE}? Default is 1, but some prefer 2.}
-
-\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
-scripts to use \code{scale} instead as this argument will be removed in the
-future.}
 
 \item{...}{Arguments passed to \code{\link{johnson_neyman}}.}
 }
@@ -119,16 +116,10 @@ three-way interactions are not easy to interpret in this way.
 
 For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 
-The function accepts a \code{lm} object and uses it to recompute models
-with the moderating variable set to the levels requested.
-\code{\link[survey]{svyglm}} objects are also accepted, though users
-should be cautioned against using simple slopes analysis with non-linear
-models (\code{svyglm} also estimates linear models).
-
-Factor moderators are coerced to a 0/1 numeric variable and are not
-centered, even when requested in arguments. To avoid this, modify your
-data to change the factor to a binary numeric variable. Factors with more
-than 2 levels trigger an error.
+The function is tested with \code{lm}, \code{glm}, \code{svyglm}, and \code{merMod} inputs.
+Others may work as well, but are not tested. In all but the linear model
+case, be aware that not all the assumptions applied to simple slopes
+analysis apply.
 }
 \examples{
 
@@ -167,8 +158,7 @@ results with \code{\link[ggplot2]{ggplot}}.
 \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of
 differences and provides Johnson-Neyman intervals.
 
-\code{\link[pequod]{simpleSlope}} performs a similar analysis and can
-also analyze a second moderator.
+\code{\link[pequod]{simpleSlope}} performs a similar analysis.
 
 Other interaction tools: \code{\link{cat_plot}},
   \code{\link{interact_plot}},

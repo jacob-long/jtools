@@ -5,14 +5,13 @@
 \title{Plot interaction effects in regression models}
 \usage{
 interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
-  mod2vals = NULL, centered = NULL, scale = FALSE, n.sd = 1,
-  plot.points = FALSE, interval = FALSE, int.type = c("confidence",
-  "prediction"), int.width = 0.95, outcome.scale = "response",
-  linearity.check = FALSE, set.offset = 1, x.label = NULL,
-  y.label = NULL, pred.labels = NULL, modx.labels = NULL,
-  mod2.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = NULL, line.thickness = 1.1, vary.lty = TRUE,
-  jitter = 0.1, standardize = NULL)
+  mod2vals = NULL, centered = "all", data = NULL, plot.points = FALSE,
+  interval = FALSE, int.type = c("confidence", "prediction"),
+  int.width = 0.95, outcome.scale = "response", linearity.check = FALSE,
+  set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
+  modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
+  legend.main = NULL, color.class = NULL, line.thickness = 1.1,
+  vary.lty = TRUE, jitter = 0.1)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -44,19 +43,18 @@ facetted by? That is, there will be a separate plot for each level of this
 moderator. Defaults are the same as \code{modxvals}.}
 
 \item{centered}{A vector of quoted variable names that are to be
-mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-not \code{NULL}, only the user-specified predictors are centered. User can
-also use "none" or "all" arguments. The response variable is not centered
-unless specified directly.}
+mean-centered. If \code{"all"}, all non-focal predictors are centered. You
+may instead pass a character vector of variables to center. User can
+also use "none" to base all predictions on variables set at 0.
+The response variable, \code{pred}, \code{modx}, and \code{mod2} variables are never
+centered.}
 
-\item{scale}{Logical. Would you like to standardize the variables
-that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-standardize variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its
-default.}
-
-\item{n.sd}{How many standard deviations should be used if \code{scale
-= TRUE}? Default is 1, but some prefer 2.}
+\item{data}{Optional, default is NULL. You may provide the data used to
+fit the model. This can be a better way to get mean values for centering
+and can be crucial for models with variable transformations in the formula
+(e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
+see a warning if the function detects problems that would likely be
+solved by providing the data with this argument.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines. The color of the dots will be
@@ -142,17 +140,13 @@ totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
 you want no jittering.}
-
-\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
-scripts to use \code{scale} instead as this argument will be removed in the
-future.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
 like a user-created plot and expanded upon as such.
 }
 \description{
-\code{interact_plot()} plots regression lines at user-specified levels of a
+\code{interact_plot} plots regression lines at user-specified levels of a
 moderator variable to explore interactions. The plotting is done with
 \code{ggplot2} rather than base graphics, which some similar functions use.
 }

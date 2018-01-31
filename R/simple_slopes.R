@@ -3,10 +3,6 @@
 #' \code{sim_slopes} conducts a simple slopes analysis for the purposes of
 #' understanding two- and three-way interaction effects in linear regression.
 #'
-#' @param model A regression model of type \code{lm} or
-#'    \code{\link[survey]{svyglm}}.
-#'    It should contain the interaction of interest.
-#'
 #' @param pred The predictor variable involved in the interaction.
 #'
 #' @param modx The moderator variable involved in the interaction.
@@ -37,16 +33,12 @@
 #'   moderator. Defaults are the same as \code{modxvals}.
 #'
 #' @param centered A vector of quoted variable names that are to be
-#'   mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-#'   not \code{NULL}, only the user-specified predictors are centered. User
-#'   can also use "none" or "all" arguments. The response variable is not
-#'   centered unless specified directly.
-#'
-#' @param scale Logical. Would you like to standardize the variables
-#'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-#'   scale variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its
-#'   default.
+#'   mean-centered. If `"all"`, all non-focal predictors as well as
+#'   the `pred` variable are centered. You
+#'   may instead pass a character vector of variables to center. User can
+#'   also use "none" to base all predictions on variables set at 0.
+#'   The response variable, `modx`, and `mod2` variables are never
+#'   centered.
 #'
 #' @param cond.int Should conditional intercepts be printed in addition to the
 #'   slopes? Default is \code{FALSE}.
@@ -74,13 +66,6 @@
 #'   \code{options("jtools-digits" = digits)} where digits is the desired
 #'   number.
 #'
-#' @param n.sd How many standard deviations should be used if \code{scale
-#'   = TRUE}? Default is 1, but some prefer 2.
-#'
-#' @param standardize Deprecated. Equivalent to `scale`. Please change your
-#'  scripts to use `scale` instead as this argument will be removed in the
-#'  future.
-#'
 #' @param ... Arguments passed to \code{\link{johnson_neyman}}.
 #'
 #' @details This allows the user to perform a simple slopes analysis for the
@@ -90,16 +75,10 @@
 #'
 #'   For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 #'
-#'   The function accepts a \code{lm} object and uses it to recompute models
-#'   with the moderating variable set to the levels requested.
-#'   \code{\link[survey]{svyglm}} objects are also accepted, though users
-#'   should be cautioned against using simple slopes analysis with non-linear
-#'   models (\code{svyglm} also estimates linear models).
-#'
-#'   Factor moderators are coerced to a 0/1 numeric variable and are not
-#'   centered, even when requested in arguments. To avoid this, modify your
-#'   data to change the factor to a binary numeric variable. Factors with more
-#'   than 2 levels trigger an error.
+#'   The function is tested with `lm`, `glm`, `svyglm`, and `merMod` inputs.
+#'   Others may work as well, but are not tested. In all but the linear model
+#'   case, be aware that not all the assumptions applied to simple slopes
+#'   analysis apply.
 #'
 #' @return
 #'
@@ -118,6 +97,8 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @inheritParams interact_plot
+#'
 #' @family interaction tools
 #'
 #' @seealso \code{\link{interact_plot}} accepts similar syntax and will plot the
@@ -126,8 +107,7 @@
 #'   \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of
 #'       differences and provides Johnson-Neyman intervals.
 #'
-#'   \code{\link[pequod]{simpleSlope}} performs a similar analysis and can
-#'        also analyze a second moderator.
+#'   \code{\link[pequod]{simpleSlope}} performs a similar analysis.
 #'
 #' @references
 #'
@@ -164,11 +144,10 @@
 #'
 
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
-                       mod2vals = NULL, centered = "all", data = NULL, scale = FALSE,
+                       mod2vals = NULL, centered = "all", data = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE, robust.type = "HC3",
-                       digits = getOption("jtools-digits", default = 2),
-                       n.sd = 1, standardize = NULL, ...) {
+                       digits = getOption("jtools-digits", default = 2), ...) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -178,13 +157,6 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (length(mod2) == 0) {
     mod2 <- NULL
     mod2vals2 <- NULL
-  }
-
-  # Check for deprecated argument
-  if (!is.null(standardize)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- standardize
   }
 
   # Create object to return
@@ -353,8 +325,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
               fvars = fvars, pred = pred,
               resp = resp, modx = modx, survey = survey,
               design = design, mod2 = mod2, wname = wname,
-              offname = offname, centered = centered,
-              scale = scale, n.sd = n.sd)
+              offname = offname, centered = centered)
 
   design <- c_out$design
   d <- c_out$d
@@ -368,6 +339,12 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                           modx.labels = NULL, any.mod2 = !is.null(mod2),
                           sims = TRUE)
   } else { # Use factor levels unless user specified a subset of them
+
+    if (johnson_neyman == TRUE) {
+      warning("johnson_neyman intervals are not available for factor ",
+              "moderators.")
+      johnson_neyman <- FALSE
+    }
 
     if (is.null(modxvals)) {
       modxvals2 <- levels(d[[modx]])

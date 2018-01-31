@@ -4,12 +4,12 @@
 \alias{cat_plot}
 \title{Plot interaction effects between categorical predictors.}
 \usage{
-cat_plot(model, pred, modx = NULL, mod2 = NULL, geom = c("dot", "line",
-  "bar", "boxplot"), interval = TRUE, plot.points = FALSE,
-  point.shape = FALSE, vary.lty = FALSE, centered = NULL,
-  int.type = c("confidence", "prediction"), int.width = 0.95,
-  outcome.scale = "response", set.offset = 1, x.label = NULL,
-  y.label = NULL, main.title = NULL, legend.main = NULL,
+cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
+  geom = c("dot", "line", "bar", "boxplot"), interval = TRUE,
+  plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
+  centered = "all", int.type = c("confidence", "prediction"),
+  int.width = 0.95, outcome.scale = "response", set.offset = 1,
+  x.label = NULL, y.label = NULL, main.title = NULL, legend.main = NULL,
   color.class = "Set2")
 }
 \arguments{
@@ -23,6 +23,13 @@ well but are not officially supported.}
 \item{modx}{A categorical moderator variable.}
 
 \item{mod2}{For three-way interactions, the second categorical moderator.}
+
+\item{data}{Optional, default is NULL. You may provide the data used to
+fit the model. This can be a better way to get mean values for centering
+and can be crucial for models with variable transformations in the formula
+(e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
+see a warning if the function detects problems that would likely be
+solved by providing the data with this argument.}
 
 \item{geom}{What type of plot should this be? There are several options
 here since the best way to visualize categorical interactions varies by
@@ -65,10 +72,11 @@ be black and white printing- or colorblind-friendly.}
 line in addition to colors? Defaults to \code{TRUE}.}
 
 \item{centered}{A vector of quoted variable names that are to be
-mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-not \code{NULL}, only the user-specified predictors are centered. User can
-also use "none" or "all" arguments. The response variable is not centered
-unless specified directly.}
+mean-centered. If \code{"all"}, all non-focal predictors are centered. You
+may instead pass a character vector of variables to center. User can
+also use "none" to base all predictions on variables set at 0.
+The response variable, \code{pred}, \code{modx}, and \code{mod2} variables are never
+centered.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or
 "prediction". Default is confidence interval.}
@@ -167,10 +175,13 @@ cat_plot(fit, pred = color, modx = cut, interval = TRUE)
 mpg2 <- mpg
 mpg2$auto <- "auto"
 mpg2$auto[mpg2$trans \%in\% c("manual(m5)", "manual(m6)")] <- "manual"
+mpg2$auto <- factor(mpg2$auto)
 mpg2$fwd <- "2wd"
 mpg2$fwd[mpg2$drv == "4"] <- "4wd"
+mpg2$fwd <- factor(mpg2$fwd)
 ## Drop the two cars with 5 cylinders (rest are 4, 6, or 8)
 mpg2 <- mpg2[mpg2$cyl != "5",]
+mpg2$cyl <- factor(mpg2$cyl)
 ## Fit the model
 fit3 <- lm(cty ~ cyl * fwd * auto, data = mpg2)
 
