@@ -123,7 +123,8 @@ test_that("interact_plot linearity.check works", {
                               pred = Murder,
                               modx = Illiteracy,
                               modxvals = "terciles",
-                              linearity.check = TRUE))
+                              linearity.check = TRUE,
+                              plot.points = TRUE))
   expect_silent(print(p))
   expect_silent(p <- interact_plot(model = fit,
                               pred = Murder,

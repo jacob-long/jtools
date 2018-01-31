@@ -317,21 +317,18 @@ auto_mod_vals <-
 ## Centering
 
 center_ss <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
-                        survey, design = NULL, mod2, wname, offname, centered,
-                        scale, n.sd) {
+                        survey, design = NULL, mod2, wname, offname, centered) {
 
   # Just need to pick a helper function based on survey vs no survey
   if (survey == TRUE) {
 
     out <- center_ss_survey(d, weights, facvars, fvars, pred, resp, modx,
-                              survey, design, mod2, wname, offname, centered,
-                              scale, n.sd)
+                              survey, design, mod2, wname, offname, centered)
 
   } else {
 
     out <- center_ss_non_survey(d, weights, facvars, fvars, pred, resp, modx,
-                                  mod2, wname, offname, centered,
-                                  scale, n.sd)
+                                  mod2, wname, offname, centered)
 
   }
 
@@ -343,10 +340,9 @@ center_ss <- function(d, weights, facvars = NULL, fvars, pred, resp, modx,
 ## If not svydesign, centering is fairly straightforward
 
 center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
-                                   resp, modx, mod2, wname, offname, centered,
-                                   scale, n.sd) {
+                                   resp, modx, mod2, wname, offname, centered) {
 
-  omitvars <- c(pred, resp, modx, mod2, wname, offname)
+  omitvars <- c(resp, modx, mod2, wname, offname)
 
   # Dealing with two-level factors that aren't part of an interaction
   # /focal pred
@@ -356,13 +352,13 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
   if (centered != "all" && centered != "none") {
 
     if (any(omitvars %in% centered)) {
-      warning("Focal predictors, outcome variables, and weights/offsets",
+      warning("Moderators, outcome variables, and weights/offsets",
               " cannot be centered.")
       centered <- centered[centered %nin% omitvars]
     }
     if (length(centered) > 0) {
-      d <- gscale(x = centered, data = d, center.only = !scale,
-                  weights = weights, n.sd = n.sd)
+      d <- gscale(x = centered, data = d, center.only = TRUE,
+                  weights = weights)
     }
 
     for (v in fv2) {
@@ -380,8 +376,8 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
     # saving all vars except response
     vars <- names(d)[names(d) %nin% omitvars]
 
-    d <- gscale(x = vars, data = d, center.only = !scale,
-                weights = weights, n.sd = n.sd)
+    d <- gscale(x = vars, data = d, center.only = TRUE,
+                weights = weights)
 
   } else if (centered == "none") {
 
@@ -410,10 +406,9 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 
 center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
                                modx, survey, design, mod2, wname, offname,
-                               centered,
-                               scale, n.sd) {
+                               centered) {
 
-  omitvars <- c(pred, resp, modx, mod2, wname, offname)
+  omitvars <- c(resp, modx, mod2, wname, offname)
 
   # Dealing with two-level factors that aren't part of an interaction
   # /focal pred
@@ -423,12 +418,11 @@ center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
   if (centered != "all" && centered != "none") {
 
     if (any(omitvars %in% centered)) {
-      warning("Focal predictors, outcome variables, and weights/offsets",
+      warning("Moderators, outcome variables, and weights/offsets",
               " cannot be centered.")
       centered <- centered[centered %nin% omitvars]
     }
-    design <- gscale(x = centered, data = design, center.only = !scale,
-                     n.sd = n.sd)
+    design <- gscale(x = centered, data = design, center.only = TRUE)
     d <- design$variables
 
     # Dealing with two-level factors that aren't part
@@ -459,8 +453,7 @@ center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     ndfvars <- fvars[fvars %nin% omitvars]
 
     if (length(ndfvars) > 0) {
-      design <- gscale(x = ndfvars, data = design, center.only = !scale,
-                       n.sd = n.sd)
+      design <- gscale(x = ndfvars, data = design, center.only = TRUE)
       d <- design$variables
     }
 
