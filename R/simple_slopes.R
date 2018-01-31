@@ -139,7 +139,7 @@
 #' regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
 #'
-#' @importFrom stats coef coefficients lm predict sd update getCall vcov
+#' @importFrom stats coef coefficients lm predict sd update getCall vcov relevel
 #' @export
 #'
 
