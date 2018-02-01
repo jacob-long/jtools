@@ -224,6 +224,8 @@ pos_dodgev <- function(df, height) {
   df
 }
 
+#' @importFrom dplyr group_by %>%
+
 collidev <- function(data, height = NULL, name, strategy, ...,
                      check.height = TRUE, reverse = FALSE) {
   # Determine height
@@ -271,10 +273,13 @@ collidev <- function(data, height = NULL, name, strategy, ...,
   }
 
   if (!is.null(data$xmax)) {
-    plyr::ddply(data, "ymin", strategy, ..., height = height)
+    as.data.frame(data %>% group_by(ymin) %>% strategy(..., height = height))
+    # plyr::ddply(data, "ymin", strategy, ..., height = height)
   } else if (!is.null(data$x)) {
     data$xmax <- data$x
-    data <- plyr::ddply(data, "ymin", strategy, ..., height = height)
+    data <- as.data.frame(data %>% group_by(ymin) %>%
+                            strategy(..., height = height))
+    # data <- plyr::ddply(data, "ymin", strategy, ..., height = height)
     data$x <- data$xmax
     data
   } else {

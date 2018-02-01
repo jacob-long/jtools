@@ -14,7 +14,7 @@ BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: ggplot2
+Imports: ggplot2, dplyr
 Suggests:
   boot,
   broom,
@@ -28,7 +28,6 @@ Suggests:
   nlme,
   officer,
   pbkrtest,
-  plyr,
   RColorBrewer,
   sandwich,
   stats4,
