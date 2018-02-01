@@ -1,10 +1,13 @@
 #' Scale variables in fitted regression models
 #'
-#' \code{scale_lm()} takes fitted regression models and scales all predictors
-#' by dividing each by 1 or 2 standard deviations (as chosen by the user).
+#' `scale_mod` (previously known as `scale_lm`) takes fitted regression models
+#'  and scales all
+#'  predictors by dividing each by 1 or 2 standard deviations (as chosen by the
+#'  user).
 #'
 #' @param model A regression model of type \code{lm}, \code{glm}, or
-#' \code{\link[survey]{svyglm}}.
+#' \code{\link[survey]{svyglm}}, or [lme4::merMod]. Other model types
+#' may work as well but are not tested.
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{"0/1"};
 #'   \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5
@@ -28,18 +31,18 @@
 #'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
-#'   interaction terms. It can also mean-center all of them as well, if 
+#'   interaction terms. It can also mean-center all of them as well, if
 #'   requested.
 #'
-#'   The scaling happens on the input data, not the terms themselves. That 
+#'   The scaling happens on the input data, not the terms themselves. That
 #'   means interaction terms are still properly calculated because they are
-#'   the product of standardized predictors, not a standardized product of 
+#'   the product of standardized predictors, not a standardized product of
 #'   predictors.
 #'
-#'   This function re-estimates the model, so for large models one should 
+#'   This function re-estimates the model, so for large models one should
 #'   expect a runtime equal to the first run.
 #'
-#' @return The functions returns a \code{lm} or \code{glm} object, inheriting
+#' @return The functions returns a re-fitted model object, inheriting
 #'   from whichever class was supplied.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -55,44 +58,45 @@
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
-#'  multilevel regression: Inferential and graphical techniques. 
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+#'  multilevel regression: Inferential and graphical techniques.
 #'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
-#' multiple regression/correlation analyses for the behavioral sciences} (3rd 
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd
 #' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
 #' fit <- lm(formula = Murder ~ Income * Illiteracy,
 #'           data = as.data.frame(state.x77))
-#' fit_scale <- scale_lm(fit)
-#' fit_scale <- scale_lm(fit, center = TRUE)
+#' fit_scale <- scale_mod(fit)
+#' fit_scale <- scale_mod(fit, center = TRUE)
 #'
 #' # With weights
 #' fitw <- lm(formula = Murder ~ Income * Illiteracy,
 #'            data = as.data.frame(state.x77),
 #'            weights = Population)
-#' fitw_scale <- scale_lm(fitw)
-#' fitw_scale <- scale_lm(fitw, center = TRUE, binary.input = "0/1")
+#' fitw_scale <- scale_mod(fitw)
+#' fitw_scale <- scale_mod(fitw, center = TRUE, binary.input = "0/1")
 #'
 #' # With svyglm
 #' library(survey)
 #' data(api)
 #' dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
-#' regmodel_scale <- scale_lm(regmodel)
-#' regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
+#' regmodel_scale <- scale_mod(regmodel)
+#' regmodel_scale <- scale_mod(regmodel, binary.input = "0/1")
 #'
 #' @importFrom stats weighted.mean as.formula getCall formula
 #' @importFrom stats model.matrix model.weights
-#'
-#' @export scale_lm
+#' @aliases scale_lm
+#' @export scale_mod
 #'
 
-scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
-                     scale.response = TRUE, center.only = FALSE) {
+scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
+                                  center = TRUE, scale.response = TRUE,
+                                  center.only = FALSE) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -183,7 +187,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
     adds <- which(!(vars %in% names(design$variables)))
     for (var in vars[adds]) {
 
-      design[,var] <- mf[,var]
+      design$variables[[var]] <- mf[[var]]
 
     }
 
@@ -192,10 +196,11 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
     }
 
     # Call gscale()
-    design <- gscale(x = vars, data = design, n.sd = n.sd, scale.only = !center,
-                     center.only = center.only)
+    design <- gscale(vars = vars, data = design, n.sd = n.sd,
+                     scale.only = !center, center.only = center.only)
 
     call$design <- quote(design)
+
     call[[1]] <- survey::svyglm
     new <- eval(call)
 
@@ -222,7 +227,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
     }
 
-    mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
+    mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
                  n.sd = n.sd, weights = the_weights, scale.only = !center,
                  center.only = center.only)
 
@@ -233,13 +238,13 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
     if (scale.response == FALSE) {
       # Now we need to know the variables of interest
       vars <- vars[!(vars %in% resp)]
-      mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
+      mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
                    n.sd = n.sd, scale.only = !center,
                    center.only = center.only)
 
     } else {
 
-      mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
+      mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
                    n.sd = n.sd, scale.only = !center,
                    center.only = center.only)
 
@@ -269,10 +274,11 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
 #' Center variables in fitted regression models
 #'
-#' \code{center_lm} takes fitted regression models and mean-centers the 
-#'   continuous variables in the model to aid interpretation, especially in 
-#'   the case of models with interactions. It is a wrapper to 
-#'   \code{\link{scale_lm}}.
+#' `center_mod` (previously known as `center_lm`) takes fitted regression models
+#'  and mean-centers the
+#'   continuous variables in the model to aid interpretation, especially in
+#'   the case of models with interactions. It is a wrapper to
+#'   \code{\link{scale_mod}}.
 #'
 #' @param model A regression model of type \code{lm}, \code{glm}, or
 #' \code{\link[survey]{svyglm}}; others may work as well but have not been
@@ -280,25 +286,25 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{0/1};
 #'   \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1
-#'   as 0.5; \code{center} subtracts the mean; and \code{full} treats them 
+#'   as 0.5; \code{center} subtracts the mean; and \code{full} treats them
 #'   like other continuous variables.
 #'
-#' @param center.response Should the response variable also be centered? 
+#' @param center.response Should the response variable also be centered?
 #'   Default is \code{FALSE}.
 #'
-#' @details This function will mean-center all continuous variables in a 
-#'   regression model for ease of interpretation, especially for those models 
+#' @details This function will mean-center all continuous variables in a
+#'   regression model for ease of interpretation, especially for those models
 #'   that have
 #'   interaction terms. The mean for \code{svyglm} objects is calculated using
 #'   \code{svymean}, so reflects the survey-weighted mean. The weight variables
 #'   in \code{svyglm} are not centered, nor are they in other \code{lm} family
 #'   models.
 #'
-#'   This function re-estimates the model, so for large models one should 
+#'   This function re-estimates the model, so for large models one should
 #'   expect
 #'   a runtime equal to the first run.
 #'
-#' @return The functions returns a \code{lm} or \code{glm} object, inheriting 
+#' @return The functions returns a \code{lm} or \code{glm} object, inheriting
 #'   from whichever class was supplied.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -314,25 +320,25 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
-#'  multilevel regression: Inferential and graphical techniques. 
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+#'  multilevel regression: Inferential and graphical techniques.
 #'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
-#' multiple regression/correlation analyses for the behavioral sciences} (3rd 
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd
 #' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
 #' fit <- lm(formula = Murder ~ Income * Illiteracy,
 #'           data = as.data.frame(state.x77))
-#' fit_center <- center_lm(fit)
+#' fit_center <- center_mod(fit)
 #'
 #' # With weights
 #' fitw <- lm(formula = Murder ~ Income * Illiteracy,
 #'            data = as.data.frame(state.x77),
 #'            weights = Population)
-#' fitw_center <- center_lm(fitw)
+#' fitw_center <- center_mod(fitw)
 #'
 #' # With svyglm
 #' library(survey)
@@ -340,14 +346,15 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                     data = apistrat, fpc =~ fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
-#' regmodel_center <- center_lm(regmodel)
+#' regmodel_center <- center_mod(regmodel)
 #'
-#' @export center_lm
-#'
+#' @export center_mod
+#' @aliases center_lm
 
-center_lm <- function(model, binary.inputs = "0/1", center.response = FALSE) {
+center_mod <- center_lm <- function(model, binary.inputs = "0/1",
+                                    center.response = FALSE) {
 
-  out <- scale_lm(model, binary.inputs = binary.inputs,
+  out <- scale_mod(model, binary.inputs = binary.inputs,
                   scale.response = center.response, center.only = TRUE)
 
   return(out)
