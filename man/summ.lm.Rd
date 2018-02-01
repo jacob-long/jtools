@@ -9,14 +9,16 @@
 \method{summ}{lm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
   ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,
   digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, part.corr = FALSE,
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE, ...)
+  n.sd = 1, center = FALSE, scale.response = FALSE,
+  center.response = FALSE, part.corr = FALSE, model.info = TRUE,
+  model.fit = TRUE, model.check = FALSE, ...)
 
 \method{summ}{default}(model, scale = FALSE, vifs = FALSE,
   confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
   cluster = NULL, digits = getOption("jtools-digits", default = 2),
   pvals = TRUE, n.sd = 1, center = FALSE, scale.response = FALSE,
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE, ...)
+  center.response = FALSE, model.info = TRUE, model.fit = TRUE,
+  model.check = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{lm} object.}

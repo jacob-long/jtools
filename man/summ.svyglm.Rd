@@ -9,7 +9,7 @@
   ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
   model.info = TRUE, model.fit = TRUE, model.check = FALSE,
   pvals = TRUE, n.sd = 1, center = FALSE, scale.response = FALSE,
-  odds.ratio = FALSE, ...)
+  center.response = FALSE, odds.ratio = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{svyglm} object.}

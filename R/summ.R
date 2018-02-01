@@ -50,7 +50,7 @@ summ <- function(model, ...) {
 
 j_summ <- summ
 
-#### lm ########################################################################
+#### lm #######################################################################
 
 #' Linear regression summaries with options
 #'
@@ -235,7 +235,8 @@ summ.lm <- function(
   model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
   robust = FALSE, robust.type = "HC3", cluster = NULL,
   digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, part.corr = FALSE,
+  n.sd = 1, center = FALSE, scale.response = FALSE, center.response = FALSE,
+  part.corr = FALSE,
   model.info = TRUE, model.fit = TRUE, model.check = FALSE,
   ...) {
 
@@ -279,14 +280,14 @@ summ.lm <- function(
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd,
+    model <- scale_mod(model, n.sd = n.sd,
                       scale.response = scale.response)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_lm(model)
+    model <- center_mod(model, center.response = center.response)
     # Using information from summary()
     sum <- summary(model)
 
@@ -614,7 +615,7 @@ print.summ.lm <- function(x, ...) {
 
 }
 
-###### glm #####################################################################
+###### glm ####################################################################
 
 #' Generalized linear regression summaries with options
 #'
@@ -711,7 +712,8 @@ summ.glm <- function(
   robust = FALSE, robust.type = "HC3",
   cluster = NULL, digits = getOption("jtools-digits", default = 2),
   odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, ...) {
+  n.sd = 1, center = FALSE, scale.response = FALSE, center.response = FALSE,
+  ...) {
 
   j <- list()
 
@@ -759,13 +761,13 @@ summ.glm <- function(
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd, scale.response = scale.response)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_lm(model)
+    model <- center_mod(model, center.response = center.response)
     # Using information from summary()
     sum <- summary(model)
 
@@ -1131,7 +1133,7 @@ print.summ.glm <- function(x, ...) {
 
 }
 
-##### svyglm ###################################################################
+##### svyglm ##################################################################
 
 #' Complex survey regression summaries with options
 #'
@@ -1202,7 +1204,8 @@ summ.svyglm <- function(
   digits = getOption("jtools-digits", default = 2), model.info = TRUE,
   model.fit = TRUE, model.check = FALSE, pvals = TRUE, n.sd = 1,
   center = FALSE,
-  scale.response = FALSE, odds.ratio = FALSE, ...) {
+  scale.response = FALSE, center.response = FALSE,
+  odds.ratio = FALSE, ...) {
 
   j <- list()
 
@@ -1251,13 +1254,13 @@ summ.svyglm <- function(
     # Standardized betas
     if (scale == TRUE) {
 
-      model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
+      model <- scale_mod(model, n.sd = n.sd, scale.response = scale.response)
       # Using information from summary()
       sum <- summary(model)
 
     } else if (center == TRUE && scale == FALSE) {
 
-      model <- center_lm(model)
+      model <- center_mod(model, center.response = center.response)
       # Using information from summary()
       sum <- summary(model)
 
@@ -1719,7 +1722,8 @@ summ.merMod <- function(
   digits = getOption("jtools-digits", default = 2), model.info = TRUE,
   model.fit = TRUE, r.squared = FALSE, pvals = NULL, n.sd = 1,
   center = FALSE,
-  scale.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...) {
+  scale.response = FALSE, center.response = FALSE,
+  odds.ratio = FALSE, t.df = NULL, ...) {
 
   j <- list()
 
@@ -1799,11 +1803,11 @@ summ.merMod <- function(
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd, scale.response = scale.response)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_lm(model)
+    model <- center_mod(model, center.response = center.response)
 
   }
 
@@ -2169,7 +2173,8 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
                          robust = FALSE, robust.type = "HC3", cluster = NULL,
                          digits = getOption("jtools-digits", default = 2),
                          pvals = TRUE, n.sd = 1, center = FALSE,
-                         scale.response = FALSE, model.info = TRUE,
+                         scale.response = FALSE, center.response = FALSE,
+                         model.info = TRUE,
                          model.fit = TRUE, model.check = FALSE, ...) {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
@@ -2187,7 +2192,7 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
   if (scale == TRUE) {
 
     model2 <-
-      try({scale_lm(model, n.sd = n.sd, scale.response = scale.response)},
+      try({scale_mod(model, n.sd = n.sd, scale.response = scale.response)},
           silent = TRUE)
     if ("try-error" %in% class(model2)) {
 
@@ -2204,7 +2209,8 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model2 <-  try({center_lm(model)}, silent = TRUE)
+    model2 <-  try({center_mod(model, center.response = center.response)},
+                   silent = TRUE)
     if ("try-error" %in% class(model2)) {
 
       warning("Could not center this type of model. Reporting",

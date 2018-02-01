@@ -9,7 +9,7 @@
   ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,
   digits = getOption("jtools-digits", default = 2), odds.ratio = FALSE,
   model.info = TRUE, model.fit = TRUE, pvals = TRUE, n.sd = 1,
-  center = FALSE, scale.response = FALSE, ...)
+  center = FALSE, scale.response = FALSE, center.response = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{glm} object.}

@@ -8,8 +8,8 @@
 \method{summ}{merMod}(model, scale = FALSE, confint = FALSE,
   ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
   model.info = TRUE, model.fit = TRUE, r.squared = FALSE, pvals = NULL,
-  n.sd = 1, center = FALSE, scale.response = FALSE, odds.ratio = FALSE,
-  t.df = NULL, ...)
+  n.sd = 1, center = FALSE, scale.response = FALSE,
+  center.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
