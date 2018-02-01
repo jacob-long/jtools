@@ -357,7 +357,7 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
       centered <- centered[centered %nin% omitvars]
     }
     if (length(centered) > 0) {
-      d <- gscale(x = centered, data = d, center.only = TRUE,
+      d <- gscale(vars = centered, data = d, center.only = TRUE,
                   weights = weights)
     }
 
@@ -376,7 +376,7 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
     # saving all vars except response
     vars <- names(d)[names(d) %nin% omitvars]
 
-    d <- gscale(x = vars, data = d, center.only = TRUE,
+    d <- gscale(vars = vars, data = d, center.only = TRUE,
                 weights = weights)
 
   } else if (centered == "none") {
@@ -422,7 +422,7 @@ center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
               " cannot be centered.")
       centered <- centered[centered %nin% omitvars]
     }
-    design <- gscale(x = centered, data = design, center.only = TRUE)
+    design <- gscale(vars = centered, data = design, center.only = TRUE)
     d <- design$variables
 
     # Dealing with two-level factors that aren't part
@@ -453,7 +453,7 @@ center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     ndfvars <- fvars[fvars %nin% omitvars]
 
     if (length(ndfvars) > 0) {
-      design <- gscale(x = ndfvars, data = design, center.only = TRUE)
+      design <- gscale(vars = ndfvars, data = design, center.only = TRUE)
       d <- design$variables
     }
 
