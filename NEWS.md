@@ -63,6 +63,24 @@ no option for Johnson-Neyman intervals in these cases. You can use the
 significance of the interaction term(s) for inference about whether the slopes
 differ at each level of the factor when the moderator is a factor.
 
+`gscale`: 
+
+The interface has been changed slightly, with the actual numbers always provided
+as the `data` argument. There is no `x` argument and instead a `vars` argument
+to which you can provide variable names. The upshot is that it now fits much 
+better into a piping workflow. 
+
+The entire function has gotten an extensive reworking, which in some cases 
+should result in significant speed gains. And if that's not enough, just know
+that the code was an absolute monstrosity before and now it's not.
+
+There are two new functions that are wrappers around `gscale`: `standardize`
+and `center`, which call `gscale` but with `n.sd = 1` in the first case and
+with `center.only = TRUE` in the latter case.
+
+
+
+
 ## jtools 0.9.3 (CRAN release)
 
 Bugfixes:

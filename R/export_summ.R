@@ -277,11 +277,13 @@ export_summs <- function(...,
 
       if (scale == TRUE) {
 
-        note <- "All continuous predictors are mean-centered and scaled by 1 standard deviation."
+        note <- paste("All continuous predictors are mean-centered and scaled",
+                "by 1 standard deviation.")
 
         if (robust == TRUE) {
 
-          note <- paste(note, "Standard errors are heteroskedasticity robust. %stars%.")
+          note <- paste(note,
+                    "Standard errors are heteroskedasticity robust. %stars%.")
 
         } else {
 
