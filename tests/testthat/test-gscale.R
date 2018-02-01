@@ -43,22 +43,34 @@ test_that("gscale: dataframes are centered without scaling", {
 })
 
 test_that("gscale: selected vars in dataframes are scaled", {
-  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars), length(mtcars))
-  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "full"),
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars),
                 length(mtcars))
-  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "0/1"),
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars,
+                       binary.inputs = "full"),
                 length(mtcars))
-  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "-0.5/0.5"),
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars,
+                       binary.inputs = "0/1"),
+                length(mtcars))
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars,
+                       binary.inputs = "-0.5/0.5"),
                 length(mtcars))
 })
 
+test_that("gscale: deprecated warnings work", {
+  expect_warning(gscale(x = c("hp", "wt", "vs"), data = mtcars,
+         binary.inputs = "-0.5/0.5"))
+  expect_warning(gscale(x = mtcars$hp))
+})
+
 test_that("gscale: selected vars in dataframes are scaled without centering", {
-  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars, scale.only = TRUE),
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars,
+                       scale.only = TRUE),
                 length(mtcars))
 })
 
 test_that("gscale: selected vars in dataframes are centered without scaling", {
-  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars, center.only = TRUE),
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars,
+                       center.only = TRUE),
                 length(mtcars))
 })
 

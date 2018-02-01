@@ -798,7 +798,7 @@ svysd <- function(formula, design, na.rm = FALSE,
 
   sds <- c() # Stores the values extracted next
   # Extract variance for each term from matrix
-  for (i in seq_len(length(terms))) {
+  for (i in seq_along(terms)) {
     sds <- c(sds, v[i,i])
   }
 
