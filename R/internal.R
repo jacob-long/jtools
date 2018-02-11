@@ -71,7 +71,7 @@ add_stars <- function(table, digits, p_vals) {
 round_df_char <- function(df, digits, pad = " ") {
   nas <- is.na(df)
   if (!is.data.frame(df)) {
-
+    # Fixes a sneaky error
     df <- as.data.frame.matrix(df, stringsAsFactors = FALSE)
 
   }
@@ -88,14 +88,17 @@ round_df_char <- function(df, digits, pad = " ") {
 
   nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
 
-  df[nums] <- round(df[nums], digits = digits)
+  # Convert missings to blank character
   if (any(nas)) {
     df[nas] <- ""
   }
 
-  df <- as.data.frame(lapply(df, format, nsmall = digits),
+  # Using a format function here to force trailing zeroes to be printed
+  # "formatC" allows signed zeros (e.g., "-0.00")
+  df <- as.data.frame(lapply(df, formatC, digits = digits, format = "f"),
                       stringsAsFactors = FALSE)
 
+  # Here's where we align the the decimals, thanks to Noah for the magic.
   for (i in which(nums)) {
     if (any(grepl(".", df[[i]], fixed = TRUE))) {
 
