@@ -73,6 +73,7 @@ Lumley, the author of the survey package, on
 All defects are attributed to the author.
 }
 \examples{
+if (requireNamespace("survey")) {
  library(survey)
  data(api)
  # Create survey design object
@@ -85,6 +86,7 @@ All defects are attributed to the author.
  # Save the results, extract correlation matrix
  out <- svycor(~api00+api99+dnum, design = dstrat)
  out$cors
+}
 
 }
 \seealso{

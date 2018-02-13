@@ -100,18 +100,19 @@ gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
 gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
 
 # Survey designs
-library(survey)
-data(api)
-## Create survey design object
-dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
-                     data = apistrat, fpc=~fpc)
-# Creating test binary variable
-dstrat$variables$binary <- rbinom(200, 1, 0.5)
+if (requireNamespace("survey")) {
+  library(survey)
+  data(api)
+  ## Create survey design object
+  dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                       data = apistrat, fpc=~fpc)
+  # Creating test binary variable
+  dstrat$variables$binary <- rbinom(200, 1, 0.5)
 
-gscale(data = dstrat, binary.inputs = "-0.5/0.5")
-gscale(c("api00","meals","binary"), data = dstrat,
-       binary.inputs = "-0.5/0.5")
-
+  gscale(data = dstrat, binary.inputs = "-0.5/0.5")
+  gscale(c("api00","meals","binary"), data = dstrat,
+         binary.inputs = "-0.5/0.5")
+}
 
 
 

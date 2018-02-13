@@ -323,11 +323,13 @@ print.wgttest <- function(x, ...) {
 #'
 #' # Note: This is a contrived example to show how the function works,
 #' # not a case with actual sammpling weights from a survey vendor
-#' states <- as.data.frame(state.x77)
-#' set.seed(100)
-#' states$wts <- runif(50, 0, 3)
-#' fit <- lm(Murder ~ Illiteracy + Frost, data = states)
-#' pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
+#' if (requireNamespace("boot")) {
+#'   states <- as.data.frame(state.x77)
+#'   set.seed(100)
+#'   states$wts <- runif(50, 0, 3)
+#'   fit <- lm(Murder ~ Illiteracy + Frost, data = states)
+#'   pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
+#' }
 #'
 #' @export
 #' @importFrom stats resid cor pt sd
@@ -494,11 +496,13 @@ print.pf_sv_test <- function (x, ...) {
 #'
 #' # Note: This is a contrived example to show how the function works,
 #' # not a case with actual sammpling weights from a survey vendor
-#' states <- as.data.frame(state.x77)
-#' set.seed(100)
-#' states$wts <- runif(50, 0, 3)
-#' fit <- lm(Murder ~ Illiteracy + Frost, data = states)
-#' weights_tests(model = fit, data = states, weights = wts, sims = 100)
+#' if (requireNamespace("boot")) {
+#'   states <- as.data.frame(state.x77)
+#'   set.seed(100)
+#'   states$wts <- runif(50, 0, 3)
+#'   fit <- lm(Murder ~ Illiteracy + Frost, data = states)
+#'   weights_tests(model = fit, data = states, weights = wts, sims = 100)
+#' }
 #'
 #' @export
 
@@ -616,6 +620,7 @@ print.weights_tests <- function(x, ...) {
 #'   All defects are attributed to the author.
 #'
 #' @examples
+#' if (requireNamespace("survey")) {
 #'  library(survey)
 #'  data(api)
 #'  # Create survey design object
@@ -628,6 +633,7 @@ print.weights_tests <- function(x, ...) {
 #'  # Save the results, extract correlation matrix
 #'  out <- svycor(~api00+api99+dnum, design = dstrat)
 #'  out$cors
+#' }
 #'
 #' @importFrom stats cov2cor model.frame na.pass weights
 #' @export
@@ -771,6 +777,7 @@ print.svycor <- function(x, ...) {
 #'  is neither endorsed nor known to its authors.
 #'
 #' @examples
+#' if (requireNamespace("survey")) {
 #'  library(survey)
 #'  data(api)
 #'  # Create survey design object
@@ -779,6 +786,7 @@ print.svycor <- function(x, ...) {
 #'
 #'  # Print the standard deviation of some variables
 #'  svysd(~api00+ell+meals, design = dstrat)
+#' }
 #'
 #' @importFrom stats cov2cor model.frame na.pass weights
 #' @export

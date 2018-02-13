@@ -13,12 +13,13 @@ fit <- lm(Income ~ HSGrad*Murder*Illiteracy + o70, data = states)
 fit2 <- lm(Income ~ HSGrad*o70, data = states)
 fitw <- lm(Income ~ HSGrad*Murder*Illiteracy + o70, data = states, weights = wts)
 
-
-suppressMessages(library(survey, quietly = TRUE))
-data(api)
-dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat,
-                    fpc = ~fpc)
-regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide, design = dstrat)
+if (requireNamespace("survey")) {
+  suppressMessages(library(survey, quietly = TRUE))
+  data(api)
+  dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat,
+                      fpc = ~fpc)
+  regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide, design = dstrat)
+}
 
 test_that("interact_plot works for lm", {
   expect_silent(p <- interact_plot(model = fit,
@@ -143,43 +144,46 @@ test_that("effect_plot works for weighted lm", {
 
 context("interactions svyglm")
 
-test_that("interact_plot works for svyglm", {
-  expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
-                                   mod2 = both,
-                              centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
-                                   mod2 = both,
-                              centered = "ell"))
-  expect_silent(print(p))
-})
+if (requireNamespace("survey")) {
+  test_that("interact_plot works for svyglm", {
+    expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
+                                     mod2 = both,
+                                centered = "all"))
+    expect_silent(print(p))
+    expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
+                                     mod2 = both,
+                                centered = "ell"))
+    expect_silent(print(p))
+  })
 
 
-test_that("effect_plot works for svyglm", {
-  expect_silent(p <- effect_plot(regmodel, pred = meals,
-                              centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(regmodel, pred = meals,
-                              centered = "ell"))
-  expect_silent(print(p))
-})
+  test_that("effect_plot works for svyglm", {
+    expect_silent(p <- effect_plot(regmodel, pred = meals,
+                                centered = "all"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(regmodel, pred = meals,
+                                centered = "ell"))
+    expect_silent(print(p))
+  })
+}
 
 context("interactions merMod")
 
-library(lme4, quietly = TRUE)
-data(VerbAgg)
-mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
+if (requireNamespace("lme4")) {
+  library(lme4, quietly = TRUE)
+  data(VerbAgg)
+  mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
 
-test_that("interact_plot works for lme4", {
-  expect_silent(p <- interact_plot(mv, pred = mode, modx = Gender))
-  expect_silent(print(p))
-})
+  test_that("interact_plot works for lme4", {
+    expect_silent(p <- interact_plot(mv, pred = mode, modx = Gender))
+    expect_silent(print(p))
+  })
 
-test_that("effect_plot works for lme4", {
-  expect_silent(p <- effect_plot(mv, pred = mode))
-  expect_silent(print(p))
-})
-
+  test_that("effect_plot works for lme4", {
+    expect_silent(p <- effect_plot(mv, pred = mode))
+    expect_silent(print(p))
+  })
+}
 
 context("interactions offsets")
 

@@ -131,18 +131,19 @@ determine the d.f., then any number provided as the argument will be
 used.
 }
 \examples{
+if (requireNamespace("lme4")) {
+  library(lme4, quietly = TRUE)
+  data(sleepstudy)
+  mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-library(lme4, quietly = TRUE)
-data(sleepstudy)
-mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+  summ(mv) # Note lack of p values if you don't have pbkrtest
 
-summ(mv) # Note lack of p values if you don't have pbkrtest
+  # Without pbkrtest, you'll get message about Type 1 errors
+  summ(mv, pvals = TRUE)
 
-# Without pbkrtest, you'll get message about Type 1 errors
-summ(mv, pvals = TRUE)
-
-# To suppress message, manually specify t.df argument
-summ(mv, t.df = "residual")
+  # To suppress message, manually specify t.df argument
+  summ(mv, t.df = "residual")
+}
 
 \dontrun{
  # Confidence intervals may be better alternative in absence of pbkrtest

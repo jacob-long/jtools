@@ -111,12 +111,14 @@
 #' fit2 <- lm(Income ~ Frost + Illiteracy, data = as.data.frame(state.x77))
 #' fit3 <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 #'
-#' # Export all 3 regressions with "Model #" labels,
-#' # standardized coefficients, and robust standard errors
-#' export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
-#'              coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
-#'              "Murder Rate" = "Murder"),
-#'              scale = TRUE, robust = TRUE)
+#' if (requireNamespace("huxtable")) {
+#'   # Export all 3 regressions with "Model #" labels,
+#'   # standardized coefficients, and robust standard errors
+#'   export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
+#'                coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
+#'                "Murder Rate" = "Murder"),
+#'                scale = TRUE, robust = TRUE)
+#' }
 #'
 #' @seealso
 #'
