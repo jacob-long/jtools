@@ -442,7 +442,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       color.class <- "Set2"
     }
     # Unrelated, but good place to throw a warning
-    if (!is.null(modxvals)) {
+    if (!is.null(modxvals) && length(modxvals) != nlevels(d[[modx]])) {
       warning("All levels of factor must be used. Ignoring modxvals",
               " argument...")
       modxvals <- NULL
