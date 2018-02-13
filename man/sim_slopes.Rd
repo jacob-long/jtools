@@ -125,7 +125,7 @@ analysis apply.
 
 # Using a fitted model as formula input
 fiti <- lm(Income ~ Frost + Murder * Illiteracy,
-  data=as.data.frame(state.x77))
+  data = as.data.frame(state.x77))
 sim_slopes(model = fiti, pred = Murder, modx = Illiteracy)
 
 # With svyglm

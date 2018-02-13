@@ -124,7 +124,7 @@
 #'
 #' # Using a fitted model as formula input
 #' fiti <- lm(Income ~ Frost + Murder * Illiteracy,
-#'   data=as.data.frame(state.x77))
+#'   data = as.data.frame(state.x77))
 #' sim_slopes(model = fiti, pred = Murder, modx = Illiteracy)
 #'
 #' # With svyglm
@@ -751,11 +751,11 @@ print.sim_slopes <- function(x, ...) {
     if (!is.null(x$mod2)) {
 
       m <- NULL
-      m$slopes <- ss$slopes[[j]]
-      m$ints <- ss$ints[[j]]
+      m$slopes <- as.data.frame(ss$slopes[[j]], stringsAsFactors = FALSE)
+      m$ints <- as.data.frame(ss$ints[[j]], stringsAsFactors = FALSE)
 
       if (class(x$mod2vals) != "character") {
-        x$mod2vals <- round(x$mod2vals, x$digits)
+        x$mod2vals <- format(x$mod2vals, nsmall = x$digits, digits = 0)
       }
 
       # Printing output to make it clear where each batch of second moderator
@@ -784,6 +784,8 @@ print.sim_slopes <- function(x, ...) {
 
     } else {
       m <- ss
+      m$slopes <- as.data.frame(ss$slopes, stringsAsFactors = FALSE)
+      m$ints <- as.data.frame(ss$ints, stringsAsFactors = FALSE)
 
       if (x$johnson_neyman == TRUE) {
         print(x$jns[[j]])
@@ -797,45 +799,50 @@ print.sim_slopes <- function(x, ...) {
     for (i in seq_len(length(x$modxvals))) {
 
       if (class(x$modxvals) != "character") {
-        x$modxvals <- round(x$modxvals, x$digits)
+        x$modxvals <- format(x$modxvals, nsmall = x$digits, digits = 0)
       }
 
       # Use the labels for the automatic +/- 1 SD
       if (x$def == TRUE) {
 
+        slopes <- as.data.frame(lapply(m$slopes[i,2:4], as.numeric))
+
         cat("Slope of ", x$pred, " when ", x$modx, " = ",
             x$modxvals[i], " (", names(x$modxvals)[i], ")",
             ": \n", sep = "")
-        print(round(m$slopes[i,2:4], x$digits))
+        print(format(slopes, nsmall = x$digits, digits = 0),
+              row.names = FALSE)
 
         # Print conditional intercept
         if (x$cond.int == TRUE) {
+
+          ints <- as.data.frame(lapply(m$ints[i,2:4], as.numeric))
+
           cat("Conditional intercept"," when ", x$modx, " = ",
               x$modxvals[i], " (", names(x$modxvals)[i], ")",
               ": \n", sep = "")
-          print(round(m$ints[i,2:4], x$digits))
+          print(format(ints, nsmall = x$digits, digits = 0),
+                row.names = FALSE)
           cat("\n")
         } else {cat("\n")}
 
       } else { # otherwise don't use labels
 
-        slopes <- as.numeric(m$slopes[i,2:4])
-        names(slopes) <- c("Est","S.E.","p")
+        slopes <- as.data.frame(lapply(m$slopes[i,2:4], as.numeric))
 
         cat("Slope of ", x$pred, " when ", x$modx, " = ",
             x$modxvals[i],
             ": \n", sep = "")
-        print(round(slopes, x$digits))
+        print(format(slopes, nsmall = x$digits, digits = 0), row.names = FALSE)
 
         # Print conditional intercept
         if (x$cond.int == TRUE) {
 
-          ints <- as.numeric(m$ints[i,2:4])
-          names(ints) <- c("Est","S.E.","p")
+          ints <- as.data.frame(lapply(m$ints[i,2:4], as.numeric))
 
           cat("Conditional intercept", " when ", x$modx, " = ",
               x$modxvals[i], ": \n", sep = "")
-          print(round(ints, x$digits))
+          print(format(ints, nsmall = x$digits, digits = 0), row.names = FALSE)
           cat("\n")
         } else {cat("\n")}
 
