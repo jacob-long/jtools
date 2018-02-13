@@ -79,7 +79,15 @@ and `center`, which call `gscale` but with `n.sd = 1` in the first case and
 with `center.only = TRUE` in the latter case.
 
 
+`summ`:
 
+Like the rest of R, when `summ` rounded your output, items rounded exactly to
+zero would be treated as, well, zero. But this can be misleading if the original
+value was actually negative. For instance, if `digits = 2` and a coefficient
+was `-0.003`, the value printed to the console was `0.00`, suggesting a zero
+or slightly positive value when in fact it was the opposite. This is a 
+deficiency of the `round` (and `trunc`) function. I've now changed it so the
+zero-rounded value retains its sign.
 
 ## jtools 0.9.3 (CRAN release)
 
