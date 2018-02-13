@@ -827,7 +827,7 @@ summ.glm <- function(
                                       data = model.frame(object)))
 
       } else {
-        `(weights)` <- model.frame(object)["(weights)"] # appeasing CRAN
+        `(weights)` <- model.weights(model.frame(object)) # appeasing CRAN
 
         objectNull <- suppressWarnings(j_update(object, ~ 1,
                                               data = model.frame(object),

@@ -15,11 +15,13 @@ exposures <- rpois(50, 50)
 counts <- exposures - rpois(50, 25)
 money <- (counts/exposures) + rnorm(50, sd = 1)
 talent <- counts*.5 + rnorm(50, sd = 3)
-poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
+wt <- runif(50, 0, 3)
+poisdat <- as.data.frame(cbind(exposures, counts, talent, money, wt))
 pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
             family = poisson)
 pmod2 <- glm(counts ~ talent*money + offset(log(exposures)), data = poisdat,
             family = poisson)
+pmodw <- glm(counts ~ talent + money, data = poisdat, weights = wt)
 
 # survey test
 suppressMessages(library(survey, quietly = TRUE))
@@ -66,6 +68,12 @@ test_that("jsumm: GLMs w/ offsets work (formula)", {
   expect_is(summ(pmod2), "summ.glm")
   expect_is(summ(pmod2, scale = TRUE), "summ.glm")
   expect_is(summ(pmod2, center = TRUE), "summ.glm")
+})
+
+test_that("jsumm: GLMs w/ weights work", {
+  expect_is(summ(pmodw), "summ.glm")
+  expect_is(summ(pmodw, scale = TRUE), "summ.glm")
+  expect_is(summ(pmodw, center = TRUE), "summ.glm")
 })
 
 test_that("jsumm: partial correlations work", {
