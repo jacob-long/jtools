@@ -89,6 +89,14 @@ or slightly positive value when in fact it was the opposite. This is a
 deficiency of the `round` (and `trunc`) function. I've now changed it so the
 zero-rounded value retains its sign.
 
+## jtools 0.9.4 (CRAN release)
+
+This release is limited to dealing with the `huxtable` package's temporary
+removal from CRAN, which in turn makes this package out of compliance with
+CRAN policies regarding dependencies on non-CRAN packages.
+
+Look out for `jtools` 1.0.0 coming very soon!
+
 ## jtools 0.9.3 (CRAN release)
 
 Bugfixes:

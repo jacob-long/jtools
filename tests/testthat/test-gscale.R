@@ -74,44 +74,46 @@ test_that("gscale: selected vars in dataframes are centered without scaling", {
                 length(mtcars))
 })
 
-suppressMessages(library(survey, quietly = TRUE))
-data(api)
-## Create survey design object
-dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
-                      fpc=~fpc)
-dstrat$variables$binary <- rbinom(200, 1, 0.5) # Creating test binary variable
-# This kills that warning that I don't want
-dstrat$variables <- dstrat$variables[,!(names(dstrat$variables) %in% "flag")]
+if (requireNamespace("survey")) {
+  suppressMessages(library(survey, quietly = TRUE))
+  data(api)
+  ## Create survey design object
+  dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
+                        fpc=~fpc)
+  dstrat$variables$binary <- rbinom(200, 1, 0.5) # Creating test binary variable
+  # This kills that warning that I don't want
+  dstrat$variables <- dstrat$variables[,!(names(dstrat$variables) %in% "flag")]
 
-test_that("gscale: surveys work as expected", {
-  expect_is(gscale(data = dstrat, binary.inputs = "full"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(data = dstrat, binary.inputs = "center"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(data = dstrat, binary.inputs = "0/1"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(data = dstrat, binary.inputs = "-0.5/0.5"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(data = dstrat, binary.inputs = "full", center.only = TRUE),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(data = dstrat, binary.inputs = "full", scale.only = TRUE),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(c("api00","meals","binary"), data = dstrat,
-                   binary.inputs = "-0.5/0.5"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(c("api00","meals","binary"), data = dstrat,
-                   binary.inputs = "full"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(c("api00","meals","binary"), data = dstrat,
-                   binary.inputs = "0/1"),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(c("api00","meals","binary"), data = dstrat,
-                   binary.inputs = "full", center.only = TRUE),
-            c("survey.design2","survey.design"))
-  expect_is(gscale(c("api00","meals","binary"), data = dstrat,
-                   binary.inputs = "full", scale.only = TRUE),
-            c("survey.design2","survey.design"))
-})
+  test_that("gscale: surveys work as expected", {
+    expect_is(gscale(data = dstrat, binary.inputs = "full"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(data = dstrat, binary.inputs = "center"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(data = dstrat, binary.inputs = "0/1"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(data = dstrat, binary.inputs = "-0.5/0.5"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(data = dstrat, binary.inputs = "full", center.only = TRUE),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(data = dstrat, binary.inputs = "full", scale.only = TRUE),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(c("api00","meals","binary"), data = dstrat,
+                     binary.inputs = "-0.5/0.5"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(c("api00","meals","binary"), data = dstrat,
+                     binary.inputs = "full"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(c("api00","meals","binary"), data = dstrat,
+                     binary.inputs = "0/1"),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(c("api00","meals","binary"), data = dstrat,
+                     binary.inputs = "full", center.only = TRUE),
+              c("survey.design2","survey.design"))
+    expect_is(gscale(c("api00","meals","binary"), data = dstrat,
+                     binary.inputs = "full", scale.only = TRUE),
+              c("survey.design2","survey.design"))
+  })
+}
 
 test_that("gscale: binary vars are scaled with weights", {
   expect_length(gscale(x2, weights = wts), 100)

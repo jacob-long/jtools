@@ -25,7 +25,6 @@ Suggests:
   huxtable (>= 1.0.0),
   lme4,
   methods,
-  nlme,
   officer,
   pbkrtest,
   RColorBrewer,

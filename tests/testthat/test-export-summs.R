@@ -12,11 +12,12 @@ fit <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states)
 fit2 <- lm(Income ~ HSGrad*o70, data = states)
 fitw <- lm(Income ~ HSGrad*Murder*Illiteracy, data = states, weights = wts)
 
-
-suppressMessages(library(survey, quietly = TRUE))
-data(api)
-dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
-regmodel <- svyglm(api00~ell*meals*both,design=dstrat)
+if (requireNamespace("survey")) {
+  suppressMessages(library(survey, quietly = TRUE))
+  data(api)
+  dstrat <- svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
+  regmodel <- svyglm(api00~ell*meals*both,design=dstrat)
+}
 
 set.seed(100)
 exposures <- rpois(50, 50)
@@ -29,12 +30,15 @@ pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
 pmod_a <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
             family = poisson)
 
-library(lme4, quietly = TRUE)
-data(VerbAgg)
-mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+if (requireNamespace("lme4")) {
+  library(lme4, quietly = TRUE)
+  data(VerbAgg)
+  mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+}
 
 # library(broom)
 # library(huxtable)
+if (requireNamespace("huxtable")) {
 
 test_that("Export doesn't fail with lm", {
   expect_is(export_summs(fit,fit2,fitw), "huxtable")
@@ -83,40 +87,44 @@ test_that("Export accepts summ args with svyglm", {
             "huxtable")
 })
 
-test_that("Export accepts huxreg args with svyglm", {
-  expect_is(export_summs(regmodel, pad_decimal = ",",
-                         statistics = c(N = "nobs")),
-            "huxtable")
-})
+if (requireNamespace("survey")) {
+  test_that("Export accepts huxreg args with svyglm", {
+    expect_is(export_summs(regmodel, pad_decimal = ",",
+                           statistics = c(N = "nobs")),
+              "huxtable")
+  })
+}
 
 test_that("Export accepts huxreg and summ args with svyglm", {
   expect_is(export_summs(regmodel, pad_decimal = ",",
                          scale = T), "huxtable")
 })
 
-test_that("Export doesn't fail with merMod", {
-  expect_is(export_summs(mv), "huxtable")
-})
+if (requireNamespace("lme4")) {
+  test_that("Export doesn't fail with merMod", {
+    expect_is(export_summs(mv), "huxtable")
+  })
 
-test_that("Export accepts summ args with merMod", {
-  expect_is(export_summs(mv, scale = T),
-            "huxtable")
-})
+  test_that("Export accepts summ args with merMod", {
+    expect_is(export_summs(mv, scale = T),
+              "huxtable")
+  })
 
-test_that("Export accepts huxreg args with merMod", {
-  expect_is(export_summs(mv, pad_decimal = ","),
-            "huxtable")
-})
+  test_that("Export accepts huxreg args with merMod", {
+    expect_is(export_summs(mv, pad_decimal = ","),
+              "huxtable")
+  })
 
-test_that("Export accepts huxreg and summ args with merMod", {
-  expect_is(export_summs(mv, pad_decimal = ",",
-                         scale = T), "huxtable")
-})
+  test_that("Export accepts huxreg and summ args with merMod", {
+    expect_is(export_summs(mv, pad_decimal = ",",
+                           scale = T), "huxtable")
+  })
 
-test_that("Export can do confidence intervals (merMod)", {
-  expect_is(export_summs(mv,
-            error_format = "95% CI [{conf.low}, {conf.high}]"), "huxtable")
-})
+  test_that("Export can do confidence intervals (merMod)", {
+    expect_is(export_summs(mv,
+              error_format = "95% CI [{conf.low}, {conf.high}]"), "huxtable")
+  })
+}
 
 test_that("Export can do confidence intervals (lm)", {
   expect_is(export_summs(fit, fitw,
@@ -130,11 +138,13 @@ test_that("Export can do confidence intervals (glm)", {
             "huxtable")
 })
 
-test_that("Export can do confidence intervals (svyglm)", {
-  expect_is(export_summs(regmodel,
-                         error_format = "95% CI [{conf.low}, {conf.high}]"),
-            "huxtable")
-})
+if (requireNamespace("survey")) {
+  test_that("Export can do confidence intervals (svyglm)", {
+    expect_is(export_summs(regmodel,
+                           error_format = "95% CI [{conf.low}, {conf.high}]"),
+              "huxtable")
+  })
+}
 
 test_that("Export can take manual coefficient names", {
   expect_is(export_summs(fit,fit2,fitw,
@@ -142,9 +152,13 @@ test_that("Export can take manual coefficient names", {
                           "Murder Rate" = "Murder")), "huxtable")
 })
 
+}
+
 #### plot_summs ############################################################
 
 context("plot_summs")
+
+if (requireNamespace("broom")) {
 
 test_that("plot_summs doesn't fail with lm", {
   expect_is(p <- plot_summs(fit,fit2,fitw), "ggplot")
@@ -174,26 +188,30 @@ test_that("plot_summs accepts odds ratios with glm", {
   expect_silent(print(p))
 })
 
-test_that("plot_summs works with svyglm", {
-  expect_is(p <- plot_summs(regmodel), "ggplot")
-  expect_silent(print(p))
-})
+if (requireNamespace("survey")) {
+  test_that("plot_summs works with svyglm", {
+    expect_is(p <- plot_summs(regmodel), "ggplot")
+    expect_silent(print(p))
+  })
 
-test_that("plot_summs accepts summ args with svyglm", {
-  expect_is(p <- plot_summs(regmodel, scale = T), "ggplot")
-  expect_silent(print(p))
-})
+  test_that("plot_summs accepts summ args with svyglm", {
+    expect_is(p <- plot_summs(regmodel, scale = T), "ggplot")
+    expect_silent(print(p))
+  })
+}
 
-# The message expected is the "calculating confidence intervals..." from lme4
-test_that("plot_summs works with lmer", {
-  expect_is(p <- plot_summs(mv), "ggplot")
-  expect_silent(print(p))
-})
+if (requireNamespace("lme4")) {
+  # The message expected is the "calculating confidence intervals..." from lme4
+  test_that("plot_summs works with lmer", {
+    expect_is(p <- plot_summs(mv), "ggplot")
+    expect_silent(print(p))
+  })
 
-test_that("plot_summs accepts summ args with lmer", {
-  expect_is(p <- plot_summs(mv, scale = T), "ggplot")
-  expect_silent(print(p))
-})
+  test_that("plot_summs accepts summ args with lmer", {
+    expect_is(p <- plot_summs(mv, scale = T), "ggplot")
+    expect_silent(print(p))
+  })
+}
 
 test_that("plot_summs can take manual coefficient names", {
   expect_is(p <- plot_summs(fit,fit2,fitw,
@@ -227,3 +245,5 @@ test_that("plot_coefs works", {
   expect_is(p <- plot_coefs(fit, pmod), "ggplot")
   expect_silent(print(p))
 })
+
+}

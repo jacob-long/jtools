@@ -98,13 +98,15 @@ refit means the runtime will be similar to the original time it took to fit
 the model.
 }
 \examples{
-library(survey)
-data(api)
-dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
-                    data = apistrat, fpc =~ fpc)
-regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
+if (requireNamespace("survey")) {
+  library(survey)
+  data(api)
+  dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
+                      data = apistrat, fpc =~ fpc)
+  regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 
-summ(regmodel)
+  summ(regmodel)
+}
 }
 \seealso{
 \code{\link{scale_lm}} can simply perform the standardization if
