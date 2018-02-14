@@ -5,7 +5,8 @@
 \alias{center_lm}
 \title{Center variables in fitted regression models}
 \usage{
-center_mod(model, binary.inputs = "0/1", center.response = FALSE)
+center_mod(model, binary.inputs = "0/1", center.response = FALSE,
+  data = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or

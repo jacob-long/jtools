@@ -29,6 +29,11 @@
 #' @param scale.response Should the response variable also be rescaled? Default
 #'   is \code{TRUE}.
 #'
+#' @param data If you provide the data used to fit the model here, that data
+#'   frame is used to re-fit the model instead of the [stats::model.frame()]
+#'   of the model. This is particularly useful if you have variable
+#'   transformations or polynomial terms specified in the formula.
+#'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
 #'   interaction terms. It can also mean-center all of them as well, if
@@ -96,7 +101,7 @@
 
 scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
                                   center = TRUE, scale.response = TRUE,
-                                  center.only = FALSE) {
+                                  center.only = FALSE, data = NULL) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -168,8 +173,11 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
   } else {
 
     weights <- FALSE
-    the_weights <- NULL
-
+    if (is.null(data)) {
+      the_weights <- rep(1, times = nrow(mf))
+    } else {
+      the_weights <- rep(1, times = nrow(data))
+    }
   }
 
   # things are different for these svyglm objects...
@@ -184,7 +192,7 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
     # Add vars to design if they aren't already there
     # (fixes issues with functions)
-    adds <- which(!(vars %in% names(design$variables)))
+    adds <- which(vars %nin% names(design$variables))
     for (var in vars[adds]) {
 
       design$variables[[var]] <- mf[[var]]
@@ -206,51 +214,15 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   }
 
-  # weights?
-  if (survey == FALSE && !is.null(call$weights)) {
-
-    weights <- TRUE
-    mf <- mf[,names(mf) != "(weights)"] # just getting rid of the column
-
-  } else {
-
-    weights <- FALSE
-
-  }
-
-  # calling gscale(), incorporating the weights
-  if (weights == TRUE) {
-
-    if (scale.response == FALSE) {
-
-      vars <- vars[!(vars %in% resp)]
-
-    }
-
-    mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
-                 n.sd = n.sd, weights = the_weights, scale.only = !center,
-                 center.only = center.only)
-
-    mf$the_weights <- the_weights
-
-  } else {
-
-    if (scale.response == FALSE) {
+  if (scale.response == FALSE) {
       # Now we need to know the variables of interest
-      vars <- vars[!(vars %in% resp)]
-      mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
-                   n.sd = n.sd, scale.only = !center,
-                   center.only = center.only)
-
-    } else {
-
-      mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
-                   n.sd = n.sd, scale.only = !center,
-                   center.only = center.only)
-
-    }
-
+      vars <- vars[vars %nin% resp]
   }
+
+  if (!is.null(data)) {mf <- data}
+  mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
+               n.sd = n.sd, scale.only = !center,
+               center.only = center.only, weights = the_weights)
 
 
   if (survey == FALSE) {
@@ -260,8 +232,8 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
     call <- getCall(model)
     call$formula <- form
     call$data <- quote(mf) # quoting avoids that gnarly output
-    call$offset <- the_offset
-    call$weights <- the_weights
+    call$offset <- quote(the_offset)
+    call$weights <- quote(the_weights)
 
     new <- eval(call)
 
@@ -352,10 +324,11 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
 #' @aliases center_lm
 
 center_mod <- center_lm <- function(model, binary.inputs = "0/1",
-                                    center.response = FALSE) {
+                                    center.response = FALSE, data = NULL) {
 
   out <- scale_mod(model, binary.inputs = binary.inputs,
-                  scale.response = center.response, center.only = TRUE)
+                  scale.response = center.response, center.only = TRUE,
+                  data = data)
 
   return(out)
 
