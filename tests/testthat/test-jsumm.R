@@ -6,8 +6,9 @@ context("summ")
 set.seed(1)
 output <- rpois(100, 5)
 input <- log(output) + runif(100,0,1)
-fitgf <- glm(output ~ input, family = poisson)
 clusters <- sample(1:5, size = 100, replace = TRUE)
+dat <- as.data.frame(cbind(output, input, clusters))
+fitgf <- glm(output ~ input, data = dat, family = poisson)
 
 # Offset test
 set.seed(100)
@@ -175,14 +176,14 @@ test_that("jsumm and center_lm: centering works", {
 })
 
 test_that("jsumm can scale weighted lms", {
-  expect_is(summ(fitw, scale = T, n.sd = 2, robust = TRUE), "summ.lm")
-  expect_is(summ(fitw, center = T, robust = TRUE), "summ.lm")
+  expect_is(summ(fitw, scale = T, n.sd = 2, robust = "HC3"), "summ.lm")
+  expect_is(summ(fitw, center = T, robust = "HC3"), "summ.lm")
 })
 
 test_that("jsumm: lm robust SEs work", {
   expect_is(summ(fit, robust = T), "summ.lm")
-  expect_is(summ(fit, robust = T, robust.type = "HC4m"), "summ.lm")
-  expect_output(print(summ(fit, robust = T, robust.type = "HC4m")))
+  expect_is(summ(fit, robust = "HC4m"), "summ.lm")
+  expect_output(print(summ(fit, robust = "HC4m")))
 })
 
 test_that("jsumm: lm partial corrs works", {
@@ -191,27 +192,24 @@ test_that("jsumm: lm partial corrs works", {
 })
 
 test_that("jsumm: warn with partial corrs and robust SEs", {
-  expect_warning(summ(fit, robust = T, part.corr = T))
+  expect_warning(summ(fit, robust = "HC3", part.corr = T))
 })
 
 test_that("jsumm: glm robust SEs work", {
-  expect_is(summ(fitgf, robust = T), "summ.glm")
-  expect_is(summ(fitgf, robust = T, robust.type = "HC4m"), "summ.glm")
-  expect_output(print(summ(fitgf, robust = T, robust.type = "HC4m")))
+  expect_is(summ(fitgf, robust = "HC3"), "summ.glm")
+  expect_output(print(summ(fitgf, robust = "HC4m")))
 })
 
 test_that("jsumm: lm cluster-robust SEs work", {
-  expect_is(summ(fit, robust = T, cluster = "Population"), "summ.lm")
-  expect_output(print(summ(fit, robust = T, cluster = "Population")))
-  expect_error(summ(fit, robust = T, robust.type = "HC4m",
-                        cluster = "Population"))
+  expect_is(summ(fit, robust = "HC3", cluster = "Population"), "summ.lm")
+  expect_output(print(summ(fit, robust = "HC3", cluster = "Population")))
+  expect_error(summ(fit, robust = "HC4m", cluster = "Population"))
 })
 
 test_that("jsumm: glm cluster-robust SEs work", {
-  expect_is(summ(fitgf, robust = T, cluster = clusters), "summ.glm")
+  expect_is(summ(fitgf, robust = "HC3", cluster = clusters), "summ.glm")
   expect_output(print(summ(fitgf, robust = T, cluster = clusters)))
-  expect_error(summ(fitgf, robust = T, robust.type = "HC4m",
-                        cluster = clusters))
+  expect_error(summ(fitgf, robust = "HC4m", cluster = clusters))
 })
 
 test_that("jsumm: Printing isn't borked", {
@@ -228,20 +226,5 @@ test_that("jsumm: Printing isn't borked", {
   if (requireNamespace("lme4")) {
     expect_output(print(summ(mv, scale = TRUE, n.sd = 2, pvals = FALSE)))
   }
-
-})
-
-test_that("jsumm: summ.default", {
-  expect_is(jtools:::summ.default(fit), "summ.default")
-  expect_is(jtools:::summ.default(fit, robust = T, scale = T),
-            "summ.default")
-  if (requireNamespace("survey")) {
-    expect_is(jtools:::summ.default(regmodel, center = T), "summ.default")
-    expect_is(jtools:::summ.default(regmodel, confint = T), "summ.default")
-    expect_output(print(jtools:::summ.default(regmodel, center = T)))
-    expect_output(print(jtools:::summ.default(regmodel, confint = T)))
-  }
-  expect_output(print(jtools:::summ.default(fit)))
-  expect_output(print(jtools:::summ.default(fit, robust = T, scale = T)))
 
 })

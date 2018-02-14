@@ -141,7 +141,7 @@ if (requireNamespace("survey")) {
                                      mod2 = both,
                                 centered = "all"))
     expect_silent(print(p))
-    expect_silent(p <- interact_plot(regmodel, pred = ell, modx = meals,
+    expect_warning(p <- interact_plot(regmodel, pred = ell, modx = meals,
                                      mod2 = both,
                                 centered = "ell"))
     expect_silent(print(p))
@@ -163,15 +163,20 @@ context("interactions merMod")
 if (requireNamespace("lme4")) {
   library(lme4, quietly = TRUE)
   data(VerbAgg)
-  mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
+  VerbAgg$mode_numeric <- as.numeric(VerbAgg$mode)
+  mve <- lmer(Anger ~ Gender * mode + btype +  (1 | item), data = VerbAgg)
+  mv <- lmer(Anger ~ Gender * mode_numeric + btype +  (1 | item),
+             data = VerbAgg)
 
   test_that("interact_plot works for lme4", {
-    expect_silent(p <- interact_plot(mv, pred = mode, modx = Gender))
+    expect_error(p <- interact_plot(mve, pred = mode, modx = Gender))
+    expect_silent(p <- interact_plot(mv, pred = mode_numeric, modx = Gender))
     expect_silent(print(p))
   })
 
   test_that("effect_plot works for lme4", {
-    expect_silent(p <- effect_plot(mv, pred = mode))
+    expect_error(p <- effect_plot(mve, pred = mode))
+    expect_silent(p <- effect_plot(mv, pred = mode_numeric))
     expect_silent(print(p))
   })
 }
@@ -223,19 +228,21 @@ test_that("effect_plot works for weighted lm", {
   expect_silent(print(p))
 })
 
-test_that("effect_plot works for svyglm", {
-  expect_silent(p <- effect_plot(regmodel, pred = meals,
-                                 centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(regmodel, pred = meals,
-                                 centered = "ell"))
-  expect_silent(print(p))
-})
+if (requireNamespace("survey")) {
+  test_that("effect_plot works for svyglm", {
+    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "all"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "ell"))
+    expect_silent(print(p))
+  })
+}
 
-test_that("effect_plot works for lme4", {
-  expect_silent(p <- effect_plot(mv, pred = nmode))
-  expect_silent(print(p))
-})
+if (requireNamespace("lme4")) {
+  test_that("effect_plot works for lme4", {
+    expect_silent(p <- effect_plot(mv, pred = mode_numeric))
+    expect_silent(print(p))
+  })
+}
 
 test_that("effect_plot handles offsets", {
   expect_message(p <- effect_plot(pmod, pred = money))
