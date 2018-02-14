@@ -2173,10 +2173,10 @@ package \"pbkrtest\" to get more accurate p values.")
 
 summ.default <- function(model, scale = FALSE, vifs = FALSE,
                          confint = FALSE, ci.width = .95,
-                         robust = FALSE, robust.type = "HC3", cluster = NULL,
+                         robust = FALSE, cluster = NULL,
                          digits = getOption("jtools-digits", default = 2),
                          pvals = TRUE, n.sd = 1, center = FALSE,
-                         scale.response = FALSE, center.response = FALSE,
+                         transform.response = FALSE, data = NULL,
                          model.info = TRUE,
                          model.fit = TRUE, model.check = FALSE, ...) {
 
@@ -2187,6 +2187,18 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
 
   }
 
+  dots <- list(...)
+
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
+  }
+
   the_call <- match.call()
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
@@ -2195,11 +2207,12 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
   if (scale == TRUE) {
 
     model2 <-
-      try({scale_mod(model, n.sd = n.sd, scale.response = scale.response)},
+      try({scale_mod(model, n.sd = n.sd, scale.response = transform.response,
+                     data = data)},
           silent = TRUE)
     if ("try-error" %in% class(model2)) {
 
-      warning("Could not scale this type of model. Reporting",
+      warning("Could not scale this type of model.\n Reporting",
               " unscaled estimates...")
       scale <- FALSE
       center <- FALSE
@@ -2212,11 +2225,12 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model2 <-  try({center_mod(model, center.response = center.response)},
+    model2 <-  try({center_mod(model, center.response = transform.response,
+                               data = data)},
                    silent = TRUE)
     if ("try-error" %in% class(model2)) {
 
-      warning("Could not center this type of model. Reporting",
+      warning("Could not center this type of model.\n Reporting",
               " uncentered estimates...")
       center <- FALSE
 
@@ -2232,7 +2246,7 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
       warning("When vifs is set to TRUE, you need to have the 'car' package",
-              "installed. Proceeding without VIFs...")
+              "installed.\n Proceeding without VIFs...")
       vifs <- FALSE
     }
   }
@@ -2403,8 +2417,8 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
   if (robust == TRUE & confint == FALSE) {
 
     if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
-           " package for robust standard errors. Please install it or set",
+      stop("When robust SEs are requested, you need to have the \'sandwich\'",
+           " package\n for robust standard errors. Please install it or set",
            " robust to FALSE.",
            call. = FALSE)
     }
@@ -2412,7 +2426,11 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
     if (is.character(cluster)) {
 
       call <- getCall(model)
-      d <- eval(call$data, envir = environment(formula(model)))
+      if (is.null(data)) {
+        d <- eval(call$data, envir = environment(formula(model)))
+      } else {
+        d <- data
+      }
 
       cluster <- d[,cluster]
       use_cluster <- TRUE
@@ -2439,23 +2457,23 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
 
     }
 
-    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
+    if (robust %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
       # vcovCL only goes up to HC3
       tvcov <- try({sandwich::vcovHC(model, type = robust.type)},
           silent = TRUE)
       if ("try-error" %in% class(tvcov)) {
 
         warning("Could not calculate robust standard errors for this model",
-                " type. Returning the non-robust statistics.")
+                " type.\n Returning the non-robust statistics.")
         robust <- FALSE
 
       }
 
-    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
+    } else if (robust %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
 
-      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
+      stop("If using cluster-robust SEs, robust must be HC3 or lower.")
 
-    } else if (robust == TRUE) {
+    } else {
 
       tvcov <-
         try({sandwich::vcovCL(model, cluster = cluster, type = robust.type)},
@@ -2463,7 +2481,7 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
       if ("try-error" %in% class(tvcov)) {
 
         warning("Could not calculate robust standard errors for this model",
-                " type. Returning the non-robust statistics.")
+                " type.\n Returning the non-robust statistics.")
         robust <- FALSE
         use_cluster <- FALSE
 
@@ -2495,7 +2513,7 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
 
   } else if (robust == TRUE & confint == TRUE) {
 
-    warning("Robust statistics and confidence intervals cannot be combined",
+    warning("Robust statistics and confidence intervals cannot be combined\n",
             " for this type of model. Reporting non-robust intervals...")
     robust <- FALSE
     use_cluster <- FALSE
@@ -2543,8 +2561,9 @@ summ.default <- function(model, scale = FALSE, vifs = FALSE,
                    n.sd = n.sd, dv = dv,
                    n = n_obs, mod_info2 = mod_info2, digits = digits,
                    model.info = model.info, model.fit = model.fit,
-                   use_cluster = use_cluster, robust.type = robust.type,
-                   scale.response = scale.response,
+                   use_cluster = use_cluster, robust.type = robust,
+                   scale.response = transform.response,
+                   transform.response = transform.response,
                    call = the_call, env = the_env)
   class(out) <- c("summ.default","summ")
   return(out)
@@ -2588,7 +2607,7 @@ print.summ.default <- function(x, ...) {
   }
 
   cat("\n")
-  if (x$robust == TRUE) {
+  if (identical(x$robust, FALSE) == FALSE) {
 
     cat("\nStandard errors:", sep = "")
 
@@ -2611,21 +2630,8 @@ print.summ.default <- function(x, ...) {
   print(ctable)
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
