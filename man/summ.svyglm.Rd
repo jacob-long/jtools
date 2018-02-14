@@ -5,20 +5,17 @@
 \alias{j_summ.svyglm}
 \title{Complex survey regression summaries with options}
 \usage{
-\method{summ}{svyglm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
+\method{summ}{svyglm}(model, scale = FALSE, confint = FALSE,
   ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  pvals = TRUE, n.sd = 1, center = FALSE, scale.response = FALSE,
-  center.response = FALSE, odds.ratio = FALSE, ...)
+  pvals = TRUE, n.sd = 1, center = FALSE, transform.response = FALSE,
+  odds.ratio = FALSE, vifs = FALSE, model.info = TRUE, model.fit = TRUE,
+  model.check = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{svyglm} object.}
 
 \item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
-
-\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
-factors (VIF). Default is \code{FALSE}.}
 
 \item{confint}{Show confidence intervals instead of standard errors? Default
 is \code{FALSE}.}
@@ -33,15 +30,6 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{model.info}{Toggles printing of basic information on sample size,
-name of DV, and number of predictors.}
-
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
-
-\item{model.check}{Toggles whether to perform Breusch-Pagan test for
-heteroskedasticity
-and print number of high-leverage observations. See details for more info.}
-
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
 details).}
@@ -52,13 +40,22 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
-
 \item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
+
+\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
+factors (VIF). Default is \code{FALSE}.}
+
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
+
+\item{model.check}{Toggles whether to perform Breusch-Pagan test for
+heteroskedasticity
+and print number of high-leverage observations. See details for more info.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}

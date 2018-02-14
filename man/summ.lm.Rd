@@ -3,21 +3,13 @@
 \name{summ.lm}
 \alias{summ.lm}
 \alias{j_summ.lm}
-\alias{summ.default}
 \title{Linear regression summaries with options}
 \usage{
-\method{summ}{lm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
-  ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,
+\method{summ}{lm}(model, scale = FALSE, confint = FALSE, ci.width = 0.95,
+  robust = FALSE, cluster = NULL, vifs = FALSE,
   digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE,
-  center.response = FALSE, part.corr = FALSE, model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, ...)
-
-\method{summ}{default}(model, scale = FALSE, vifs = FALSE,
-  confint = FALSE, ci.width = 0.95, robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 2),
-  pvals = TRUE, n.sd = 1, center = FALSE, scale.response = FALSE,
-  center.response = FALSE, model.info = TRUE, model.fit = TRUE,
+  n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
+  part.corr = FALSE, model.info = TRUE, model.fit = TRUE,
   model.check = FALSE, ...)
 }
 \arguments{
@@ -26,9 +18,6 @@
 \item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
 
-\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
-factors (VIF). Default is \code{FALSE}.}
-
 \item{confint}{Show confidence intervals instead of standard errors? Default
 is \code{FALSE}.}
 
@@ -36,22 +25,23 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard
+\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
 errors instead of conventional SEs. These are also known as Huber-White
-standard errors.
+standard errors. There are several options provided by
+\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
+\code{"HC4m"}, \code{"HC5"}.
 
 Default is \code{FALSE}.
 
 This requires the \code{sandwich} package to compute the
 standard errors.}
 
-\item{robust.type}{Only used if \code{robust = TRUE}. Specifies the type of
-robust standard errors to be used by \code{sandwich}. By default, set to
-\code{"HC3"}. See details for more on options.}
-
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
+
+\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
+factors (VIF). Default is \code{FALSE}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
@@ -69,8 +59,11 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
+\item{data}{If you provide the data used to fit the model here, that data
+frame is used to re-fit the model (if \code{scale} is \code{TRUE})
+instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
+of the model. This is particularly useful if you have variable
+transformations or polynomial terms specified in the formula.}
 
 \item{part.corr}{Print partial (labeled "partial.r") and
 semipartial (labeled "part.r") correlations with the table?
@@ -88,6 +81,9 @@ and print number of high-leverage observations. See details for more info.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
+
+\item{scale.response}{Should standardization apply to response variable?
+Default is \code{FALSE}.}
 }
 \value{
 If saved, users can access most of the items that are returned in

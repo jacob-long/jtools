@@ -88,15 +88,15 @@ round_df_char <- function(df, digits, pad = " ") {
 
   nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
 
-  # Convert missings to blank character
-  if (any(nas)) {
-    df[nas] <- ""
-  }
-
   # Using a format function here to force trailing zeroes to be printed
   # "formatC" allows signed zeros (e.g., "-0.00")
   df <- as.data.frame(lapply(df, formatC, digits = digits, format = "f"),
                       stringsAsFactors = FALSE)
+
+  # Convert missings to blank character
+  if (any(nas)) {
+    df[nas] <- ""
+  }
 
   # Here's where we align the the decimals, thanks to Noah for the magic.
   for (i in which(nums)) {
@@ -136,6 +136,160 @@ round_df_char <- function(df, digits, pad = " ") {
   return(df)
 }
 
+do_robust <- function(model, robust, cluster, data) {
+
+  if (!requireNamespace("sandwich", quietly = TRUE)) {
+    stop("When using robust SEs, you need to have the \'sandwich\'",
+         " package.\n Please install it or set robust to FALSE.",
+         call. = FALSE)
+  }
+
+  if (robust == TRUE) {
+    robust <- "HC3"
+  }
+
+  if (is.character(cluster)) {
+
+    call <- getCall(model)
+    if (is.null(data)) {
+      d <- eval(call$data, envir = environment(formula(model)))
+    } else {
+      d <- data
+    }
+
+    cluster <- d[[cluster]]
+    use_cluster <- TRUE
+
+  } else if (length(cluster) > 1) {
+
+    if (!is.factor(cluster) & !is.numeric(cluster)) {
+
+      warning("Invalid cluster input. Either use the name of the variable",
+              " in the input data frame\n or provide a numeric/factor vector.",
+              " Cluster is not being used in the reported SEs.")
+      cluster <- NULL
+      use_cluster <- FALSE
+
+    } else {
+
+      use_cluster <- TRUE
+
+    }
+
+  } else {
+
+    use_cluster <- FALSE
+
+  }
+
+  if (robust %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
+    # vcovCL only goes up to HC3
+    coefs <- sandwich::vcovHC(model, type = robust)
+
+  } else if (robust %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
+
+    stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
+
+  } else {
+
+    coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust)
+
+  }
+
+  coefs <- coeftest(model, coefs)
+  ses <- coefs[,2]
+  ts <- coefs[,3]
+  ps <- coefs[,4]
+
+  list(coefs = coefs, ses = ses, ts = ts, ps = ps, use_cluster = use_cluster,
+       robust = robust, cluster = cluster)
+
+}
+
+part_corr <- function(ts, df.resid, df.int, rsq, robust, n) {
+
+  # Need df
+  ## Using length of t-value vector to get the p for DF calculation
+  p.df <- length(ts) - df.int # If intercept, don't include it
+  df.resid <- n - p.df - 1
+
+  partial_corrs <- ts / sqrt(ts^2 + df.resid)
+  if (df.int == 1) {
+    partial_corrs[1] <- NA # Intercept partial corr. isn't interpretable
+  }
+
+  semipart_corrs <- (ts * sqrt(1 - rsq))/sqrt(df.resid)
+  if (df.int == 1) {
+    semipart_corrs[1] <- NA # Intercept partial corr. isn't interpretable
+  }
+
+  if (!identical(FALSE, robust)) {
+
+    warning("Partial/semipartial correlations calculated based on robust",
+            " t-statistics.\n See summ.lm documentation for cautions on",
+            " \ninterpreting partial and semipartial correlations alongside",
+            " robust standard errors.")
+
+  }
+
+  list(partial_corrs = partial_corrs, semipart_corrs = semipart_corrs)
+
+}
+
+dep_checks <- function(dots) {
+
+  scale <- NULL
+  transform.response <- NULL
+  robust <- NULL
+
+  if ("standardize" %in% names(dots)) {
+    warning("The standardize argument is deprecated. Please use 'scale'",
+            " instead.")
+    scale <- dots$standardize
+  }
+
+  if ("standardize.response" %in% names(dots)) {
+    warning("The standardize.response argument is deprecated. Please use",
+            " 'transform.response' instead.")
+    transform.response <- dots$standardize.response
+  }
+
+  if ("scale.response" %in% names(dots)) {
+    warning("The scale.response argument is deprecated. Please use",
+            " 'transform.response' instead.")
+    transform.response <- dots$scale.response
+  }
+
+  if ("center.response" %in% names(dots)) {
+    warning("The center.response argument is deprecated. Please use",
+            " 'transform.response' instead.")
+    transform.response <- dots$center.response
+  }
+
+  if ("robust.type" %in% names(dots)) {
+    warning("The robust.type argument is deprecated. Please specify the type",
+            " as the value for the 'robust' argument instead.")
+    robust <- dots$robust.type
+  }
+
+  list(scale = scale, transform.response = transform.response, robust = robust)
+
+}
+
+scale_statement <- function(scale, center, transform.response, n.sd) {
+  part_1 <- "Continuous "
+  part_2 <- ifelse(transform.response, "variables", "predictors")
+  part_3 <- " are mean-centered"
+  part_4 <- if (scale) { " and scaled by " } else { NULL }
+  part_5 <- if (scale) { paste(n.sd, "s.d") } else { NULL }
+
+  if (scale == FALSE & center == FALSE) {
+    return(NULL)
+  } else {
+    paste0(part_1, part_2, part_3, part_4, part_5, ".")
+  }
+}
+
 ### pseudo-R2 ################################################################
 
 ## This is taken from pscl package, I don't want to list it as import for
@@ -154,6 +308,23 @@ pR2Work <- function(llh, llhNull, n) {
   out$r2ML <- r2ML
   out$r2CU <- r2CU
   out
+}
+
+## Namespace issues require me to define pR2 here
+pR2 <- function(object) {
+  llh <- logLik(object)
+
+  frame <- model.frame(object)
+
+  .weights <- model.weights(frame)
+  .offset <- model.offset(frame)
+
+  objectNull <- j_update(object, ~ 1, weights = .weights, offset = .offset)
+
+  llhNull <- logLik(objectNull)
+  n <- dim(object$model)[1]
+  pR2Work(llh,llhNull,n)
+
 }
 
 ### Have to specify data differently than pscl to fix namespace issues

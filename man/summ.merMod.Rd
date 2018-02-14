@@ -7,9 +7,9 @@
 \usage{
 \method{summ}{merMod}(model, scale = FALSE, confint = FALSE,
   ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  model.info = TRUE, model.fit = TRUE, r.squared = FALSE, pvals = NULL,
-  n.sd = 1, center = FALSE, scale.response = FALSE,
-  center.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...)
+  r.squared = FALSE, pvals = NULL, n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL, odds.ratio = FALSE,
+  t.df = NULL, model.info = TRUE, model.fit = TRUE, ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
@@ -30,11 +30,6 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{model.info}{Toggles printing of basic information on sample size,
-name of DV, and number of predictors.}
-
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
-
 \item{r.squared}{Calculate an r-squared model fit statistic? Default is
 \code{FALSE} because it seems to have convergence problems too often.}
 
@@ -48,8 +43,11 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
+\item{data}{If you provide the data used to fit the model here, that data
+frame is used to re-fit the model (if \code{scale} is \code{TRUE})
+instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
+of the model. This is particularly useful if you have variable
+transformations or polynomial terms specified in the formula.}
 
 \item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
@@ -58,6 +56,11 @@ rate ratio for count models.}
 
 \item{t.df}{For \code{lmerMod} models only. User may set the degrees of
 freedom used in conducting t-tests. See details for options.}
+
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}

@@ -72,18 +72,16 @@ j_summ <- summ
 #'   desired confidence interval. Default is \code{.95}, which corresponds
 #'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
 #'
-#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard
+#' @param robust If not `FALSE`, reports heteroskedasticity-robust standard
 #'   errors instead of conventional SEs. These are also known as Huber-White
-#'   standard errors.
+#'   standard errors. There are several options provided by
+#'   [sandwich::vcovHC()]: `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"`, `"HC4"`,
+#'   `"HC4m"`, `"HC5"`.
 #'
 #'   Default is \code{FALSE}.
 #'
 #'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
-#'
-#' @param robust.type Only used if \code{robust = TRUE}. Specifies the type of
-#'   robust standard errors to be used by \code{sandwich}. By default, set to
-#'   \code{"HC3"}. See details for more on options.
 #'
 #' @param cluster For clustered standard errors, provide the column name of
 #'   the cluster variable in the input data frame (as a string). Alternately,
@@ -121,6 +119,12 @@ j_summ <- summ
 #' @param model.check Toggles whether to perform Breusch-Pagan test for
 #'  heteroskedasticity
 #'  and print number of high-leverage observations. See details for more info.
+#'
+#' @param data If you provide the data used to fit the model here, that data
+#'   frame is used to re-fit the model (if `scale` is `TRUE`)
+#'   instead of the [stats::model.frame()]
+#'   of the model. This is particularly useful if you have variable
+#'   transformations or polynomial terms specified in the formula.
 #'
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
@@ -232,30 +236,25 @@ j_summ <- summ
 #' @aliases j_summ.lm
 
 summ.lm <- function(
-  model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
-  robust = FALSE, robust.type = "HC3", cluster = NULL,
+  model, scale = FALSE, confint = FALSE, ci.width = .95,
+  robust = FALSE, cluster = NULL, vifs = FALSE,
   digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, center.response = FALSE,
-  part.corr = FALSE,
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
+  part.corr = FALSE, model.info = TRUE, model.fit = TRUE, model.check = FALSE,
   ...) {
 
   j <- list()
 
   dots <- list(...)
 
-  # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
@@ -281,29 +280,26 @@ summ.lm <- function(
   if (scale == TRUE) {
 
     model <- scale_mod(model, n.sd = n.sd,
-                      scale.response = scale.response)
+                      scale.response = transform.response,
+                      data = data)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_mod(model, center.response = center.response)
+    model <- center_mod(model, center.response = transform.response,
+                        data = data)
     # Using information from summary()
     sum <- summary(model)
 
   }
 
   j <- structure(j, standardize = scale, vifs = vifs, robust = robust,
-                 robust.type = robust.type, digits = digits,
-                 model.info = model.info, model.fit = model.fit,
-                 model.check = model.check, n.sd = n.sd, center = center,
-                 call = the_call, env = the_env, scale = scale)
-
-  if (!all(attributes(model$terms)$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
+                 digits = digits, model.info = model.info,
+                 model.fit = model.fit, model.check = model.check,
+                 n.sd = n.sd, center = center, call = the_call,
+                 env = the_env, scale = scale, data = data,
+                 transform.response = transform.response)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
@@ -343,70 +339,25 @@ summ.lm <- function(
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE) {
-
-    if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
-           " package for robust standard errors. Please install it or set",
-           " robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (is.character(cluster)) {
-
-      call <- getCall(model)
-      d <- eval(call$data, envir = environment(formula(model)))
-
-      cluster <- d[,cluster]
-      use_cluster <- TRUE
-
-    } else if (length(cluster) > 1) {
-
-      if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-        warning("Invalid cluster input. Either use the name of the variable",
-                " in the input data frame or provide a numeric/factor vector.",
-                " Cluster is not being used in the reported SEs.")
-        cluster <- NULL
-        use_cluster <- FALSE
-
-      } else {
-
-        use_cluster <- TRUE
-
-      }
-
-    } else {
-
-      use_cluster <- FALSE
-
-    }
-
-    if (robust.type %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
-      # vcovCL only goes up to HC3
-      coefs <- sandwich::vcovHC(model, type = robust.type)
-
-    } else if (robust.type %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
-
-      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
-
-    } else if (robust == TRUE) {
-
-      coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust.type)
-
-    }
-
-    coefs <- coeftest(model, coefs)
-    ses <- coefs[,2]
-    ts <- coefs[,3]
-    ps <- coefs[,4]
-
-  } else {
+  if (identical(FALSE, robust)) {
 
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
     ps <- coef(sum)[,4]
     use_cluster <- FALSE
+
+  } else {
+
+    # Pass to robust helper function
+    rob_info <- do_robust(model, robust, cluster, data)
+
+    coefs <- rob_info$coefs
+    ses <- rob_info$ses
+    ts <- rob_info$ts
+    ps <- rob_info$ps
+
+    use_cluster <- rob_info$use_cluster
+    robust <- rob_info$robust
 
   }
 
@@ -441,34 +392,14 @@ summ.lm <- function(
   }
 
   if (part.corr == TRUE) {
-    # Need df
-    ## Using length of t-value vector to get the p for DF calculation
-    p.df <- length(ts) - df.int # If intercept, don't include it
-    df.resid <- n - p.df - 1
 
-    partial_corrs <- ts / sqrt(ts^2 + df.resid)
-    if (df.int == 1) {
-      partial_corrs[1] <- NA # Intercept partial corr. isn't interpretable
-    }
-
-    semipart_corrs <- (ts * sqrt(1 - rsq))/sqrt(df.resid)
-    if (df.int == 1) {
-      semipart_corrs[1] <- NA # Intercept partial corr. isn't interpretable
-    }
+    pcs <- part_corr(ts, df.resid, df.int, rsq, robust, n)
 
     namevec <- c(namevec, "partial.r", "part.r")
     pl <- length(params)
-    params[(pl + 1)] <- list(partial_corrs)
-    params[(pl + 2)] <- list(semipart_corrs)
+    params[(pl + 1)] <- list(pcs$partial_corrs)
+    params[(pl + 2)] <- list(pcs$semipart_corrs)
 
-    if (robust == TRUE) {
-
-      warning("Partial/semipartial correlations calculated based on robust",
-              " t-statistics. See summ.lm documentation for cautions on",
-              " interpreting partial and semipartial correlations alongside",
-              " robust standard errors.")
-
-    }
 
   }
 
@@ -507,8 +438,9 @@ summ.lm <- function(
                  missing = missing, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = "t val.",
-                 standardize.response = scale.response,
-                 scale.response = scale.response,
+                 standardize.response = transform.response,
+                 scale.response = transform.response,
+                 transform.response = transform.response,
                  odds.ratio = FALSE)
 
   modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
@@ -574,21 +506,21 @@ print.summ.lm <- function(x, ...) {
         "\n\n", sep = "")
   }
 
-  if (x$robust == FALSE) {
+  if (identical(FALSE, x$robust)) {
 
     cat("Standard errors: OLS", "\n")
 
-  } else if (x$robust == TRUE) {
+  } else {
 
     cat("Standard errors:", sep = "")
 
     if (x$use_cluster == FALSE) {
 
-      cat(" Robust, type = ", x$robust.type, "\n", sep = "")
+      cat(" Robust, type = ", x$robust, "\n", sep = "")
 
     } else if (x$use_cluster == TRUE) {
 
-      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
+      cat(" Cluster-robust, type = ", x$robust, "\n", sep = "")
 
     }
 
@@ -597,21 +529,8 @@ print.summ.lm <- function(x, ...) {
   print(ctable)
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
@@ -708,11 +627,12 @@ print.summ.lm <- function(x, ...) {
 #'
 
 summ.glm <- function(
-  model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
-  robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 2),
-  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, center.response = FALSE,
+  model, scale = FALSE, confint = FALSE, ci.width = .95,
+  robust = FALSE, cluster = NULL, vifs = FALSE,
+  digits = getOption("jtools-digits", default = 2),
+  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE,
+  pvals = TRUE, n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL,
   ...) {
 
   j <- list()
@@ -720,17 +640,13 @@ summ.glm <- function(
   dots <- list(...)
 
   # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
@@ -741,12 +657,10 @@ summ.glm <- function(
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
       warning("When vifs is set to TRUE, you need to have the 'car' package",
-              " installed. Proceeding without VIFs...")
+              " installed.\n Proceeding without VIFs...")
       vifs <- FALSE
     }
   }
-
-  ell <- list(...)
 
   # Using information from summary()
   sum <- summary(model)
@@ -754,20 +668,22 @@ summ.glm <- function(
   # Check missing obs
   missing <- length(sum$na.action)
 
-  if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
+  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
     warning("Model checking is not currently implemented for GLMs")
   }
 
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_mod(model, n.sd = n.sd, scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd, scale.response = transform.response,
+                       data = data)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_mod(model, center.response = center.response)
+    model <- center_mod(model, center.response = transform.response,
+                        data = data)
     # Using information from summary()
     sum <- summary(model)
 
@@ -777,13 +693,8 @@ summ.glm <- function(
   j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
                  center = center, call = the_call, env = the_env,
-                 scale = scale)
-
-  if (!all(attributes(model$terms)$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
+                 scale = scale, data = data,
+                 transform.response = transform.response)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
@@ -796,77 +707,13 @@ summ.glm <- function(
   n <- length(model$residuals)
   j <- structure(j, n = n)
 
-  # Calculate R-squared
-  ### Below taken from summary.lm
-  r <- model$residuals
-  f <- model$fitted.values
-  w <- model$weights
-  ## Dealing with no-intercept models, getting the df.int
-  if (is.null(w)) {
-    mss <- if (df.int == 1L)
-      sum((f - mean(f))^2)
-    else sum(f^2)
-    rss <- sum(r^2)
-  } else {
-    mss <- if (df.int == 1L) {
-      m <- sum(w * f/sum(w))
-      sum(w * (f - m)^2)
-    } else sum(w * f^2)
-    rss <- sum(w * r^2)
-    r <- sqrt(w) * r
-  }
-
-  ## Namespace issues require me to define pR2 here
-  pR2 <- function(object) {
-    llh <- suppressWarnings(logLik(object))
-    if (is.null(attr(terms(formula(object)),"offset"))) {
-
-      if (is.null(model.weights(model.frame(object)))) {
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1,
-                                      data = model.frame(object)))
-
-      } else {
-        `(weights)` <- model.weights(model.frame(object)) # appeasing CRAN
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1,
-                                              data = model.frame(object),
-                                              weights = `(weights)`))
-
-      }
-
-    } else {
-
-      offs <- model.offset(model.frame(object))
-      frame <- model.frame(object)
-      frame$jtools_offs <- offs
-      if (is.null(model.weights(frame))) {
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1 + offset(jtools_offs),
-                                              data = frame))
-
-      } else {
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1 + offset(jtools_offs),
-                                              data = frame,
-                                              weights = `(weights)`))
-
-      }
-
-    }
-
-    llhNull <- logLik(objectNull)
-    n <- dim(object$model)[1]
-    pR2Work(llh,llhNull,n)
-
-  }
-
   if (model.fit == TRUE) {
     # Final calculations (linear pseudo-rsq)
+    pr <- pR2(model)
     ## Cragg-Uhler
-    rsq <- pR2(model)$r2CU
+    rsq <- pr$r2CU
     ## McFadden
-    rsqmc <- pR2(model)$McFadden
+    rsqmc <- pr$McFadden
   } else {
     rsq <- NULL
     rsqmc <- NULL
@@ -892,70 +739,25 @@ summ.glm <- function(
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE) {
-
-    if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
-           " package for robust standard errors. Please install it or set",
-           " robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (is.character(cluster)) {
-
-      call <- getCall(model)
-      d <- eval(call$data, envir = environment(formula(model)))
-
-      cluster <- d[,cluster]
-      use_cluster <- TRUE
-
-    } else if (length(cluster) > 1) {
-
-      if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-        warning("Invalid cluster input. Either use the name of the variable",
-                " in the input data frame or provide a numeric/factor vector.",
-                " Cluster is not being used in the reported SEs.")
-        cluster <- NULL
-        use_cluster <- FALSE
-
-      } else {
-
-        use_cluster <- TRUE
-
-      }
-
-    } else {
-
-      use_cluster <- FALSE
-
-    }
-
-    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
-      # vcovCL only goes up to HC3
-      coefs <- sandwich::vcovHC(model, type = robust.type)
-
-    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
-
-      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
-
-    } else if (robust == TRUE) {
-
-      coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust.type)
-
-    }
-
-    coefs <- coeftest(model, coefs)
-    ses <- coefs[,2]
-    ts <- coefs[,3]
-    ps <- coefs[,4]
-
-  } else {
+  if (identical(FALSE, robust)) {
 
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
     ps <- coef(sum)[,4]
     use_cluster <- FALSE
+
+  } else {
+
+    # Pass to robust helper function
+    rob_info <- do_robust(model, robust, cluster, data)
+
+    coefs <- rob_info$coefs
+    ses <- rob_info$ses
+    ts <- rob_info$ts
+    ps <- rob_info$ps
+
+    use_cluster <- rob_info$use_cluster
+    robust <- rob_info$robust
 
   }
 
@@ -1032,14 +834,13 @@ summ.glm <- function(
   j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(model$model[1]),
                  npreds = model$rank - df.int, dispersion = dispersion,
                  missing = missing, pvals = pvals, robust = robust,
-                 robust.type = robust.type, use_cluster = use_cluster,
+                 robust.type = robust, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
-                 standardize.response = scale.response,
+                 standardize.response = transform.response,
                  odds.ratio = odds.ratio,
-                 scale.response = scale.response)
-
-  j <- structure(j, lmFamily = model$family)
+                 scale.response = transform.response,
+                 lmFamily = model$family)
 
   j$coeftable <- mat
   j$model <- model
@@ -1080,7 +881,7 @@ print.summ.glm <- function(x, ...) {
     }
   }
 
-  if (x$model.fit == T) {
+  if (x$model.fit == TRUE) {
     cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
         round(x$rsq, digits = x$digits), "\n",
         "Pseudo R-squared (McFadden) = ",
@@ -1089,19 +890,19 @@ print.summ.glm <- function(x, ...) {
         round(x$bic, x$digits), "\n\n", sep = "")
   }
 
-  if (x$robust == FALSE) {
+  if (identical(FALSE, x$robust)) {
     cat("Standard errors: MLE", "\n")
-  } else if (x$robust == TRUE) {
+  } else {
 
     cat("Standard errors:", sep = "")
 
     if (x$use_cluster == FALSE) {
 
-      cat(" Robust, type = ", x$robust.type, "\n", sep = "")
+      cat(" Robust, type = ", x$robust, "\n", sep = "")
 
     } else if (x$use_cluster == TRUE) {
 
-      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
+      cat(" Cluster-robust, type = ", x$robust, "\n", sep = "")
 
     }
 
@@ -1111,25 +912,12 @@ print.summ.glm <- function(x, ...) {
 
   if (x$dispersion != 1) {
     cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits), "\n")
   }
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
@@ -1201,30 +989,26 @@ print.summ.glm <- function(x, ...) {
 #' @aliases j_summ.svyglm
 
 summ.svyglm <- function(
-  model, scale = FALSE, vifs = FALSE,
+  model, scale = FALSE,
   confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 2), model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, pvals = TRUE, n.sd = 1,
-  center = FALSE,
-  scale.response = FALSE, center.response = FALSE,
-  odds.ratio = FALSE, ...) {
+  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
+  n.sd = 1, center = FALSE, transform.response = FALSE,
+  odds.ratio = FALSE, vifs = FALSE,
+  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
+  ...) {
 
   j <- list()
 
   dots <- list(...)
 
-  # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
@@ -1234,12 +1018,11 @@ summ.svyglm <- function(
   # Checking for required package for VIFs to avoid problems
   if (vifs == TRUE) {
     if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
+      warning("When vifs is set to TRUE, you need to have the 'car' ",
+              "package installed.\n Proceeding without VIFs...")
       vifs <- FALSE
     }
   }
-
-  ell <- list(...)
 
   # Using information from summary()
   sum <- summary(model)
@@ -1247,8 +1030,9 @@ summ.svyglm <- function(
   # Check missing obs
   missing <- length(sum$na.action)
 
-  if ("robust" %in% names(ell) && ell$robust == TRUE) {
-    warning("Robust standard errors are reported by default in the survey package.")
+  if ("robust" %in% names(dots)) {
+    warning("Robust standard errors are reported by default\n in the ",
+            "survey package.")
   }
 
   # Standardized betas
@@ -1256,13 +1040,14 @@ summ.svyglm <- function(
     # Standardized betas
     if (scale == TRUE) {
 
-      model <- scale_mod(model, n.sd = n.sd, scale.response = scale.response)
+      model <- scale_mod(model, n.sd = n.sd,
+                         scale.response = transform.response)
       # Using information from summary()
       sum <- summary(model)
 
     } else if (center == TRUE && scale == FALSE) {
 
-      model <- center_mod(model, center.response = center.response)
+      model <- center_mod(model, center.response = transform.response)
       # Using information from summary()
       sum <- summary(model)
 
@@ -1275,8 +1060,9 @@ summ.svyglm <- function(
 
   j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit,
-                 n.sd = n.sd, center = center, call = the_call, env = the_env,
-                 scale = scale)
+                 n.sd = n.sd, center = center, call = the_call,
+                 env = the_env, scale = scale,
+                 transform.response = transform.response)
 
 
 
@@ -1285,12 +1071,6 @@ summ.svyglm <- function(
     linear <- TRUE
   } else {
     linear <- FALSE
-  }
-
-  if (!all(attributes(model$terms)$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
   }
 
   j <- structure(j, linear = linear)
@@ -1328,35 +1108,18 @@ summ.svyglm <- function(
     }
 
     ## Final calculations
-    rsq <- mss/(mss+rss)
-    arsq <- 1 - (1 - rsq) * ((n-df.int)/model$df.residual)
+    rsq <- mss/(mss + rss)
+    arsq <- 1 - (1 - rsq) * ((n - df.int)/model$df.residual)
 
     j <- structure(j, rsq = rsq, arsq = arsq)
   } else { # If not linear, calculate pseudo-rsq
 
-    ## Have to specify pR2 here to fix namespace issues
-    pR2 <- function(object) {
-      llh <- suppressWarnings(logLik(object))
-      if (is.null(attr(terms(formula(object)),"offset"))) {
-        objectNull <- suppressWarnings(update(object, ~ 1,
-                                              design = object$survey.design))
-      } else {
-        offs <- model.offset(model.frame(object))
-        frame <- object$survey.design
-        frame$variables$jtools_offs <- offs
-        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
-                                              design = frame))
-      }
-      llhNull <- logLik(objectNull)
-      n <- dim(object$model)[1]
-      pR2Work(llh,llhNull,n)
-    }
-
     # Final calculations (linear pseudo-rsq)
+    pr2 <- suppressWarnings(pR2(model)) # warnings about quasilikelihood
     ## Cragg-Uhler
-    rsq <- suppressWarnings(pR2(model)$r2CU)
+    rsq <- pr2$r2CU
     ## McFadden
-    rsqmc <- suppressWarnings(pR2(model)$McFadden)
+    rsqmc <- pr2$McFadden
 
     j <- structure(j, rsq = rsq, rsqmc = rsqmc)
 
@@ -1457,20 +1220,22 @@ summ.svyglm <- function(
     j <- structure(j, cooksdf = cd[2])
 
     if (model.check == TRUE && linear == FALSE) {
-      warning("Model checking for non-linear models is not yet implemented.")
+      warning("Model checking for non-linear models is not ",
+              "yet implemented.")
     }
   }
 
   # Extract dispersion parameter
   dispersion <- sum$dispersion
 
-  j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int,
+  j <- structure(j, dv = names(model$model[1]),
+                 npreds = model$rank-df.int,
                  dispersion = dispersion, missing = missing,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
-                 standardize.response = scale.response,
+                 standardize.response = transform.response,
                  odds.ratio = odds.ratio,
-                 scale.response = scale.response)
+                 scale.response = transform.response)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -1482,8 +1247,6 @@ summ.svyglm <- function(
 }
 
 ### PRINT METHOD ###
-
-
 
 #' @export
 
@@ -1551,25 +1314,12 @@ print.summ.svyglm <- function(x, ...) {
 
   if (x$dispersion != 1) {
     cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits),"\n")
   }
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
@@ -1722,47 +1472,42 @@ print.summ.svyglm <- function(x, ...) {
 
 summ.merMod <- function(
   model, scale = FALSE, confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 2), model.info = TRUE,
-  model.fit = TRUE, r.squared = FALSE, pvals = NULL, n.sd = 1,
-  center = FALSE,
-  scale.response = FALSE, center.response = FALSE,
-  odds.ratio = FALSE, t.df = NULL, ...) {
+  digits = getOption("jtools-digits", default = 2), r.squared = FALSE,
+  pvals = NULL, n.sd = 1, center = FALSE, transform.response = FALSE,
+  data = NULL, odds.ratio = FALSE, t.df = NULL,
+  model.info = TRUE, model.fit = TRUE,
+  ...) {
 
   j <- list()
 
   dots <- list(...)
 
-  # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
 
-  # Accept arguments meant for other types of models and print warnings as
-  # needed.
-  ell <- list(...)
+  # Accept arguments meant for other types of models and print warnings.
 
-  if ("robust" %in% names(ell) && ell$robust == TRUE) {
+  if ("robust" %in% names(dots) && dots$robust == TRUE) {
     warning("Robust standard errors are not supported for mixed models.")
   }
 
-  if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
-    warning("Model checking is not currently implemented for mixed models.")
+  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
+    warning("Model checking is not currently implemented for mixed ",
+            "models.")
   }
 
-  if ("vifs" %in% names(ell) && ell$vifs == TRUE) {
+  if ("vifs" %in% names(dots) && dots$vifs == TRUE) {
     warning("VIFs are not supported for mixed models.")
   }
 
@@ -1806,11 +1551,13 @@ summ.merMod <- function(
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_mod(model, n.sd = n.sd, scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd, scale.response = transform.response,
+                       data = data)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_mod(model, center.response = center.response)
+    model <- center_mod(model, center.response = transform.response,
+                        data = data)
 
   }
 
@@ -1818,16 +1565,10 @@ summ.merMod <- function(
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd,
                  center = center, t.df = t.df, call = the_call, env = the_env,
-                 scale = scale)
+                 scale = scale, transform.response = transform.response)
 
   # Using information from summary()
   sum <- summary(model)
-
-  if (!all(attributes(terms(model))$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
 
   # Intercept?
   if (length(terms(model)) != attr(terms(model), "intercept")) {
@@ -1874,8 +1615,8 @@ summ.merMod <- function(
       rsqs <- NA
       failed.rsq <- TRUE
       r.squared <- FALSE
-      warning("Could not calculate r-squared. Try removing missing data",
-              " before fitting the model.\n")
+      warning("Could not calculate r-squared. Try removing missing data\n",
+              "before fitting the model.\n")
 
     }
 
@@ -1922,7 +1663,7 @@ summ.merMod <- function(
       t1 <- Sys.time()
 
       if ((t1 - t0) > 5 & !getOption("pbkr_warned", FALSE)) {
-        message("If summ is taking too long to run, try setting ",
+        message("If summ is taking too long to run, try setting\n",
                 "pvals = FALSE or t.df = 'residual' (or some number).")
         options("pbkr_warned" = TRUE)
       }
@@ -1954,7 +1695,7 @@ summ.merMod <- function(
 
   if (confint == TRUE | odds.ratio == TRUE) {
 
-    alpha <- (1-ci.width)/2
+    alpha <- (1 - ci.width) / 2
 
     lci_lab <- 0 + alpha
     lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
@@ -1997,7 +1738,7 @@ summ.merMod <- function(
 
   # Put things together
 
-  mat <- matrix(nrow=length(ivs), ncol=length(params))
+  mat <- matrix(nrow=length(ivs), ncol = length(params))
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
@@ -2011,7 +1752,7 @@ summ.merMod <- function(
 
   if (pvals == FALSE) {
 
-    mat <- mat[,seq_len(ncol(mat)-1)]
+    mat <- mat[, seq_len(ncol(mat) - 1)]
 
   }
 
@@ -2046,9 +1787,9 @@ summ.merMod <- function(
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  df = df, pbkr = pbkr, r.squared = r.squared,
                  failed.rsq = failed.rsq, test.stat = tcol,
-                 standardize.response = scale.response,
+                 standardize.response = transform.response,
                  odds.ratio = odds.ratio,
-                 scale.response = scale.response)
+                 scale.response = transform.response)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -2112,13 +1853,14 @@ print.summ.merMod <- function(x, ...) {
 
       cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
 
-      message("Using p values with lmer based on residual d.f. may inflate the
-Type I error rate in many common study designs. Install
-package \"pbkrtest\" to get more accurate p values.")
+      message("Using p values with lmer based on residual d.f. may inflate\n",
+              "the Type I error rate in many common study designs. \n",
+              "Install package \"pbkrtest\" to get more accurate p values.")
 
     } else if (x$pbkr == TRUE & is.null(x$t.df)) {
 
-      cat("\np values calculated using Kenward-Roger d.f. =", round(x$df, x$digits), "\n")
+      cat("\np values calculated using Kenward-Roger d.f. =",
+          round(x$df, x$digits), "\n")
 
     } else if (!is.null(x$t.df)) {
 
@@ -2128,7 +1870,8 @@ package \"pbkrtest\" to get more accurate p values.")
 
       } else {
 
-        cat("\nNote: p values calculated based on user-defined d.f. =", x$df, "\n")
+        cat("\nNote: p values calculated based on user-defined d.f. =",
+            x$df, "\n")
 
       }
 
@@ -2145,489 +1888,6 @@ package \"pbkrtest\" to get more accurate p values.")
   gtable <- round_df_char(j$gvars, digits = x$digits)
   #rownames(gtable) <- rep("", times = nrow(gtable))
   print(gtable, row.names = FALSE)
-
-  # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
-
-}
-
-### Default method ############################################################
-
-#' @rdname summ.lm
-#' @export
-#'
-
-summ.default <- function(model, scale = FALSE, vifs = FALSE,
-                         confint = FALSE, ci.width = .95,
-                         robust = FALSE, cluster = NULL,
-                         digits = getOption("jtools-digits", default = 2),
-                         pvals = TRUE, n.sd = 1, center = FALSE,
-                         transform.response = FALSE, data = NULL,
-                         model.info = TRUE,
-                         model.fit = TRUE, model.check = FALSE, ...) {
-
-  if (!requireNamespace("broom", quietly = TRUE)) {
-
-    stop("Install the broom package to use the summ function for",
-         " unsupported models.")
-
-  }
-
-  dots <- list(...)
-
-  # Check for deprecated arguments with helper function
-  deps <- dep_checks(dots)
-  any_deps <- sapply(deps, is.null)
-  if (any(any_deps)) {
-    for (n in names(any_deps)[which(any_deps == FALSE)]) {
-      # Reassign values as needed
-      assign(n, deps[[n]])
-    }
-  }
-
-  the_call <- match.call()
-  the_call[[1]] <- substitute(summ)
-  the_env <- parent.frame(n = 2)
-
-  # Standardized betas
-  if (scale == TRUE) {
-
-    model2 <-
-      try({scale_mod(model, n.sd = n.sd, scale.response = transform.response,
-                     data = data)},
-          silent = TRUE)
-    if ("try-error" %in% class(model2)) {
-
-      warning("Could not scale this type of model.\n Reporting",
-              " unscaled estimates...")
-      scale <- FALSE
-      center <- FALSE
-
-    } else {
-
-      model <- model2
-
-    }
-
-  } else if (center == TRUE && scale == FALSE) {
-
-    model2 <-  try({center_mod(model, center.response = transform.response,
-                               data = data)},
-                   silent = TRUE)
-    if ("try-error" %in% class(model2)) {
-
-      warning("Could not center this type of model.\n Reporting",
-              " uncentered estimates...")
-      center <- FALSE
-
-    } else {
-
-      model <- model2
-
-    }
-
-  }
-
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package",
-              "installed.\n Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
-  mod_class <- class(model)
-
-  t <- suppressWarnings(try({coefs <-
-    broom::tidy(model, conf.int = confint, conf.level = ci.width)},
-    silent = TRUE))
-
-  if ("try-error" %nin% class(t)) {
-    # Checking that broom can get the right info
-    t <- try({coefs[,c("std.error","statistic","p.value")]})
-
-  }
-
-  if ("try-error" %in% class(t)) {
-
-    t <-
-      suppressWarnings(try({coefs <- coeftest(model)}, silent = TRUE))
-
-
-    if (class(t) == "try-error") {
-      stop("Could not find a way to extract coefficients via broom::tidy",
-           " or coeftest.")
-    } else {
-      coefs <- as.table(coefs)
-    }
-
-    broom <- FALSE
-
-
-  } else {
-
-    broom <- TRUE
-
-  }
-
-  t <- suppressWarnings(try({mod_info <- broom::glance(model)}, silent = TRUE))
-
-  if ("try-error" %in% class(t)) {
-
-    mod_info <- NULL
-
-    n_obs <- try({nobs(model)}, silent = TRUE)
-    if (class(n_obs) == "try-error") {n_obs <- NULL}
-
-    aic <- try({AIC(model)}, silent = TRUE)
-    if (class(aic) == "try-error") {aic <- NULL}
-
-    bic <- try({BIC(model)}, silent = TRUE)
-    if (class(bic) == "try-error") {bic <- NULL}
-
-    r.squared <- NULL
-
-    mod_info2 <- list(r.squared = r.squared, aic = aic, bic = bic)
-
-  } else {
-
-    if ("AIC" %in% names(mod_info)) {
-
-      aic <- mod_info$AIC
-
-    } else {
-
-      aic <- NULL
-
-    }
-
-    if ("BIC" %in% names(mod_info)) {
-
-      bic <- mod_info$BIC
-
-    } else {
-
-      bic <- NULL
-
-    }
-
-    if ("r.squared" %in% names(mod_info)) {
-
-      r.squared <- mod_info$r.squared
-
-    } else {
-
-      r.squared <- NULL
-
-    }
-
-    mod_info2 <- list(aic = aic, bic = bic, r.squared = r.squared)
-
-  }
-
-  if (!exists("n_obs") || is.null(n_obs)) {
-
-    n_obs <- nrow(model.frame(model))
-
-  }
-
-  if (confint == TRUE) {
-
-    alpha <- (1 - ci.width)/2
-
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
-
-    if (broom == TRUE) {
-
-      coeftable <- coefs[,c("estimate","conf.low","conf.high",
-                           "statistic","p.value")]
-
-      coeftable <- as.table(as.matrix(coeftable))
-      rownames(coeftable) <- coefs[,"term"]
-      colnames(coeftable) <- c("Est.", lci_lab, uci_lab, "test stat.", "p")
-      stat <- "test stat."
-
-    } else {
-
-      cis <- try({confint(model, level = ci.width)}, silent = TRUE)
-      if ("try-error" %in% class(cis)) {
-
-        warning("Could not compute CIs. Reporting without them...")
-        confint <- FALSE
-
-      } else {
-
-        ests <- coefs[,"Est."]
-        try({stats <- coefs[,"t val."]}, silent = TRUE)
-        if ("try-error" %in% class(stats)) {
-          stats <- coefs[,"z val."]
-          stat <- "z val."
-        } else {
-          stat <- "t val."
-        }
-        ps <- coefs[,"p"]
-
-        coefs <- cbind(ests, cis[1], cis[2], stats, ps)
-        colnames(coefs) <- c("Est.", lci_lab, uci_lab, stat, "p")
-
-      }
-
-    }
-
-  }
-
-  if (confint == FALSE) {
-
-    if (broom == TRUE) {
-
-      coeftable <- coefs[,c("estimate","std.error","statistic","p.value")]
-
-      coeftable <- as.table(as.matrix(coeftable))
-      rownames(coeftable) <- coefs[,"term"]
-      colnames(coeftable) <- c("Est.", "S.E.", "test stat.", "p")
-      stat <- "test stat."
-
-    } else {
-
-      coeftable <- as.table(coefs)
-
-    }
-
-  }
-
-  if (robust == TRUE & confint == FALSE) {
-
-    if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust SEs are requested, you need to have the \'sandwich\'",
-           " package\n for robust standard errors. Please install it or set",
-           " robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (is.character(cluster)) {
-
-      call <- getCall(model)
-      if (is.null(data)) {
-        d <- eval(call$data, envir = environment(formula(model)))
-      } else {
-        d <- data
-      }
-
-      cluster <- d[,cluster]
-      use_cluster <- TRUE
-
-    } else if (length(cluster) > 1) {
-
-      if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-        warning("Invalid cluster input. Either use the name of the variable",
-              " in the input data frame or provide a numeric/factor vector.",
-                " Cluster is not being used in the reported SEs.")
-        cluster <- NULL
-        use_cluster <- FALSE
-
-      } else {
-
-        use_cluster <- TRUE
-
-      }
-
-    } else {
-
-      use_cluster <- FALSE
-
-    }
-
-    if (robust %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
-      # vcovCL only goes up to HC3
-      tvcov <- try({sandwich::vcovHC(model, type = robust.type)},
-          silent = TRUE)
-      if ("try-error" %in% class(tvcov)) {
-
-        warning("Could not calculate robust standard errors for this model",
-                " type.\n Returning the non-robust statistics.")
-        robust <- FALSE
-
-      }
-
-    } else if (robust %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
-
-      stop("If using cluster-robust SEs, robust must be HC3 or lower.")
-
-    } else {
-
-      tvcov <-
-        try({sandwich::vcovCL(model, cluster = cluster, type = robust.type)},
-                   silent = TRUE)
-      if ("try-error" %in% class(tvcov)) {
-
-        warning("Could not calculate robust standard errors for this model",
-                " type.\n Returning the non-robust statistics.")
-        robust <- FALSE
-        use_cluster <- FALSE
-
-      }
-
-    }
-
-    new_coefs <- try({coeftest(model, tvcov)})
-    if ("try-error" %in% class(new_coefs)) {
-
-      warning("Could not calculate robust standard errors for this model",
-              " type. Returning the non-robust statistics.")
-      robust <- FALSE
-      use_cluster <- FALSE
-
-    } else {
-
-      new_ses <- coefs[,2]
-      new_ts <- coefs[,3]
-      new_ps <- coefs[,4]
-
-      coeftable[,stat] <- new_ts
-      coeftable[,"p"] <- new_ps
-      coeftable[,"S.E."] <- new_ses
-
-      use_cluster <- FALSE
-
-    }
-
-  } else if (robust == TRUE & confint == TRUE) {
-
-    warning("Robust statistics and confidence intervals cannot be combined\n",
-            " for this type of model. Reporting non-robust intervals...")
-    robust <- FALSE
-    use_cluster <- FALSE
-
-  } else {
-
-    use_cluster <- FALSE
-
-  }
-
-  if (vifs == TRUE) {
-
-    tvifs <- try({car::vif(model)}, silent = TRUE)
-    if ("try-error" %in% class(tvifs)) {
-
-      warning("VIFs could not be fitted for this type of model.")
-      vifs <- FALSE
-
-    } else {
-
-      coeftable[,"VIF"] <- rep(NA, times = nrow(coeftable))
-      if (length(tvifs) == nrow(coeftable)) {
-        coeftable[,"VIF"] <- tvifs
-      } else {
-        coeftable[-1,"VIF"] <- tvifs
-      }
-
-    }
-
-  }
-
-  if (pvals == FALSE) {
-
-    coeftable <- coeftable[,colnames(coeftable) %nin% "p"]
-
-  }
-
-  dv <- as.character(attr(terms(formula(model)),"variables"))[2]
-
-  out <- list(coeftable = coeftable, model = model)
-  out <- structure(out, pvals = pvals, robust = robust, vifs = vifs,
-                   mod_class = mod_class, mod_info = mod_info,
-                   confint = confint, ci.width = ci.width, broom = broom,
-                   scale = scale, center = center,
-                   n.sd = n.sd, dv = dv,
-                   n = n_obs, mod_info2 = mod_info2, digits = digits,
-                   model.info = model.info, model.fit = model.fit,
-                   use_cluster = use_cluster, robust.type = robust,
-                   scale.response = transform.response,
-                   transform.response = transform.response,
-                   call = the_call, env = the_env)
-  class(out) <- c("summ.default","summ")
-  return(out)
-
-}
-
-
-#' @export
-
-print.summ.default <- function(x, ...) {
-
-  # saving input object as j
-  j <- x
-  # saving attributes as x (this was to make a refactoring easier)
-  x <- attributes(j)
-
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
-
-  if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n")
-    cat("Observations:", x$n, "\n")
-    if (!is.null(x$dv)) {
-      cat("Dependent Variable: ", x$dv, "\n", sep = "")
-    }
-    cat("Model type:", x$mod_class[1], "\n")
-  }
-
-  if (x$model.fit == T & !all(sapply(x$mod_info2, is.null))) {
-    cat("\nMODEL FIT: \n")
-    if (!is.null(x$mod_info2$r.squared)) {
-      cat("R-squared =", round(x$mod_info2$r.squared, x$digits), "\n")
-    }
-    if (!is.null(x$mod_info2$aic)) {
-      cat("AIC =", round(x$mod_info2$aic, x$digits), "\n")
-    }
-    if (!is.null(x$mod_info2$bic)) {
-      cat("BIC =", round(x$mod_info2$bic, x$digits), "\n")
-    }
-
-  }
-
-  cat("\n")
-  if (identical(x$robust, FALSE) == FALSE) {
-
-    cat("\nStandard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-        cat(" Robust, type = ", x$robust.type, "\n", sep = "")
-
-    } else if (x$use_cluster == TRUE) {
-
-        cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
-
-    }
-
-  } else {
-
-    cat("\n")
-
-  }
-
-  print(ctable)
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
