@@ -393,7 +393,7 @@ summ.lm <- function(
 
   if (part.corr == TRUE) {
 
-    pcs <- part_corr(ts, df.resid, df.int, rsq, robust, n)
+    pcs <- part_corr(ts, df.int, rsq, robust, n)
 
     namevec <- c(namevec, "partial.r", "part.r")
     pl <- length(params)

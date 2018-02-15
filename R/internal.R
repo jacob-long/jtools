@@ -206,7 +206,7 @@ do_robust <- function(model, robust, cluster, data) {
 
 }
 
-part_corr <- function(ts, df.resid, df.int, rsq, robust, n) {
+part_corr <- function(ts, df.int, rsq, robust, n) {
 
   # Need df
   ## Using length of t-value vector to get the p for DF calculation
