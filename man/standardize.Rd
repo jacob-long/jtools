@@ -21,6 +21,9 @@ select columns by providing a vector column names to this argument.}
 as 0.5; \code{center} subtracts the mean; and \code{full} subtracts the
 mean and divides by 2 sd.}
 
+\item{binary.factors}{Coerce two-level factors to numeric and apply scaling
+functions to them? Default is TRUE.}
+
 \item{weights}{A vector of weights equal in length to \code{x}. If iterating
 over a data frame, the weights will need to be equal in length to all the
 columns to avoid errors. You may need to remove missing values before using

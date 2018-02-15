@@ -23,7 +23,7 @@
 #'   as 0.5; \code{center} subtracts the mean; and \code{full} subtracts the
 #'   mean and divides by 2 sd.
 #'
-#' @param binary.factor Coerce two-level factors to numeric and apply scaling
+#' @param binary.factors Coerce two-level factors to numeric and apply scaling
 #'   functions to them? Default is TRUE.
 #'
 #' @param n.sd By how many standard deviations should the variables be divided
@@ -40,6 +40,9 @@
 #'   over a data frame, the weights will need to be equal in length to all the
 #'   columns to avoid errors. You may need to remove missing values before using
 #'   the weights.
+#'
+#' @param messages Print messages when variables are not processed due to
+#'   being non-numeric or all missing? Default is FALSE.
 #'
 #' @param x Deprecated. Pass numeric vectors to `data`. Pass vectors of column
 #'   names to `vars`.

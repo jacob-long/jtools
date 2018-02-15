@@ -20,6 +20,11 @@ like other continuous variables.}
 
 \item{center.response}{Should the response variable also be centered?
 Default is \code{FALSE}.}
+
+\item{data}{If you provide the data used to fit the model here, that data
+frame is used to re-fit the model instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
+of the model. This is particularly useful if you have variable
+transformations or polynomial terms specified in the formula.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting

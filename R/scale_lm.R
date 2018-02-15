@@ -264,6 +264,8 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
 #' @param center.response Should the response variable also be centered?
 #'   Default is \code{FALSE}.
 #'
+#' @inheritParams scale_mod
+#'
 #' @details This function will mean-center all continuous variables in a
 #'   regression model for ease of interpretation, especially for those models
 #'   that have

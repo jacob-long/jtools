@@ -22,6 +22,9 @@ select columns by providing a vector column names to this argument.}
 as 0.5; \code{center} subtracts the mean; and \code{full} subtracts the
 mean and divides by 2 sd.}
 
+\item{binary.factors}{Coerce two-level factors to numeric and apply scaling
+functions to them? Default is TRUE.}
+
 \item{n.sd}{By how many standard deviations should the variables be divided
 by? Default for \code{gscale} is 2, like \pkg{arm}'s \code{\link[arm]{rescale}}.
 1 is the more typical standardization scheme.}
@@ -40,8 +43,8 @@ the weights.}
 \item{x}{Deprecated. Pass numeric vectors to \code{data}. Pass vectors of column
 names to \code{vars}.}
 
-\item{binary.factor}{Coerce two-level factors to numeric and apply scaling
-functions to them? Default is TRUE.}
+\item{messages}{Print messages when variables are not processed due to
+being non-numeric or all missing? Default is FALSE.}
 }
 \description{
 \code{gscale} standardizes variables by dividing them by 2 standard
@@ -107,20 +110,6 @@ gscale(mtcars, weights = weights) # will skip over mtcars$weights
 gscale(mtcars, vars = c("hp", "wt", "vs"), weights = weights)
 
 # Survey designs
-<<<<<<< HEAD
-library(survey)
-data(api)
-## Create survey design object
-dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
-                     data = apistrat, fpc=~fpc)
-# Creating test binary variable
-dstrat$variables$binary <- rbinom(200, 1, 0.5)
-
-gscale(data = dstrat, binary.inputs = "-0.5/0.5")
-gscale(data = dstrat, vars = c("api00","meals","binary"),
-       binary.inputs = "-0.5/0.5")
-
-=======
 if (requireNamespace("survey")) {
   library(survey)
   data(api)
@@ -131,10 +120,9 @@ if (requireNamespace("survey")) {
   dstrat$variables$binary <- rbinom(200, 1, 0.5)
 
   gscale(data = dstrat, binary.inputs = "-0.5/0.5")
-  gscale(c("api00","meals","binary"), data = dstrat,
+  gscale(data = dstrat, vars = c("api00","meals","binary"),
          binary.inputs = "-0.5/0.5")
 }
->>>>>>> huxtable-cran
 
 
 
