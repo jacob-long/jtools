@@ -427,12 +427,6 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   }
 
-  if (!requireNamespace("plyr", quietly = TRUE)) {
-
-    stop("Install the plyr package to use the plot_summs function.")
-
-  }
-
   # Nasty workaround for R CMD Check warnings for global variable bindings
   model <- term <- estimate <- conf.low <- conf.high <- NULL
 
@@ -616,12 +610,6 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   if (!requireNamespace("broom", quietly = TRUE)) {
 
     stop("Install the broom package to use the plot_summs function.")
-
-  }
-
-  if (!requireNamespace("plyr", quietly = TRUE)) {
-
-    stop("Install the plyr package to use the plot_summs function.")
 
   }
 

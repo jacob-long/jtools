@@ -273,13 +273,12 @@ collidev <- function(data, height = NULL, name, strategy, ...,
   }
 
   if (!is.null(data$xmax)) {
+    ymin <- NULL # for CRAN checks
     as.data.frame(data %>% group_by(ymin) %>% strategy(..., height = height))
-    # plyr::ddply(data, "ymin", strategy, ..., height = height)
   } else if (!is.null(data$x)) {
     data$xmax <- data$x
     data <- as.data.frame(data %>% group_by(ymin) %>%
                             strategy(..., height = height))
-    # data <- plyr::ddply(data, "ymin", strategy, ..., height = height)
     data$x <- data$xmax
     data
   } else {
