@@ -103,8 +103,8 @@ j_summ <- summ
 #' @param center If you want coefficients for mean-centered variables but don't
 #'    want to standardize, set this to \code{TRUE}.
 #'
-#' @param scale.response Should standardization apply to response variable?
-#'    Default is \code{FALSE}.
+#' @param transform.response Should scaling/centering apply to response
+#'    variable? Default is \code{FALSE}.
 #'
 #' @param part.corr Print partial (labeled "partial.r") and
 #'  semipartial (labeled "part.r") correlations with the table?

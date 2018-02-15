@@ -40,6 +40,9 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
+\item{transform.response}{Should scaling/centering apply to response
+variable? Default is \code{FALSE}.}
+
 \item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence

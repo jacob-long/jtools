@@ -59,6 +59,9 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
+\item{transform.response}{Should scaling/centering apply to response
+variable? Default is \code{FALSE}.}
+
 \item{data}{If you provide the data used to fit the model here, that data
 frame is used to re-fit the model (if \code{scale} is \code{TRUE})
 instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
@@ -81,9 +84,6 @@ and print number of high-leverage observations. See details for more info.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
-
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
 }
 \value{
 If saved, users can access most of the items that are returned in
