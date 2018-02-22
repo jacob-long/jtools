@@ -77,6 +77,13 @@
 #'   recommended that you also set `plot.points = TRUE` and use
 #'   `modxvals = "terciles"` with this option.
 #'
+#' @inheritParams summ.lm
+#'
+#' @param vcov Optional. You may supply the variance-covariance matrix of the
+#'  coefficients yourself. This is useful if you are using some method for
+#'  robust standard error calculation not supported by the \pkg{sandwich}
+#'  package.
+#'
 #' @param set.offset For models with an offset (e.g., Poisson models), sets a
 #'   offset for the predicted values. All predicted values will have the same
 #'   offset. By default, this is set to 1, which makes the predicted values a
@@ -283,6 +290,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           int.type = c("confidence","prediction"),
                           int.width = .95, outcome.scale = "response",
                           linearity.check = FALSE,
+                          robust = FALSE, cluster = NULL, vcov = NULL,
                           set.offset = 1,
                           x.label = NULL, y.label = NULL,
                           pred.labels = NULL, modx.labels = NULL,
@@ -682,10 +690,26 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                                          allow.new.levels = F,
                                          re.form = ~0))
     } else {
-      predicted <- as.data.frame(predict(model, newdata = pms[[i]],
-                                         se.fit = interval_arg,
-                                         interval = int.type[1],
-                                         type = outcome.scale))
+      if (robust == FALSE) {
+        predicted <- as.data.frame(predict(model, newdata = pms[[i]],
+                                           se.fit = interval_arg,
+                                           interval = int.type[1],
+                                           type = outcome.scale))
+      } else {
+
+        if (is.null(vcov)) {
+          the_vcov <- do_robust(model, robust, cluster, data)$vcov
+        } else {
+          the_vcov <- vcov
+        }
+
+        predicted <- as.data.frame(predict_rob(model, newdata = pms[[i]],
+                                               se.fit = interval_arg,
+                                               interval = int.type[1],
+                                               type = outcome.scale,
+                                               .vcov = the_vcov))
+      }
+
     }
 
     pms[[i]][[resp]] <- predicted[[1]] # this is the actual values
@@ -1001,6 +1025,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         interval = FALSE, data = NULL,
                         int.type = c("confidence","prediction"),
                         int.width = .95, outcome.scale = "response",
+                        robust = FALSE, cluster = NULL, vcov = NULL,
                         set.offset = 1,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
@@ -1245,7 +1270,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
 #### Predictions ############################################################
 
   # Set SEs to TRUE for svyglm
-  if (survey == TRUE) {interval.arg <- TRUE} else {interval.arg <- interval}
+  if (survey == TRUE) {interval_arg <- TRUE} else {interval_arg <- interval}
 
   if (mixed == TRUE) {
     predicted <- as.data.frame(predict(model, newdata = pm,
@@ -1253,10 +1278,25 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(model, newdata = pm,
-                                       se.fit = interval.arg,
-                                       interval = int.type[1],
-                                       type = outcome.scale))
+    if (robust == FALSE) {
+      predicted <- as.data.frame(predict(model, newdata = pm,
+                                         se.fit = interval_arg,
+                                         interval = int.type[1],
+                                         type = outcome.scale))
+    } else {
+
+      if (is.null(vcov)) {
+        the_vcov <- do_robust(model, robust, cluster, data)$vcov
+      } else {
+        the_vcov <- vcov
+      }
+
+      predicted <- as.data.frame(predict_rob(model, newdata = pm,
+                                         se.fit = interval_arg,
+                                         interval = int.type[1],
+                                         type = outcome.scale,
+                                         .vcov = the_vcov))
+    }
   }
   pm[[resp]] <- predicted[[1]] # this is the actual values
 
@@ -1499,6 +1539,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                      centered = "all",
                      int.type = c("confidence","prediction"),
                      int.width = .95, outcome.scale = "response",
+                     robust = FALSE, cluster = NULL, vcov = NULL,
                      set.offset = 1, x.label = NULL, y.label = NULL,
                      main.title = NULL, legend.main = NULL,
                      color.class = "Set2") {
@@ -1812,10 +1853,25 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                                        allow.new.levels = F,
                                        re.form = ~0))
   } else {
-    predicted <- as.data.frame(predict(model, newdata = pm,
-                                       se.fit = interval_arg,
-                                       interval = int.type[1],
-                                       type = outcome.scale))
+    if (robust == FALSE) {
+      predicted <- as.data.frame(predict(model, newdata = pm,
+                                         se.fit = interval_arg,
+                                         interval = int.type[1],
+                                         type = outcome.scale))
+    } else {
+
+      if (is.null(vcov)) {
+        the_vcov <- do_robust(model, robust, cluster, data)$vcov
+      } else {
+        the_vcov <- vcov
+      }
+
+      predicted <- as.data.frame(predict_rob(model, newdata = pm,
+                                             se.fit = interval_arg,
+                                             interval = int.type[1],
+                                             type = outcome.scale,
+                                             .vcov = the_vcov))
+    }
   }
   pm[[resp]] <- predicted[[1]] # this is the actual values
 

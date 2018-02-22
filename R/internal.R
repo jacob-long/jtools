@@ -196,13 +196,14 @@ do_robust <- function(model, robust, cluster, data) {
 
   }
 
+  vcov <- coefs
   coefs <- coeftest(model, coefs)
   ses <- coefs[,2]
   ts <- coefs[,3]
   ps <- coefs[,4]
 
   list(coefs = coefs, ses = ses, ts = ts, ps = ps, use_cluster = use_cluster,
-       robust = robust, cluster = cluster)
+       robust = robust, cluster = cluster, vcov = vcov)
 
 }
 
