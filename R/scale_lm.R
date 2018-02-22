@@ -27,7 +27,7 @@
 #'   them.
 #'
 #' @param scale.response Should the response variable also be rescaled? Default
-#'   is \code{TRUE}.
+#'   is \code{FALSE}.
 #'
 #' @param data If you provide the data used to fit the model here, that data
 #'   frame is used to re-fit the model instead of the [stats::model.frame()]
@@ -100,7 +100,7 @@
 #'
 
 scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
-                                  center = TRUE, scale.response = TRUE,
+                                  center = TRUE, scale.response = FALSE,
                                   center.only = FALSE, data = NULL) {
 
   # Save data --- using the call to access the data to avoid problems w/
