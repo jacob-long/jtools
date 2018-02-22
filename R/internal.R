@@ -697,3 +697,70 @@ coeftest.glm <- function(x, vcov. = NULL, df = Inf, ...) {
 #   coeftest.default(x, vcov. = v, df = df, ...)
 #
 # }
+
+#### robust predictions #####################################################
+
+#' @importFrom stats vcov model.frame terms delete.response
+predict_rob <- function(model, .vcov = vcov(model), newdata = NULL,
+                        se.fit = TRUE, dispersion = NULL, terms = NULL,
+                        type = c("link", "response", "terms"),
+                        na.action = na.pass, ...) {
+
+  if (is.null(newdata)) {newdata <- model.frame(model)}
+
+  tt <- terms(model)
+  Terms <- delete.response(tt)
+  m <- model.frame(Terms, newdata, na.action = na.action,
+                   xlev = model$xlevels)
+  m.mat <- model.matrix(Terms, m, contrasts.arg = model$contrasts)
+  m.coef <- coef(model)
+
+  # if (inherits(object, "survreg")) {dispersion <- 1}
+  # if (is.null(dispersion) || dispersion == 0) {
+  #   dispersion <- summary(object, dispersion = dispersion)$dispersion
+  # }
+  # residual.scale <- as.vector(sqrt(dispersion))
+  # pred <- predict.lm(object, newdata, se.fit, scale = residual.scale,
+  #                    type = ifelse(type == "link", "response", type),
+  #                    terms = terms, na.action = na.action)
+
+  offset <- rep(0, nrow(m.mat))
+  if (!is.null(off.num <- attr(tt, "offset"))) {
+    for (i in off.num) {
+      offset <- offset + eval(attr(tt, "variables")[[i + 1]], newdata)
+    }
+  }
+
+  if (!is.null(model$call$offset)) {
+    offset <- offset + eval(model$call$offset, newdata)
+  }
+
+  n <- length(model$residuals)
+  p <- model$rank
+  p1 <- seq_len(p)
+  piv <- if (p) {qr(model)$pivot[p1]}
+
+  if (p < ncol(m.mat) && !(missing(newdata) || is.null(newdata))) {
+    warning("prediction from a rank-deficient fit may be misleading")
+  }
+
+  fit <- drop(m.mat[, piv, drop = FALSE] %*% m.coef[piv])
+
+  if (!is.null(offset)) {
+    fit <- fit + offset
+  }
+
+  # fit <- as.vector(m.mat %*% m.coef)
+  se.fit <- sqrt(diag(m.mat %*% .vcov %*% t(m.mat)))
+
+  type <- type[1]
+
+  switch(type, response = {
+    se.fit <- se.fit * abs(family(model)$mu.eta(fit))
+    fit <- family(model)$linkinv(fit)
+  }, link = , terms = )
+
+  return(list(fit = fit, se.fit = se.fit))
+
+}
+
