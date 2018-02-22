@@ -1,4 +1,4 @@
-## jtools 1.0.0.9000
+# jtools 1.0.0.9000
 
 **Major release**
 
@@ -6,7 +6,7 @@ This release has several big changes embedded within, side projects that needed
 a lot of work to implement and required some user-facing changes. Overall
 these are improvements, but in some edge cases they could break old code.
 
-`interact_plot`, `cat_plot`, and `effect_plot`:
+## `interact_plot`, `cat_plot`, and `effect_plot`
 
 These functions no longer re-fit the inputted model to center covariates,
 impose labels on factors, and so on. This generally has several key positives,
@@ -36,7 +36,7 @@ predicted curve with `effect_plot(fit, pred = x, data = data)` substituting
 `fit` with whatever my model is called and `data` with whatever data frame
 I used is called.
 
-There some possible drawbacks for these changes. One is that no longer are 
+There are some possible drawbacks for these changes. One is that no longer are 
 factor predictors supported in `interact_plot` and `effect_plot`,
 even two-level ones. This worked before by coercing
 them to 0/1 continuous variables and re-fitting the model. Since the model is
@@ -45,7 +45,7 @@ predictor to numeric before fitting the model or use `cat_plot`. Relatedly,
 two-level factor covariates are no longer centered and are simply
 set to their reference value.
 
-*All interaction tools*:
+## All interaction tools
 
 All these tools have a new default `centered` argument. They are now set to
 `centered = "all"`, but `"all"` no longer means what it used to. Now it refers
@@ -56,14 +56,14 @@ that previous versions did. But instead of having that occur when
 `NULL` option any longer. Note that with `sim_slopes`, the focal predictor
 (`pred`) will now be centered --- this only affects the conditional intercept.
 
-`sim_slopes`:
+## `sim_slopes`
 
 This function now supports categorical (factor) moderators, though there is
 no option for Johnson-Neyman intervals in these cases. You can use the 
 significance of the interaction term(s) for inference about whether the slopes
 differ at each level of the factor when the moderator is a factor.
 
-`gscale`: 
+## `gscale`
 
 The interface has been changed slightly, with the actual numbers always provided
 as the `data` argument. There is no `x` argument and instead a `vars` argument
@@ -78,8 +78,18 @@ There are two new functions that are wrappers around `gscale`: `standardize`
 and `center`, which call `gscale` but with `n.sd = 1` in the first case and
 with `center.only = TRUE` in the latter case.
 
+## `summ`
 
-`summ`:
+Rather than having separate `scale.response` and `center.response` arguments,
+each `summ` function now uses `transform.response` to collectively cover those
+bases. Whether the response is centered or scaled depends on the `scale` and
+`center` arguments.
+
+The `robust.type` argument is deprecated. Now, provide the type of robust 
+estimator directly to `robust`. For now, if `robust = TRUE`, it defaults to
+`"HC3"` with a warning. Better is to provide the argument directly, e.g.,
+`robust = "HC3"`. `robust = FALSE` is still fine for using OLS/MLE standard
+errors.
 
 Like the rest of R, when `summ` rounded your output, items rounded exactly to
 zero would be treated as, well, zero. But this can be misleading if the original
@@ -89,7 +99,28 @@ or slightly positive value when in fact it was the opposite. This is a
 deficiency of the `round` (and `trunc`) function. I've now changed it so the
 zero-rounded value retains its sign.
 
-## jtools 0.9.4 (CRAN release)
+`summ.merMod` now calculates pseudo-R^2 much, much faster. For only modestly
+complex models, the speed-up is roughly 50x faster. Because of how much faster
+it now is and how much less frequently it throws errors or prints cryptic 
+messages, it is now calculated by default. 
+
+The `summ.default` method has been removed. It was becoming an absolute terror
+to maintain and I doubted anyone found it useful. It's hard to provide the
+value added for models of a type that I do not know (robust errors don't 
+always apply, scaling doesn't always work, model fit statistics may not make
+sense, etc.). Bug me if this has really upset things for you.
+
+## `scale_lm` and `center_lm` are now `scale_mod`/`center_mod`
+
+To better reflect the capabilities of these functions (not restricted to `lm`
+objects), they have been renamed. The old names will continue to work to 
+preserve old code.
+
+However, `scale.response` and `center.response` now default to `FALSE` to
+reflect the fact that only OLS models can support transformations of the
+dependent variable in that way.
+
+# jtools 0.9.4 (CRAN release)
 
 This release is limited to dealing with the `huxtable` package's temporary
 removal from CRAN, which in turn makes this package out of compliance with
@@ -97,7 +128,7 @@ CRAN policies regarding dependencies on non-CRAN packages.
 
 Look out for `jtools` 1.0.0 coming very soon!
 
-## jtools 0.9.3 (CRAN release)
+# jtools 0.9.3 (CRAN release)
 
 Bugfixes:
 
@@ -109,7 +140,7 @@ a need to change the internals of `gscale`.
 * The default model names in `export_summs` had an extra space (e.g., `( 1)`) 
 due to changes in `huxtable`. The defaults are now just single numbers.
 
-## jtools 0.9.2 
+# jtools 0.9.2 
 
 Bugfix:
 
@@ -120,7 +151,7 @@ Feature update:
 
 * `johnson_neyman` now handles multilevel models from `lme4`. 
 
-## jtools 0.9.1 (CRAN release)
+# jtools 0.9.1 (CRAN release)
 
 Bugfix update:
 
@@ -143,7 +174,7 @@ providing a vector of colors (any format that `ggplot2` accepts) for the
 * Noah Greifer wrote up a tweak to `summ` that formats the output in a way that
 lines up the decimal points. It looks great.
 
-## jtools 0.9.0 (CRAN release)
+# jtools 0.9.0 (CRAN release)
 
 This may be the single biggest update yet. If you downloaded from CRAN, be sure
 to check the 0.8.1 update as well.
@@ -211,7 +242,7 @@ categorical variables. You can use bar plots, line plots, dot plots, and
 box and whisker plots to do so. You can also use the function to plot the effect
 of a single categorical predictor without an interaction.
 
-## jtools 0.8.1
+# jtools 0.8.1
 
 Thanks to Kim Henry who reported a bug with `johnson_neyman` in the case that
 there is an interval, but the entire interval is outside of the plotted area:
@@ -231,12 +262,12 @@ examining the main effect of the focal predictor. With this update, the
 plotted points for continous moderators are shaded along a gradient that matches
 the colors used for the predicted lines and confidence intervals.
 
-## jtools 0.8.0 (CRAN release)
+# jtools 0.8.0 (CRAN release)
 
 Not many user-facing changes since 0.7.4, but major refactoring internally
 should speed things up and make future development smoother.
 
-## jtools 0.7.4
+# jtools 0.7.4
 
 Bugfixes:
 
@@ -258,7 +289,7 @@ the user has defined the values but not the labels.
 * confidence intervals are now properly supported with export_summs
 * changes made to export_summs for compatibility with huxtable 1.0.0 changes
 
-## jtools 0.7.3 (CRAN release)
+# jtools 0.7.3 (CRAN release)
 
 Important bugfix:
 
@@ -275,7 +306,7 @@ wanting an efficient way to export regressions that are standardized and/or use
 robust standard errors. 
 
 
-## jtools 0.7.2
+# jtools 0.7.2
 
 The documentation for j_summ has been reorganized such that each supported
 model type has its own, separate documentation. `?j_summ` will now just give you
@@ -303,7 +334,7 @@ that is also the default behavior of `lme4`.
 runtime since it must fit a null model for comparison and sometimes this also
 causes convergence issues.
 
-## jtools 0.7.1
+# jtools 0.7.1
 
 Returning to CRAN!
 
@@ -316,7 +347,7 @@ The only change from 0.7.0 is fixing that problem, but if you're a CRAN user
 you will want to flip through the past several releases as well to see what 
 you've missed.
 
-## jtools 0.7.0
+# jtools 0.7.0
 
 New features:
 
@@ -340,7 +371,7 @@ Bug fix:
 explain the option well in its documentation.
 * johnson_neyman got confused when a factor variable was given as a predictor
 
-## jtools 0.6.1
+# jtools 0.6.1
 
 Bug fix release:
 
@@ -355,7 +386,7 @@ now.
 the scaling incorrect. If you saw a warning, re-check your outputs after this
 update.
 
-## jtools 0.6.0
+# jtools 0.6.0
 
 A lot of changes!
 
@@ -404,7 +435,7 @@ on models that were originally fit with tibbles in the data argument.
 the weights were specified in the function call. It should now work for all
 weighted lm objects.
 
-## jtools 0.5.0
+# jtools 0.5.0
 
 More goodies for users of interact_plot:
 
@@ -439,7 +470,7 @@ out one such instance.
 TRUE, the robust.type argument was not being passed (causing the default of 
 "HC3" to be used). Now it is passing that argument correctly.
 
-## jtools 0.4.5
+# jtools 0.4.5
 
 * Added better support for plotting nonlinear interactions with interact_plot,
 providing an option to plot on original (nonlinear) scale.
@@ -448,19 +479,19 @@ providing an option to plot on original (nonlinear) scale.
 * Added preliminary merMod support for j_summ. Still needs convergence warnings,
   some other items.
 
-## jtools 0.4.4
+# jtools 0.4.4
 
 * Under the hood changes to j_summ
 * Cleaned up examples
 * Added wgttest function, which runs a test to assess need for sampling weights
 in linear regression
 
-## jtools 0.4.3 
+# jtools 0.4.3 
 
 * No matter what you do, there's nothing like seeing your package on CRAN to 
 open your eyes to all the typos, etc. you've put into your package. 
 
-## jtools 0.4.2 — Initial CRAN release
+# jtools 0.4.2 — Initial CRAN release
 
 * This is the first CRAN release. Compared to 0.4.1, the prior Github release,
 dependencies have been removed and several functions optimized for speed.
