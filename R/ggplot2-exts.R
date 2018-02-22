@@ -224,8 +224,6 @@ pos_dodgev <- function(df, height) {
   df
 }
 
-#' @importFrom dplyr group_by %>%
-
 collidev <- function(data, height = NULL, name, strategy, ...,
                      check.height = TRUE, reverse = FALSE) {
   # Determine height
@@ -273,12 +271,11 @@ collidev <- function(data, height = NULL, name, strategy, ...,
   }
 
   if (!is.null(data$xmax)) {
-    ymin <- NULL # for CRAN checks
-    as.data.frame(data %>% group_by(ymin) %>% strategy(..., height = height))
+    do.call(rbind, lapply(split(data, data$ymin), strategy, height = height))
   } else if (!is.null(data$x)) {
     data$xmax <- data$x
-    data <- as.data.frame(data %>% group_by(ymin) %>%
-                            strategy(..., height = height))
+    data <- do.call(rbind, lapply(split(data, data$ymin), strategy,
+                                  height = height))
     data$x <- data$xmax
     data
   } else {
