@@ -1886,6 +1886,7 @@ print.summ.merMod <- function(x, ...) {
 
   cat("\nGrouping variables:\n")
   gtable <- round_df_char(j$gvars, digits = x$digits)
+  gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
   #rownames(gtable) <- rep("", times = nrow(gtable))
   print(gtable, row.names = FALSE)
 
