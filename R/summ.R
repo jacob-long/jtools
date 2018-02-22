@@ -18,6 +18,7 @@
 #'
 #'
 #' @export
+#' @importFrom stats nobs
 #'
 
 
