@@ -553,7 +553,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
     cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
 
-    d$mod2_group <- cut(d[[mod2]], cut_points2, labels = names(sort(mod2vals2)))
+    d$mod2_group <- cut(d[[mod2]], cut_points2,
+                        labels = names(sort(mod2vals2)))
 
     if (!is.null(mod2vals) && mod2vals == "terciles") {
       d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
@@ -673,38 +674,47 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     interval_arg <- TRUE
   }
 
-  if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(model, newdata = pm,
-                                       type = outcome.scale,
-                                       allow.new.levels = F,
-                                       re.form = ~0))
-  } else {
-    predicted <- as.data.frame(predict(model, newdata = pm,
-                                       se.fit = interval_arg,
-                                       interval = int.type[1],
-                                       type = outcome.scale))
-  }
-  pm[[resp]] <- predicted[[1]] # this is the actual values
-
-  ## Convert the confidence percentile to a number of S.E. to multiply by
-  intw <- 1 - ((1 - int.width)/2)
-  ses <- qnorm(intw, 0, 1)
-
-  # See minimum and maximum values for plotting intervals
-  if (interval == TRUE) { # only create SE columns if intervals are needed
+  pms <- split(pm, pm[[modx]])
+  for (i in seq_along(pms)) {
     if (mixed == TRUE) {
-      # No SEs
-      warning("Standard errors cannot be calculated for mixed effect models.")
-    } else if (survey == FALSE) {
-      pm[["ymax"]] <- pm[[resp]] + (predicted[["se.fit"]]) * ses
-      pm[["ymin"]] <- pm[[resp]] - (predicted[["se.fit"]]) * ses
-    } else if (survey == TRUE) {
-      pm[["ymax"]] <- pm[[resp]] + (predicted[["SE"]]) * ses
-      pm[["ymin"]] <- pm[[resp]] - (predicted[["SE"]]) * ses
+      predicted <- as.data.frame(predict(model, newdata = pms[[i]],
+                                         type = outcome.scale,
+                                         allow.new.levels = F,
+                                         re.form = ~0))
+    } else {
+      predicted <- as.data.frame(predict(model, newdata = pms[[i]],
+                                         se.fit = interval_arg,
+                                         interval = int.type[1],
+                                         type = outcome.scale))
     }
-  } else {
-    # Do nothing
+
+    pms[[i]][[resp]] <- predicted[[1]] # this is the actual values
+
+    ## Convert the confidence percentile to a number of S.E. to multiply by
+    intw <- 1 - ((1 - int.width)/2)
+    ses <- qnorm(intw, 0, 1)
+
+    # See minimum and maximum values for plotting intervals
+    if (interval == TRUE) { # only create SE columns if intervals are needed
+      if (mixed == TRUE) {
+        # No SEs
+        warning("Standard errors cannot be calculated for mixed effect models.")
+      } else if (survey == FALSE) {
+        pms[[i]][["ymax"]] <- pms[[i]][[resp]] + (predicted[["se.fit"]]) * ses
+        pms[[i]][["ymin"]] <- pms[[i]][[resp]] - (predicted[["se.fit"]]) * ses
+      } else if (survey == TRUE) {
+        pms[[i]][["ymax"]] <- pms[[i]][[resp]] + (predicted[["SE"]]) * ses
+        pms[[i]][["ymin"]] <- pms[[i]][[resp]] - (predicted[["SE"]]) * ses
+      }
+    } else {
+      # Do nothing
+    }
+
+    pms[[i]] <- pms[[i]][complete.cases(pms[[i]]),]
+
   }
+
+  pm <- do.call("rbind", pms)
 
   # Saving x-axis label
   if (is.null(x.label)) {
