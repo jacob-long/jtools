@@ -145,12 +145,12 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
                      any.mod2 = FALSE, is.mod2 = FALSE, sims = FALSE) {
 
   # Get moderator mean
-  if (survey == FALSE & !is.factor(d[,modx])) {
+  if (survey == FALSE & !is.factor(d[[modx]])) {
 
-    modmean <- weighted.mean(d[,modx], weights, na.rm = TRUE)
-    modsd <- wtd.sd(d[,modx], weights)
+    modmean <- weighted.mean(d[[modx]], weights, na.rm = TRUE)
+    modsd <- wtd.sd(d[[modx]], weights)
 
-  } else if (survey == TRUE & !is.factor(d[,modx])) {
+  } else if (survey == TRUE & !is.factor(d[[modx]])) {
 
     modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
     # Have to construct the formula this way since the syntax for svymean
@@ -165,7 +165,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
   if (is.character(modxvals) & length(modxvals) > 1) {char1 <- TRUE}
 
   # If using a preset, send to auto_mod_vals function
-  if (!is.factor(d[,modx]) & (is.null(modxvals) | is.character(modxvals))) {
+  if (!is.factor(d[[modx]]) & (is.null(modxvals) | is.character(modxvals))) {
 
     modxvals2 <- auto_mod_vals(d, modxvals = modxvals, modx = modx,
                                modmean = modmean, modsd = modsd,
@@ -175,31 +175,31 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
   }
 
   # For user-specified numbers or factors, go here
-  if (is.null(modxvals) && is.factor(d[,modx]) && sims == FALSE) {
+  if (is.null(modxvals) && is.factor(d[[modx]]) && sims == FALSE) {
 
-    modxvals2 <- levels(d[,modx])
+    modxvals2 <- levels(d[[modx]])
     if (is.null(modx.labels)) {
 
-      modx.labels <- levels(d[,modx])
+      modx.labels <- levels(d[[modx]])
 
     }
     names(modxvals2) <- modx.labels
 
-  } else if (is.factor(d[,modx]) & sims == TRUE) {
+  } else if (is.factor(d[[modx]]) & sims == TRUE) {
 
-    if (length(unique(d[,modx])) == 2) {
+    if (length(unique(d[[modx]])) == 2) {
       # We can work with a two-level factor
-      names <- levels(d[,modx])
-      condition <- suppressWarnings(all(is.na(as.numeric(levels(d[,modx])))))
+      names <- levels(d[[modx]])
+      condition <- suppressWarnings(all(is.na(as.numeric(levels(d[[modx]])))))
 
       if (condition) {
         modxvals2 <- c(0,1)
       } else {
-        modxvals2 <- sort(as.numeric(levels(d[,modx])), decreasing = FALSE)
+        modxvals2 <- sort(as.numeric(levels(d[[modx]])), decreasing = FALSE)
       }
 
       names(modxvals2) <- names
-    } else if (length(unique(d[,modx])) != 2) {
+    } else if (length(unique(d[[modx]])) != 2) {
 
       stop("Factor moderators can only have exactly 2 levels.")
 
@@ -248,7 +248,7 @@ auto_mod_vals <-
            mod2 = FALSE, sims = FALSE) {
 
     # Default to +/- 1 SD unless modx is factor
-    if (is.null(modxvals) & length(unique(d[,modx])) > 2) {
+    if (is.null(modxvals) & length(unique(d[[modx]])) > 2) {
 
       modxvals2 <- c(modmean + modsd,
                      modmean,
@@ -289,9 +289,9 @@ auto_mod_vals <-
                               paste("Upper tercile of", modx))
       }
 
-    } else if (is.null(modxvals) & length(unique(d[,modx])) == 2) {
+    } else if (is.null(modxvals) & length(unique(d[[modx]])) == 2) {
 
-      modxvals2 <- as.numeric(levels(factor(d[,modx])))
+      modxvals2 <- as.numeric(levels(factor(d[[modx]])))
       if (!is.null(modx.labels)) {
 
         names(modxvals2) <- modx.labels
