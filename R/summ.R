@@ -140,7 +140,7 @@ j_summ <- summ
 #'    p values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy
+#'  There are several options available for \code{robust}. The heavy
 #'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
@@ -153,7 +153,7 @@ j_summ <- summ
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
 #'
@@ -200,7 +200,7 @@ j_summ <- summ
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod}} can simply perform the standardization if
 #'  preferred.
 #'
 #'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
@@ -552,7 +552,8 @@ print.summ.lm <- function(x, ...) {
 #'
 #' @inheritParams summ.lm
 #'
-#' @details By default, this function will print the following items to the console:
+#' @details By default, this function will print the following items to the
+#'  console:
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
@@ -561,7 +562,7 @@ print.summ.lm <- function(x, ...) {
 #'    p values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy
+#'  There are several options available for \code{robust}. The heavy
 #'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
@@ -574,7 +575,7 @@ print.summ.lm <- function(x, ...) {
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
 #'
