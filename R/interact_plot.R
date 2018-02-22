@@ -1625,31 +1625,31 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
 ### Checking for factor input ################################################
 
-  if (!is.factor(d[[pred]])) {
-    # I could assume the factor is properly ordered, but that's too risky
-    stop("Focal predictors (\"pred\") must be a factor.\n Either",
-         " convert it to a factor and re-fit the model\n",
-         " or use the interact_plot or effect_plot functions\n for ",
-         "interactions with continuous variables.")
-  }
-  if (!is.null(modx)) {
-    if (!is.factor(d[[modx]])) {
-      # I could assume the factor is properly ordered, but that's too risky
-      stop("Moderator (\"modx\") must be a factor.\n Either",
-           " convert it to a factor and re-fit the model\n",
-           " or use the interact_plot or effect_plot functions for \n",
-           "interactions with continuous variables.")
-    }
-  }
-  if (!is.null(mod2)) {
-    if (!is.factor(d[[mod2]])) {
-      # I could assume the factor is properly ordered, but that's too risky
-      stop("Moderator (\"mod2\") must be a factor.\n Either",
-           " convert it to a factor and re-fit the model\n",
-           " or use the interact_plot or effect_plot functions for\n ",
-           "interactions with continuous variables.")
-    }
-  }
+  # if (!is.factor(d[[pred]])) {
+  #   # I could assume the factor is properly ordered, but that's too risky
+  #   stop("Focal predictors (\"pred\") must be a factor.\n Either",
+  #        " convert it to a factor and re-fit the model\n",
+  #        " or use the interact_plot or effect_plot functions\n for ",
+  #        "interactions with continuous variables.")
+  # }
+  # if (!is.null(modx)) {
+  #   if (!is.factor(d[[modx]])) {
+  #     # I could assume the factor is properly ordered, but that's too risky
+  #     stop("Moderator (\"modx\") must be a factor.\n Either",
+  #          " convert it to a factor and re-fit the model\n",
+  #          " or use the interact_plot or effect_plot functions for \n",
+  #          "interactions with continuous variables.")
+  #   }
+  # }
+  # if (!is.null(mod2)) {
+  #   if (!is.factor(d[[mod2]])) {
+  #     # I could assume the factor is properly ordered, but that's too risky
+  #     stop("Moderator (\"mod2\") must be a factor.\n Either",
+  #          " convert it to a factor and re-fit the model\n",
+  #          " or use the interact_plot or effect_plot functions for\n ",
+  #          "interactions with continuous variables.")
+  #   }
+  # }
 
 #### Data checking ###########################################################
 
@@ -1763,7 +1763,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   pred_len <- nlevels(d[[pred]])
 
   if (!is.null(modx)) {
-    combos <- expand.grid(levels(d[[pred]]), levels(d[[modx]]))
+    combos <- expand.grid(levels(factor(d[[pred]])), levels(factor(d[[modx]])))
     combo_pairs <- paste(combos[[1]],combos[[2]])
     og_pairs <- paste(d[[pred]], d[[modx]])
     combos <- combos[combo_pairs %in% og_pairs,]
@@ -1803,13 +1803,16 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   # Add values of moderator to df
   if (!is.null(modx)) {
     pm[[modx]] <- combos[[2]]
+    if (is.character(d[[modx]])) {pm[[modx]] <- as.character(pm[[modx]])}
   }
   if (!is.null(mod2)) { # if second moderator
     pm[[mod2]] <- combos[[3]]
+    if (is.character(d[[mod2]])) {pm[[mod2]] <- as.character(pm[[mod2]])}
   }
 
   # Add values of focal predictor to df
   pm[[pred]] <- combos[[1]]
+  if (is.character(d[[pred]])) {pm[[pred]] <- as.character(pm[[pred]])}
 
   # Set factor covariates arbitrarily to their first level
   if (length(facvars) > 0) {
@@ -1907,15 +1910,16 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
   # Labels for values of predictor and moderator
   if (!is.null(modx)) {
-
+    if (!is.factor(d[[modx]])) {d[[modx]] <- factor(d[[modx]])}
     pm[[modx]] <- factor(pm[[modx]], levels = levels(d[[modx]]))
 
   }
+  if (!is.factor(d[[pred]])) {d[[pred]] <- factor(d[[pred]])}
   pm[[pred]] <- factor(pm[[pred]], levels = levels(d[[pred]]))
 
   # Setting labels for second moderator
   if (!is.null(mod2)) {
-
+    if (!is.factor(d[[mod2]])) {d[[mod2]] <- factor(d[[mod2]])}
     pm[[mod2]] <- factor(pm[[mod2]], levels = levels(d[[mod2]]))
 
   }
