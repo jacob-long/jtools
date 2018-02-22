@@ -1332,7 +1332,8 @@ print.summ.svyglm <- function(x, ...) {
 #'
 #' @param model A \code{\link[lme4]{merMod}} object.
 #' @param r.squared Calculate an r-squared model fit statistic? Default is
-#'  \code{FALSE} because it seems to have convergence problems too often.
+#'  \code{TRUE}, but if it has errors or takes a long time to calculate you
+#'  may want to consider setting to FALSE.
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
@@ -1378,7 +1379,10 @@ print.summ.svyglm <- function(x, ...) {
 #'  the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
 #'  installed, however, p values are reported using the Kenward-Roger
 #'  d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
-#'  set to something other than \code{NULL}.
+#'  set to something other than \code{NULL}. In publications,
+#'  you should cite the
+#'  Kenward & Roger (1997) piece as well as either this package or
+#'  \pkg{pbkrtest} package to explain how the p values were calculated.
 #'
 #'  See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
 #'  If you're looking for a simple test with no extra packages installed,
@@ -1398,6 +1402,21 @@ print.summ.svyglm <- function(x, ...) {
 #'  determine the d.f., then any number provided as the argument will be
 #'  used.
 #'
+#'  **About pseudo-R^2**
+#'
+#'  There is no one way to calculate R^2 for mixed models or nonlinear
+#'  models. Many caution against interpreting or even using such
+#'  approximations outside of OLS regression. With that said, this package
+#'  reports one version for your benefit, though you should of course
+#'  understand that it is not an unambiguous measure of model fit.
+#'
+#'  This package calculates R^2 for mixed models using an adapted version
+#'  of \code{\link[piecewiseSEM]{sem.model.fits}} from the \pkg{piecewiseSEM}
+#'  package. This is an implementation of the Nakagawa & Schielzeth (2013)
+#'  procedure with refinements by Johnson (2014). If you choose to report
+#'  the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
+#'  to explain how the calculation was done.
+#'
 #' @return If saved, users can access most of the items that are returned in
 #'   the output (and without rounding).
 #'
@@ -1416,7 +1435,7 @@ print.summ.svyglm <- function(x, ...) {
 #'  \code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
 #'  freedom if you have \pkg{pbkrtest} installed.
 #'
-#'  A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
+#'  A tweaked version of \code{\link[piecewiseSEM]{sem.model.fits}} is used to
 #'  generate the pseudo-R-squared estimates for linear models.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -1472,7 +1491,7 @@ print.summ.svyglm <- function(x, ...) {
 
 summ.merMod <- function(
   model, scale = FALSE, confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 2), r.squared = FALSE,
+  digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
   pvals = NULL, n.sd = 1, center = FALSE, transform.response = FALSE,
   data = NULL, odds.ratio = FALSE, t.df = NULL,
   model.info = TRUE, model.fit = TRUE,
@@ -1581,33 +1600,13 @@ summ.merMod <- function(
   n <- length(residuals(model))
   j <- structure(j, n = n)
 
-  # Calculate R-squared
-  ### Below taken from summary.lm
-  r <- residuals(model)
-  f <- fitted(model)
-  w <- weights(model)
-  ## Dealing with no-intercept models, getting the df.int
-  if (is.null(w)) {
-    mss <- if (df.int == 1L)
-      sum((f - mean(f))^2)
-    else sum(f^2)
-    rss <- sum(r^2)
-  } else {
-    mss <- if (df.int == 1L) {
-      m <- sum(w * f/sum(w))
-      sum(w * (f - m)^2)
-    } else sum(w * f^2)
-    rss <- sum(w * r^2)
-    r <- sqrt(w) * r
-  }
-
   # TODO: Figure out model fit indices for MLMs
   ## This is a start
   failed.rsq <- FALSE
   if (r.squared == TRUE) {
 
     t0 <- Sys.time() # Calculating time elapsed
-    tryo <- try({rsqs <- suppressWarnings(r.squaredGLMM(model))}, silent = TRUE)
+    tryo <- try({rsqs <- suppressWarnings(pR2_merMod(model))}, silent = TRUE)
     t1 <- Sys.time()
 
     if (class(tryo) == "try-error") {
@@ -1738,7 +1737,7 @@ summ.merMod <- function(
 
   # Put things together
 
-  mat <- matrix(nrow=length(ivs), ncol = length(params))
+  mat <- matrix(nrow = length(ivs), ncol = length(params))
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
@@ -1835,9 +1834,10 @@ print.summ.merMod <- function(x, ...) {
         "\n", "AIC = ", round(x$aic, x$digits),
         ", BIC = ", round(x$bic, x$digits), "\n", sep = "")
     if (x$r.squared == TRUE) {
-      cat("Pseudo R-squared (fixed effects) = ", round(x$rsq[1],x$digits),
+      cat("Pseudo R-squared (fixed effects) = ", round(x$rsq$Marginal,
+                                                       x$digits),
           "\n", sep = "")
-      cat("Pseudo R-squared (total) = ", round(x$rsq[2], x$digits),
+      cat("Pseudo R-squared (total) = ", round(x$rsq$Conditional, x$digits),
           "\n\n", sep = "")
     } else {
       cat("\n")

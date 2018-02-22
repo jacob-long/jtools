@@ -31,7 +31,8 @@ digits for all jtools functions with
 number.}
 
 \item{r.squared}{Calculate an r-squared model fit statistic? Default is
-\code{FALSE} because it seems to have convergence problems too often.}
+\code{TRUE}, but if it has errors or takes a long time to calculate you
+may want to consider setting to FALSE.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
@@ -116,7 +117,10 @@ By default, this function follows \code{lme4}'s lead and does not report
 the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
 installed, however, p values are reported using the Kenward-Roger
 d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
-set to something other than \code{NULL}.
+set to something other than \code{NULL}. In publications,
+you should cite the
+Kenward & Roger (1997) piece as well as either this package or
+\pkg{pbkrtest} package to explain how the p values were calculated.
 
 See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
 If you're looking for a simple test with no extra packages installed,
@@ -135,6 +139,21 @@ is used. If \code{t.df = "residual"}, then the residual d.f. is used
 without a message. If the user prefers to use some other method to
 determine the d.f., then any number provided as the argument will be
 used.
+
+\strong{About pseudo-R^2}
+
+There is no one way to calculate R^2 for mixed models or nonlinear
+models. Many caution against interpreting or even using such
+approximations outside of OLS regression. With that said, this package
+reports one version for your benefit, though you should of course
+understand that it is not an unambiguous measure of model fit.
+
+This package calculates R^2 for mixed models using an adapted version
+of \code{\link[piecewiseSEM]{sem.model.fits}} from the \pkg{piecewiseSEM}
+package. This is an implementation of the Nakagawa & Schielzeth (2013)
+procedure with refinements by Johnson (2014). If you choose to report
+the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
+to explain how the calculation was done.
 }
 \examples{
 if (requireNamespace("lme4")) {
@@ -186,7 +205,7 @@ behind the scenes.
 \code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
 freedom if you have \pkg{pbkrtest} installed.
 
-A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
+A tweaked version of \code{\link[piecewiseSEM]{sem.model.fits}} is used to
 generate the pseudo-R-squared estimates for linear models.
 }
 \author{
