@@ -1586,26 +1586,26 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
   if (!is.factor(d[[pred]])) {
     # I could assume the factor is properly ordered, but that's too risky
-    stop("Focal predictors (\"pred\") must be a factor. Either",
-         " convert it to a factor and re-fit the model",
-         " or use the interact_plot or effect_plot functions for interactions ",
-         "with continuous variables.")
+    stop("Focal predictors (\"pred\") must be a factor.\n Either",
+         " convert it to a factor and re-fit the model\n",
+         " or use the interact_plot or effect_plot functions\n for ",
+         "interactions with continuous variables.")
   }
   if (!is.null(modx)) {
     if (!is.factor(d[[modx]])) {
       # I could assume the factor is properly ordered, but that's too risky
-      stop("Moderator (\"modx\") must be a factor. Either",
-           " convert it to a factor and re-fit the model",
-           " or use the interact_plot or effect_plot functions for ",
+      stop("Moderator (\"modx\") must be a factor.\n Either",
+           " convert it to a factor and re-fit the model\n",
+           " or use the interact_plot or effect_plot functions for \n",
            "interactions with continuous variables.")
     }
   }
   if (!is.null(mod2)) {
     if (!is.factor(d[[mod2]])) {
       # I could assume the factor is properly ordered, but that's too risky
-      stop("Moderator (\"mod2\") must be a factor. Either",
-           " convert it to a factor and re-fit the model",
-           " or use the interact_plot or effect_plot functions for ",
+      stop("Moderator (\"mod2\") must be a factor.\n Either",
+           " convert it to a factor and re-fit the model\n",
+           " or use the interact_plot or effect_plot functions for\n ",
            "interactions with continuous variables.")
     }
   }
