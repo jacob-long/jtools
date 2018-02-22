@@ -337,17 +337,21 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
       d <- data
     }
 
-    if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
+    if (requireNamespace("lme4")) {
+      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
 
-      mixed <- TRUE
-      if (interval == TRUE) {
-        warning("Confidence intervals cannot be provided for random effects",
-                " models.")
-        interval <- FALSE
+        mixed <- TRUE
+        if (interval == TRUE) {
+          warning("Confidence intervals cannot be provided for random effects",
+                  " models.")
+          interval <- FALSE
+        }
+
+      } else {
+      mixed <- FALSE
       }
-
     } else {
-    mixed <- FALSE
+      mixed <- FALSE
     }
 
     fvars <- as.character(attributes(terms(model))$variables)
@@ -1032,15 +1036,19 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
       d <- data
     }
 
-    if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
+    if (requireNamespace("lme4")) {
+      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
 
-      mixed <- TRUE
-      if (interval == TRUE) {
-        warning("Confidence intervals cannot be provided for random effects",
-                " models.")
-        interval <- FALSE
+        mixed <- TRUE
+        if (interval == TRUE) {
+          warning("Confidence intervals cannot be provided for random effects",
+                  " models.")
+          interval <- FALSE
+        }
+
+      } else {
+        mixed <- FALSE
       }
-
     } else {
       mixed <- FALSE
     }
@@ -1538,15 +1546,19 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
       d <- data
     }
 
-    if (class(model)[1] %in% c("glmerMod","lmerMod","nlmerMod")) {
+    if (requireNamespace("lme4")) {
+      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
 
-      mixed <- TRUE
-      if (interval == TRUE) {
-        warning("Confidence intervals cannot be provided for random effects",
-                " models.")
-        interval <- FALSE
+        mixed <- TRUE
+        if (interval == TRUE) {
+          warning("Confidence intervals cannot be provided for random effects",
+                  " models.")
+          interval <- FALSE
+        }
+
+      } else {
+        mixed <- FALSE
       }
-
     } else {
       mixed <- FALSE
     }
