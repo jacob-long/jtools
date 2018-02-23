@@ -429,6 +429,7 @@ ncvTest.lm <- function(model, var.formula, ...) {
 ### Hadley update #############################################################
 # from https://stackoverflow.com/questions/13690184/update-inside-a-function-
 # only-searches-the-global-environment
+#' @importFrom stats update.formula
 
 j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
                      weights = NULL) {

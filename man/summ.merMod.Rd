@@ -7,7 +7,7 @@
 \usage{
 \method{summ}{merMod}(model, scale = FALSE, confint = FALSE,
   ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  r.squared = FALSE, pvals = NULL, n.sd = 1, center = FALSE,
+  r.squared = TRUE, pvals = NULL, n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, odds.ratio = FALSE,
   t.df = NULL, model.info = TRUE, model.fit = TRUE, ...)
 }

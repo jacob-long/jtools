@@ -8,8 +8,9 @@ cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
   geom = c("dot", "line", "bar", "boxplot"), interval = TRUE,
   plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
   centered = "all", int.type = c("confidence", "prediction"),
-  int.width = 0.95, outcome.scale = "response", set.offset = 1,
-  x.label = NULL, y.label = NULL, main.title = NULL, legend.main = NULL,
+  int.width = 0.95, outcome.scale = "response", robust = FALSE,
+  cluster = NULL, vcov = NULL, set.offset = 1, x.label = NULL,
+  y.label = NULL, main.title = NULL, legend.main = NULL,
   color.class = "Set2")
 }
 \arguments{
@@ -92,6 +93,26 @@ the original scale (e.g., predicted probabilities for logit models)? The
 default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
+
+\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
+errors instead of conventional SEs. These are also known as Huber-White
+standard errors. There are several options provided by
+\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
+\code{"HC4m"}, \code{"HC5"}.
+
+Default is \code{FALSE}.
+
+This requires the \code{sandwich} package to compute the
+standard errors.}
+
+\item{cluster}{For clustered standard errors, provide the column name of
+the cluster variable in the input data frame (as a string). Alternately,
+provide a vector of clusters.}
+
+\item{vcov}{Optional. You may supply the variance-covariance matrix of the
+coefficients yourself. This is useful if you are using some method for
+robust standard error calculation not supported by the \pkg{sandwich}
+package.}
 
 \item{set.offset}{For models with an offset (e.g., Poisson models), sets a
 offset for the predicted values. All predicted values will have the same

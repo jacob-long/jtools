@@ -110,7 +110,7 @@ console:
 p values.
 }
 
-There are several options available for \code{robust.type}. The heavy
+There are several options available for \code{robust}. The heavy
 lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
 described.
 Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
@@ -123,7 +123,7 @@ variable or is a vector of clusters.
 
 The \code{scale} and \code{center} options are performed via
 refitting
-the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
 respectively. Each of those in turn uses \code{\link{gscale}} for the
 mean-centering and scaling.
 
@@ -183,7 +183,7 @@ Public Health}, \emph{23}, 151–169.
 \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 }
 \seealso{
-\code{\link{scale_lm}} can simply perform the standardization if
+\code{\link{scale_mod}} can simply perform the standardization if
 preferred.
 
 \code{\link{gscale}} does the heavy lifting for mean-centering and scaling

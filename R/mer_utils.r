@@ -110,6 +110,7 @@ icc <- function(fit, obj.name) {
 ##########################################################################
 
 ### piecewisesem implementation
+#' @importFrom stats var
 
 pR2_merMod = function(model) {
 

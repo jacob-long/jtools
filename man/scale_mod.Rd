@@ -6,7 +6,7 @@
 \title{Scale variables in fitted regression models}
 \usage{
 scale_mod(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
-  scale.response = TRUE, center.only = FALSE, data = NULL)
+  scale.response = FALSE, center.only = FALSE, data = NULL)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -28,7 +28,7 @@ mean-centered. For binary predictors, the \code{binary.inputs} argument
 supersedes this one.}
 
 \item{scale.response}{Should the response variable also be rescaled? Default
-is \code{TRUE}.}
+is \code{FALSE}.}
 
 \item{center.only}{Rather than actually scale predictors, just mean-center
 them.}
