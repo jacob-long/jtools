@@ -280,7 +280,7 @@
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median ecdf quantile
+#' @importFrom stats median ecdf quantile get_all_vars complete.cases
 #' @import ggplot2
 #' @export interact_plot
 
@@ -308,68 +308,12 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     mod2 <- NULL
   }
 
-  # Is it a svyglm?
-  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
-    survey <- TRUE
-    mixed <- FALSE
-    design <- model$survey.design
-    d <- design$variables
+  # Avoid CRAN barking
+  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
 
-    wts <- weights(design) # for use with points.plot aesthetic
-    wname <- "(weights)"
-
-    # Focal vars so the weights don't get centered
-    fvars <- as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars <- fvars[2:length(fvars)]
-    all.vars <- fvars
-
-    facvars <- names(which(sapply(d, is.factor)))
-
-  } else {
-    survey <- FALSE
-
-    # Duplicating the dataframe so it can be manipulated as needed
-    if (is.null(data)) {
-      d <- model.frame(model)
-      # Check to see if model.frame names match formula names
-      varnames <- names(d)
-      # Drop weights and offsets
-      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
-      if (any(varnames %nin% all.vars(formula(model)))) {
-        warning("Variable transformations in the model formula detected. ",
-                "This will likely cause an error. To fix, pass the original ",
-                "data to the \"data =\" argument.")
-      }
-    } else {
-      d <- data
-    }
-
-    if (requireNamespace("lme4")) {
-      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
-
-        mixed <- TRUE
-        if (interval == TRUE) {
-          warning("Confidence intervals cannot be provided for random effects",
-                  " models.")
-          interval <- FALSE
-        }
-
-      } else {
-      mixed <- FALSE
-      }
-    } else {
-      mixed <- FALSE
-    }
-
-    fvars <- as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars <- fvars[2:length(fvars)]
-    all.vars <- fvars
-
-    facvars <- names(which(sapply(d, is.factor)))
-
-  }
+  # This internal function has side effects that create
+  # objects in this environment
+  data_checks(model, data, interval)
 
   # Check for factor predictor
   if (is.factor(d[[pred]])) {
@@ -402,43 +346,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   if (!is.null(model.offset(model.frame(model)))) {
 
     off <- TRUE
-    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare name
-
-    # Getting/setting offset name depending on whether it was specified in
-    # argument or formula
-    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
-      colnames(d)[which(colnames(d) == "(offset)")] <- offname
-    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
-
-      offname <- "(offset)"
-
-      # This strategy won't work for svyglm
-      if (survey == TRUE) {
-
-        stop("For svyglm with offsets, please specify the offset with the",
-             " 'offset =' argument rather than in the model formula.")
-
-      }
-
-    }
-
-    # See if offset term was logged
-    if (offname == "(offset)") {
-      offterm <- regmatches(as.character(formula(model)),
-                            regexpr("(?<=(offset\\()).*(?=(\\)))",
-                            as.character(formula(model)), perl = TRUE))
-      if (grepl("log(", offterm, fixed = TRUE)) {
-
-        d[[offname]] <- exp(d[[offname]])
-
-      }
-
-    }
-
-    # Exponentiate offset if it was logged
-    if ("log" %in% as.character(getCall(model)$offset)) {
-      d[[offname]] <- exp(d[[offname]])
-    }
+    offname <- get_offname(model, survey)
 
   } else {
 
@@ -466,9 +374,6 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     }
   }
 
-  # For setting dimensions correctly later
-  nc <- ncol(d)
-
   # Get the formula from lm object if given
   formula <- formula(model)
   formula <- paste(formula[2], formula[1], formula[3])
@@ -476,6 +381,14 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Pulling the name of the response variable for labeling
   resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
   resp <- trimws(resp)
+
+  # Drop unneeded columns from data frame
+  if (off == TRUE) {offs <- d[[offname]]}
+  d <- get_all_vars(formula, d)
+  # For setting dimensions correctly later
+  nc <- sum(names(d) %nin% c(wname, offname))
+  if (off == TRUE) {d[[offname]] <- offs}
+
 
 ### Centering ##################################################################
 
@@ -627,11 +540,13 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   # Naming columns
   if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d)[colnames(d) %nin%
-                                    c("modx_group","mod2_group")],
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group","mod2_group",
+                                                      offname, wname)],
                       "ymax", "ymin")
   } else {
-    colnames(pm) <- colnames(d)[colnames(d) %nin% c("modx_group","mod2_group")]
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group",
+                                                      "mod2_group", offname,
+                                                      wname)])
   }
   # Convert to dataframe
   pm <- as.data.frame(pm)
@@ -1017,7 +932,7 @@ print.interact_plot <- function(x, ...) {
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median weights
+#' @importFrom stats median weights get_all_vars
 #' @import ggplot2
 #' @export effect_plot
 
@@ -1035,67 +950,12 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
   # Evaluate the pred arg
   pred <- as.character(substitute(pred))
 
-  # Is it a svyglm?
-  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
-    survey <- TRUE
-    mixed <- FALSE
-    design <- model$survey.design
-    d <- design$variables
+  # Avoid CRAN barking
+  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
 
-    wts <- weights(design) # for use with points.plot aesthetic
-
-    # Focal vars so the weights don't get centered
-    fvars <- as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars <- fvars[2:length(fvars)]
-    all.vars <- fvars
-
-    facvars <- names(which(sapply(d, is.factor)))
-
-  } else {
-    survey <- FALSE
-
-    # Duplicating the dataframe so it can be manipulated as needed
-    if (is.null(data)) {
-      d <- model.frame(model)
-      # Check to see if model.frame names match formula names
-      varnames <- names(d)
-      # Drop weights and offsets
-      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
-      if (any(varnames %nin% all.vars(formula(model)))) {
-        warning("Variable transformations in the model formula detected. ",
-                "This will likely cause an error. To fix, pass the original ",
-                "data to the \"data =\" argument.")
-      }
-    } else {
-      d <- data
-    }
-
-    if (requireNamespace("lme4")) {
-      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
-
-        mixed <- TRUE
-        if (interval == TRUE) {
-          warning("Confidence intervals cannot be provided for random effects",
-                  " models.")
-          interval <- FALSE
-        }
-
-      } else {
-        mixed <- FALSE
-      }
-    } else {
-      mixed <- FALSE
-    }
-
-    fvars <- as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars <- fvars[2:length(fvars)]
-    all.vars <- fvars
-
-    facvars <- names(which(sapply(d, is.factor)))
-
-  }
+  # This internal function has side effects that create
+  # objects in this environment
+  data_checks(model, data, interval)
 
   # Check for factor predictor
   if (is.factor(d[[pred]])) {
@@ -1129,53 +989,14 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
 
     off <- TRUE
     # subset gives bare varname
-    offname <- as.character(getCall(model)$offset[-1])
+    offname <- get_offname(model, survey)
 
-    # Getting/setting offset name depending on whether it was specified in
-    # argument or formula
-    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
-      colnames(d)[which(colnames(d) == "(offset)")] <- offname
-    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
+  } else {
 
-      offname <- "(offset)"
+    off <- FALSE
+    offname <- NULL
 
-      # This strategy won't work for svyglm
-      if (survey == TRUE) {
-
-        stop("For svyglm with offsets, please specify the offset with the
-             'offset =' argument rather than in the model formula.")
-
-      }
-
-    }
-
-    # See if offset term was logged
-    if (offname == "(offset)") {
-      offterm <- regmatches(as.character(formula(model)),
-                            regexpr("(?<=(offset\\()).*(?=(\\)))",
-                                    as.character(formula(model)), perl = TRUE))
-      if (grepl("log(", offterm, fixed = TRUE)) {
-
-        d[[offname]] <- exp(d[[offname]])
-
-      }
-
-    }
-
-    # Exponentiate offset if it was logged
-    if ("log" %in% as.character(getCall(model)$offset)) {
-      d[[offname]] <- exp(d[[offname]])
-    }
-
-    } else {
-
-      off <- FALSE
-      offname <- NULL
-
-    }
-
-  # For setting dimensions correctly later
-  nc <- ncol(d)
+  }
 
   # Get the formula from lm object if given
   formula <- formula(model)
@@ -1184,6 +1005,13 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
   # Pulling the name of the response variable for labeling
   resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
   resp <- trimws(resp)
+
+  # Drop unneeded columns from data frame
+  if (off == TRUE) {offs <- d[[offname]]}
+  d <- get_all_vars(formula, d)
+  # For setting dimensions correctly later
+  nc <- sum(names(d) %nin% c(wname, offname))
+  if (off == TRUE) {d[[offname]] <- offs}
 
 ### Centering ##################################################################
 
@@ -1225,7 +1053,6 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
   if (off == TRUE) {
     # Avoiding the variable not found stuff
     colnames(d)[colnames(d) %in% "(offset)"] <- offname
-    d[[offname]] <- exp(d[[offname]])
   }
 
   # Naming columns
@@ -1526,7 +1353,7 @@ print.effect_plot <- function(x, ...) {
 #'  interval = TRUE)
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median
+#' @importFrom stats median get_all_vars
 #' @export cat_plot
 #' @import ggplot2
 #'
@@ -1561,67 +1388,12 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   geom <- geom[1]
   if (geom == "point") {geom <- "dot"}
 
-  # Is it a svyglm?
-  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
-    survey <- TRUE
-    mixed <- FALSE
-    design <- model$survey.design
-    d <- design$variables
+  # Avoid CRAN barking
+  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
 
-    wts <- weights(design) # for use with points.plot aesthetic
-
-    # Focal vars so the weights don't get centered
-    fvars <- as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars <- fvars[2:length(fvars)]
-    all.vars <- fvars
-
-    facvars <- names(which(sapply(d, is.factor)))
-
-  } else {
-    survey <- FALSE
-
-    # Duplicating the dataframe so it can be manipulated as needed
-    if (is.null(data)) {
-      d <- model.frame(model)
-      # Check to see if model.frame names match formula names
-      varnames <- names(d)
-      # Drop weights and offsets
-      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
-      if (any(varnames %nin% all.vars(formula(model)))) {
-        warning("Variable transformations in the model formula detected. ",
-                "This will likely cause an error. To fix, pass the original ",
-                "data to the \"data =\" argument.")
-      }
-    } else {
-      d <- data
-    }
-
-    if (requireNamespace("lme4")) {
-      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
-
-        mixed <- TRUE
-        if (interval == TRUE) {
-          warning("Confidence intervals cannot be provided for random effects",
-                  " models.")
-          interval <- FALSE
-        }
-
-      } else {
-        mixed <- FALSE
-      }
-    } else {
-      mixed <- FALSE
-    }
-
-    fvars <- as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars <- fvars[2:length(fvars)]
-    all.vars <- fvars
-
-    facvars <- names(which(sapply(d, is.factor)))
-
-  }
+  # This internal function has side effects that create objects
+  # in this environment
+  data_checks(model, data, interval)
 
 ### Checking for factor input ################################################
 
@@ -1675,44 +1447,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   if (!is.null(model.offset(model.frame(model)))) {
 
     off <- TRUE
-    # subset gives bare varname
-    offname <- as.character(getCall(model)$offset[-1])
-
-    # Getting/setting offset name depending on whether it was specified in
-    # argument or formula
-    if (any(colnames(d) == "(offset)") & !is.null(offname)) {
-      colnames(d)[which(colnames(d) == "(offset)")] <- offname
-    } else if (any(colnames(d) == "(offset)") & is.null(offname)) {
-
-      offname <- "(offset)"
-
-      # This strategy won't work for svyglm
-      if (survey == TRUE) {
-
-        stop("For svyglm with offsets, please specify the offset with the
-             'offset =' argument rather than in the model formula.")
-
-      }
-
-    }
-
-    # See if offset term was logged
-    if (offname == "(offset)") {
-      offterm <- regmatches(as.character(formula(model)),
-                            regexpr("(?<=(offset\\()).*(?=(\\)))",
-                                    as.character(formula(model)), perl = TRUE))
-      if (grepl("log(", offterm, fixed = TRUE)) {
-
-        d[[offname]] <- exp(d[[offname]])
-
-      }
-
-    }
-
-    # Exponentiate offset if it was logged
-    if ("log" %in% as.character(getCall(model)$offset)) {
-      d[[offname]] <- exp(d[[offname]])
-    }
+    offname <- get_offname(model, survey)
 
   } else {
 
@@ -1726,9 +1461,6 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     color.class <- "Set2"
   }
 
-  # For setting dimensions correctly later
-  nc <- ncol(d)
-
   # Get the formula from lm object if given
   formula <- formula(model)
   formula <- paste(formula[2], formula[1], formula[3])
@@ -1736,6 +1468,13 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   # Pulling the name of the response variable for labeling
   resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
   resp <- trimws(resp)
+
+  # Drop unneeded columns from data frame
+  if (off == TRUE) {offs <- d[[offname]]}
+  d <- get_all_vars(formula, d)
+  # For setting dimensions correctly later
+  nc <- sum(names(d) %nin% c(wname, offname))
+  if (off == TRUE) {d[[offname]] <- offs}
 
 ##### Centering ###############################################################
 

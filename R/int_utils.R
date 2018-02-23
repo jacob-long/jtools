@@ -575,3 +575,104 @@ center_values_survey <- function(d, omitvars, design = NULL,
   return(out)
 
 }
+
+get_offname <- function(model, survey) {
+
+  # subset gives bare name
+  offname <-
+    as.character(getCall(model)$offset)[length(getCall(model)$offset)]
+  # Sometimes it's character(0)
+  if (length(offname) == 0) {offname <- NULL}
+
+  if (is.null(offname)) {
+    index <- attr(terms(model), "offset")
+    offname <- all.vars(terms(model))[index]
+  }
+
+  return(offname)
+
+}
+
+data_checks <- function(model, data, interval) {
+
+  # Avoid CRAN barking
+  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
+
+  # Is it a svyglm?
+  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
+
+    survey %<==% TRUE
+    mixed %<==% FALSE
+    design %<==% model$survey.design
+    # assign("design", design, pos = parent.frame())
+    d %<==% design$variables
+
+    wts %<==% weights(design) # for use with points.plot aesthetic
+    # assign("wts", wts, pos = parent.frame())
+    wname %<==% "(weights)"
+    # assign("wname", wname, pos = parent.frame())
+
+    # Focal vars so the weights don't get centered
+    fvars %<==% as.character(attributes(terms(model))$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars %<==% fvars[2:length(fvars)]
+
+    facvars %<==% names(which(sapply(d, is.factor)))
+
+  } else {
+    survey %<==% FALSE
+
+    # Duplicating the dataframe so it can be manipulated as needed
+    if (is.null(data)) {
+      d %<==% model.frame(model)
+      # Check to see if model.frame names match formula names
+      varnames <- names(d)
+      # Drop weights and offsets
+      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+      if (any(varnames %nin% all.vars(formula(model)))) {
+        warning("Variable transformations in the model formula detected.\n ",
+                "Trying to use ", as.character(getCall(model)$data), "from \n",
+                "global environment instead. This could cause incorrect \n",
+                "results if", as.character(getCall(model)$data), "has been\n",
+                "altered since the model was fit. You can manually provide \n",
+                "the data to the \"data =\" argument.")
+        d %<==% data %<==% eval(getCall(model)$data)
+      }
+    } else {
+      d %<==% data
+    }
+
+    if (requireNamespace("lme4")) {
+      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
+
+        mixed %<==% TRUE
+        if (interval == TRUE) {
+          warning("Confidence intervals cannot be provided for random effects",
+                  " models.")
+          interval %<==% FALSE
+        }
+
+      } else {
+        mixed %<==% FALSE
+      }
+    } else {
+      mixed %<==% FALSE
+    }
+
+    fvars %<==% as.character(attributes(terms(model))$variables)
+    # for some reason I can't get rid of the "list" as first element
+    fvars %<==% fvars[2:length(fvars)]
+
+    facvars %<==% names(which(sapply(d, is.factor)))
+
+  }
+
+  # assign("facvars", facvars, pos = parent.frame())
+  # assign("fvars", fvars, pos = parent.frame())
+  # assign("all.vars", all.vars, pos = parent.frame())
+  # assign("d", d, pos = parent.frame())
+  # assign("data", data, pos = parent.frame())
+  # assign("survey", survey, pos = parent.frame())
+  # assign("mixed", mixed, pos = parent.frame())
+
+}
