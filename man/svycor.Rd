@@ -24,15 +24,16 @@ digits for all jtools functions with
 associated t- and p-values. See details for some considerations when doing
 null hypothesis testing with complex survey correlations.}
 
-\item{bootn}{If \code{sig.stats} is TRUE, this defines the number of bootstraps
-to be run to generate the standard errors and p-values. For large values and
-large datasets, this can contribute considerably to processing time.}
+\item{bootn}{If \code{sig.stats} is TRUE, this defines the number of
+bootstraps to be run to generate the standard errors and p-values. For
+large values and large datasets, this can contribute considerably to
+processing time.}
 
 \item{mean1}{If \code{sig.stats} is TRUE, it is important to know whether the
-sampling weights should have a mean of 1. That is, should the standard errors
-be calculated as if the number of rows in your dataset is the total number of
-observations (TRUE) or as if the sum of the weights in your dataset is the
-total number of observations (FALSE)?}
+sampling weights should have a mean of 1. That is, should the standard
+errors be calculated as if the number of rows in your dataset is the total
+number of observations (TRUE) or as if the sum of the weights in your
+dataset is the total number of observations (FALSE)?}
 
 \item{...}{Additional arguments passed to \code{\link[survey]{svyvar}}.}
 }
@@ -53,23 +54,26 @@ with syntax similar to the original package, which for reasons unknown lacks
 such a function.
 }
 \details{
-This function extends the \code{survey} package by calculating the correlations
-for user-specified variables in survey design and returning a correlation matrix.
+This function extends the \code{survey} package by calculating the
+correlations for user-specified variables in survey design and returning a
+correlation matrix.
 
-Using the \code{\link[weights]{wtd.cor}} function, this function also returns
-standard errors and p-values for the correlation terms using a sample-weighted
-bootstrapping procedure. While correlations do not require distributional
-assumptions, hypothesis testing (i.e., \eqn{r > 0}) does. The appropriate way to
-calculate standard errors and use them to define a probability is not straightforward
-in this scenario since the weighting causes heteroskedasticity, thereby violating
+Using the \code{\link[weights]{wtd.cor}} function, this function also
+returns standard errors and p-values for the correlation terms using a
+sample-weighted bootstrapping procedure. While correlations do not require
+distributional assumptions, hypothesis testing (i.e., \eqn{r > 0}) does.
+The appropriate way to calculate standard errors and use them to define a
+probability is not straightforward in this scenario since the weighting
+causes heteroskedasticity, thereby violating
 an assumption inherent in the commonly used methods for converting Pearson's
 correlations into t-values. The method provided here is defensible, but if
 reporting in scientific publications the method should be spelled out.
 }
 \note{
-This function was designed in part on the procedure recommended by Thomas
-Lumley, the author of the survey package, on
-\href{http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has not reviewed or endorsed this implementation.
+This function was designed in part on the procedure recommended by
+Thomas Lumley, the author of the survey package, on
+\href{http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has
+not reviewed or endorsed this implementation.
 All defects are attributed to the author.
 }
 \examples{
@@ -77,15 +81,16 @@ if (requireNamespace("survey")) {
  library(survey)
  data(api)
  # Create survey design object
- dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat,
-                     fpc=~fpc)
+ dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                     data = apistrat, fpc = ~fpc)
 
  # Print correlation matrix
- svycor(~api00+api99+dnum, design = dstrat)
+ svycor(~api00 + api99 + dnum, design = dstrat)
 
  # Save the results, extract correlation matrix
- out <- svycor(~api00+api99+dnum, design = dstrat)
+ out <- svycor(~api00 + api99 + dnum, design = dstrat)
  out$cors
+
 }
 
 }
