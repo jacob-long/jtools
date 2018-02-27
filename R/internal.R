@@ -323,7 +323,8 @@ pR2Work <- function(llh, llhNull, n) {
 
 ## Namespace issues require me to define pR2 here
 pR2 <- function(object) {
-  llh <- logLik(object)
+
+  llh <- getLL(object)
 
   frame <- model.frame(object)
 
@@ -332,9 +333,30 @@ pR2 <- function(object) {
 
   objectNull <- j_update(object, ~ 1, weights = .weights, offset = .offset)
 
-  llhNull <- logLik(objectNull)
+  llhNull <- getLL(objectNull)
   n <- dim(object$model)[1]
   pR2Work(llh,llhNull,n)
+
+}
+
+# Enabling support for quasi families
+getLL <- function(object) {
+
+  fam <- family(object)
+  link <- fam$link
+  fam <- fam$family
+  quasis <- c("quasibinomial","quasipoisson","quasi")
+  if (fam %nin% quasis) {
+    return(logLik(object))
+  } else {
+    if (fam == "quasipoisson") {
+      logLik(j_update(object, family = poisson(link = link)))
+    } else if (fam == "quasibinomial") {
+      logLik(j_update(object, family = binomial(link = link)))
+    } else {
+      NA
+    }
+  }
 
 }
 
@@ -432,7 +454,7 @@ ncvTest.lm <- function(model, var.formula, ...) {
 #' @importFrom stats update.formula
 
 j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
-                     weights = NULL) {
+                     weights = NULL, ...) {
   call <- getCall(mod)
   if (is.null(call)) {
     stop("Model object does not support updating (no call)", call. = FALSE)
@@ -450,6 +472,8 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
     call$offset <- offset
   # if (!is.null(weights))
     call$weights <- weights
+
+
 
   eval(call, env, parent.frame())
 }
