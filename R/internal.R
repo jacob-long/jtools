@@ -9,16 +9,6 @@ last <- function(x) {return(x[length(x)])}
 ## Just so code reads more clearly when using last(x)
 first <- function(x) {return(x[1])}
 
-# This makes CRAN checks easier with my data_check function
-# It does deep assignment of variables to their parent function
-# while also assigning to the local environment
-# Base `<<-` doesn't work for reasons I don't really understand
-
-`%<==%` <- function(x, value) {
-  assign(deparse(substitute(x)), value, envir = parent.frame())
-  assign(deparse(substitute(x)), value, envir = parent.frame(n = 2))
-}
-
 #### summ helpers ############################################################
 
 ## Automates the adding of the significance stars to the output
