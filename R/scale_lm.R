@@ -1,3 +1,13 @@
+#' @export
+#' @rdname scale_mod
+
+scale_mod <- scale_lm <-  function(model, ...) {
+
+  UseMethod("scale_mod")
+
+}
+
+
 #' Scale variables in fitted regression models
 #'
 #' `scale_mod` (previously known as `scale_lm`) takes fitted regression models
@@ -5,7 +15,7 @@
 #'  predictors by dividing each by 1 or 2 standard deviations (as chosen by the
 #'  user).
 #'
-#' @param model A regression model of type \code{lm}, \code{glm}, or
+#' @param model A regression model of type \code{lm}, \code{glm},
 #' \code{\link[survey]{svyglm}}, or [lme4::merMod]. Other model types
 #' may work as well but are not tested.
 #'
@@ -33,6 +43,9 @@
 #'   frame is used to re-fit the model instead of the [stats::model.frame()]
 #'   of the model. This is particularly useful if you have variable
 #'   transformations or polynomial terms specified in the formula.
+#'
+#' @param vars A character vector of variable names that you want to be
+#'   scaled. If NULL, the default, it is all predictors.
 #'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
@@ -97,11 +110,13 @@
 #' @importFrom stats model.matrix model.weights
 #' @aliases scale_lm
 #' @export scale_mod
+#' @rdname scale_mod
 #'
 
-scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
+scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
                                   center = TRUE, scale.response = FALSE,
-                                  center.only = FALSE, data = NULL) {
+                                  center.only = FALSE, data = NULL,
+                                  vars = NULL) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -131,8 +146,9 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
   resp <- as.character(formula(model)[2])
 
   # Save list of terms
-  vars <- attributes(terms(model))$variables
-  vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+  all_vars <- attributes(terms(model))$variables
+  # Use 2:length bc 1 is "list"
+  all_vars <- as.character(all_vars)[2:length(all_vars)]
 
   # If offset supplied in the formula, detect it, delete it
   if (!is.null(attr(terms(form), "offset"))) {
@@ -145,7 +161,7 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   # Now I'm quoting all the names so there's no choking on vars with functions
   # applied. I save the backticked names
-  for (var in vars) {
+  for (var in all_vars) {
 
     regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
                            "(?=($|~|\\s|\\*|\\+))", sep = "")
@@ -157,15 +173,7 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
   formc <- paste0(formc, collapse = "")
   formc <- gsub("``", "`", formc, fixed = TRUE)
 
-
-  # svyglm?
-  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
-    survey <- TRUE
-  } else {
-    survey <- FALSE
-  }
-
-  if (!is.null(model.weights(mf)) && survey == FALSE) {
+  if (!is.null(model.weights(mf))) {
 
     weights <- TRUE
     the_weights <- model.weights(mf)
@@ -173,72 +181,157 @@ scale_mod <- scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1,
   } else {
 
     weights <- FALSE
-    if (is.null(data)) {
-      the_weights <- rep(1, times = nrow(mf))
-    } else {
-      the_weights <- rep(1, times = nrow(data))
-    }
+    the_weights <- NULL
+
   }
 
-  # things are different for these svyglm objects...
-  if (survey == TRUE) {
+  if (!is.null(data)) {
 
-    # Get the survey design object
-    design <- model$survey.design
-
-    # Now we need to know the variables of interest
-    vars <- attributes(model$terms)$variables
-    vars <- as.character(vars)[2:length(vars)]
-
-    # Add vars to design if they aren't already there
-    # (fixes issues with functions)
-    adds <- which(vars %nin% names(design$variables))
-    for (var in vars[adds]) {
-
-      design$variables[[var]] <- mf[[var]]
-
-    }
-
-    if (scale.response == FALSE) {
-      vars <- vars[!(vars %in% resp)]
-    }
-
-    # Call gscale()
-    design <- gscale(vars = vars, data = design, n.sd = n.sd,
-                     scale.only = !center, center.only = center.only)
-
-    call$design <- quote(design)
-
-    call[[1]] <- survey::svyglm
-    new <- eval(call)
+    mf <- data
+    # Keep only variables used
+    mf <- get_all_vars(formula(model), data = mf)
+    # And only the complete cases
+    mf <- mf[complete.cases(mf),]
 
   }
 
   if (scale.response == FALSE) {
       # Now we need to know the variables of interest
-      vars <- vars[vars %nin% resp]
+      all_vars <- all_vars[all_vars %nin% resp]
   }
 
-  if (!is.null(data)) {mf <- data}
-  mf <- gscale(vars = vars, data = mf, binary.inputs = binary.inputs,
+  if (!is.null(vars)) {
+    all_vars <- all_vars[all_vars %in% vars]
+  }
+
+  mf <- gscale(vars = all_vars, data = mf, binary.inputs = binary.inputs,
                n.sd = n.sd, scale.only = !center,
                center.only = center.only, weights = the_weights)
 
+  form <- as.formula(formc)
 
-  if (survey == FALSE) {
+  e <- new.env()
+  lapply(names(mf), function(x, env, f) {env[[x]] <- f[[x]]}, env = e, f = mf)
+  e$the_offset <- the_offset
+  e$the_weights <- the_weights
+  environment(form) <- e
 
-    form <- as.formula(formc)
-
-    call <- getCall(model)
-    call$formula <- form
-    call$data <- quote(mf) # quoting avoids that gnarly output
+  call <- getCall(model)
+  call$formula <- form
+  call$data <- NULL
+  if (!is.null(the_offset)) {
     call$offset <- quote(the_offset)
+  }
+  if (!is.null(the_weights)) {
     call$weights <- quote(the_weights)
+  }
 
-    new <- eval(call)
+  new <- eval(call)
+
+  return(new)
+
+}
+
+#' @export
+#'
+
+scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
+                             center = TRUE, scale.response = FALSE,
+                             center.only = FALSE, data = NULL,
+                             vars = NULL) {
+
+  # Save data --- using the call to access the data to avoid problems w/
+  # transformed data
+  call <- getCall(model)
+  if (is.null(call)) {
+    stop("Model object does not support updating (no call)", call. = FALSE)
+  }
+
+  mf <- model.frame(model)
+  form <- formula(model)
+  formc <- as.character(deparse(formula(model)))
+
+  # Detect presence of offset, save the vector
+  if (!is.null(model.offset(mf))) {
+
+    offset <- TRUE
+    the_offset <- model.offset(mf)
+
+  } else {
+
+    offset <- FALSE
+    the_offset <- NULL
 
   }
 
+  # Save response variable
+  resp <- as.character(formula(model)[2])
+
+  # Save list of terms
+  all_vars <- attributes(terms(model))$variables
+  # Use 2:length bc 1 is "list"
+  all_vars <- as.character(all_vars)[2:length(all_vars)]
+
+  # If offset supplied in the formula, detect it, delete it
+  if (!is.null(attr(terms(form), "offset"))) {
+
+    off_pos <- attr(terms(form), "offset") # Get index of offset in terms list
+    offname <- attr(terms(form), "variables")[off_pos] # Get its name in list
+    formc <- gsub(offname, "", formc)
+
+  }
+
+  # Now I'm quoting all the names so there's no choking on vars with functions
+  # applied. I save the backticked names
+  for (var in all_vars) {
+
+    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
+                           "(?=($|~|\\s|\\*|\\+))", sep = "")
+    backtick_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(regex_pattern, backtick_name, formc, perl = T)
+
+  }
+
+  formc <- paste0(formc, collapse = "")
+  formc <- gsub("``", "`", formc, fixed = TRUE)
+
+  # Get the survey design object
+  design <- model$survey.design
+
+  # Now we need to know the variables of interest
+  all_vars <- attributes(model$terms)$variables
+  all_vars <- as.character(all_vars)[2:length(all_vars)]
+
+  # Add vars to design if they aren't already there
+  # (fixes issues with functions)
+  adds <- which(all_vars %nin% names(design$variables))
+  for (var in all_vars[adds]) {
+
+    design$variables[[var]] <- mf[[var]]
+
+  }
+
+  # Complete cases only
+  design$variables <-
+    design$variables[complete.cases(design$variables[all_vars]),]
+
+  if (scale.response == FALSE) {
+    all_vars <- all_vars[all_vars %nin% resp]
+  }
+
+  if (!is.null(vars)) {
+    all_vars <- all_vars[all_vars %in% vars]
+  }
+
+
+  # Call gscale()
+  design <- gscale(vars = all_vars, data = design, n.sd = n.sd,
+                   scale.only = !center, center.only = center.only)
+
+  call$design <- quote(design)
+
+  call[[1]] <- survey::svyglm
+  new <- eval(call)
 
   return(new)
 

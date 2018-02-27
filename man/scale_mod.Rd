@@ -2,14 +2,18 @@
 % Please edit documentation in R/scale_lm.R
 \name{scale_mod}
 \alias{scale_mod}
+\alias{scale_mod.default}
 \alias{scale_lm}
 \title{Scale variables in fitted regression models}
 \usage{
-scale_mod(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
-  scale.response = FALSE, center.only = FALSE, data = NULL)
+scale_mod(model, ...)
+
+\method{scale_mod}{default}(model, binary.inputs = "0/1", n.sd = 1,
+  center = TRUE, scale.response = FALSE, center.only = FALSE,
+  data = NULL, vars = NULL)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm}, or
+\item{model}{A regression model of type \code{lm}, \code{glm},
 \code{\link[survey]{svyglm}}, or \link[lme4:merMod]{lme4::merMod}. Other model types
 may work as well but are not tested.}
 
@@ -37,6 +41,9 @@ them.}
 frame is used to re-fit the model instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
 of the model. This is particularly useful if you have variable
 transformations or polynomial terms specified in the formula.}
+
+\item{vars}{A character vector of variable names that you want to be
+scaled. If NULL, the default, it is all predictors.}
 }
 \value{
 The functions returns a re-fitted model object, inheriting
