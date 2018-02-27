@@ -334,30 +334,14 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
 ### Getting moderator values ##################################################
 
-  if (!is.factor(d[[modx]])) { # Requires helper function
-    modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
-                          modx.labels = NULL, any.mod2 = !is.null(mod2),
-                          sims = TRUE)
-  } else { # Use factor levels unless user specified a subset of them
+  modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
+                        modx.labels = NULL, any.mod2 = !is.null(mod2),
+                        sims = TRUE)
 
-    if (johnson_neyman == TRUE) {
-      warning("johnson_neyman intervals are not available for factor ",
-              "moderators.")
-      johnson_neyman <- FALSE
-    }
-
-    if (is.null(modxvals)) {
-      modxvals2 <- levels(d[[modx]])
-    } else {
-      if (all(modxvals %in% levels(d[[modx]]))) {
-        modxvals2 <- modxvals
-      } else {
-        warning("modxvals argument must include only levels of the factor.",
-                " Using all factor levels instead.")
-        modxvals2 <- levels(d[[modx]])
-      }
-    }
-
+  if (is.factor(d[[modx]]) & johnson_neyman == TRUE) {
+        warning("Johnson-Neyman intervals are not available for factor ",
+                "moderators.", call. = FALSE)
+        johnson_neyman <- FALSE
   }
 
   # Now specify def or not (for labeling w/ print method)

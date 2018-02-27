@@ -175,7 +175,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
   }
 
   # For user-specified numbers or factors, go here
-  if (is.null(modxvals) && is.factor(d[[modx]]) && sims == FALSE) {
+  if (is.null(modxvals) && is.factor(d[[modx]])) {
 
     modxvals2 <- levels(d[[modx]])
     if (is.null(modx.labels)) {
@@ -184,26 +184,6 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
 
     }
     names(modxvals2) <- modx.labels
-
-  } else if (is.factor(d[[modx]]) & sims == TRUE) {
-
-    if (length(unique(d[[modx]])) == 2) {
-      # We can work with a two-level factor
-      names <- levels(d[[modx]])
-      condition <- suppressWarnings(all(is.na(as.numeric(levels(d[[modx]])))))
-
-      if (condition) {
-        modxvals2 <- c(0,1)
-      } else {
-        modxvals2 <- sort(as.numeric(levels(d[[modx]])), decreasing = FALSE)
-      }
-
-      names(modxvals2) <- names
-    } else if (length(unique(d[[modx]])) != 2) {
-
-      stop("Factor moderators can only have exactly 2 levels.")
-
-    }
 
   } else if (!is.null(modxvals) & (is.numeric(modxvals) | char1 == TRUE)) {
     # Use user-supplied values otherwise
