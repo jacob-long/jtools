@@ -392,3 +392,100 @@ get.random.formula = function(model, rhs) {
 
 }
 
+### Lifted from lme4 ########################################################
+
+noReForm <- function(re.form) {
+  (!is.null(re.form) && !is(re.form, "formula") && is.na(re.form)) ||
+  (is(re.form, "formula") && length(re.form) == 2 && identical(re.form[[2]], 0))
+}
+
+reOnly <- function(f, response = FALSE) {
+  response <- if (response && length(f) == 3) { f[[2]] } else { NULL }
+  reformulate(paste0("(", vapply(lme4::findbars(f), safeDeparse,
+                                 ""), ")"), response = response)
+}
+
+safeDeparse <- function (x, collapse = " ") {
+  paste(deparse(x, 500L), collapse = collapse)
+}
+
+mkNewReTrms <- function(object, newdata, re.form = NULL, na.action = na.pass,
+                         allow.new.levels = FALSE) {
+  if (is.null(newdata)) {
+    rfd <- mfnew <- model.frame(object)
+  }
+  else {
+    mfnew <- model.frame(delete.response(terms(object, fixed.only = TRUE)),
+                         newdata, na.action = na.action)
+    old <- FALSE
+    if (old) {
+      rfd <- na.action(newdata)
+      if (is.null(attr(rfd, "na.action")))
+        attr(rfd, "na.action") <- na.action
+    }
+    else {
+      newdata.NA <- newdata
+      if (!is.null(fixed.na.action <- attr(mfnew, "na.action"))) {
+        newdata.NA <- newdata.NA[-fixed.na.action, ]
+      }
+      tt <- delete.response(terms(object, random.only = TRUE))
+      rfd <- model.frame(tt, newdata.NA, na.action = na.pass)
+      if (!is.null(fixed.na.action))
+        attr(rfd, "na.action") <- fixed.na.action
+    }
+  }
+  if (inherits(re.form, "formula")) {
+    if (length(fit.na.action <- attr(mfnew, "na.action")) >
+        0) {
+      newdata <- newdata[-fit.na.action, ]
+    }
+    ReTrms <- lme4::mkReTrms(lme4::findbars(re.form[[2]]), rfd)
+    ReTrms <- within(ReTrms, Lambdat@x <- unname(lme4::getME(object,
+                                                       "theta")[Lind]))
+    if (!allow.new.levels && any(vapply(ReTrms$flist, anyNA,
+                                        NA)))
+      stop("NAs are not allowed in prediction data", " for grouping variables unless allow.new.levels is TRUE")
+    ns.re <- names(re <- lme4::ranef(object))
+    nRnms <- names(Rcnms <- ReTrms$cnms)
+    if (!all(nRnms %in% ns.re))
+      stop("grouping factors specified in re.form that were not present in original model")
+    new_levels <- lapply(ReTrms$flist, function(x) levels(factor(x)))
+    re_x <- Map(function(r, n) levelfun(r, n, allow.new.levels = allow.new.levels),
+                re[names(new_levels)], new_levels)
+    re_new <- lapply(seq_along(nRnms), function(i) {
+      rname <- nRnms[i]
+      if (!all(Rcnms[[i]] %in% names(re[[rname]])))
+        stop("random effects specified in re.form that were not present in original model")
+      re_x[[rname]][, Rcnms[[i]]]
+    })
+    re_new <- unlist(lapply(re_new, t))
+  }
+  Zt <- ReTrms$Zt
+  attr(Zt, "na.action") <- attr(re_new, "na.action") <- attr(mfnew,
+                                                             "na.action")
+  list(Zt = Zt, b = re_new, Lambdat = ReTrms$Lambdat)
+}
+
+levelfun <- function(x, nl.n, allow.new.levels = FALSE) {
+  if (!all(nl.n %in% rownames(x))) {
+    if (!allow.new.levels)
+      stop("new levels detected in newdata")
+    newx <- as.data.frame(
+      matrix(0, nrow = length(nl.n), ncol = ncol(x),
+             dimnames = list(nl.n, names(x)))
+      )
+    newx[rownames(x), ] <- x
+    x <- newx
+  }
+  if (!all(r.inn <- rownames(x) %in% nl.n)) {
+    x <- x[r.inn, , drop = FALSE]
+  }
+  return(x)
+}
+
+RHSForm <- function (form, as.form = FALSE) {
+  rhsf <- form[[length(form)]]
+  if (as.form)
+    reformulate(deparse(rhsf))
+  else rhsf
+}
