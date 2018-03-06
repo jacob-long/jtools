@@ -586,7 +586,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
     theme(axis.title.y = element_blank(),
                    axis.title.x = element_blank(),
                    axis.text.y = element_text(size = 10)) +
-    ylab("Estimate")
+    xlab("Estimate")
 
   # Dealing with exponentiated coefficients, where vline should be at 1
   if (odds.ratio == FALSE) {
@@ -733,7 +733,7 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_text(size = 10)) +
-    ylab("Estimate")
+    xlab("Estimate")
 
   return(p)
 
