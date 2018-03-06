@@ -9,6 +9,12 @@ last <- function(x) {return(x[length(x)])}
 ## Just so code reads more clearly when using last(x)
 first <- function(x) {return(x[1])}
 
+## Print rounded numbers with all requested digits, signed zeroes
+num_print <- function(x, digits = getOption("jtools-digits", 2),
+                      format = "f") {
+  formatC(x, digits = digits, format = "f")
+}
+
 #### summ helpers ############################################################
 
 ## Automates the adding of the significance stars to the output
