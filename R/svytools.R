@@ -14,8 +14,8 @@
 #'   included in \code{model}.
 #'
 #' @param model_output Should a summary of the model with weights as predictor
-#'   be printed? Default is TRUE, but you may not want it if you are trying to
-#'   declutter a document.
+#'   be printed? Default is FALSE since the output can be very long for
+#'   complex models.
 #'
 #' @param test Which type of test should be used in the ANOVA? The default,
 #'   \code{NULL}, chooses based on the model type ("F" for linear models).
@@ -37,7 +37,8 @@
 #' original; if insignificant, weights are not significantly related to the
 #' result and you can use the more efficient estimation from unweighted OLS.
 #'
-#' It can be helpful to look at the created model using \code{model_output = TRUE}
+#' It can be helpful to look at the created model using
+#' \code{model_output = TRUE}
 #' to see which variables might be the ones affected by inclusion of weights.
 #'
 #' This test can support most GLMs in addition to LMs, a use validated by
@@ -98,22 +99,13 @@
 #' @importFrom stats anova reformulate
 #' @export
 
-wgttest <- function(model, weights, data = NULL, model_output = TRUE,
+wgttest <- function(model, weights, data = NULL, model_output = FALSE,
                     test = NULL,
                     digits = getOption("jtools-digits", default = 3)) {
 
   if (is.null(data)) {
 
-    call <- getCall(model)
-    if (!is.null(call$data)) {
-
-      d <- eval(call$data)
-
-    } else {
-
-      d <- model.frame(model)
-
-    }
+    d <- model.frame(model)
 
   } else {
 
@@ -130,7 +122,8 @@ wgttest <- function(model, weights, data = NULL, model_output = TRUE,
     if (is.numeric(weights)) {
       numeric.input <- TRUE
     } else {
-      stop("weights argument must be either the name of a column in the data frame or a numeric vector.")
+      stop("weights argument must be either the name of a column in the \ndata",
+          " frame or a numeric vector.")
     }
   }
 
@@ -264,7 +257,7 @@ print.wgttest <- function(x, ...) {
   cat("\nLower p values indicate greater influence of the weights.")
 
   if (x$model_output == TRUE) {
-    j_summ(x$newmod, model.info = F, model.fit = F)
+    print(j_summ(x$newmod, model.info = F, model.fit = F))
     cat("\n")
   } else {
     cat("\n")
@@ -281,7 +274,8 @@ print.wgttest <- function(x, ...) {
 #'
 #' @param model The fitted model, without weights
 #'
-#' @param data The data frame with the data fed to the fitted model and the weights
+#' @param data The data frame with the data fed to the fitted model and the
+#'  weights
 #'
 #' @param weights The name of the weights column in \code{model}'s data frame
 #'   or a vector of weights equal in length to the number of observations
@@ -334,11 +328,12 @@ print.wgttest <- function(x, ...) {
 #' @export
 #' @importFrom stats resid cor pt sd
 
-pf_sv_test <- function(model, data, weights, sims = 1000,
+pf_sv_test <- function(model, data = NULL, weights, sims = 1000,
                         digits = getOption("jtools-digits", default = 3)) {
 
   if (!requireNamespace("boot", quietly = TRUE)) {
-    stop("This function relies on the boot package. Please install it and try again.",
+    stop("This function relies on the boot package.\n",
+         "Please install it and try again.",
          call. = FALSE)
   }
 
@@ -351,10 +346,14 @@ pf_sv_test <- function(model, data, weights, sims = 1000,
     if (is.numeric(weights)) {
       numeric.input <- TRUE
     } else {
-      stop("weights argument must be either the name of a column in the data frame or a numeric vector.")
+      stop("weights argument must be either the name of a column in the\n",
+           "data frame or a numeric vector.")
     }
   }
 
+  if (is.null(data)) {
+    data <- model.frame(model)
+  }
   data <- as.data.frame(data)
   if (numeric.input == TRUE) {
     data$weight <- weights
@@ -365,7 +364,9 @@ pf_sv_test <- function(model, data, weights, sims = 1000,
 
     data <- as.data.frame(data)[indices,]
     newmod <- update(model, data = data)
-    wts <- data[[wts]]
+    cases <- complete.cases(model.frame(formula(newmod), data = data,
+                                        na.action = na.pass))
+    wts <- data[cases, wts]
 
     c1 <- cor(resid(newmod), wts)
     c2 <- cor(resid(newmod)^2, wts)
@@ -378,10 +379,15 @@ pf_sv_test <- function(model, data, weights, sims = 1000,
   bo <- boot::boot(data = data, statistic = corfun, R = sims, model = model,
                    wts = weights, numeric.input = numeric.input)
 
+  # Need to filter out missing cases from weights vectors
+  cases <- complete.cases(model.frame(formula(model), data = data,
+                                      na.action = na.pass))
+  wts <- data[cases, weights]
+
   # Getting the in-sample correlations
-  c1 <- cor(resid(model), data[[weights]])
-  c2 <- cor(resid(model)^2, data[[weights]])
-  c3 <- cor(resid(model)^3, data[[weights]])
+  c1 <- cor(resid(model), wts)
+  c2 <- cor(resid(model)^2, wts)
+  c3 <- cor(resid(model)^3, wts)
 
   # Now saving the Fisher's z-transformed versions of them
   z1 <- atanh(c1)
@@ -420,14 +426,14 @@ pf_sv_test <- function(model, data, weights, sims = 1000,
 print.pf_sv_test <- function (x, ...) {
 
   cat("\nPfeffermann-Sverchkov test of sample weight ignorability \n\n")
-  cat("Residual correlation = ", round(x$r1, x$digits), ", p = ",
-      round(x$p1, x$digits), "\n", sep = "")
-  cat("Squared residual correlation = ", round(x$r2, x$digits), ", p = ",
-      round(x$p2, x$digits), "\n", sep = "")
-  cat("Cubed residual correlation = ", round(x$r3, x$digits), ", p = ",
-      round(x$p3, x$digits), "\n", sep = "")
+  cat("Residual correlation = ", num_print(x$r1, x$digits), ", p = ",
+      num_print(x$p1, x$digits), "\n", sep = "")
+  cat("Squared residual correlation = ", num_print(x$r2, x$digits), ", p = ",
+      num_print(x$p2, x$digits), "\n", sep = "")
+  cat("Cubed residual correlation = ", num_print(x$r3, x$digits), ", p = ",
+      num_print(x$p3, x$digits), "\n", sep = "")
 
-  cat("\nA significant correlation may indicate biased estimates in",
+  cat("\nA significant correlation may indicate biased estimates\nin",
       "the unweighted model.\n")
 
 }
@@ -442,7 +448,8 @@ print.pf_sv_test <- function (x, ...) {
 #'
 #' @param model The fitted model, without weights
 #'
-#' @param data The data frame with the data fed to the fitted model and the weights
+#' @param data The data frame with the data fed to the fitted model and the
+#'  weights
 #'
 #' @param weights The name of the weights column in \code{model}'s data frame
 #'   or a vector of weights equal in length to the number of observations
@@ -508,7 +515,7 @@ print.pf_sv_test <- function (x, ...) {
 
 weights_tests <- function(model, weights, data, model_output = TRUE,
                           test = NULL, sims = 1000,
-                          digits = getOption("jtools-digits", default = 3)) {
+                          digits = getOption("jtools-digits", default = 2)) {
 
   # Create list of acceptable arguments to both functions
   wtnames <- names(formals(wgttest))
@@ -541,6 +548,7 @@ weights_tests <- function(model, weights, data, model_output = TRUE,
 print.weights_tests <- function(x, ...) {
 
   print(x$wt)
+  cat("---")
   print(x$pf)
 
 }
@@ -743,7 +751,7 @@ print.svycor <- function(x, ...) {
     diag(pm)[] <- ""
 
     # Combine matrix of estimates and significance stars
-    cm[] <- paste(cm[], pm[], sep="")
+    cm[] <- paste(cm[], pm[], sep = "")
 
     print(as.table(cm))
 
