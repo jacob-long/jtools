@@ -251,31 +251,31 @@ dep_checks <- function(dots) {
 
   if ("standardize" %in% names(dots)) {
     warning("The standardize argument is deprecated. Please use 'scale'",
-            " instead.")
+            " instead.", call. = FALSE)
     scale <- dots$standardize
   }
 
   if ("standardize.response" %in% names(dots)) {
     warning("The standardize.response argument is deprecated. Please use",
-            " 'transform.response' instead.")
+            " 'transform.response' instead.", call. = FALSE)
     transform.response <- dots$standardize.response
   }
 
   if ("scale.response" %in% names(dots)) {
     warning("The scale.response argument is deprecated. Please use",
-            " 'transform.response' instead.")
+            " 'transform.response' instead.", call. = FALSE)
     transform.response <- dots$scale.response
   }
 
   if ("center.response" %in% names(dots)) {
     warning("The center.response argument is deprecated. Please use",
-            " 'transform.response' instead.")
+            " 'transform.response' instead.", call. = FALSE)
     transform.response <- dots$center.response
   }
 
   if ("robust.type" %in% names(dots)) {
     warning("The robust.type argument is deprecated. Please specify the type",
-            " as the value for the 'robust' argument instead.")
+            " as the value for the 'robust' argument instead.", call. = FALSE)
     robust <- dots$robust.type
   }
 
