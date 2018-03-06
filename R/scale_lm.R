@@ -1,11 +1,17 @@
 #' @export
 #' @rdname scale_mod
 
-scale_mod <- scale_lm <-  function(model, ...) {
+scale_mod <- function(model, ...) {
 
   UseMethod("scale_mod")
 
 }
+
+
+#' @export
+#'
+
+scale_lm <- scale_mod
 
 
 #' Scale variables in fitted regression models
@@ -46,6 +52,8 @@ scale_mod <- scale_lm <-  function(model, ...) {
 #'
 #' @param vars A character vector of variable names that you want to be
 #'   scaled. If NULL, the default, it is all predictors.
+#'
+#' @param ... Ignored.
 #'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
@@ -109,14 +117,14 @@ scale_mod <- scale_lm <-  function(model, ...) {
 #' @importFrom stats weighted.mean as.formula getCall formula
 #' @importFrom stats model.matrix model.weights
 #' @aliases scale_lm
-#' @export scale_mod
+#' @export
 #' @rdname scale_mod
 #'
 
 scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
                                   center = TRUE, scale.response = FALSE,
                                   center.only = FALSE, data = NULL,
-                                  vars = NULL) {
+                                  vars = NULL, ...) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -238,7 +246,7 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
 scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
                              center = TRUE, scale.response = FALSE,
                              center.only = FALSE, data = NULL,
-                             vars = NULL) {
+                             vars = NULL, ...) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data

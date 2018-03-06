@@ -336,6 +336,7 @@ pR2 <- function(object) {
 }
 
 # Enabling support for quasi families
+#' @importFrom stats poisson binomial family
 getLL <- function(object) {
 
   fam <- family(object)
@@ -798,7 +799,7 @@ predict_rob <- function(model, .vcov = vcov(model), newdata = NULL,
 
 #### merMod prediction #######################################################
 
-#' @importFrom stats vcov model.frame terms delete.response
+#' @importFrom stats vcov model.frame terms delete.response na.omit
 predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
                         se.fit = TRUE, dispersion = NULL, terms = NULL,
                         allow.new.levels = TRUE,
@@ -932,7 +933,7 @@ predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
     rfd <- if (is.null(newdata)) {model@frame} else {newdata}
     newRE <- mkNewReTrms(model, rfd, re.form, na.action = na.action,
                          allow.new.levels = allow.new.levels)
-    REvals <- base::drop(as(newRE$b %*% newRE$Zt, "matrix"))
+    REvals <- base::drop(methods::as(newRE$b %*% newRE$Zt, "matrix"))
     fit <- fit + REvals
   }
 

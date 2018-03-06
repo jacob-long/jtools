@@ -986,7 +986,7 @@ print.summ.glm <- function(x, ...) {
 #' }
 #
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
-#'  extractAIC family fitted pt residuals terms model.weights
+#'  extractAIC family fitted pt residuals terms model.weights poisson binomial
 #' @export
 #' @aliases j_summ.svyglm
 
