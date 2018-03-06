@@ -513,6 +513,8 @@ print.summ.lm <- function(x, ...) {
 
   } else {
 
+    if (x$robust == TRUE) {x$robust <- "HC3"}
+
     cat("Standard errors:", sep = "")
 
     if (x$use_cluster == FALSE) {
@@ -893,8 +895,12 @@ print.summ.glm <- function(x, ...) {
   }
 
   if (identical(FALSE, x$robust)) {
+
     cat("Standard errors: MLE", "\n")
+
   } else {
+
+    if (x$robust == TRUE) {x$robust <- "HC3"}
 
     cat("Standard errors:", sep = "")
 
@@ -1116,10 +1122,40 @@ summ.svyglm <- function(
     j <- structure(j, rsq = rsq, arsq = arsq)
   } else { # If not linear, calculate pseudo-rsq
 
+    ## Have to specify pR2 here to fix namespace issues
+    svypR2 <- function(object) {
+
+      llh <- suppressWarnings(logLik(object))
+      fam <- family(object)$family
+      link <- family(object)$link
+
+      if (fam == "quasibinomial") {
+        fam <- binomial(link = link)
+      } else if (fam == "quasipoisson") {
+        fam <- poisson(link = link)
+      } else {
+        fam <- family(object)
+      }
+      if (is.null(attr(terms(formula(object)),"offset"))) {
+        objectNull <- suppressWarnings(update(object, ~ 1,
+                                              design = object$survey.design,
+                                              family = fam))
+      } else {
+        offs <- model.offset(model.frame(object))
+        frame <- object$survey.design
+        frame$variables$jtools_offs <- offs
+        objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
+                                              design = frame, family = fam))
+      }
+      llhNull <- logLik(objectNull)
+      n <- dim(object$model)[1]
+      pR2Work(llh,llhNull,n)
+    }
+
     # Final calculations (linear pseudo-rsq)
-    pr2 <- suppressWarnings(pR2(model)) # warnings about quasilikelihood
+    pr2 <- suppressWarnings(svypR2(model))
     ## Cragg-Uhler
-    rsq <- pr2$r2CU
+    rsq <-  pr2$r2CU
     ## McFadden
     rsqmc <- pr2$McFadden
 
