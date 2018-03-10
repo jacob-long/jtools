@@ -139,6 +139,8 @@ if (requireNamespace("survey")) {
   })
 }
 
+#### lme4 tests #############################################################
+
 if (requireNamespace("lme4")) {
   test_that("jsumm: merMod CIs work", {
     expect_is(summ(mv, confint = TRUE, pvals = FALSE), "summ.merMod")
@@ -232,7 +234,7 @@ test_that("jsumm: glm cluster-robust SEs work", {
 })
 
 test_that("jsumm: Printing isn't borked", {
-  expect_output(print(summ(fitgf, vifs = TRUE)))
+  expect_output(print(summ(fitgf, vifs = TRUE, robust = TRUE)))
   expect_output(print(summ(fitgf, scale = TRUE)))
   if (requireNamespace("survey")) {
     expect_output(print(summ(regmodel, scale = TRUE, n.sd = 2)))
@@ -247,3 +249,28 @@ test_that("jsumm: Printing isn't borked", {
   }
 
 })
+
+#### defaults test ##########################################################
+
+set_summ_defaults(digits = 4, model.info = FALSE,
+                 model.fit = FALSE, pvals = FALSE, robust = TRUE,
+                 confint = TRUE, ci.width = .90, vifs = TRUE)
+
+test_that("set_summ_defaults changes options", {
+
+  expect_equal(getOption("jtools-digits"), 4)
+  expect_equal(getOption("summ-model.info"), FALSE)
+  expect_equal(getOption("summ-model.fit"), FALSE)
+  expect_equal(getOption("summ-pvals"), FALSE)
+  expect_equal(getOption("summ-robust"), TRUE)
+  expect_equal(getOption("summ-confint"), TRUE)
+  expect_equal(getOption("summ-ci.width"), .90)
+  expect_equal(getOption("summ-vifs"), TRUE)
+
+})
+
+# Set all back to NULL
+set_summ_defaults(digits = NULL, model.info = NULL,
+                 model.fit = NULL, pvals = NULL, robust = NULL,
+                 confint = NULL, ci.width = NULL, vifs = NULL)
+
