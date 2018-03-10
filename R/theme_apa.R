@@ -24,6 +24,12 @@
 #'
 #' @param facet.title.size Font size of facet labels.
 #'
+#' @param remove.x.gridlines Should the coordinate grid on the x-axis (vertical
+#'   lines) be removed? Default is TRUE.
+#'
+#' @param remove.y.gridlines Should the coordinate grid on the y-axis
+#'   (horizontal lines) be removed? Default is TRUE.
+#'
 #' @details This function applies a theme to \code{ggplot2} figures with a style
 #'   that is roughly in line with APA guidelines. Users may need to perform further
 #'   operations for their specific use cases.
@@ -85,7 +91,8 @@
 
 theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
                       legend.font.size = 12, x.font.size = 12, y.font.size = 12,
-                      facet.title.size = 12) {
+                      facet.title.size = 12, remove.y.gridlines = TRUE,
+                      remove.x.gridlines = TRUE) {
 
   # Specifying parameters, using theme_bw() as starting point
   plot <- ggplot2::theme_bw() + ggplot2::theme(
@@ -93,8 +100,6 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
     axis.title.x = ggplot2::element_text(size = x.font.size),
     axis.title.y = ggplot2::element_text(size = y.font.size,
                                          angle = 90),
-    panel.grid.major = ggplot2::element_blank(), # no major gridlines
-    panel.grid.minor = ggplot2::element_blank(), # no minor gridlines
     legend.text = ggplot2::element_text(size = legend.font.size),
     legend.key.size = ggplot2::unit(1.5, "lines"),
     # switch off the rectangle around symbols
@@ -105,6 +110,14 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
     # facet titles
     strip.background = ggplot2::element_rect(colour = "white", fill = "white")
   )
+
+  if (remove.y.gridlines == TRUE) {
+    plot <- plot + drop_y_gridlines()
+  }
+
+  if (remove.x.gridlines == TRUE) {
+    plot <- plot + drop_x_gridlines()
+  }
 
   # Choose legend position. APA figures generally include legends that
   # are embedded on the plane, so there is no efficient way to have it
@@ -148,4 +161,101 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
 
   return(plot)
 
+}
+
+
+#' @title Add and remove gridlines
+#'
+#' @description These are convenience wrappers for editing [ggplot2::theme()]'s
+#'  `panel.grid.major` and `panel.grid.minor` parameters with sensible
+#'  defaults.
+#'
+#' @param x Apply changes to the x axis?
+#' @param y Apply changes to the y axis?
+#' @param minor Add minor gridlines in addition to major?
+#' @param minor.only Remove only the minor gridlines?
+#'
+#' @importFrom ggplot2 theme element_line
+#' @export
+#' @rdname gridlines
+
+add_gridlines <- function(x = TRUE, y = TRUE, minor = TRUE) {
+
+  plot <- theme()
+
+  if (y == TRUE) {
+    plot <- plot + theme(panel.grid.major.y = element_line(colour = "grey92"))
+    if (minor == TRUE) {
+      plot <-
+        plot + theme(panel.grid.minor.y = element_line(colour = "grey92",
+                                                       size = .25))
+    }
+  }
+
+  if (x == TRUE) {
+    plot <- plot + theme(panel.grid.major.x = element_line(colour = "grey92"))
+    if (minor == TRUE) {
+      plot <-
+        plot + theme(panel.grid.minor.x = element_line(colour = "grey92",
+                                                       size = .25))
+    }
+  }
+
+  return(plot)
+
+}
+
+#' @export
+#' @rdname gridlines
+
+add_x_gridlines <- function(minor = TRUE) {
+  add_gridlines(x = TRUE, y = FALSE, minor = minor)
+}
+
+#' @export
+#' @rdname gridlines
+
+add_y_gridlines <- function(minor = TRUE) {
+  add_gridlines(x = FALSE, y = TRUE, minor = minor)
+}
+
+#' @export
+#' @rdname gridlines
+
+drop_gridlines <- function(x = TRUE, y = TRUE, minor.only = FALSE) {
+
+  plot <- ggplot2::theme()
+
+  if (y == TRUE) {
+    plot <- plot + ggplot2::theme(panel.grid.minor.y = ggplot2::element_blank())
+    if (minor.only == FALSE) {
+      plot <-
+        plot + ggplot2::theme(panel.grid.major.y = ggplot2::element_blank())
+    }
+  }
+
+  if (x == TRUE) {
+    plot <- plot + ggplot2::theme(panel.grid.minor.x = ggplot2::element_blank())
+    if (minor.only == FALSE) {
+      plot <-
+        plot + ggplot2::theme(panel.grid.major.x = ggplot2::element_blank())
+    }
+  }
+
+  return(plot)
+
+}
+
+#' @export
+#' @rdname gridlines
+
+drop_x_gridlines <- function(minor.only = FALSE) {
+  drop_gridlines(x = TRUE, y = FALSE, minor.only = minor.only)
+}
+
+#' @export
+#' @rdname gridlines
+
+drop_y_gridlines <- function(minor.only = FALSE) {
+  drop_gridlines(x = FALSE, y = TRUE, minor.only = minor.only)
 }
