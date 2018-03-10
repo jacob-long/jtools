@@ -114,16 +114,15 @@ round_df_char <- function(df, digits, pad = " ") {
 
   nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
 
-  # Convert missings to blank character
-  if (any(nas)) {
-    df[nas] <- ""
-  }
-
-
   # Using a format function here to force trailing zeroes to be printed
   # "formatC" allows signed zeros (e.g., "-0.00")
   df <- as.data.frame(lapply(df, num_print, digits = digits),
                       stringsAsFactors = FALSE)
+
+  # Convert missings to blank character
+  if (any(nas)) {
+    df[nas] <- ""
+  }
 
   # Here's where we align the the decimals, thanks to Noah for the magic.
   for (i in which(nums)) {
