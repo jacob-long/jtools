@@ -191,13 +191,21 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
     if (!is.null(modx.labels)) {
       # What I'm doing here is preserving the label order
       names(modxvals) <- modx.labels
-      modxvals2 <- sort(modxvals, decreasing = T)
+      if (!is.mod2) {
+        modxvals2 <- sort(modxvals, decreasing = T)
+      } else {
+        modxvals2 <- modxvals
+      }
       modx.labels <- names(modxvals2)
 
     } else {
 
       names(modxvals) <- modxvals
-      modxvals2 <- sort(modxvals, decreasing = T)
+      if (!is.mod2) {
+        modxvals2 <- sort(modxvals, decreasing = T)
+      } else {
+        modxvals2 <- modxvals
+      }
       modx.labels <- names(modxvals2)
 
     }
@@ -385,8 +393,8 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 ## Svydesigns get their own function to make control flow easier to follow
 
 center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
-                               modx, survey, design, mod2, wname, offname,
-                               centered) {
+                             modx, survey, design, mod2, wname, offname,
+                             centered) {
 
   omitvars <- c(resp, modx, mod2, wname, offname)
 
@@ -556,6 +564,8 @@ center_values_survey <- function(d, omitvars, design = NULL,
 
 }
 
+#### predict helpers ########################################################
+
 get_offname <- function(model, survey) {
 
   # subset gives bare name
@@ -573,86 +583,535 @@ get_offname <- function(model, survey) {
 
 }
 
-data_checks <- function(model, data, interval) {
+data_checks <- function(model, data, predvals = NULL,
+                        modxvals, mod2vals, pred.labels, modx.labels,
+                        mod2.labels, env = parent.frame()) {
 
   # Avoid CRAN barking
-  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
+  d <- facvars <- wts <- wname <- NULL
 
-  # Is it a svyglm?
-  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
+  # Duplicating the dataframe so it can be manipulated as needed
+  if (is.null(data)) {
+    d <- model.frame(model)
+    # Check to see if model.frame names match formula names
+    varnames <- names(d)
+    # Drop weights and offsets
+    varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+    if (any(varnames %nin% all.vars(formula(model)))) {
+      warning("Variable transformations in the model formula detected.\n ",
+              "Trying to use ", as.character(getCall(model)$data), "from \n",
+              "global environment instead. This could cause incorrect \n",
+              "results if", as.character(getCall(model)$data), "has been\n",
+              "altered since the model was fit. You can manually provide \n",
+              "the data to the \"data =\" argument.", call. = FALSE)
+      d <- data <- eval(getCall(model)$data)
+    }
+  } else {
+    d <- data
+  }
 
-    survey %<==% TRUE
-    mixed %<==% FALSE
-    design %<==% model$survey.design
-    # assign("design", design, pos = parent.frame())
-    d %<==% design$variables
+  if (length(predvals) == 1) {stop("predvals must be at least a length of 2.",
+                                   call. = FALSE)}
+  if (length(modxvals) == 1 && modxvals %nin% c("plus-minus", "terciles")) {
+    stop("modxvals must be at least a length of 2.",
+         call. = FALSE)
+  }
+  if (length(mod2vals) == 1 && mod2vals %nin% c("plus-minus", "terciles")) {
+    stop("mod2vals must be at least a length of 2.",
+          call. = FALSE)
+  }
 
-    wts %<==% weights(design) # for use with points.plot aesthetic
-    # assign("wts", wts, pos = parent.frame())
-    wname %<==% "(weights)"
-    # assign("wname", wname, pos = parent.frame())
+  # weights?
+  if (("(weights)" %in% names(d) | !is.null(getCall(model)$weights))) {
+    weights <- TRUE
+    wname <- as.character(getCall(model)["weights"])
+    if (any(colnames(d) == "(weights)")) {
+      colnames(d)[which(colnames(d) == "(weights)")] <- wname
+    }
+    wts <- d[[wname]]
 
-    # Focal vars so the weights don't get centered
-    fvars %<==% as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars %<==% fvars[2:length(fvars)]
-
-    facvars %<==% names(which(sapply(d, is.factor)))
 
   } else {
-    survey %<==% FALSE
 
-    # Duplicating the dataframe so it can be manipulated as needed
-    if (is.null(data)) {
-      d %<==% model.frame(model)
-      # Check to see if model.frame names match formula names
-      varnames <- names(d)
-      # Drop weights and offsets
-      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
-      if (any(varnames %nin% all.vars(formula(model)))) {
-        warning("Variable transformations in the model formula detected.\n ",
-                "Trying to use ", as.character(getCall(model)$data), "from \n",
-                "global environment instead. This could cause incorrect \n",
-                "results if", as.character(getCall(model)$data), "has been\n",
-                "altered since the model was fit. You can manually provide \n",
-                "the data to the \"data =\" argument.")
-        d %<==% data %<==% eval(getCall(model)$data)
-      }
-    } else {
-      d %<==% data
-    }
-
-    if (requireNamespace("lme4")) {
-      if (any(class(model) %in% c("lmerMod","glmerMod","nlmerMod","wbm"))) {
-
-        mixed %<==% TRUE
-        if (interval == TRUE) {
-          warning("Confidence intervals cannot be provided for random effects",
-                  " models.")
-          interval %<==% FALSE
-        }
-
-      } else {
-        mixed %<==% FALSE
-      }
-    } else {
-      mixed %<==% FALSE
-    }
-
-    fvars %<==% as.character(attributes(terms(model))$variables)
-    # for some reason I can't get rid of the "list" as first element
-    fvars %<==% fvars[2:length(fvars)]
-
-    facvars %<==% names(which(sapply(d, is.factor)))
+    weights <- FALSE
+    wname <- NULL
+    wts <- rep(1, times = nrow(d))
 
   }
 
-  # assign("facvars", facvars, pos = parent.frame())
-  # assign("fvars", fvars, pos = parent.frame())
-  # assign("all.vars", all.vars, pos = parent.frame())
-  # assign("d", d, pos = parent.frame())
-  # assign("data", data, pos = parent.frame())
-  # assign("survey", survey, pos = parent.frame())
-  # assign("mixed", mixed, pos = parent.frame())
+  facvars <- names(which(sapply(d, function(x) {
+    is.factor(x) | is.character(x)
+    })
+  ))
+
+  env$facvars <- facvars
+  env$d <- d
+  env$wts <- wts
+  env$weights <- weights
+  env$wname <- wname
+
+}
+
+prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
+                      mod2vals, survey, pred.labels = NULL, modx.labels,
+                      mod2.labels, wname, weights, wts, linearity.check,
+                      interval, set.offset, facvars, centered,
+                      preds.per.level) {
+  # offset?
+  if (!is.null(model.offset(model.frame(model)))) {
+
+    off <- TRUE
+    offname <- get_offname(model, survey)
+
+  } else {
+
+    off <- FALSE
+    offname <- NULL
+
+  }
+
+  if (is.factor(d[[pred]]) | is.character(d[[pred]])) {
+    facpred <- TRUE
+    if (is.character(d[[pred]])) {d[[pred]] <- factor(d[[pred]])}
+  } else {facpred <- FALSE}
+
+  # Setting default for colors
+  if (!is.null(modx) && (is.factor(d[[modx]]) | is.character(d[[modx]]))) {
+    facmod <- TRUE
+    if (is.character(d[[modx]])) {d[[modx]] <- factor(d[[modx]])}
+    # # Unrelated, but good place to throw a warning
+    # if (!is.null(modxvals) && length(modxvals) != nlevels(d[[modx]])) {
+    #   warning("All levels of factor must be used. Ignoring modxvals",
+    #           " argument...")
+    #   modxvals <- NULL
+    # }
+  } else {
+    facmod <- FALSE
+  }
+
+  # Fix character mod2 as well
+  if (!is.null(mod2) && is.factor(d[[mod2]])) {
+    facmod2 <- TRUE
+  } else if (!is.null(mod2) && is.character(d[[mod2]])) {
+    d[[mod2]] <- factor(d[[mod2]])
+    facmod2 <- TRUE
+  } else {
+    facmod2 <- FALSE
+  }
+
+
+  # Get the formula from lm object if given
+  formula <- formula(model)
+  formula <- paste(formula[2], formula[1], formula[3])
+
+  # Pulling the name of the response variable for labeling
+  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
+  resp <- trimws(resp)
+
+  # Drop unneeded columns from data frame
+  if (off == TRUE) {offs <- d[[offname]]}
+  d <- get_all_vars(formula, d)
+  # For setting dimensions correctly later
+  nc <- sum(names(d) %nin% c(wname, offname))
+  if (off == TRUE) {d[[offname]] <- offs}
+
+
+### Centering ##################################################################
+
+  # Update facvars by pulling out all non-focals
+  facvars <-
+    facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
+
+  # Create omitvars variable; we don't center any of these
+  omitvars <- c(pred, resp, modx, mod2, wname, offname, facvars,
+                "(weights)", "(offset)")
+
+  if (survey == FALSE) {
+    design <- NULL
+  } else {
+    design <- model$survey.design
+  }
+
+  # Use utility function shared by all interaction functions
+  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
+                         survey = survey, design = design, centered = centered)
+
+  vals <- c_out$vals
+
+### Getting moderator values ##################################################
+
+  if (facpred == TRUE) {
+
+    predvals <- mod_vals(d = d, modx = pred, modxvals = predvals,
+                         survey = survey, weights = wts,
+                         design = design,
+                         modx.labels = pred.labels, is.mod2 = TRUE)
+    pred.labels <- names(predvals)
+
+  }
+
+  if (!is.null(modx)) {
+
+    modxvals2 <- mod_vals(d = d, modx = modx, modxvals = modxvals,
+                          survey = survey, weights = wts,
+                          design = design,
+                          modx.labels = modx.labels, any.mod2 = !is.null(mod2))
+    modx.labels <- names(modxvals2)
+
+  } else {
+
+    modxvals2 <- NULL
+
+  }
+
+  if (!is.null(mod2)) {
+
+    mod2vals2 <- mod_vals(d = d, modx = mod2, modxvals = mod2vals,
+                          survey = survey, weights = wts,
+                          design = design,
+                          modx.labels = mod2.labels, any.mod2 = !is.null(mod2),
+                          is.mod2 = TRUE)
+    mod2.labels <- names(mod2vals2)
+
+  } else {
+
+    mod2vals2 <- NULL
+
+  }
+
+### Drop unwanted factor levels ###############################################
+
+
+  if (facpred == TRUE) {
+
+    d <- drop_factor_levels(d = d, var = pred, values = predvals,
+                            labels = pred.labels)
+
+  }
+
+  if (facmod == TRUE) {
+
+    d <- drop_factor_levels(d = d, var = modx, values = modxvals2,
+                            labels = modx.labels)
+
+  }
+
+  if (facmod2 == TRUE) {
+
+    d <- drop_factor_levels(d = d, var = mod2, values = mod2vals2,
+                            labels = mod2.labels)
+
+  }
+
+
+### Prep original data for splitting into groups ##############################
+
+  # Only do this if going to plot points
+  if (!is.null(modx)) {
+    d <- split_int_data(d = d, modx = modx, mod2 = mod2,
+                        linearity.check = linearity.check, modxvals = modxvals,
+                        modxvals2 = modxvals2, mod2vals = mod2vals,
+                        mod2vals2 = mod2vals2)
+  }
+
+#### Creating predicted frame #################################################
+
+  if (facpred == FALSE) {
+    pm <- make_pred_frame_cont(d = d, pred = pred, modx = modx,
+                          modxvals2 = modxvals2, mod2 = mod2,
+                          mod2vals2 = mod2vals2, interval = interval, nc = nc,
+                          facvars = facvars, off = off, offname = offname,
+                          set.offset = set.offset, vals = vals, resp = resp,
+                          wname = wname, preds.per.level = preds.per.level)
+  } else {
+    pm <- make_pred_frame_cat(d = d, pred = pred, modx = modx,
+                          modxvals2 = modxvals2, mod2 = mod2,
+                          mod2vals2 = mod2vals2, interval = interval, nc = nc,
+                          facvars = facvars, off = off, offname = offname,
+                          set.offset = set.offset, vals = vals, resp = resp,
+                          wname = wname, preds.per.level = preds.per.level)
+  }
+
+  out <- list(pm = pm, d = d, resp = resp, facmod = facmod,
+              predvals = predvals, pred.labels = pred.labels,
+              modxvals2 = modxvals2, modx.labels = modx.labels,
+              mod2vals2 = mod2vals2, mod2.labels = mod2.labels)
+  return(out)
+
+}
+
+split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
+                           mod2vals, mod2vals2) {
+  if ((!is.null(mod2) | linearity.check == TRUE) & !is.factor(d[[modx]])) {
+
+    # Use ecdf function to get quantile of the modxvals
+    mod_val_qs <- ecdf(d[[modx]])(sort(modxvals2))
+
+    # Now I am going to split the data in a way that roughly puts each modxval
+    # in the middle of each group. mod_val_qs is a vector of quantiles for each
+    # modxval, so I will now build a vector of the midpoint between each
+    # neighboring pair of quantiles — they will become the cutpoints for
+    # splitting the data into groups that roughly correspond to the modxvals
+    cut_points <- c() # empty vector
+    # Iterate to allow this to work regardless of number of modxvals
+    for (i in 1:(length(modxvals2) - 1)) {
+
+      cut_points <- c(cut_points, mean(mod_val_qs[i:(i + 1)]))
+
+    }
+
+    # Add Inf to both ends to encompass all values outside the cut points
+    cut_points <- c(-Inf, quantile(d[[modx]], cut_points), Inf)
+
+    # Create variable storing this info as a factor
+    d$modx_group <- cut(d[[modx]], cut_points, labels = names(sort(modxvals2)))
+
+    if (!is.null(modxvals) && modxvals == "terciles") {
+      d$modx_group <- factor(cut2(d[[modx]], g = 3, levels.mean = TRUE),
+                             labels = c("Lower tercile", "Middle tercile",
+                                        "Upper tercile"))
+    }
+
+  }
+
+  if (!is.null(mod2) && !is.factor(d[[mod2]])) {
+
+    mod_val_qs <- ecdf(d[[mod2]])(sort(mod2vals2))
+
+
+    cut_points2 <- c()
+    for (i in 1:(length(mod2vals2) - 1)) {
+
+      cut_points2 <- c(cut_points2, mean(mod_val_qs[i:(i + 1)]))
+
+    }
+
+    cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
+
+    d$mod2_group <- cut(d[[mod2]], cut_points2,
+                        labels = names(sort(mod2vals2)))
+
+    if (!is.null(mod2vals) && mod2vals == "terciles") {
+      d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
+                             labels = c(paste("Lower tercile of", mod2),
+                                        paste("Middle tercile of", mod2),
+                                        paste("Upper tercile of", mod2)))
+    }
+
+  }
+
+  return(d)
+
+}
+
+make_pred_frame_cont <- function(d, pred, modx, modxvals2, mod2, mod2vals2,
+                            interval, nc, facvars, off, offname, set.offset,
+                            vals, resp, wname, preds.per.level) {
+
+  # Makes accommodating effect_plot easier
+  num_levels <- max(c(1, length(modxvals2)))
+
+  # Creating a set of dummy values of the focal predictor for use in predict()
+  xpreds <- seq(from = range(d[!is.na(d[[pred]]), pred])[1],
+                to = range(d[!is.na(d[[pred]]), pred])[2],
+                length.out = preds.per.level)
+  xpreds <- rep(xpreds, num_levels)
+
+  # Skip if effect_plot
+  if (!is.null(modx)) {
+    # Create values of moderator for use in predict()
+    facs <- rep(modxvals2[1], preds.per.level)
+
+    # Looping here allows for a theoretically limitless amount of
+    # moderator values
+    for (i in 2:length(modxvals2)) {
+      facs <- c(facs, rep(modxvals2[i], preds.per.level))
+    }
+  } else {
+    facs <- 1
+  }
+
+  # Takes some rejiggering to get this right with second moderator
+  if (!is.null(mod2)) {
+    # facs and xpreds will be getting longer, so we need originals for later
+    facso <- facs
+    xpredso <- xpreds
+    # facs2 is second moderator. Here we are creating first iteration of values
+    facs2 <- rep(mod2vals2[1], length(facs))
+    # Now we create the 2nd through however many levels iterations
+    for (i in 2:length(mod2vals2)) {
+      # Add the next level of 2nd moderator to facs2
+      # the amount depends on the how many values were in *original* facs
+      facs2 <- c(facs2, rep(mod2vals2[i], length(facso)))
+      # We are basically recreating the whole previous set of values, each
+      # with a different value of 2nd moderator. They have to be in order
+      # since we are using geom_path() later.
+      facs <- c(facs, facso)
+      xpreds <- c(xpreds, xpredso)
+    }
+  }
+
+  # Creating matrix for use in predict()
+  if (interval == TRUE) { # Only create SE columns if intervals needed
+    if (is.null(mod2)) {
+      pm <- matrix(rep(0, preds.per.level * (nc + 2) * num_levels),
+                   ncol = (nc + 2))
+    } else {
+      pm <- matrix(rep(0, (nc + 2) * length(facs)), ncol = (nc + 2))
+    }
+  } else {
+    if (is.null(mod2)) {
+      pm <- matrix(rep(0, preds.per.level * nc * num_levels), ncol = nc)
+    } else {
+      pm <- matrix(rep(0, nc * length(facs)), ncol = nc)
+    }
+  }
+
+  # Naming columns
+  if (interval == TRUE) { # if intervals, name the SE columns
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group","mod2_group",
+                                                      offname, wname)],
+                      "ymax", "ymin")
+  } else {
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group",
+                                                      "mod2_group", offname,
+                                                      wname)])
+  }
+  # Convert to dataframe
+  pm <- as.data.frame(pm)
+  # Add values of moderator to df
+  if (!is.null(modx)) {
+    pm[[modx]] <- facs
+  }
+  if (!is.null(mod2)) { # if second moderator
+    pm[[mod2]] <- facs2
+  }
+
+  # Add values of focal predictor to df
+  pm[[pred]] <- xpreds
+
+  # Set factor predictors arbitrarily to their first level
+  if (length(facvars) > 0) {
+    for (v in facvars) {
+      pm[[v]] <- levels(d[[v]])[1]
+    }
+  }
+
+  if (off == TRUE) {
+    if (is.null(set.offset)) {
+      offset.num <- median(d[[offname]])
+    } else {
+      offset.num <- set.offset
+    }
+
+    pm[[offname]] <- offset.num
+    msg <- paste("Outcome is based on a total of", offset.num, "exposures")
+    message(msg)
+  }
+
+  # Adding mean values to newdata in lieu of actually re-fitting model
+  if (!is.null(vals)) {
+    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
+    for (var in names(vals)) {
+      pm[[var]] <- rep(vals[var], times = nrow(pm))
+    }
+  }
+
+  return(pm)
+
+}
+
+make_pred_frame_cat <- function(d, pred,
+                                modx, modxvals2, mod2, mod2vals2,
+                                interval, nc, facvars, off, offname, set.offset,
+                                vals, resp, wname, preds.per.level) {
+  # Creating a set of dummy values of the focal predictor for use in predict()
+  pred_len <- nlevels(d[[pred]])
+
+  if (!is.null(modx)) {
+    combos <- expand.grid(levels(factor(d[[pred]])), levels(factor(d[[modx]])))
+    combo_pairs <- paste(combos[[1]], combos[[2]])
+    og_pairs <- paste(d[[pred]], d[[modx]])
+    combos <- combos[combo_pairs %in% og_pairs,]
+    xpred_len <- nrow(combos)
+  } else {
+    xpred_len <- pred_len
+    combos <- as.data.frame(levels(d[[pred]]))
+  }
+
+  # Takes some rejiggering to get this right with second moderator
+  if (!is.null(mod2)) {
+    combos <- expand.grid(levels(d[[pred]]), levels(d[[modx]]),
+                          levels(d[[mod2]]))
+    combo_pairs <- paste(combos[[1]],combos[[2]],combos[[3]])
+    og_pairs <- paste(d[[pred]], d[[modx]], d[[mod2]])
+    combos <- combos[combo_pairs %in% og_pairs,]
+    xpred_len <- nrow(combos)
+  }
+
+  # Creating matrix for use in predict()
+  if (interval == TRUE) { # Only create SE columns if intervals needed
+    pm <- matrix(rep(0, xpred_len * (nc + 2)), ncol = (nc + 2))
+  } else {
+    pm <- matrix(rep(0, xpred_len * nc), ncol = nc)
+  }
+
+  # Naming columns
+  if (interval == TRUE) { # if intervals, name the SE columns
+    colnames(pm) <- c(colnames(d), "ymax", "ymin")
+  } else {
+    colnames(pm) <- colnames(d)
+  }
+
+  # Convert to dataframe
+  pm <- as.data.frame(pm)
+
+  # Add values of moderator to df
+  if (!is.null(modx)) {
+    pm[[modx]] <- combos[[2]]
+  }
+  if (!is.null(mod2)) { # if second moderator
+    pm[[mod2]] <- combos[[3]]
+  }
+
+  # Add values of focal predictor to df
+  pm[[pred]] <- combos[[1]]
+
+  # Set factor covariates arbitrarily to their first level
+  if (length(facvars) > 0) {
+    for (v in facvars) {
+      pm[[v]] <- levels(d[[v]])[1]
+    }
+  }
+
+  if (off == TRUE) {
+    if (is.null(set.offset)) {
+      offset.num <- median(d[[offname]])
+    } else {
+      offset.num <- set.offset
+    }
+
+    pm[[offname]] <- offset.num
+    msg <- paste("Outcome is based on a total of", offset.num, "exposures")
+    message(msg)
+  }
+
+  # Adding mean values to newdata in lieu of actually re-fitting model
+  if (!is.null(vals)) {
+    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
+    for (var in names(vals)) {
+      pm[[var]] <- rep(vals[var], times = nrow(pm))
+    }
+  }
+
+  return(pm)
+
+}
+
+drop_factor_levels <- function(d, var, values, labels) {
+
+  d <- d[d[[var]] %in% values,]
+  d[[var]] <- factor(d[[var]], levels = values, labels = labels)
+  return(d)
 
 }

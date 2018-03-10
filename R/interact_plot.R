@@ -10,13 +10,13 @@
 #'   well but are not officially supported.
 #'
 #' @param pred The name of the predictor variable involved
-#'  in the interaction.
+#'  in the interaction. This can be a bare name or string.
 #'
 #' @param modx The name of the moderator variable involved
-#'  in the interaction.
+#'  in the interaction. This can be a bare name or string.
 #'
 #' @param mod2 Optional. The name of the second moderator
-#'  variable involved in the interaction.
+#'  variable involved in the interaction. This can be a bare name or string.
 #'
 #' @param modxvals For which values of the moderator should lines be plotted?
 #'   Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
@@ -239,7 +239,6 @@
 #'   estimates from multiplicative interaction models? Simple tools to improve
 #'   empirical practice. SSRN Electronic Journal.
 #'   \url{https://doi.org/10.2139/ssrn.2739221}
-
 #'
 #' @examples
 #' # Using a fitted lm model
@@ -280,7 +279,7 @@
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median ecdf quantile get_all_vars complete.cases
+#' @importFrom stats median ecdf quantile
 #' @import ggplot2
 #' @export interact_plot
 
@@ -308,12 +307,32 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
     mod2 <- NULL
   }
 
-  # Avoid CRAN barking
-  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
+  # Defining "global variables" for CRAN
+  modxvals2 <- mod2vals2 <- resp <- NULL
 
-  # This internal function has side effects that create
-  # objects in this environment
-  data_checks(model, data, interval)
+  pred_out <- make_predictions(model = model, pred = pred,
+                               modx = modx,
+                               modxvals = modxvals, mod2 = mod2,
+                               mod2vals = mod2vals, centered = centered,
+                               data = data, interval = interval,
+                               int.type = int.type,
+                               int.width = int.width,
+                               outcome.scale = outcome.scale,
+                               linearity.check = linearity.check,
+                               robust = robust, cluster = cluster,
+                               vcov = vcov, set.offset = set.offset,
+                               modx.labels = modx.labels,
+                               mod2.labels = mod2.labels)
+
+  # These are the variables created in the helper functions
+  meta <- attributes(pred_out)
+  # This function attaches all those variables to this environment
+  lapply(names(meta), function(x, env) {env[[x]] <- meta[[x]]},
+              env = environment())
+
+  # Putting these outputs into separate objects
+  pm <- pred_out$predicted
+  d <- pred_out$original
 
   # Check for factor predictor
   if (is.factor(d[[pred]])) {
@@ -324,529 +343,18 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
          " plots.")
   }
 
-  # weights?
-  if (survey == FALSE && ("(weights)" %in% names(d) |
-                          !is.null(getCall(model)$weights))) {
-    weights <- TRUE
-    wname <- as.character(getCall(model)["weights"])
-    if (any(colnames(d) == "(weights)")) {
-      colnames(d)[which(colnames(d) == "(weights)")] <- wname
-    }
-    wts <- d[[wname]]
-
-  } else {
-
-    weights <- FALSE
-    wname <- NULL
-    if (survey == FALSE) {wts <- rep(1, times = nrow(d))}
-
-  }
-
-  # offset?
-  if (!is.null(model.offset(model.frame(model)))) {
-
-    off <- TRUE
-    offname <- get_offname(model, survey)
-
-  } else {
-
-    off <- FALSE
-    offname <- NULL
-
-  }
-
-  # Setting default for colors
-  if (is.factor(d[[modx]])) {
-    facmod <- TRUE
-    if (is.null(color.class)) {
-      color.class <- "Set2"
-    }
-    # Unrelated, but good place to throw a warning
-    if (!is.null(modxvals) && length(modxvals) != nlevels(d[[modx]])) {
-      warning("All levels of factor must be used. Ignoring modxvals",
-              " argument...")
-      modxvals <- NULL
-    }
-  } else {
-    facmod <- FALSE
-    if (is.null(color.class)) {
-      color.class <- "Blues"
-    }
-  }
-
-  # Get the formula from lm object if given
-  formula <- formula(model)
-  formula <- paste(formula[2], formula[1], formula[3])
-
-  # Pulling the name of the response variable for labeling
-  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
-  resp <- trimws(resp)
-
-  # Drop unneeded columns from data frame
-  if (off == TRUE) {offs <- d[[offname]]}
-  d <- get_all_vars(formula, d)
-  # For setting dimensions correctly later
-  nc <- sum(names(d) %nin% c(wname, offname))
-  if (off == TRUE) {d[[offname]] <- offs}
-
-
-### Centering ##################################################################
-
-  # Update facvars by pulling out all non-focals
-  facvars <-
-    facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
-
-  # Create omitvars variable; we don't center any of these
-  omitvars <- c(pred, resp, modx, mod2, wname, offname, facvars,
-                "(weights)", "(offset)")
-
-  if (survey == FALSE) {
-    design <- NULL
-  }
-
-  # Use utility function shared by all interaction functions
-  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
-                         survey = survey, design = design, centered = centered)
-
-  vals <- c_out$vals
-
-### Getting moderator values ##################################################
-
-  modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
-                        modx.labels, any.mod2 = !is.null(mod2))
-  modx.labels <- names(modxvals2)
-
-  if (!is.null(mod2)) {
-
-    mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
-                          mod2.labels, any.mod2 = !is.null(mod2),
-                          is.mod2 = TRUE)
-    mod2.labels <- names(mod2vals2)
-
-  }
-
-### Prep original data for splitting into groups ##############################
-
-  # Only do this if going to plot points
-  if ((!is.null(mod2) | linearity.check == TRUE) & !is.factor(d[[modx]])) {
-
-    # Use ecdf function to get quantile of the modxvals
-    mod_val_qs <- ecdf(d[[modx]])(sort(modxvals2))
-
-    # Now I am going to split the data in a way that roughly puts each modxval
-    # in the middle of each group. mod_val_qs is a vector of quantiles for each
-    # modxval, so I will now build a vector of the midpoint between each
-    # neighboring pair of quantiles — they will become the cutpoints for
-    # splitting the data into groups that roughly correspond to the modxvals
-    cut_points <- c() # empty vector
-    # Iterate to allow this to work regardless of number of modxvals
-    for (i in 1:(length(modxvals2) - 1)) {
-
-      cut_points <- c(cut_points, mean(mod_val_qs[i:(i + 1)]))
-
-    }
-
-    # Add Inf to both ends to encompass all values outside the cut points
-    cut_points <- c(-Inf, quantile(d[[modx]], cut_points), Inf)
-
-    # Create variable storing this info as a factor
-    d$modx_group <- cut(d[[modx]], cut_points, labels = names(sort(modxvals2)))
-
-    if (!is.null(modxvals) && modxvals == "terciles") {
-      d$modx_group <- factor(cut2(d[[modx]], g = 3, levels.mean = TRUE),
-                             labels = c("Lower tercile", "Middle tercile",
-                                        "Upper tercile"))
-    }
-
-  }
-
-  if (!is.null(mod2) && !is.factor(d[[mod2]])) {
-
-    mod_val_qs <- ecdf(d[[mod2]])(sort(mod2vals2))
-
-
-    cut_points2 <- c()
-    for (i in 1:(length(mod2vals2) - 1)) {
-
-      cut_points2 <- c(cut_points2, mean(mod_val_qs[i:(i + 1)]))
-
-    }
-
-    cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
-
-    d$mod2_group <- cut(d[[mod2]], cut_points2,
-                        labels = names(sort(mod2vals2)))
-
-    if (!is.null(mod2vals) && mod2vals == "terciles") {
-      d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
-                             labels = c(paste("Lower tercile of", mod2),
-                                        paste("Middle tercile of", mod2),
-                                        paste("Upper tercile of", mod2)))
-    }
-
-  }
-
-#### Creating predicted frame #################################################
-
-  # Creating a set of dummy values of the focal predictor for use in predict()
-  xpreds <- seq(from = range(d[!is.na(d[[pred]]), pred])[1],
-                to = range(d[!is.na(d[[pred]]), pred])[2],
-                length.out = 100)
-  xpreds <- rep(xpreds, length(modxvals2))
-
-  # Create values of moderator for use in predict()
-  facs <- rep(modxvals2[1],100)
-
-  # Looping here allows for a theoretically limitless amount of
-  # moderator values
-  for (i in 2:length(modxvals2)) {
-    facs <- c(facs, rep(modxvals2[i], 100))
-  }
-
-  # Takes some rejiggering to get this right with second moderator
-  if (!is.null(mod2)) {
-    # facs and xpreds will be getting longer, so we need originals for later
-    facso <- facs
-    xpredso <- xpreds
-    # facs2 is second moderator. Here we are creating first iteration of values
-    facs2 <- rep(mod2vals2[1], length(facs))
-    # Now we create the 2nd through however many levels iterations
-    for (i in 2:length(mod2vals2)) {
-      # Add the next level of 2nd moderator to facs2
-      # the amount depends on the how many values were in *original* facs
-      facs2 <- c(facs2, rep(mod2vals2[i], length(facso)))
-      # We are basically recreating the whole previous set of values, each
-      # with a different value of 2nd moderator. They have to be in order
-      # since we are using geom_path() later.
-      facs <- c(facs, facso)
-      xpreds <- c(xpreds, xpredso)
-    }
-  }
-
-  # Creating matrix for use in predict()
-  if (interval == TRUE) { # Only create SE columns if intervals needed
-    if (is.null(mod2)) {
-      pm <- matrix(rep(0, 100 * (nc + 2) * length(modxvals2)), ncol = (nc + 2))
-    } else {
-      pm <- matrix(rep(0, (nc + 2) * length(facs)), ncol = (nc + 2))
-    }
-  } else {
-    if (is.null(mod2)) {
-      pm <- matrix(rep(0, 100 * nc * length(modxvals2)), ncol = nc)
-    } else {
-      pm <- matrix(rep(0, nc * length(facs)), ncol = nc)
-    }
-  }
-
-  # Naming columns
-  if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group","mod2_group",
-                                                      offname, wname)],
-                      "ymax", "ymin")
-  } else {
-    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group",
-                                                      "mod2_group", offname,
-                                                      wname)])
-  }
-  # Convert to dataframe
-  pm <- as.data.frame(pm)
-  # Add values of moderator to df
-  pm[[modx]] <- facs
-  if (!is.null(mod2)) { # if second moderator
-    pm[[mod2]] <- facs2
-  }
-
-  # Add values of focal predictor to df
-  pm[[pred]] <- xpreds
-
-  # Set factor predictors arbitrarily to their first level
-  if (length(facvars) > 0) {
-    for (v in facvars) {
-      pm[[v]] <- levels(d[[v]])[1]
-    }
-  }
-
-  if (off == TRUE) {
-    if (is.null(set.offset)) {
-      offset.num <- median(d[[offname]])
-    } else {
-      offset.num <- set.offset
-    }
-
-    pm[[offname]] <- offset.num
-    msg <- paste("Count is based on a total of", offset.num, "exposures")
-    message(msg)
-  }
-
-  # Adding mean values to newdata in lieu of actually re-fitting model
-  if (!is.null(vals)) {
-    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
-    for (var in names(vals)) {
-      pm[[var]] <- rep(vals[var], times = nrow(pm))
-    }
-  }
-
-#### Predicting with update models ############################################
-
-  # Create predicted values based on specified levels of the moderator,
-  # focal predictor
-
-  ## This is passed to predict(), but for svyglm needs to be TRUE always
-  interval_arg <- interval
-  if (survey == TRUE) {
-    interval_arg <- TRUE
-  }
-
-  pms <- split(pm, pm[[modx]])
-  for (i in seq_along(pms)) {
-    if (mixed == TRUE) {
-      predicted <- as.data.frame(predict(model, newdata = pms[[i]],
-                                         type = outcome.scale,
-                                         allow.new.levels = F,
-                                         re.form = ~0))
-    } else {
-      if (robust == FALSE) {
-        predicted <- as.data.frame(predict(model, newdata = pms[[i]],
-                                           se.fit = interval_arg,
-                                           interval = int.type[1],
-                                           type = outcome.scale))
-      } else {
-
-        if (is.null(vcov)) {
-          the_vcov <- do_robust(model, robust, cluster, data)$vcov
-        } else {
-          the_vcov <- vcov
-        }
-
-        predicted <- as.data.frame(predict_rob(model, newdata = pms[[i]],
-                                               se.fit = interval_arg,
-                                               interval = int.type[1],
-                                               type = outcome.scale,
-                                               .vcov = the_vcov))
-      }
-
-    }
-
-    pms[[i]][[resp]] <- predicted[[1]] # this is the actual values
-
-    ## Convert the confidence percentile to a number of S.E. to multiply by
-    intw <- 1 - ((1 - int.width)/2)
-    ses <- qnorm(intw, 0, 1)
-
-    # See minimum and maximum values for plotting intervals
-    if (interval == TRUE) { # only create SE columns if intervals are needed
-      if (mixed == TRUE) {
-        # No SEs
-        warning("Standard errors cannot be calculated for mixed effect models.")
-      } else if (survey == FALSE) {
-        pms[[i]][["ymax"]] <- pms[[i]][[resp]] + (predicted[["se.fit"]]) * ses
-        pms[[i]][["ymin"]] <- pms[[i]][[resp]] - (predicted[["se.fit"]]) * ses
-      } else if (survey == TRUE) {
-        pms[[i]][["ymax"]] <- pms[[i]][[resp]] + (predicted[["SE"]]) * ses
-        pms[[i]][["ymin"]] <- pms[[i]][[resp]] - (predicted[["SE"]]) * ses
-      }
-    } else {
-      # Do nothing
-    }
-
-    pms[[i]] <- pms[[i]][complete.cases(pms[[i]]),]
-
-  }
-
-  pm <- do.call("rbind", pms)
-
-  # Saving x-axis label
-  if (is.null(x.label)) {
-    x.label <- pred
-  }
-
-  # Saving y-axis label
-  if (is.null(y.label)) {
-    y.label <- resp
-  }
-
-  # Labels for values of moderator
-  pm[[modx]] <- factor(pm[[modx]], levels = modxvals2, labels = modx.labels)
-  if (facmod == TRUE) {
-    d[[modx]] <- factor(d[[modx]], levels = modxvals2, labels = modx.labels)
-  }
-  pm$modx_group <- pm[[modx]]
-
-  # Setting labels for second moderator
-  if (!is.null(mod2)) {
-
-    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
-
-    # Setting mod2 in OG data to the factor if plot.points == TRUE
-    if (plot.points == TRUE) {
-
-      d[[mod2]] <- d$mod2_group
-
-    }
-
-  }
-
-
-#### Plotting #################################################################
-
-  # If no user-supplied legend title, set it to name of moderator
-  if (is.null(legend.main)) {
-    legend.main <- modx
-  }
-
-  # Get palette from RColorBrewer myself so I can use darker values
-  if (length(color.class) == 1) {
-    if (facmod == FALSE) {
-      colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
-      colors <- colors[-1]
-    } else {
-      if (length(modxvals2) == 2) {
-        num_colors <- 3
-      } else {
-        num_colors <- length(modxvals2)
-      }
-      colors <- RColorBrewer::brewer.pal(num_colors, color.class)
-      colors <- colors[1:length(modxvals2)]
-    }
-  } else { # Allow manually defined colors
-    colors <- color.class
-    if (length(colors) != length(modxvals2)) {
-      stop("Manually defined colors must be of same length as modxvals.")
-    }
-  }
-
-  # Manually set linetypes
-  types <- c("solid", "4242", "2222", "dotdash", "dotted", "twodash")
-  ltypes <- types[1:length(modxvals2)]
-
-  if (is.null(mod2)) {
-    colors <- rev(colors)
-    pp_color <- first(colors) # Darkest color used for plotting points
-  } else {
-    ltypes <- rev(ltypes)
-    pp_color <- last(colors)
-  }
-
-  names(colors) <- modx.labels
-  names(ltypes) <- modx.labels
-
-  # Defining linetype here
-  if (vary.lty == TRUE) {
-    p <- ggplot(pm, aes_string(x = pred, y = resp, colour = modx,
-                               group = modx, linetype = modx))
-  } else {
-    p <- ggplot(pm, aes_string(x = pred, y = resp, colour = modx,
-                               group = modx))
-  }
-
-  p <- p + geom_path(size = line.thickness)
-
-  # Plot intervals if requested
-  if (interval == TRUE) {
-    p <- p + geom_ribbon(data = pm, aes_string(x = pred,
-                                               ymin = "ymin", ymax = "ymax",
-                                               fill = modx, group = modx,
-                                               colour = modx, linetype = NA),
-                         alpha = 1/5, show.legend = FALSE,
-                         inherit.aes = FALSE)
-
-    p <- p + scale_fill_manual(values = colors, breaks = names(colors))
-  }
-
-  # If third mod, facet by third mod
-  if (!is.null(mod2)) {
-    facets <- facet_grid(paste(". ~", mod2))
-    p <- p + facets
-  } else if (linearity.check == TRUE) {
-    facets <- facet_grid(paste(". ~ modx_group"))
-    modxgroup <- "modx_group"
-    p <- p + facets + stat_smooth(data = d, aes_string(x = pred, y = resp,
-                                                       group = modxgroup),
-                                  method = "loess", size = 1,
-                                  show.legend = FALSE, inherit.aes = FALSE,
-                                  se = FALSE, span = 2, geom = "line",
-                                  alpha = 0.5, color = "black")
-  }
-
-  # For factor vars, plotting the observed points
-  # and coloring them by factor looks great
-  if (plot.points == TRUE) {
-    # Transform weights so they have mean = 1
-    const <- length(wts)/sum(wts) # scaling constant
-    const <- const * 2 # make the range of values larger
-    wts <- const * wts
-    # Append weights to data
-    d[["the_weights"]] <- wts
-
-    if (is.factor(d[[modx]])) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                          colour = modx, size = "the_weights"),
-               position = position_jitter(width = jitter, height = jitter),
-               inherit.aes = TRUE, show.legend = FALSE)
-    } else if (!is.factor(d[[modx]])) {
-      # using alpha for same effect with continuous vars
-      p <- p + geom_point(data = d,
-                          aes_string(x = pred, y = resp, alpha = modx,
-                                    size = "the_weights"),
-                          colour = pp_color, inherit.aes = FALSE,
-                          position = position_jitter(width = jitter,
-                                                     height = jitter),
-                          show.legend = FALSE) +
-          scale_alpha_continuous(range = c(0.25, 1), guide = "none")
-    }
-
-    # Add size aesthetic to avoid giant points
-    p <- p + scale_size_identity()
-
-  }
-
-  # Using theme_apa for theming...but using legend title and side positioning
-  if (is.null(mod2)) {
-    p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE,
-                       legend.font.size = 11)
-  } else {
-    # make better use of space by putting legend on bottom for facet plots
-    p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
-                       facet.title.size = 10, legend.font.size = 11)
-  }
-  p <- p + labs(x = x.label, y = y.label) # better labels for axes
-
-  # Getting rid of tick marks for factor predictor
-  if (length(unique(d[[pred]])) == 2) {
-    # Predictor has only two unique values
-    # Make sure those values are in increasing order
-    brks <- sort(unique(d[[pred]]), decreasing = F)
-    if (is.null(pred.labels)) {
-      p <- p + scale_x_continuous(breaks = brks)
-    } else {
-      if (length(pred.labels) == 2) { # Make sure pred.labels has right length
-        p <- p + scale_x_continuous(breaks = brks, labels = pred.labels)
-      } else {
-        warning("pred.labels argument has the wrong length. It won't be used")
-        p <- p + scale_x_continuous(breaks = brks)
-      }
-    }
-  }
-
-  # Get scale colors, provide better legend title
-  p <- p + scale_colour_manual(name = legend.main, values = colors,
-                               breaks = names(colors))
-
-  if (vary.lty == TRUE) { # Add line-specific changes
-    p <- p + scale_linetype_manual(name = legend.main, values = ltypes,
-                                   breaks = names(ltypes),
-                                   na.value = "blank")
-    # Need some extra width to show the linetype pattern fully
-    p <- p + theme(legend.key.width = grid::unit(2, "lines"))
-  }
-
-  # Give the plot the user-specified title if there is one
-  if (!is.null(main.title)) {
-    p <- p + ggtitle(main.title)
-  }
-
-  # Return the plot
-  return(p)
+  # Send to internal plotting function
+  plot_mod_continuous(predictions = pm, pred = pred, modx = modx, resp = resp,
+                      mod2 = mod2, data = d, plot.points = plot.points,
+                      interval = interval, linearity.check = linearity.check,
+                      x.label = x.label, y.label = y.label,
+                      pred.labels = pred.labels, modx.labels = modx.labels,
+                      mod2.labels = mod2.labels, main.title = main.title,
+                      legend.main = legend.main, color.class = color.class,
+                      line.thickness = line.thickness,
+                      vary.lty = vary.lty, jitter = jitter,
+                      modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                      wts = weights)
 
 }
 
@@ -932,7 +440,7 @@ print.interact_plot <- function(x, ...) {
 #' }
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median weights get_all_vars
+#' @importFrom stats median weights
 #' @import ggplot2
 #' @export effect_plot
 
@@ -950,273 +458,50 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
   # Evaluate the pred arg
   pred <- as.character(substitute(pred))
 
-  # Avoid CRAN barking
-  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
+  # Defining "global variables" for CRAN
+  resp <- NULL
 
-  # This internal function has side effects that create
-  # objects in this environment
-  data_checks(model, data, interval)
+  pred_out <- make_predictions(model = model, pred = pred,
+                               modx = NULL,
+                               modxvals = NULL, mod2 = NULL,
+                               mod2vals = NULL, centered = centered,
+                               data = data, interval = interval,
+                               int.type = int.type,
+                               int.width = int.width,
+                               outcome.scale = outcome.scale,
+                               linearity.check = FALSE,
+                               robust = robust, cluster = cluster,
+                               vcov = vcov, set.offset = set.offset,
+                               modx.labels = NULL,
+                               mod2.labels = NULL)
+
+  # These are the variables created in the helper functions
+  meta <- attributes(pred_out)
+  # This function attaches all those variables to this environment
+  lapply(names(meta), function(x, env) {env[[x]] <- meta[[x]]},
+         env = environment())
+
+  # Putting these outputs into separate objects
+  pm <- pred_out$predicted
+  d <- pred_out$original
 
   # Check for factor predictor
   if (is.factor(d[[pred]])) {
     # I could assume the factor is properly ordered, but that's too risky
     stop("Focal predictor (\"pred\") cannot be a factor. Either",
-         " convert it to a numeric dummy variable",
+         " use it as modx, convert it to a numeric dummy variable,",
          " or use the cat_plot function for factor by factor interaction",
          " plots.")
   }
 
-  # weights?
-  if (survey == FALSE && ("(weights)" %in% names(d) |
-                          !is.null(getCall(model)$weights))) {
-    weights <- TRUE
-    wname <- as.character(getCall(model)["weights"])
-    if (any(colnames(d) == "(weights)")) {
-      colnames(d)[which(colnames(d) == "(weights)")] <- wname
-    }
-    wts <- d[[wname]]
+  plot_effect_continuous(predictions = pm, pred = pred,
+                         plot.points = plot.points, interval = interval,
+                         data = d, x.label = x.label, y.label = y.label,
+                         pred.labels = pred.labels, main.title = main.title,
+                         color.class = color.class,
+                         line.thickness = line.thickness, jitter = jitter,
+                         resp = resp, wts = weights)
 
-  } else {
-
-    weights <- FALSE
-    wname <- NULL
-    if (survey == FALSE) {wts <- rep(1, times = nrow(d))}
-
-  }
-
-  # offset?
-  if (!is.null(model.offset(model.frame(model)))) {
-
-    off <- TRUE
-    # subset gives bare varname
-    offname <- get_offname(model, survey)
-
-  } else {
-
-    off <- FALSE
-    offname <- NULL
-
-  }
-
-  # Get the formula from lm object if given
-  formula <- formula(model)
-  formula <- paste(formula[2], formula[1], formula[3])
-
-  # Pulling the name of the response variable for labeling
-  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
-  resp <- trimws(resp)
-
-  # Drop unneeded columns from data frame
-  if (off == TRUE) {offs <- d[[offname]]}
-  d <- get_all_vars(formula, d)
-  # For setting dimensions correctly later
-  nc <- sum(names(d) %nin% c(wname, offname))
-  if (off == TRUE) {d[[offname]] <- offs}
-
-### Centering ##################################################################
-
-  # Update facvars by pulling out all non-focals
-  facvars <-
-    facvars[facvars %nin% c(pred, resp, wname, offname)]
-
-  # Create omitvars variable; we don't center any of these
-  omitvars <- c(pred, resp, wname, offname, facvars,
-                "(weights)", "(offset)")
-
-  if (survey == FALSE) {
-    design <- NULL
-  }
-
-  # Use utility function shared by all interaction functions
-  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
-                         survey = survey, design = design, centered = centered)
-
-  vals <- c_out$vals
-
-  # Creating a set of dummy values of the focal predictor for use in predict()
-  xpreds <- seq(from = range(d[!is.na(d[[pred]]), pred])[1],
-                to = range(d[!is.na(d[[pred]]), pred])[2],
-                length.out = 1000)
-
-  # Creating matrix for use in predict()
-  if (interval == TRUE) { # Only create SE columns if intervals needed
-
-    pm <- matrix(rep(0, 1000 * (nc + 2)), ncol = (nc + 2))
-
-  } else {
-
-    pm <- matrix(rep(0, 1000 * (nc)), ncol = (nc))
-
-  }
-
-  # Change name of offset column to its original
-  if (off == TRUE) {
-    # Avoiding the variable not found stuff
-    colnames(d)[colnames(d) %in% "(offset)"] <- offname
-  }
-
-  # Naming columns
-  if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d),"ymax","ymin")
-  } else {
-    colnames(pm) <- colnames(d)
-  }
-  # Convert to dataframe
-  pm <- as.data.frame(pm)
-
-  # Add values of focal predictor to df
-  pm[[pred]] <- xpreds
-
-  # Set factor predictors arbitrarily to their first level
-  if (length(facvars) > 0) {
-    for (v in facvars) {
-      pm[[v]] <- levels(d[[v]])[1]
-    }
-  }
-
-  if (off == TRUE) {
-    if (is.null(set.offset)) {
-      offset.num <- median(d[[offname]])
-    } else {
-      offset.num <- set.offset
-    }
-
-    pm[[offname]] <- offset.num
-    msg <- paste("Count is based on a total of", offset.num, "exposures")
-    message(msg)
-  }
-
-  # Adding mean values to newdata in lieu of actually re-fitting model
-  if (!is.null(vals)) {
-    vals <- vals[names(vals) %nin% c(offname, wname, pred, resp)]
-    for (var in names(vals)) {
-      pm[[var]] <- rep(vals[var], times = nrow(pm))
-    }
-  }
-
-#### Predictions ############################################################
-
-  # Set SEs to TRUE for svyglm
-  if (survey == TRUE) {interval_arg <- TRUE} else {interval_arg <- interval}
-
-  if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(model, newdata = pm,
-                                       type = outcome.scale,
-                                       allow.new.levels = F,
-                                       re.form = ~0))
-  } else {
-    if (robust == FALSE) {
-      predicted <- as.data.frame(predict(model, newdata = pm,
-                                         se.fit = interval_arg,
-                                         interval = int.type[1],
-                                         type = outcome.scale))
-    } else {
-
-      if (is.null(vcov)) {
-        the_vcov <- do_robust(model, robust, cluster, data)$vcov
-      } else {
-        the_vcov <- vcov
-      }
-
-      predicted <- as.data.frame(predict_rob(model, newdata = pm,
-                                         se.fit = interval_arg,
-                                         interval = int.type[1],
-                                         type = outcome.scale,
-                                         .vcov = the_vcov))
-    }
-  }
-  pm[[resp]] <- predicted[[1]] # this is the actual values
-
-  ## Convert the confidence percentile to a number of S.E. to multiply by
-  intw <- 1 - ((1 - int.width)/2)
-  ses <- qnorm(intw, 0, 1)
-
-  # See minimum and maximum values for plotting intervals
-  if (interval == TRUE) { # only create SE columns if intervals are needed
-    if (mixed == TRUE) {
-      # No SEs
-      warning("Standard errors cannot be calculated for mixed effect models.")
-    } else if (survey == FALSE) {
-      pm[["ymax"]] <- pm[[resp]] + (predicted[["se.fit"]]) * ses
-      pm[["ymin"]] <- pm[[resp]] - (predicted[["se.fit"]]) * ses
-    } else if (survey == TRUE) {
-      pm[["ymax"]] <- pm[[resp]] + (predicted[["SE"]]) * ses
-      pm[["ymin"]] <- pm[[resp]] - (predicted[["SE"]]) * ses
-    }
-  } else {
-    # Do nothing
-  }
-
-  # Saving x-axis label
-  if (is.null(x.label)) {
-    x.label <- pred
-  }
-
-  # Saving y-axis label
-  if (is.null(y.label)) {
-    y.label <- resp
-  }
-
-#### Plotting #################################################################
-
-  # Starting plot object
-  p <- ggplot(pm, aes_string(x = pred, y = resp))
-
-  # Define line thickness
-  p <- p + geom_path(size = line.thickness)
-
-  # Plot intervals if requested
-  if (interval == TRUE) {
-    p <- p + geom_ribbon(data = pm, aes_string(ymin = "ymin",
-                                               ymax = "ymax"),
-                         alpha = 1/5, show.legend = FALSE)
-  }
-
-  # Plot observed data
-  if (plot.points == TRUE) {
-    # Transform weights so they have mean = 1
-    const <- length(wts)/sum(wts) # scaling constant
-    const <- const * 2 # make the range of values larger
-    wts <- const * wts
-    # Append weights to data
-    d[["the_weights"]] <- wts
-      p <- p + geom_point(data = d,
-                          aes_string(x = pred, y = resp, size = "the_weights"),
-               position = position_jitter(width = jitter, height = jitter),
-               inherit.aes = FALSE, show.legend = FALSE)
-    # Add size aesthetic to avoid giant points
-    # p <- p + scale_size(range = c(0.3, 4))
-    p <- p + scale_size_identity()
-  }
-
-  # Using theme_apa for theming...but using legend title and side positioning
-  p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
-
-  p <- p + labs(x = x.label, y = y.label) # better labels for axes
-
-  # Getting rid of tick marks for two-level predictor
-  if (length(unique(d[[pred]])) == 2) { # Predictor has only two unique values
-    # Make sure those values are in increasing order
-    brks <- sort(unique(d[[pred]]), decreasing = F)
-    if (is.null(pred.labels)) {
-      p <- p + scale_x_continuous(breaks = brks)
-    } else {
-      if (length(pred.labels) == 2) { # Make sure pred.labels has right length
-        p <- p + scale_x_continuous(breaks = brks, labels = pred.labels)
-      } else {
-        warning("pred.labels argument has the wrong length. It won't be used")
-        p <- p + scale_x_continuous(breaks = brks)
-      }
-    }
-  }
-
-  # Give the plot the user-specified title if there is one
-  if (!is.null(main.title)) {
-    p <- p + ggtitle(main.title)
-  }
-
-  # Return the plot
-  return(p)
 
 }
 
@@ -1263,6 +548,13 @@ print.effect_plot <- function(x, ...) {
 #'     to plot all the observed points (especially helpful with larger data
 #'     sets). **However**, it is important to note the boxplots are not based
 #'     on the model whatsoever.
+#'
+#' @param predvals Which values of the predictor should be included in the
+#'   plot? By default, all levels are included.
+#'
+#' @param pred.labels A character vector of equal length to the number of
+#'   factor levels of the predictor (or number specified in `predvals`). If
+#'   \code{NULL}, the default, the factor labels are used.
 #'
 #' @param interval Logical. If \code{TRUE}, plots confidence/prediction
 #'   intervals. Not supported for \code{merMod} models.
@@ -1353,7 +645,7 @@ print.effect_plot <- function(x, ...) {
 #'  interval = TRUE)
 #'
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median get_all_vars
+#' @importFrom stats median
 #' @export cat_plot
 #' @import ggplot2
 #'
@@ -1361,12 +653,16 @@ print.effect_plot <- function(x, ...) {
 cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
                      data = NULL,
                      geom = c("dot","line","bar","boxplot"),
+                     predvals = NULL,
+                     modxvals = NULL, mod2vals = NULL,
                      interval = TRUE, plot.points = FALSE,
                      point.shape = FALSE, vary.lty = FALSE,
                      centered = "all",
                      int.type = c("confidence","prediction"),
                      int.width = .95, outcome.scale = "response",
                      robust = FALSE, cluster = NULL, vcov = NULL,
+                     pred.labels = NULL,
+                     modx.labels = NULL, mod2.labels = NULL,
                      set.offset = 1, x.label = NULL, y.label = NULL,
                      main.title = NULL, legend.main = NULL,
                      color.class = "Set2") {
@@ -1388,475 +684,44 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   geom <- geom[1]
   if (geom == "point") {geom <- "dot"}
 
-  # Avoid CRAN barking
-  survey <- mixed <- d <- design <- facvars <- fvars <- wts <- wname <- NULL
+  # Defining "global variables" for CRAN
+  modxvals2 <- mod2vals2 <- resp <- NULL
+
+  pred_out <- make_predictions(model = model, pred = pred,
+                               modx = modx,
+                               modxvals = modxvals, mod2 = mod2,
+                               mod2vals = mod2vals, centered = centered,
+                               data = data, interval = interval,
+                               int.type = int.type,
+                               int.width = int.width,
+                               outcome.scale = outcome.scale,
+                               linearity.check = FALSE,
+                               robust = robust, cluster = cluster,
+                               vcov = vcov, set.offset = set.offset,
+                               modx.labels = modx.labels,
+                               mod2.labels = mod2.labels,
+                               predvals = predvals,
+                               pred.labels = pred.labels)
+
+  # These are the variables created in the helper functions
+  meta <- attributes(pred_out)
+  # This function attaches all those variables to this environment
+  lapply(names(meta), function(x, env) {env[[x]] <- meta[[x]]},
+         env = environment())
+
+  # Putting these outputs into separate objects
+  pm <- pred_out$predicted
+  d <- pred_out$original
+
+  plot_cat(predictions = pm, pred = pred, modx = modx, mod2 = mod2,
+           data = d, geom = geom, predvals = predvals, modxvals = modxvals,
+           mod2vals = mod2vals, interval = interval, plot.points = plot.points,
+           point.shape = point.shape, vary.lty = vary.lty,
+           pred.labels = pred.labels, modx.labels = modx.labels,
+           mod2.labels = mod2.labels, x.label = x.label, y.label = y.label,
+           main.title = main.title, legend.main = legend.main,
+           color.class = color.class, wts = weights, resp = resp)
 
-  # This internal function has side effects that create objects
-  # in this environment
-  data_checks(model, data, interval)
 
-### Checking for factor input ################################################
-
-  # if (!is.factor(d[[pred]])) {
-  #   # I could assume the factor is properly ordered, but that's too risky
-  #   stop("Focal predictors (\"pred\") must be a factor.\n Either",
-  #        " convert it to a factor and re-fit the model\n",
-  #        " or use the interact_plot or effect_plot functions\n for ",
-  #        "interactions with continuous variables.")
-  # }
-  # if (!is.null(modx)) {
-  #   if (!is.factor(d[[modx]])) {
-  #     # I could assume the factor is properly ordered, but that's too risky
-  #     stop("Moderator (\"modx\") must be a factor.\n Either",
-  #          " convert it to a factor and re-fit the model\n",
-  #          " or use the interact_plot or effect_plot functions for \n",
-  #          "interactions with continuous variables.")
-  #   }
-  # }
-  # if (!is.null(mod2)) {
-  #   if (!is.factor(d[[mod2]])) {
-  #     # I could assume the factor is properly ordered, but that's too risky
-  #     stop("Moderator (\"mod2\") must be a factor.\n Either",
-  #          " convert it to a factor and re-fit the model\n",
-  #          " or use the interact_plot or effect_plot functions for\n ",
-  #          "interactions with continuous variables.")
-  #   }
-  # }
-
-#### Data checking ###########################################################
-
-  # weights?
-  if (survey == FALSE && ("(weights)" %in% names(d) |
-                          !is.null(getCall(model)$weights))) {
-    weights <- TRUE
-    wname <- as.character(getCall(model)["weights"])
-    if (any(colnames(d) == "(weights)")) {
-      colnames(d)[which(colnames(d) == "(weights)")] <- wname
-    }
-    wts <- d[[wname]]
-
-  } else {
-
-    weights <- FALSE
-    wname <- NULL
-    if (survey == FALSE) {wts <- rep(1, times = nrow(d))}
-
-  }
-
-  # offset?
-  if (!is.null(model.offset(model.frame(model)))) {
-
-    off <- TRUE
-    offname <- get_offname(model, survey)
-
-  } else {
-
-      off <- FALSE
-      offname <- NULL
-
-  }
-
-  # Setting default for colors
-  if (is.null(color.class)) {
-    color.class <- "Set2"
-  }
-
-  # Get the formula from lm object if given
-  formula <- formula(model)
-  formula <- paste(formula[2], formula[1], formula[3])
-
-  # Pulling the name of the response variable for labeling
-  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
-  resp <- trimws(resp)
-
-  # Drop unneeded columns from data frame
-  if (off == TRUE) {offs <- d[[offname]]}
-  d <- get_all_vars(formula, d)
-  # For setting dimensions correctly later
-  nc <- sum(names(d) %nin% c(wname, offname))
-  if (off == TRUE) {d[[offname]] <- offs}
-
-##### Centering ###############################################################
-
-  # Update facvars by pulling out all non-focals
-  facvars <-
-    facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
-
-  # Create omitvars variable; we don't center any of these
-  omitvars <- c(pred, resp, modx, mod2, wname, offname, facvars,
-                "(weights)", "(offset)")
-
-  if (survey == FALSE) {
-    design <- NULL
-  }
-
-  # Use utility function shared by all interaction functions
-  c_out <- center_values(d = d, weights = wts, omitvars = omitvars,
-                         survey = survey, design = design, centered = centered)
-
-  vals <- c_out$vals
-
-##### Creating predicted frame #################################################
-
-  # Creating a set of dummy values of the focal predictor for use in predict()
-  pred_len <- nlevels(d[[pred]])
-
-  if (!is.null(modx)) {
-    combos <- expand.grid(levels(factor(d[[pred]])), levels(factor(d[[modx]])))
-    combo_pairs <- paste(combos[[1]],combos[[2]])
-    og_pairs <- paste(d[[pred]], d[[modx]])
-    combos <- combos[combo_pairs %in% og_pairs,]
-    xpred_len <- nrow(combos)
-  } else {
-    xpred_len <- pred_len
-    combos <- as.data.frame(levels(d[[pred]]))
-  }
-
-  # Takes some rejiggering to get this right with second moderator
-  if (!is.null(mod2)) {
-    combos <- expand.grid(levels(d[[pred]]), levels(d[[modx]]),
-                          levels(d[[mod2]]))
-    combo_pairs <- paste(combos[[1]],combos[[2]],combos[[3]])
-    og_pairs <- paste(d[[pred]], d[[modx]], d[[mod2]])
-    combos <- combos[combo_pairs %in% og_pairs,]
-    xpred_len <- nrow(combos)
-  }
-
-  # Creating matrix for use in predict()
-  if (interval == TRUE) { # Only create SE columns if intervals needed
-    pm <- matrix(rep(0, xpred_len * (nc + 2)), ncol = (nc + 2))
-  } else {
-    pm <- matrix(rep(0, xpred_len * nc), ncol = nc)
-  }
-
-  # Naming columns
-  if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d), "ymax", "ymin")
-  } else {
-    colnames(pm) <- colnames(d)
-  }
-
-  # Convert to dataframe
-  pm <- as.data.frame(pm)
-
-  # Add values of moderator to df
-  if (!is.null(modx)) {
-    pm[[modx]] <- combos[[2]]
-    if (is.character(d[[modx]])) {pm[[modx]] <- as.character(pm[[modx]])}
-  }
-  if (!is.null(mod2)) { # if second moderator
-    pm[[mod2]] <- combos[[3]]
-    if (is.character(d[[mod2]])) {pm[[mod2]] <- as.character(pm[[mod2]])}
-  }
-
-  # Add values of focal predictor to df
-  pm[[pred]] <- combos[[1]]
-  if (is.character(d[[pred]])) {pm[[pred]] <- as.character(pm[[pred]])}
-
-  # Set factor covariates arbitrarily to their first level
-  if (length(facvars) > 0) {
-    for (v in facvars) {
-      pm[[v]] <- levels(d[[v]])[1]
-    }
-  }
-
-  if (off == TRUE) {
-    if (is.null(set.offset)) {
-      offset.num <- median(d[[offname]])
-    } else {
-      offset.num <- set.offset
-    }
-
-    pm[[offname]] <- offset.num
-    msg <- paste("Count is based on a total of", offset.num, "exposures")
-    message(msg)
-  }
-
-  # Adding mean values to newdata in lieu of actually re-fitting model
-  if (!is.null(vals)) {
-    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
-    for (var in names(vals)) {
-      pm[[var]] <- rep(vals[var], times = nrow(pm))
-    }
-  }
-
-#### Predicting with update models ############################################
-
-  # Create predicted values based on specified levels of the moderator,
-  # focal predictor
-
-  ## This is passed to predict(), but for svyglm needs to be TRUE always
-  interval_arg <- interval
-  if (survey == TRUE) {interval_arg <- TRUE}
-
-  if (mixed == TRUE) {
-    predicted <- as.data.frame(predict(model, newdata = pm,
-                                       type = outcome.scale,
-                                       allow.new.levels = F,
-                                       re.form = ~0))
-  } else {
-    if (robust == FALSE) {
-      predicted <- as.data.frame(predict(model, newdata = pm,
-                                         se.fit = interval_arg,
-                                         interval = int.type[1],
-                                         type = outcome.scale))
-    } else {
-
-      if (is.null(vcov)) {
-        the_vcov <- do_robust(model, robust, cluster, data)$vcov
-      } else {
-        the_vcov <- vcov
-      }
-
-      predicted <- as.data.frame(predict_rob(model, newdata = pm,
-                                             se.fit = interval_arg,
-                                             interval = int.type[1],
-                                             type = outcome.scale,
-                                             .vcov = the_vcov))
-    }
-  }
-  pm[[resp]] <- predicted[[1]] # this is the actual values
-
-  ## Convert the confidence percentile to a number of S.E. to multiply by
-  intw <- 1 - ((1 - int.width)/2)
-  ses <- qnorm(intw, 0, 1)
-
-  # See minimum and maximum values for plotting intervals
-  if (interval == TRUE) { # only create SE columns if intervals are needed
-    if (mixed == TRUE) {
-      # No SEs
-      warning("Standard errors cannot be calculated for mixed effect models.")
-    } else if (survey == FALSE) {
-      pm[["ymax"]] <- pm[[resp]] + (predicted[["se.fit"]]) * ses
-      pm[["ymin"]] <- pm[[resp]] - (predicted[["se.fit"]]) * ses
-    } else if (survey == TRUE) {
-      pm[["ymax"]] <- pm[[resp]] + (predicted[["SE"]]) * ses
-      pm[["ymin"]] <- pm[[resp]] - (predicted[["SE"]]) * ses
-    }
-  } else {
-    # Do nothing
-  }
-
-  # Saving x-axis label
-  if (is.null(x.label)) {
-    x.label <- pred
-  }
-
-  # Saving y-axis label
-  if (is.null(y.label)) {
-    y.label <- resp
-  }
-
-  # Labels for values of predictor and moderator
-  if (!is.null(modx)) {
-    if (!is.factor(d[[modx]])) {d[[modx]] <- factor(d[[modx]])}
-    pm[[modx]] <- factor(pm[[modx]], levels = levels(d[[modx]]))
-
-  }
-  if (!is.factor(d[[pred]])) {d[[pred]] <- factor(d[[pred]])}
-  pm[[pred]] <- factor(pm[[pred]], levels = levels(d[[pred]]))
-
-  # Setting labels for second moderator
-  if (!is.null(mod2)) {
-    if (!is.factor(d[[mod2]])) {d[[mod2]] <- factor(d[[mod2]])}
-    pm[[mod2]] <- factor(pm[[mod2]], levels = levels(d[[mod2]]))
-
-  }
-
-#### Plotting #################################################################
-
-  # If no user-supplied legend title, set it to name of moderator
-  if (is.null(legend.main)) {
-    legend.main <- modx
-  }
-
-  # Sequential palettes get different treatment
-  sequentials <-
-    c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd",
-      "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu",
-      "YlOrBr", "YlOrRd")
-
-  # Checking if user provided the colors his/herself
-  if (length(color.class) == 1 |
-      length(color.class) != length(levels(d[[pred]]))) {
-    # Get palette from RColorBrewer myself so I can use darker values
-    if (color.class %in% sequentials) {
-      colors <- RColorBrewer::brewer.pal((pred_len + 1), color.class)
-      colors <- rev(colors)[-1]
-    } else {
-      suppressWarnings(colors <- RColorBrewer::brewer.pal(pred_len, color.class))
-    }
-  }
-
-  names(colors) <- levels(d[[pred]])
-
-  a_level <- 1
-  if (plot.points == TRUE) {
-    if (!is.null(modx)) {
-      a_level <- 0
-    } else {
-      a_level <- 0.5
-    }
-  } else if (interval == TRUE) {
-    a_level <- 0.5
-  }
-
-  if (!is.null(modx)) {
-    if (point.shape == FALSE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                               colour = modx, fill = modx))
-    } else if (point.shape == TRUE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx,
-                                 shape = modx))
-    } else if (point.shape == FALSE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx,
-                                 linetype = modx))
-    } else if (point.shape == TRUE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx,
-                                 shape = modx, linetype = modx))
-    }
-  } else {
-    if (point.shape == FALSE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred))
-    } else if (point.shape == TRUE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred,
-                                 shape = pred))
-    } else if (point.shape == FALSE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred))
-    } else if (point.shape == TRUE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred,
-                                 shape = pred))
-    }
-  }
-
-  if (geom == "bar") {
-    p <- p + geom_bar(stat = "identity", position = "dodge", alpha = a_level)
-  } else if (geom == "boxplot") {
-    if (!is.null(modx)) {
-      p <- ggplot(d, aes_string(x = pred, y = resp,
-                              colour = modx)) +
-      geom_boxplot(position = position_dodge(0.9))
-    } else {
-      p <- ggplot(d, aes_string(x = pred, y = resp,
-                                colour = pred)) +
-        geom_boxplot(position = position_dodge(0.9))
-    }
-  } else if (geom == "line") {
-    p <- p + geom_path() + geom_point(size = 4)
-  } else if (geom == "dot") {
-    p <- p + geom_point(size = 3, position = position_dodge(0.9))
-  }
-
-  # Plot intervals if requested
-  if (interval == TRUE & geom %in% c("bar", "dot")) {
-
-    p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
-                         alpha = 1, show.legend = FALSE,
-                         position = position_dodge(0.9), width = 0.8)
-
-  } else if (interval == TRUE & geom %in% c("line")) {
-
-    p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
-                           alpha = 0.8, show.legend = FALSE, width = 0.5)
-
-  }
-
-  # If third mod, facet by third mod
-  if (!is.null(mod2)) {
-    facets <- facet_grid(paste(". ~", mod2))
-    p <- p + facets
-  }
-
-  # For factor vars, plotting the observed points
-  # and coloring them by factor looks great
-  if (plot.points == TRUE) {
-    # Transform weights so they have mean = 1
-    const <- length(wts)/sum(wts) # scaling constant
-    const <- const * 2 # make the range of values larger
-    wts <- const * wts
-    # Append weights to data
-    d[,"the_weights"] <- wts
-
-    if (point.shape == TRUE & !is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = modx,
-                                               size = "the_weights",
-                                               shape = modx),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
-                          inherit.aes = FALSE,
-                          show.legend = FALSE,
-                          alpha = 0.6)
-    } else if (point.shape == FALSE & !is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = modx,
-                                               size = "the_weights"),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
-                          inherit.aes = FALSE,
-                          show.legend = FALSE,
-                          alpha = 0.6)
-    } else if (point.shape == TRUE & is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = pred,
-                                               size = "the_weights",
-                                               shape = modx),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
-                          inherit.aes = FALSE,
-                          show.legend = FALSE,
-                          alpha = 0.6)
-    } else if (point.shape == FALSE & is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = pred,
-                                               size = "the_weights"),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
-                          inherit.aes = FALSE,
-                          show.legend = FALSE,
-                          alpha = 0.6)
-    }
-
-
-    # Add size aesthetic to avoid giant points
-    p <- p + scale_size_identity()
-
-  }
-
-  # Using theme_apa for theming...but using legend title and side positioning
-  if (is.null(mod2)) {
-    p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
-  } else {
-    # make better use of space by putting legend on bottom for facet plots
-    p <- p + theme_apa(legend.pos = "bottom", legend.use.title = TRUE,
-                       facet.title.size = 10)
-  }
-  p <- p + labs(x = x.label, y = y.label) # better labels for axes
-
-  # Get scale colors, provide better legend title
-  p <- p + scale_colour_brewer(name = legend.main, palette = color.class)
-  p <- p + scale_fill_brewer(name = legend.main, palette = color.class)
-
-  # Need some extra width to show the linetype pattern fully
-  p <- p + theme(legend.key.width = grid::unit(2, "lines"))
-
-  # Give the plot the user-specified title if there is one
-  if (!is.null(main.title)) {
-    p <- p + ggtitle(main.title)
-  }
-
-  # Return the plot
-  return(p)
 
 }
