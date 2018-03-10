@@ -411,11 +411,22 @@ summ.lm <- function(
   colnames(mat) <- namevec
 
   for (i in seq_len(length(params))) {
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
+    # Handle rank-deficient models
+    if (length(ucoefs) > length(params[[i]])) {
+      params[[i]] <- c(params[[i]],
+                       rep(NA, times = length(ucoefs) - length(params[[i]])))
     }
+
+    if (is.numeric(params[[i]])) {
+
+      mat[,i] <- params[[i]]
+
+    } else {
+
+      mat[,i] <- params[[i]]
+
+    }
+
   }
 
   # Drop p-vals if user requests
