@@ -204,7 +204,10 @@ export_summs <- function(...,
 
   if (!is.null(names(dots))) {
 
-    summ_args <- dots[names(dots) %in% names(summ_formals)]
+    # Because deprecated args aren't in formals, I add them here
+    dep_names <- c("standardize", "scale.response", "standardize.response",
+                   "center.response", "robust.type")
+    summ_args <- dots[names(dots) %in% c(names(summ_formals), dep_names)]
 
     # For those critical arguments that require a note, see if they were
     # provided by the user and overwrite if so
@@ -481,6 +484,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   if (!is.null(names(dots))) {
 
+    # Because deprecated args aren't in formals, I add them here
+    dep_names <- c("standardize", "scale.response", "standardize.response",
+                   "center.response", "robust.type")
     summ_args <- dots[names(dots) %in% names(summ_formals)]
 
     # For those critical arguments that require a note, see if they were
