@@ -470,6 +470,7 @@ summ.lm <- function(
 ### PRINT METHOD
 
 #' @export
+#' @importFrom crayon underline inverse italic
 
 print.summ.lm <- function(x, ...) {
 
@@ -482,27 +483,18 @@ print.summ.lm <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    if (x$missing == 0) {
-      cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-      cat("\n")
-    } else {
-      cat("MODEL INFO:", "\n", "Observations: ", x$n, " (", x$missing,
-          " missing obs. deleted)", "\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-      cat("\n")
-    }
+    type <- paste("OLS linear regression")
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == T) {
-    cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
-        round(x$fstat, digits = x$digits), ", p = ",
-        round(x$modpval, digits = x$digits),
-        "\n", "R-squared = ", round(x$rsq, digits = x$digits), "\n",
-        "Adj. R-squared = ",
-        round(x$arsq, digits = x$digits), "\n", "\n", sep = "")
+    stats <- paste(italic("F"), "(", x$fnum, ",", x$fden, ") = ",
+        num_print(x$fstat, digits = x$digits), ", ", italic("p"), " = ",
+        num_print(x$modpval, digits = x$digits), "\n",
+        italic("R-squared = "), num_print(x$rsq, digits = x$digits), "\n",
+        italic("Adj. R-squared = "), num_print(x$arsq, digits = x$digits),
+        sep = "")
+    print_mod_fit(stats)
   }
 
   if (x$model.check == TRUE) {
@@ -514,33 +506,14 @@ print.summ.lm <- function(x, ...) {
       homoskedtf <- paste0("Assumption not violated (p = ",
                           round(x$homoskedp, digits = x$digits), ")")
     }
-    cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ",
+    cat(underline("MODEL CHECKING:"), "\n",
+        "Homoskedasticity (Breusch-Pagan) = ",
         homoskedtf,
         "\n", "Number of high-leverage observations = ", x$cooksdf,
         "\n\n", sep = "")
   }
 
-  if (identical(FALSE, x$robust)) {
-
-    cat("Standard errors: OLS", "\n")
-
-  } else {
-
-    if (x$robust == TRUE) {x$robust <- "HC3"}
-
-    cat("Standard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-      cat(" Robust, type = ", x$robust, "\n", sep = "")
-
-    } else if (x$use_cluster == TRUE) {
-
-      cat(" Cluster-robust, type = ", x$robust, "\n", sep = "")
-
-    }
-
-  }
+  print_se_info(x$robust, x$use_cluster)
 
   print(ctable)
 
@@ -753,7 +726,7 @@ summ.glm <- function(
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(model))
+      tvifs[-1] <- unname(vif(model))
     }
   }
 
@@ -883,53 +856,30 @@ print.summ.glm <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
-    if (x$missing == 0) {
-      cat("\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-    } else {
-      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
-    }
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
-      cat("Type: Linear regression", "\n\n")
+      type <- "Linear regression"
     } else {
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+      type <- paste("Generalized linear model\n",
+                    italic("Family:"),
+                    as.character(x$lmFamily[1]), "\n",
+                    italic("Link function:"),
+                    as.character(x$lmFamily[2]), sep = " ")
     }
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == TRUE) {
-    cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-        round(x$rsq, digits = x$digits), "\n",
-        "Pseudo R-squared (McFadden) = ",
-        round(x$rsqmc, digits = x$digits),
-        "\n", "AIC = ", round(x$aic, x$digits), ", BIC = ",
-        round(x$bic, x$digits), "\n\n", sep = "")
+    stats <- paste(italic("Pseudo R-squared (Cragg-Uhler)"), " = ",
+                   num_print(x$rsq, digits = x$digits), "\n",
+                   italic("Pseudo R-squared (McFadden)"), " = ",
+                   num_print(x$rsqmc, digits = x$digits), "\n",
+                   italic("AIC"), " = ", num_print(x$aic, x$digits),
+                   ", ", italic("BIC"), " = ", num_print(x$bic, x$digits),
+                   sep = "")
+    print_mod_fit(stats)
   }
 
-  if (identical(FALSE, x$robust)) {
-
-    cat("Standard errors: MLE", "\n")
-
-  } else {
-
-    if (x$robust == TRUE) {x$robust <- "HC3"}
-
-    cat("Standard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-      cat(" Robust, type = ", x$robust, "\n", sep = "")
-
-    } else if (x$use_cluster == TRUE) {
-
-      cat(" Cluster-robust, type = ", x$robust, "\n", sep = "")
-
-    }
-
-  }
+  print_se_info(x$robust, x$use_cluster)
 
   print(ctable)
 
@@ -1316,43 +1266,38 @@ print.summ.svyglm <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    # Always showing this
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
-    if (x$missing == 0) {
-      cat("\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-    } else {
-      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
-    }
-    cat("\n", "Analysis of complex survey design", "\n", sep = "")
     # If it's linear...
     if (as.character(x$lmFamily[1]) == "gaussian" &&
         as.character(x$lmFamily[2]) == "identity") {
       # Just call it linear
-      cat("Survey-weighted linear regression", "\n", "\n", sep = "")
+      type <- paste("Survey-weighted linear regression", sep = "")
     } else {
       # Otherwise just treat it like glm
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ", as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+      type <- paste("Analysis of complex survey design", "\n",
+                  italic("Family:"), as.character(x$lmFamily[1]),
+                  "\n", italic("Link function:"), as.character(x$lmFamily[2]),
+                  sep = " ")
     }
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == TRUE) { # Show fit statistics
     if (as.character(x$lmFamily[1]) == "gaussian" &&
         as.character(x$lmFamily[2]) == "identity") {
       # If it's a linear model, show regular lm fit stats
-      cat("MODEL FIT: ", "\n", "R-squared = ", round(x$rsq, digits = x$digits),
-          "\n", "Adj. R-squared = ", round(x$arsq, digits = x$digits), "\n",
-          "\n", sep = "")
+      stats <- paste(italic("R-squared"), " = ",
+                     num_print(x$rsq, digits = x$digits), "\n",
+                     italic("Adj. R-squared"), " = ",
+                     num_print(x$arsq, digits = x$digits), sep = "")
     } else {
       # If it isn't linear, show GLM fit stats
-      cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-          round(x$rsq, digits = x$digits), "\n",
-          "Pseudo R-squared (McFadden) = ",
-          round(x$rsqmc, digits = x$digits),
-          "\n", "AIC = ", round(x$aic, x$digits), "\n\n", sep = "")
+      stats <- paste(italic("Pseudo R-squared (Cragg-Uhler)"), " = ",
+                     num_print(x$rsq, digits = x$digits), "\n",
+                     italic("Pseudo R-squared (McFadden)"), " = ",
+                     num_print(x$rsqmc, digits = x$digits), "\n",
+                     italic("AIC"), " = ", num_print(x$aic, x$digits), sep = "")
     }
+    print_mod_fit(stats)
   }
 
   if (x$model.check == TRUE && x$linear == TRUE) {
@@ -1872,42 +1817,40 @@ print.summ.merMod <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
-        "Dependent Variable: ",
-        x$dv, "\n", sep = "")
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
-      cat("Type: Mixed effects linear regression", "\n\n")
+      type <- "Mixed effects linear regression"
     } else {
-      cat("\nType: Mixed effects generalized linear regression", "\n",
-          "Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+      type <- paste("Mixed effects generalized linear regression", "\n",
+                    italic("Error Distribution: "),
+                    as.character(x$lmFamily[1]), "\n",
+                    italic("Link function: "), as.character(x$lmFamily[2]),
+                    sep = "")
     }
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == T) {
-    cat("MODEL FIT: ",
-        "\n", "AIC = ", round(x$aic, x$digits),
-        ", BIC = ", round(x$bic, x$digits), "\n", sep = "")
+    stats <- paste(italic("AIC"), " = ", num_print(x$aic, x$digits),
+                   ", ", italic("BIC"), " = ",
+                   num_print(x$bic, x$digits), sep = "")
     if (x$r.squared == TRUE) {
-      cat("Pseudo R-squared (fixed effects) = ", round(x$rsq$Marginal,
-                                                       x$digits),
-          "\n", sep = "")
-      cat("Pseudo R-squared (total) = ", round(x$rsq$Conditional, x$digits),
-          "\n\n", sep = "")
-    } else {
-      cat("\n")
+      stats <- paste(stats, "\n", italic("Pseudo R-squared (fixed effects)"),
+                     " = ", num_print(x$rsq$Marginal, x$digits), "\n",
+                     italic("Pseudo R-squared (total)"), " = ",
+                     num_print(x$rsq$Conditional, x$digits), sep = "")
     }
+    print_mod_fit(stats)
   }
 
-  cat("FIXED EFFECTS:\n")
+  cat(underline("FIXED EFFECTS:\n"))
   print(ctable)
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
     if (x$pbkr == FALSE & is.null(x$t.df)) {
 
-      cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
+      cat(italic$cyan("\nNote: p values calculated based on residual d.f. ="),
+          x$df, "\n")
 
       message("Using p values with lmer based on residual d.f. may inflate\n",
               "the Type I error rate in many common study designs. \n",
@@ -1915,18 +1858,19 @@ print.summ.merMod <- function(x, ...) {
 
     } else if (x$pbkr == TRUE & is.null(x$t.df)) {
 
-      cat("\np values calculated using Kenward-Roger d.f. =",
+      cat(italic("\np values calculated using Kenward-Roger d.f. ="),
           round(x$df, x$digits), "\n")
 
     } else if (!is.null(x$t.df)) {
 
       if (x$t.df %in% c("residual","resid")) {
 
-        cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
+        cat(italic("\nNote: p values calculated based on residual d.f. ="),
+            x$df, "\n")
 
       } else {
 
-        cat("\nNote: p values calculated based on user-defined d.f. =",
+        cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
             x$df, "\n")
 
       }
@@ -1935,12 +1879,12 @@ print.summ.merMod <- function(x, ...) {
 
   }
 
-  cat("\nRANDOM EFFECTS:\n")
+  cat(underline("\nRANDOM EFFECTS:\n"))
   rtable <- round_df_char(j$rcoeftable, digits = x$digits)
   #rownames(rtable) <- rep("", times = nrow(rtable))
   print(rtable, row.names = FALSE)
 
-  cat("\nGrouping variables:\n")
+  cat(underline("\nGrouping variables:\n"))
   gtable <- round_df_char(j$gvars, digits = x$digits)
   gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
   #rownames(gtable) <- rep("", times = nrow(gtable))
@@ -2067,4 +2011,3 @@ update_summ <- function(summ, call.env, ...) {
   eval(call, env, parent.frame())
 
 }
-
