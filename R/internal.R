@@ -27,6 +27,12 @@ check_if_zero_base <- function(x) {
 
 # This seems to give about a 80%-90% speed boost
 check_if_zero <- Vectorize(check_if_zero_base)
+
+# Automate the addition of newline characters for long strings
+wrap_str <- function(s) {
+  paste0(strwrap(s, width = 0.9 * getOption("width", 80)), collapse = "\n")
+}
+
 #### summ helpers ############################################################
 
 ## Automates the adding of the significance stars to the output
