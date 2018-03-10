@@ -595,8 +595,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       retmati <- retmat
 
       # Value labels
-      colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
-      colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+      colnames(retmat) <-
+        c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+      colnames(retmati) <-
+        c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
 
     }
 
