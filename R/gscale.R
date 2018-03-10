@@ -212,6 +212,9 @@ gscale <- function(data = NULL, vars = NULL, binary.inputs = "center",
 
     if (is.null(vars)) {
       vars <- names(d)
+    } else if (any(vars %nin% names(d))) {
+      stop(vars[which(vars %nin% names(d))[1]],
+           " is not a column name in the supplied data.")
     }
 
     for (name in vars) {
