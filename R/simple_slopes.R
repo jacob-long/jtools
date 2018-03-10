@@ -128,6 +128,7 @@
 #' sim_slopes(model = fiti, pred = Murder, modx = Illiteracy)
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
@@ -138,6 +139,7 @@
 #' # 3-way with survey and factor input
 #' regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
+#' }
 #'
 #' @importFrom stats coef coefficients lm predict sd update getCall vcov relevel
 #' @export
@@ -712,6 +714,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 #### PRINT METHOD ############################################################
 
 #' @export
+#' @importFrom cli cat_rule rule
+#' @importFrom crayon red bold
 
 print.sim_slopes <- function(x, ...) {
 
@@ -745,16 +749,14 @@ print.sim_slopes <- function(x, ...) {
       # Printing output to make it clear where each batch of second moderator
       # slopes begins
       if (x$def2 == FALSE) {
-        cat("############################################################\n")
-        cat("While", x$mod2, "(2nd moderator)", "=", x$mod2vals[j], "\n")
-        cat("############################################################\n\n")
+        cat(rule(center = paste0("While ", x$mod2, " (2nd moderator) ",
+                               "= ", x$mod2vals[j]), line = "bar8"), "\n\n")
       } else {
         # If the user went with default +/- SD or used a factor variable,
         # we use the labels
-        cat("############################################################\n")
-        cat("While ", x$mod2, " (2nd moderator)", " = ", x$mod2vals[j], " (",
-            names(x$mod2vals)[j], ")", "\n", sep = "")
-        cat("############################################################\n\n")
+        cat(rule(center = paste0("While ", x$mod2, " (2nd moderator)", " = ",
+                 x$mod2vals[j], " (", names(x$mod2vals)[j], ")"),
+                 line = "bar8"), "\n\n")
       }
 
 
@@ -778,7 +780,7 @@ print.sim_slopes <- function(x, ...) {
     }
 
     # Clearly label simple slopes
-    cat("SIMPLE SLOPES ANALYSIS\n\n")
+    cat(bold(underline("SIMPLE SLOPES ANALYSIS")), "\n\n")
 
     for (i in seq_len(length(x$modxvals))) {
 
@@ -791,9 +793,9 @@ print.sim_slopes <- function(x, ...) {
 
         slopes <- as.data.frame(lapply(m$slopes[i,2:4], as.numeric))
 
-        cat("Slope of ", x$pred, " when ", x$modx, " = ",
+        cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
             x$modxvals[i], " (", names(x$modxvals)[i], ")",
-            ": \n", sep = "")
+            ": \n")))
         print(format(slopes, nsmall = x$digits, digits = 0),
               row.names = FALSE)
 
@@ -802,9 +804,9 @@ print.sim_slopes <- function(x, ...) {
 
           ints <- as.data.frame(lapply(m$ints[i,2:4], as.numeric))
 
-          cat("Conditional intercept"," when ", x$modx, " = ",
+          cat(italic(paste0("Conditional intercept"," when ", x$modx, " = ",
               x$modxvals[i], " (", names(x$modxvals)[i], ")",
-              ": \n", sep = "")
+              ": \n")))
           print(format(ints, nsmall = x$digits, digits = 0),
                 row.names = FALSE)
           cat("\n")
@@ -814,9 +816,9 @@ print.sim_slopes <- function(x, ...) {
 
         slopes <- as.data.frame(lapply(m$slopes[i,2:4], as.numeric))
 
-        cat("Slope of ", x$pred, " when ", x$modx, " = ",
+        cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
             x$modxvals[i],
-            ": \n", sep = "")
+            ": \n")))
         print(format(slopes, nsmall = x$digits, digits = 0), row.names = FALSE)
 
         # Print conditional intercept
@@ -824,8 +826,8 @@ print.sim_slopes <- function(x, ...) {
 
           ints <- as.data.frame(lapply(m$ints[i,2:4], as.numeric))
 
-          cat("Conditional intercept", " when ", x$modx, " = ",
-              x$modxvals[i], ": \n", sep = "")
+          cat(italic(paste0("Conditional intercept", " when ", x$modx, " = ",
+              x$modxvals[i], ": \n")))
           print(format(ints, nsmall = x$digits, digits = 0), row.names = FALSE)
           cat("\n")
         } else {cat("\n")}
