@@ -588,7 +588,8 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
     scale_colour_brewer(palette = color.class,
             limits = rev(levels(tidies$model))) +
     scale_y_discrete(limits = rev(levels(tidies$term))) +
-    theme_apa(legend.pos = "right", legend.font.size = 9) +
+    theme_apa(legend.pos = "right", legend.font.size = 9,
+              remove.x.gridlines = FALSE) +
     theme(axis.title.y = element_blank(),
                    axis.title.x = element_blank(),
                    axis.text.y = element_text(size = 10)) +
@@ -735,7 +736,8 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
     scale_colour_brewer(palette = color.class,
      limits = rev(levels(tidies$model))) +
     scale_y_discrete(limits = rev(levels(tidies$term))) +
-    theme_apa(legend.pos = "right", legend.font.size = 9) +
+    theme_apa(legend.pos = "right", legend.font.size = 9,
+              remove.x.gridlines = FALSE) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.text.y = element_text(size = 10)) +
