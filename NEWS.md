@@ -1,12 +1,12 @@
 # jtools 1.0.0.9000
 
-**Major release**
+## Major release
 
 This release has several big changes embedded within, side projects that needed
 a lot of work to implement and required some user-facing changes. Overall
 these are improvements, but in some edge cases they could break old code.
 
-## `interact_plot`, `cat_plot`, and `effect_plot`
+### `interact_plot`, `cat_plot`, and `effect_plot`
 
 These functions no longer re-fit the inputted model to center covariates,
 impose labels on factors, and so on. This generally has several key positives,
@@ -45,7 +45,32 @@ predictor to numeric before fitting the model or use `cat_plot`. Relatedly,
 two-level factor covariates are no longer centered and are simply
 set to their reference value.
 
-## All interaction tools
+**Another cool new feature**: Plotting robust standard errors for compatible
+models (tested on `lm`, `glm`). Just use the `robust` argument like you would 
+for `sim_slopes` or `summ`.
+
+**Preliminary support for confidence intervals for `merMod` models**: You may 
+now get confidence intervals when using `merMod` objects as input to the
+plotting functions. Of importance, though, is the uncertainty is *only for
+the fixed effects*. For now, a warning is printed. 
+
+### `make_predictions` and `plot_predictions`: New tools for plotting 
+
+To let users have some more flexibility, `jtools` now lets users directly 
+access the (previously internal) functions that make `effect_plot`, `cat_plot`,
+and `interact_plot` work. This should make it easier to tailor the
+outputs for specific needs. Some features may be implemented for these functions
+only to keep the `_plot` functions from getting any more complicated than they
+already are.
+
+One such feature specific to `make_predictions` is **bootstrap confidence
+intervals for `merMod` models**.
+
+### All interaction tools
+
+You may no longer use these tools to scale the models. Use `scale_mod`, save
+the resulting object, and use that as your input to the functions if you want
+scaling.
 
 All these tools have a new default `centered` argument. They are now set to
 `centered = "all"`, but `"all"` no longer means what it used to. Now it refers
@@ -56,14 +81,14 @@ that previous versions did. But instead of having that occur when
 `NULL` option any longer. Note that with `sim_slopes`, the focal predictor
 (`pred`) will now be centered --- this only affects the conditional intercept.
 
-## `sim_slopes`
+### `sim_slopes`
 
 This function now supports categorical (factor) moderators, though there is
 no option for Johnson-Neyman intervals in these cases. You can use the 
 significance of the interaction term(s) for inference about whether the slopes
 differ at each level of the factor when the moderator is a factor.
 
-## `gscale`
+### `gscale`
 
 The interface has been changed slightly, with the actual numbers always provided
 as the `data` argument. There is no `x` argument and instead a `vars` argument
@@ -78,7 +103,11 @@ There are two new functions that are wrappers around `gscale`: `standardize`
 and `center`, which call `gscale` but with `n.sd = 1` in the first case and
 with `center.only = TRUE` in the latter case.
 
-## `summ`
+### `summ`
+
+Tired of specifying your preferred configuration every time you use `summ`?
+Now, many arguments will by default check your options so you can set your
+own defaults. See `?set_summ_defaults` for more info.
 
 Rather than having separate `scale.response` and `center.response` arguments,
 each `summ` function now uses `transform.response` to collectively cover those
@@ -104,13 +133,19 @@ complex models, the speed-up is roughly 50x faster. Because of how much faster
 it now is and how much less frequently it throws errors or prints cryptic 
 messages, it is now calculated by default. 
 
+`summ.glm`/`summ.svyglm` now will calculate pseudo-R^2 for quasibinomial and
+quasipoisson families using the value obtained from refitting them as
+binomial/poisson. For now, I'm not touching AIC/BIC for such models 
+because the underlying theory is a bit different and the implementation
+more challenging.
+
 The `summ.default` method has been removed. It was becoming an absolute terror
 to maintain and I doubted anyone found it useful. It's hard to provide the
 value added for models of a type that I do not know (robust errors don't 
 always apply, scaling doesn't always work, model fit statistics may not make
 sense, etc.). Bug me if this has really upset things for you.
 
-## `scale_lm` and `center_lm` are now `scale_mod`/`center_mod`
+### `scale_lm` and `center_lm` are now `scale_mod`/`center_mod`
 
 To better reflect the capabilities of these functions (not restricted to `lm`
 objects), they have been renamed. The old names will continue to work to 
@@ -119,6 +154,25 @@ preserve old code.
 However, `scale.response` and `center.response` now default to `FALSE` to
 reflect the fact that only OLS models can support transformations of the
 dependent variable in that way.
+
+There is a new `vars =` argument for `scale_mod` that allows you to only apply
+scaling to whichever variables are included in that character vector.
+
+I've also implemented a neat technical fix that allows the updated model to
+itself be updated while not also including the actual raw data in the model
+call.
+
+### Survey tools
+
+`weights_tests` --- `wgttest` and `pf_sv_test` --- now handle missing data
+in a more sensible and consistent way.
+
+### Other stuff
+
+Using the `crayon` package as a backend, console output is now formatted
+for most `jtools` functions for better readability on supported systems.
+Feedback on this is welcome since this might look better or worse in
+certain editors/setups.
 
 # jtools 0.9.4 (CRAN release)
 
