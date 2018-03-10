@@ -46,7 +46,7 @@ add_stars <- function(table, digits, p_vals) {
     # Add the stars
     for (y in 1:length(pvals)) {
 
-      if (pvals[y] > 0.1) {
+      if (is.na(pvals[y]) || pvals[y] > 0.1) {
         sigstars[y] <- ""
       } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
         sigstars[y] <- "."
