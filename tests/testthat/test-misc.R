@@ -47,7 +47,13 @@ test_that("interact_plot works for lm", {
                                    mod2 = HSGrad,
                                    centered = "none"))
   expect_silent(print(p))
-
+  expect_silent(p <- interact_plot(model = fit,
+                                   pred = Murder,
+                                   modx = Illiteracy,
+                                   mod2 = HSGrad,
+                                   centered = "all",
+                                   robust = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("sim_slopes works for lm", {
@@ -171,12 +177,15 @@ if (requireNamespace("lme4")) {
   test_that("interact_plot works for lme4", {
     expect_error(p <- interact_plot(mve, pred = mode, modx = Gender))
     expect_silent(p <- interact_plot(mv, pred = mode_numeric, modx = Gender))
+    expect_silent(p <- interact_plot(mv, pred = mode_numeric, modx = Gender,
+                                     interval = TRUE))
     expect_silent(print(p))
   })
 
   test_that("effect_plot works for lme4", {
     expect_error(p <- effect_plot(mve, pred = mode))
     expect_silent(p <- effect_plot(mv, pred = mode_numeric))
+    expect_silent(p <- effect_plot(mv, pred = mode_numeric, interval = TRUE))
     expect_silent(print(p))
   })
 }
@@ -194,6 +203,12 @@ pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
 
 test_that("interact_plot handles offsets", {
   expect_message(p <- interact_plot(pmod, pred = talent, modx = money))
+  expect_silent(print(p))
+})
+
+test_that("interact_plot handles offsets with robust SE", {
+  expect_message(p <- interact_plot(pmod, pred = talent, modx = money,
+                                    robust = TRUE))
   expect_silent(print(p))
 })
 
@@ -215,6 +230,11 @@ test_that("effect_plot works for lm", {
                                  pred = Murder,
                                  centered = "HSGrad"))
   expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 robust = TRUE))
+  expect_silent(print(p))
 })
 
 test_that("effect_plot works for weighted lm", {
@@ -225,6 +245,11 @@ test_that("effect_plot works for weighted lm", {
   expect_silent(p <- effect_plot(model = fitw,
                                  pred = Murder,
                                  centered = "HSGrad"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 robust = TRUE))
   expect_silent(print(p))
 })
 
