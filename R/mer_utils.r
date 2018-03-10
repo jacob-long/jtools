@@ -392,6 +392,158 @@ get.random.formula = function(model, rhs) {
 
 }
 
+
+#### merMod prediction #######################################################
+
+#' @importFrom stats vcov model.frame terms delete.response na.omit
+predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
+                        se.fit = TRUE, dispersion = NULL, terms = NULL,
+                        allow.new.levels = TRUE,
+                        type = c("link", "response", "terms"),
+                        na.action = na.pass, re.form = NULL,
+                        boot = FALSE, sims = 100, ...) {
+
+  if (is.null(newdata) && is.null(re.form)) {
+    ## raw predict() call, just return fitted values
+    ##   (inverse-link if appropriate)
+    if (lme4::isLMM(model) || lme4::isNLMM(model)) {
+      ## make sure we do *NOT* have NAs in fitted object
+      fit <- na.omit(fitted(model))
+    } else { ## inverse-link
+      fit <-  switch(type, response = model@resp$mu, ## == fitted(object),
+                     link = model@resp$eta)
+      if (is.null(nm <- rownames(model.frame(model)))) {
+        nm <- seq_along(fit)
+      }
+      names(fit) <- nm
+    }
+    fit.na.action <- NULL
+
+    # Need this for SEs
+    X <- lme4::getME(model, "X")
+    X.col.dropped <- attr(X, "col.dropped")
+
+    ## flow jumps to end for na.predict
+  } else { ## newdata and/or re.form
+
+    fit.na.action <- attr(model@frame, "na.action")  ## original NA action
+
+    nobs <- if (is.null(newdata)) nrow(model@frame) else nrow(newdata)
+    fit <- rep(0,nobs)
+
+    X <- lme4::getME(model, "X")
+    X.col.dropped <- attr(X, "col.dropped")
+    ## modified from predict.glm ...
+    if (is.null(newdata)) {
+      ## Use original model 'X' matrix and offset
+      ## orig. offset: will be zero if there are no matches ...
+      offset <- model.offset(model.frame(model))
+      if (is.null(offset)) offset <- 0
+    } else {  ## new data specified
+      ## evaluate new fixed effect
+      RHS <- formula(substitute(~R,
+                                list(R = RHSForm(formula(model, fixed.only = TRUE)))))
+      Terms <- terms(model, fixed.only = TRUE)
+      mf <- model.frame(model, fixed.only = TRUE)
+      isFac <- vapply(mf, is.factor, FUN.VALUE = TRUE)
+      ## ignore response variable
+      isFac[attr(Terms,"response")] <- FALSE
+      orig_levs <- if (length(isFac) == 0) NULL else lapply(mf[isFac], levels)
+
+      mfnew <- suppressWarnings(
+        model.frame(delete.response(Terms), newdata,
+                    na.action = na.action, xlev = orig_levs))
+
+      X <- model.matrix(RHS, data = mfnew,
+                        contrasts.arg = attr(X,"contrasts"))
+      ## hack to remove unused interaction levels?
+      ## X <- X[,colnames(X0)]
+
+      offset <- 0 # rep(0, nrow(X))
+      tt <- terms(model)
+      if (!is.null(off.num <- attr(tt, "offset"))) {
+        for (i in off.num)
+          offset <- offset + eval(attr(tt,"variables")[[i + 1]], newdata)
+      }
+      fit.na.action <- attr(mfnew, "na.action")
+      ## only need to drop if new data specified ...
+      if (is.numeric(X.col.dropped) && length(X.col.dropped) > 0) {
+        X <- X[, -X.col.dropped, drop = FALSE]
+      }
+
+      fit <- drop(X %*% lme4::fixef(model))
+      fit <- fit + offset
+
+    }
+
+  }  ## newdata/newparams/re.form
+
+  if (se.fit == TRUE & boot == FALSE) {
+    .vcov <- as.matrix(vcov(model))
+    fit.ses <- sqrt(diag(X %*% .vcov %*% t(X)))
+
+    if (lme4::isGLMM(model)) {
+      switch(type, response = {
+        fit.ses <- fit.ses * abs(family(model)$mu.eta(fit))
+        fit <- model@resp$family$linkinv(fit)
+      }, link = , terms = )
+    } else {
+      fit.ses <- fit.ses * abs(family(model)$mu.eta(fit))
+    }
+
+    re_vcov <- lme4::VarCorr(model)
+    # Sum each random intercept variance
+    re_variances <- sum(sapply(re_vcov, function(x) {x[1]}))
+
+    if (use_re_var == TRUE) {
+      fit.ses <- fit.ses + re_variances
+    }
+
+  } else if (se.fit == TRUE & boot == TRUE) {
+
+    bootfun <- function(model) {
+      drop( X  %*% lme4::fixef(model) )
+    }
+    bo <- lme4::bootMer(model, FUN = bootfun, nsim = sims, .progress = "txt")
+    fit <- bo$t
+
+    if (lme4::isGLMM(model)) {
+      switch(type, response = {
+        fit <- model@resp$family$linkinv(fit)
+      }, link = , terms = )
+    }
+
+  }
+
+  type <- type[1]
+  if (!noReForm(re.form)) {
+    if (is.null(re.form))
+      re.form <- reOnly(formula(model)) # RE formula only
+    rfd <- if (is.null(newdata)) {model@frame} else {newdata}
+    newRE <- mkNewReTrms(model, rfd, re.form, na.action = na.action,
+                         allow.new.levels = allow.new.levels)
+    REvals <- base::drop(methods::as(newRE$b %*% newRE$Zt, "matrix"))
+    fit <- fit + REvals
+  }
+
+  if (se.fit == FALSE & lme4::isGLMM(model)) {
+    switch(type, response = {
+      fit <- model@resp$family$linkinv(fit)
+    }, link = , terms = )
+  }
+
+  if (se.fit == TRUE & boot == FALSE) {
+    return(list(fit = fit, se.fit = fit.ses))
+  } else if (se.fit == TRUE & boot == TRUE) {
+    return(list(fit = fit))
+  } else {
+    return(fit)
+  }
+
+
+}
+
+
 ### Lifted from lme4 ########################################################
 
 noReForm <- function(re.form) {
