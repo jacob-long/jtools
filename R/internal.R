@@ -87,6 +87,7 @@ add_stars <- function(table, digits, p_vals) {
 ## values.
 
 round_df_char <- function(df, digits, pad = " ") {
+
   nas <- is.na(df)
   if (!is.data.frame(df)) {
     # Fixes a sneaky error
@@ -96,6 +97,7 @@ round_df_char <- function(df, digits, pad = " ") {
 
   rn <- rownames(df)
   cn <- colnames(df)
+
   df <- as.data.frame(lapply(df, function(col) {
     if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
       as.numeric(as.character(col))
@@ -106,15 +108,16 @@ round_df_char <- function(df, digits, pad = " ") {
 
   nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
 
-  # Using a format function here to force trailing zeroes to be printed
-  # "formatC" allows signed zeros (e.g., "-0.00")
-  df <- as.data.frame(lapply(df, formatC, digits = digits, format = "f"),
-                      stringsAsFactors = FALSE)
-
   # Convert missings to blank character
   if (any(nas)) {
     df[nas] <- ""
   }
+
+
+  # Using a format function here to force trailing zeroes to be printed
+  # "formatC" allows signed zeros (e.g., "-0.00")
+  df <- as.data.frame(lapply(df, num_print, digits = digits),
+                      stringsAsFactors = FALSE)
 
   # Here's where we align the the decimals, thanks to Noah for the magic.
   for (i in which(nums)) {
@@ -308,6 +311,100 @@ scale_statement <- function(scale, center, transform.response, n.sd) {
     paste0(part_1, part_2, part_3, part_4, part_5, ".")
   }
 }
+
+# Adapted from car::vif
+vif <- function(mod, ...) {
+
+  if (any(is.na(coef(mod)))) {
+    stop("VIFs cannot be calculated because",
+         " there are aliased coefficients in the model.")
+  }
+
+  v <- vcov(mod)
+  assign <- attr(model.matrix(mod), "assign")
+
+  if (names(coefficients(mod)[1]) == "(Intercept)") {
+    v <- v[-1, -1]
+    assign <- assign[-1]
+  } else {
+    warning("No intercept: VIFs may not be sensible.")
+  }
+
+  terms <- labels(terms(mod))
+  n.terms <- length(terms)
+
+  if (n.terms < 2) {
+    stop("VIFS cannot be calculated because the model contains fewer ",
+         "than 2 terms.")
+  }
+
+  R <- cov2cor(v)
+  detR <- det(R)
+  result <- matrix(0, n.terms, 3)
+  rownames(result) <- terms
+  colnames(result) <- c("GVIF", "Df", "GVIF^(1/(2*Df))")
+
+  for (term in 1:n.terms) {
+    subs <- which(assign == term)
+    result[term, 1] <- det(as.matrix(R[subs, subs])) *
+      det(as.matrix(R[-subs, -subs])) / detR
+    result[term, 2] <- length(subs)
+  }
+  if (all(result[, 2] == 1)) {
+    result <- result[, 1]
+  } else {
+    result[, 3] <- result[, 1]^(1/(2 * result[, 2]))
+  }
+
+  return(result)
+
+}
+
+print_mod_info <- function(missing, n, dv, type) {
+  if (is.null(missing) || missing == 0) {
+    cat(underline("MODEL INFO:"), "\n",
+        italic("Observations:"), " ",  n, "\n",
+        italic("Dependent Variable:"), " ", dv, "\n", sep = "")
+  } else {
+    cat(underline("MODEL INFO:"), "\n",
+        italic("Observations:"), " ", n, " (", missing,
+        " missing obs. deleted)", "\n",
+        italic("Dependent Variable:"), " ", dv, "\n", sep = "")
+  }
+  cat(italic("Type:"), type, "\n\n")
+}
+
+print_mod_fit <- function(stats) {
+  cat(underline("MODEL FIT:"), "\n", sep = "")
+  cat(stats, "\n\n")
+}
+
+print_se_info <- function(robust, use_cluster) {
+
+  if (identical(FALSE, robust)) {
+
+    cat(italic("Standard errors: MLE"), "\n", sep = "")
+
+  } else {
+
+    if (robust == TRUE) {robust <- "HC3"}
+
+    cat(italic("Standard errors:"), sep = "")
+
+    if (use_cluster == FALSE) {
+
+      cat(" Robust, ", italic("type = "), robust, "\n", sep = "")
+
+    } else if (use_cluster == TRUE) {
+
+      cat(" Cluster-robust, ", italic("type = "), robust, "\n", sep = "")
+
+    }
+
+  }
+
+}
+
 
 ### pseudo-R2 ################################################################
 
