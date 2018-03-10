@@ -828,6 +828,13 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
+  zeroes <- check_if_zero(base[names(base) %nin% "term"])
+  if (any(zeroes == TRUE)) {
+    basenums <- base[names(base) %nin% "term"]
+    basenums[zeroes] <- 0
+    base[names(base) %nin% "term"] <- basenums
+  }
+
   return(base)
 
 }

@@ -15,6 +15,18 @@ num_print <- function(x, digits = getOption("jtools-digits", 2),
   formatC(x, digits = digits, format = "f")
 }
 
+check_if_zero_base <- function(x) {
+  # this is the default tolerance used in all.equal
+  tolerance <- .Machine$double.eps^0.5
+  # If the absolute deviation between the number and zero is less than
+  # the tolerance of the floating point arithmetic, then return TRUE.
+  # This means, to me, that I can treat the number as 0 rather than
+  # -3.20469e-16 or some such.
+  abs(x - 0) < tolerance
+}
+
+# This seems to give about a 80%-90% speed boost
+check_if_zero <- Vectorize(check_if_zero_base)
 #### summ helpers ############################################################
 
 ## Automates the adding of the significance stars to the output
