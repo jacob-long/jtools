@@ -237,12 +237,14 @@ j_summ <- summ
 #' @aliases j_summ.lm
 
 summ.lm <- function(
-  model, scale = FALSE, confint = FALSE, ci.width = .95,
-  robust = FALSE, cluster = NULL, vifs = FALSE,
-  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  vifs = getOption("summ-vifs", FALSE),
+  digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
-  part.corr = FALSE, model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  ...) {
+  part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE, ...) {
 
   j <- list()
 
@@ -335,7 +337,7 @@ summ.lm <- function(
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(model))
+      tvifs[-1] <- unname(vif(model))
     }
   }
 
@@ -631,13 +633,15 @@ print.summ.lm <- function(x, ...) {
 #'
 
 summ.glm <- function(
-  model, scale = FALSE, confint = FALSE, ci.width = .95,
-  robust = FALSE, cluster = NULL, vifs = FALSE,
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", default = 2),
-  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE,
-  pvals = TRUE, n.sd = 1, center = FALSE,
-  transform.response = FALSE, data = NULL,
-  ...) {
+  odds.ratio = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
+  center = FALSE, transform.response = FALSE, data = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), ...) {
 
   j <- list()
 
@@ -997,13 +1001,15 @@ print.summ.glm <- function(x, ...) {
 #' @aliases j_summ.svyglm
 
 summ.svyglm <- function(
-  model, scale = FALSE,
-  confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  digits = getOption("jtools-digits", default = 2),
+  pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE,
-  odds.ratio = FALSE, vifs = FALSE,
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  ...) {
+  odds.ratio = FALSE, vifs = getOption("summ-vifs", FALSE),
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE),
+  model.check = FALSE, ...) {
 
   j <- list()
 
@@ -1177,7 +1183,7 @@ summ.svyglm <- function(
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(model))
+      tvifs[-1] <- unname(vif(model))
     }
   }
 
@@ -1528,12 +1534,13 @@ print.summ.svyglm <- function(x, ...) {
 #'
 
 summ.merMod <- function(
-  model, scale = FALSE, confint = FALSE, ci.width = .95,
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
   digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
-  pvals = NULL, n.sd = 1, center = FALSE, transform.response = FALSE,
-  data = NULL, odds.ratio = FALSE, t.df = NULL,
-  model.info = TRUE, model.fit = TRUE,
-  ...) {
+  pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL, odds.ratio = FALSE, t.df = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), ...) {
 
   j <- list()
 
@@ -1935,6 +1942,54 @@ print.summ.merMod <- function(x, ...) {
 }
 
 #### utilities ###############################################################
+
+#' @title Set defaults for `summ` function
+#'
+#' @description This function is convenience wrapper for manually setting
+#'  options using [options()]. This gives a handy way to, for instance,
+#'  set the arguments to be used in every call to `summ` in your script/session.
+#'
+#'  To make the settings persist across sessions, you can run this in your
+#'  `.Rprofile` file.
+#'
+#'  Note that arguments that do not apply (e.g., `robust` for `merMod` models)
+#'  are silently ignored when those types of models are used.
+#'
+#' @inheritParams summ.lm
+#'
+#' @export
+#'
+
+set_summ_defaults <- function(digits = NULL, model.info = NULL,
+                              model.fit = NULL, pvals = NULL, robust = NULL,
+                              confint = NULL, ci.width = NULL, vifs = NULL) {
+
+  if ("confint" %in% names(match.call())) {
+    options("summ-confint" = confint)
+  }
+  if ("ci.width" %in% names(match.call())) {
+    options("summ-ci.width" = ci.width)
+  }
+  if ("model.info" %in% names(match.call())) {
+    options("summ-model.info" = model.info)
+  }
+  if ("model.fit" %in% names(match.call())) {
+    options("summ-model.fit" = model.fit)
+  }
+  if ("robust" %in% names(match.call())) {
+    options("summ-robust" = robust)
+  }
+  if ("vifs" %in% names(match.call())) {
+    options("summ-vifs" = vifs)
+  }
+  if ("digits" %in% names(match.call())) {
+    options("jtools-digits" = digits)
+  }
+  if ("pvals" %in% names(match.call())) {
+    options("summ-pvals" = pvals)
+  }
+
+}
 
 #' @export
 
