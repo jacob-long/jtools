@@ -29,8 +29,14 @@ check_if_zero_base <- function(x) {
 check_if_zero <- Vectorize(check_if_zero_base)
 
 # Automate the addition of newline characters for long strings
-wrap_str <- function(s) {
-  paste0(strwrap(s, width = 0.9 * getOption("width", 80)), collapse = "\n")
+wrap_str <- function(..., sep = "") {
+  paste0(strwrap(paste(..., sep = sep), width = 0.9 * getOption("width", 80)),
+         collapse = "\n")
+}
+
+# Go ahead and wrap the cat function too
+cat_wrap <- function(..., brk = "") {
+  cat(wrap_str(...), brk, sep = "")
 }
 
 #### summ helpers ############################################################
