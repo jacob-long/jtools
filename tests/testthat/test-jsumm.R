@@ -91,6 +91,25 @@ test_that("jsumm: partial correlations work", {
   expect_warning(summ(fit, part.corr = TRUE, robust = TRUE))
 })
 
+# Test handling of singular models
+
+x1 <- rnorm(100)
+x2 <- 2 * x1
+y <- rnorm(100)
+sing_fit <- lm(y ~ x1 + x2)
+sing_fitg <- glm(y ~ x1 + x2)
+int_fit <- lm(y ~ 1)
+int_fitg <- glm(y ~ 1)
+
+test_that("summ handles singular and intercept-only models", {
+  expect_is(summ(sing_fit), "summ.lm")
+  expect_is(summ(sing_fitg), "summ.glm")
+  expect_is(summ(int_fit), "summ.lm")
+  expect_is(summ(int_fitg), "summ.glm")
+})
+
+#### survey tests ###########################################################
+
 if (requireNamespace("survey")) {
   test_that("jsumm: non-linear svyglm models work", {
     expect_is(summ(regmodel), "summ.svyglm")

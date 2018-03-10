@@ -307,8 +307,9 @@ summ.lm <- function(
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
     df.int <- if (attr(model$terms, "intercept"))
-      1L
-    else 0L
+      1L else 0L
+  } else { # intercept only
+    df.int <- 1
   }
 
   # Sample size used
@@ -329,7 +330,10 @@ summ.lm <- function(
   fstat <- unname(sum$fstatistic[1])
   fnum <- unname(sum$fstatistic[2])
   fden <- unname(sum$fstatistic[3])
-  j <- structure(j, fstat = fstat, fnum = fnum, fden = fden)
+  if (!is.null(fstat)) {
+    modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
+  } else {modpval <- NULL}
+  j <- structure(j, fstat = fstat, fnum = fnum, fden = fden, modpval = modpval)
 
   # VIFs
   if (vifs == TRUE) {
@@ -410,6 +414,7 @@ summ.lm <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
+  # Put each column in the return matrix
   for (i in seq_len(length(params))) {
     # Handle rank-deficient models
     if (length(ucoefs) > length(params[[i]])) {
@@ -418,15 +423,10 @@ summ.lm <- function(
     }
 
     if (is.numeric(params[[i]])) {
-
       mat[,i] <- params[[i]]
-
     } else {
-
       mat[,i] <- params[[i]]
-
     }
-
   }
 
   # Drop p-vals if user requests
@@ -457,9 +457,6 @@ summ.lm <- function(
                  transform.response = transform.response,
                  odds.ratio = FALSE)
 
-  modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
-  j <- structure(j, modpval = modpval)
-
   j$coeftable <- mat
   j$model <- model
   class(j) <- c("summ.lm", "summ")
@@ -487,7 +484,7 @@ print.summ.lm <- function(x, ...) {
     print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
-  if (x$model.fit == T) {
+  if (x$model.fit == T && !is.null(x$modpval)) {
     stats <- paste(italic("F"), "(", x$fnum, ",", x$fden, ") = ",
         num_print(x$fstat, digits = x$digits), ", ", italic("p"), " = ",
         num_print(x$modpval, digits = x$digits), "\n",
@@ -645,15 +642,6 @@ summ.glm <- function(
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
 
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package",
-              " installed.\n Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
   # Using information from summary()
   sum <- summary(model)
 
@@ -691,8 +679,9 @@ summ.glm <- function(
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
     df.int <- if (attr(model$terms, "intercept"))
-      1L
-    else 0L
+      1L else 0L
+  } else { # intercept only
+    df.int <- 1
   }
 
   # Sample size used
@@ -805,7 +794,14 @@ summ.glm <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
+  # Put each column in the return matrix
   for (i in seq_len(length(params))) {
+    # Handle rank-deficient models
+    if (length(ucoefs) > length(params[[i]])) {
+      params[[i]] <- c(params[[i]],
+                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+    }
+
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
@@ -990,15 +986,6 @@ summ.svyglm <- function(
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
 
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' ",
-              "package installed.\n Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
   # Using information from summary()
   sum <- summary(model)
 
@@ -1053,8 +1040,9 @@ summ.svyglm <- function(
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
     df.int <- if (attr(model$terms, "intercept"))
-      1L
-    else 0L
+      1L else 0L
+  } else { # intercept only
+    df.int <- 1
   }
 
   # Sample size used
@@ -1205,7 +1193,14 @@ summ.svyglm <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
+  # Put each column in the return matrix
   for (i in seq_len(length(params))) {
+    # Handle rank-deficient models
+    if (length(ucoefs) > length(params[[i]])) {
+      params[[i]] <- c(params[[i]],
+                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+    }
+
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
@@ -1742,7 +1737,14 @@ summ.merMod <- function(
   rownames(mat) <- ivs
   colnames(mat) <- namevec
 
+  # Put each column in the return matrix
   for (i in seq_len(length(params))) {
+    # Handle rank-deficient models
+    if (length(ucoefs) > length(params[[i]])) {
+      params[[i]] <- c(params[[i]],
+                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+    }
+
     if (is.numeric(params[[i]])) {
       mat[,i] <- params[[i]]
     } else {
