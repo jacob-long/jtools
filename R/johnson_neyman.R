@@ -4,8 +4,11 @@
 #' understanding where simple slopes are significant in the context of
 #' interactions in multiple linear regression.
 #'
-#' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
-#'    It should contain the interaction of interest.
+#' @param model A regression model. It is tested with `lm`, `glm`, and
+#'    `svyglm` objects, but others may work as well. It should contain the
+#'     interaction of interest. Be aware that just because the computations
+#'     work, this does not necessarily mean the procedure is appropriate for
+#'     the type of model you have.
 #'
 #' @param pred The predictor variable involved in the interaction.
 #'
@@ -523,6 +526,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
 }
 
 #' @export
+#' @importFrom crayon bold inverse underline
 
 print.johnson_neyman <- function(x, ...) {
 
@@ -530,33 +534,32 @@ print.johnson_neyman <- function(x, ...) {
 
   # Describe whether sig values are inside/outside the interval
   if (atts$inside == FALSE) {
-    inout <- "OUTSIDE"
+    inout <- inverse("OUTSIDE")
   } else {
-    inout <- "INSIDE"
+    inout <- inverse("INSIDE")
   }
 
-  x$bounds <- round(x$bounds, atts$digits)
-  atts$modrange <- round(atts$modrange, atts$digits)
+  b_format <- num_print(x$bounds, atts$digits)
+  m_range <- num_print(atts$modrange, atts$digits)
   alpha <- gsub("0\\.", "\\.", as.character(atts$alpha))
   pmsg <- paste("p <", alpha)
 
   # Print the output
-  cat("JOHNSON-NEYMAN INTERVAL\n\n")
+  cat(bold(underline("JOHNSON-NEYMAN INTERVAL")), "\n\n")
   if (all(is.finite(x$bounds))) {
-    cat("The slope of", atts$pred, "is", pmsg, "when", atts$modx,
-        "is", inout, "this interval:\n")
-    cat("[", round(x$bounds[1], atts$digits), ", ",
-        round(x$bounds[2], atts$digits), "]\n", sep = "")
-    cat("Note: The range of observed values of ", atts$modx,
-        " is [", round(atts$modrange[1], atts$digits), ", ",
-        round(atts$modrange[2], atts$digits), "]\n\n", sep = "")
+    cat_wrap("When ", atts$modx, " is ", inout, " this interval: ",
+        "[", b_format[1], ", ", b_format[2], "] ",
+        "the slope of ", atts$pred, " is ", pmsg, ".", brk = "\n\n")
+    cat_wrap(italic("Note: The range of observed values of", atts$modx,
+        "is "), "[", m_range[1], ", ", m_range[2], "]", brk = "\n\n")
   } else {
-    cat("The Johnson-Neyman interval could not be found.",
-        "\nIs your interaction term significant?\n\n")
+    cat_wrap("The Johnson-Neyman interval could not be found.
+        Is the p value for your interaction term below
+        the specified alpha?\n\n")
   }
   if (atts$control.fdr == TRUE) {
     cat("Interval calculated using false discovery rate adjusted",
-        "t =", round(x$t_value, atts$digits),
+        "t =", num_print(x$t_value, atts$digits),
         "\n\n")
   }
 
