@@ -201,6 +201,12 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
     # And only the complete cases
     mf <- mf[complete.cases(mf),]
 
+  } else {
+
+    all_vars <- sapply(all_vars, function(x) {
+                         gsub("`", "", x, fixed = TRUE )
+                       })
+
   }
 
   if (scale.response == FALSE) {
