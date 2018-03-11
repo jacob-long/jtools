@@ -3,16 +3,31 @@
 language: R
 sudo: false
 cache: packages
+latex: false
 
 r:
-- release
-- devel
+  - release
+  - devel
+  - oldrel
 
 before_install:
   Rscript -e 'update.packages(ask = FALSE)'
 
 r_packages:
   - covr
+
+r_github_packages:
+  - hadley/pkgdown
+
+script:
+  - Rscript -e 'pkgdown::build_site()'
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  keep-history: true
+  local-dir: docs
+  github_token: $GITHUBTRAVIS
 
 after_success:
   - Rscript -e 'library(covr); codecov(type="all")'
