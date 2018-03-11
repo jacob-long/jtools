@@ -1956,39 +1956,32 @@ getCall.summ <- function(x, ...) {
 
 }
 
-#' @export
+# #' @export
 
-update.summ <- function(object, ...) {
-
-  call <- getCall(object)
-
-  extras <- match.call(expand.dots = FALSE)$...
-  if (length(extras)) {
-    existing <- !is.na(match(names(extras), names(call)))
-    for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
-    if (any(!existing)) {
-      call <- c(as.list(call), extras[!existing])
-      call <- as.call(call)
-    }
-  }
-  s_env <- attr(object, "env")
-  eval(call, envir = s_env)
-
-}
+# update.summ <- function(object, ...) {
+#
+#   call <- getCall(object)
+#
+#   extras <- match.call(expand.dots = FALSE)$...
+#   if (length(extras)) {
+#     existing <- !is.na(match(names(extras), names(call)))
+#     for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
+#     if (any(!existing)) {
+#       call <- c(as.list(call), extras[!existing])
+#       call <- as.call(call)
+#     }
+#   }
+#   s_env <- attr(object, "env")
+#   eval(call, envir = s_env)
+#
+# }
 
 update_summ <- function(summ, call.env, ...) {
 
   call <- getCall(summ)
 
-  # Assuming all models are the same type as first
-  mod_type <- which(!is.null(sapply(class(summ$model),
-                    utils::getS3method, f = "summ",
-                    optional = T)))
-  mod_type <- class(summ$model)[mod_type[1]]
-  mod_type <- paste0("summ.", mod_type)
-
   # Now get the argument names for that version of summ
-  summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
+  summ_formals <- formals(getFromNamespace(class(summ), "jtools"))
 
   extras <- as.list(match.call())
   indices <- match(names(extras), names(summ_formals))
