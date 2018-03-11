@@ -143,7 +143,18 @@ make_predictions.default <-
 
     ## Convert the confidence percentile to a number of S.E. to multiply by
     intw <- 1 - ((1 - int.width)/2)
-    ses <- qnorm(intw, 0, 1)
+    ## Try to get the residual degrees of freedom to get the critical value
+    r.df <- try({
+      df.residual(model)
+    }, silent = TRUE)
+    if (is.numeric(r.df)) {
+      ses <- qt(intw, r.df)
+    } else {
+      message(wrap_str("Could not find residual degrees of freedom for this
+                       model. Using confidence intervals based on normal
+                       distribution instead."))
+      ses <- qnorm(intw, 0, 1)
+    }
 
     # See minimum and maximum values for plotting intervals
     if (interval == TRUE) { # only create SE columns if intervals are needed
@@ -293,7 +304,9 @@ make_predictions.svyglm <-
 
     ## Convert the confidence percentile to a number of S.E. to multiply by
     intw <- 1 - ((1 - int.width)/2)
-    ses <- qnorm(intw, 0, 1)
+    ## Try to get the residual degrees of freedom to get the critical value
+    r.df <- df.residual(model)
+    ses <- qt(intw, r.df)
 
     # See minimum and maximum values for plotting intervals
     if (interval == TRUE) { # only create SE columns if intervals are needed
@@ -432,7 +445,9 @@ make_predictions.merMod <-
 
       ## Convert the confidence percentile to a number of S.E. to multiply by
       intw <- 1 - ((1 - int.width)/2)
-      ses <- qnorm(intw, 0, 1)
+      ## Try to get the residual degrees of freedom to get the critical value
+      r.df <- df.residual(model)
+      ses <- qt(intw, r.df)
 
       pms[[i]][[resp]] <- predicted[[1]] # this is the actual values
       pms[[i]][["ymax"]] <- pms[[i]][[resp]] + (predicted[["se.fit"]]) * ses
