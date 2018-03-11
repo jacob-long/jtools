@@ -354,7 +354,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                         alpha = 0.6,
                         position = position_jitter(width = jitter,
                                                    height = jitter),
-                        sides = rug_sides)
+                        sides = rug_sides, inherit.aes = FALSE)
     }
   }
 
@@ -463,7 +463,7 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
                       mapping = aes_string(x = pred, y = resp), alpha = 0.6,
                       position = position_jitter(width = jitter,
                                                  height = jitter),
-                      sides = rug_sides)
+                      sides = rug_sides, inherit.aes = FALSE)
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
