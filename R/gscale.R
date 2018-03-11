@@ -41,6 +41,16 @@
 #'   columns to avoid errors. You may need to remove missing values before using
 #'   the weights.
 #'
+#' @param apply.weighted.contrasts Factor variables cannot be scaled, but you
+#'   can set the contrasts such that the intercept in a regression model will
+#'   reflect the true mean (assuming all other variables are centered). If set
+#'   to TRUE, the argument will apply weighted effects coding to all factors.
+#'   This is similar to the R default effects coding, but weights according to
+#'   how many observations are at each level. An adapted version of
+#'   [wec::contr.wec()] from the \pkg{wec} package is used to do this. See
+#'   that package's documentation and/or Grotenhuis et al. (2016) for more
+#'   info.
+#'
 #' @param messages Print messages when variables are not processed due to
 #'   being non-numeric or all missing? Default is FALSE.
 #'
@@ -58,13 +68,13 @@
 #' Only numeric variables are altered when in a data.frame or survey design.
 #' Character variables, factors, etc. are skipped.
 #'
-#' For those dealing with survey data, if you provide a \code{survey.design} object
-#' you can rest assured that the mean-centering and scaling is performed
+#' For those dealing with survey data, if you provide a \code{survey.design}
+#' object you can rest assured that the mean-centering and scaling is performed
 #' with help from the \code{\link[survey]{svymean}} and
-#' \code{\link[survey]{svyvar}} functions, respectively. It was among the primary
-#' motivations for creating this function. \code{gscale()} will not center or
-#' scale the weights variables defined in the survey design unless the user
-#' specifically requests them in the \code{x =} argument.
+#' \code{\link[survey]{svyvar}} functions, respectively. It was among the
+#' primary motivations for creating this function. \code{gscale()} will not
+#' center or scale the weights variables defined in the survey design unless
+#' the user specifically requests them in the \code{x =} argument.
 #'
 #' @family standardization, scaling, and centering tools
 #'
@@ -82,6 +92,11 @@
 #' deviations. \emph{Statistics in Medicine}, \emph{27}, 2865–2873.
 #' \url{http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
 #'
+#' Grotenhuis, M. te, Pelzer, B., Eisinga, R., Nieuwenhuis, R.,
+#'  Schmidt-Catran, A., & Konig, R. (2017). When size matters: Advantages of
+#'  weighted effect coding in observational studies. *International Journal of
+#'  Public Health*, *62*, 163–167. https://doi.org/10.1007/s00038-016-0901-1 (
+#'  open access)
 #'
 #' @examples
 #'
@@ -142,6 +157,8 @@
 gscale <- function(data = NULL, vars = NULL, binary.inputs = "center",
                    binary.factors = TRUE, n.sd = 2,
                    center.only = FALSE, scale.only = FALSE, weights = NULL,
+                   apply.weighted.contrasts =
+                     getOption("jtools-weighted.contrasts", FALSE),
                    x = NULL, messages = FALSE) {
 
   if (binary.inputs %nin% c("center","full","0/1","-0.5/0.5")) {
@@ -223,7 +240,8 @@ gscale <- function(data = NULL, vars = NULL, binary.inputs = "center",
                           center.only = center.only, scale.only = scale.only,
                           weights = weights, binary.factors = binary.factors,
                           survey = survey, design = design, name = name,
-                          messages = messages)
+                          messages = messages,
+                          apply.weighted.contrasts = apply.weighted.contrasts)
     }
 
   }
@@ -244,9 +262,12 @@ gscale <- function(data = NULL, vars = NULL, binary.inputs = "center",
 
 #### Helper function #########################################################
 
+#' @importFrom stats contrasts<-
+
 scaler <- function(x, binary.inputs, n.sd = 2, center.only = FALSE,
                    scale.only = FALSE, weights = NULL, binary.factors = NULL,
-                   survey = FALSE, design = NULL, name = NULL, messages) {
+                   survey = FALSE, design = NULL, name = NULL, messages,
+                   apply.weighted.contrasts = FALSE) {
 
   # Filter out missing observations
   x.obs <- x[!is.na(x)]
@@ -279,10 +300,14 @@ scaler <- function(x, binary.inputs, n.sd = 2, center.only = FALSE,
 
     } else {
 
-      if (!is.null(name)) {
-        if (messages) {message(name, " is not numeric and was not scaled.")}
+      if (apply.weighted.contrasts == FALSE) {
+        if (!is.null(name)) {
+          if (messages) {message(name, " is not numeric and was not scaled.")}
+        } else {
+          if (messages) {message("Non-numeric variable was not scaled.")}
+        }
       } else {
-        if (messages) {message("Non-numeric variable was not scaled.")}
+        contrasts(x) <- contr.weighted(x = x, weights = weights)
       }
       return(x)
 
