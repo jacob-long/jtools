@@ -38,7 +38,7 @@ if (requireNamespace("lme4")) {
 
 # library(broom)
 # library(huxtable)
-if (requireNamespace("huxtable")) {
+if (requireNamespace("huxtable") & requireNamespace("broom")) {
 
 test_that("Export doesn't fail with lm", {
   expect_is(export_summs(fit,fit2,fitw), "huxtable")

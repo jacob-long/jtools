@@ -47,12 +47,34 @@ test_that("interact_plot works for lm", {
                                    mod2 = HSGrad,
                                    centered = "none"))
   expect_silent(print(p))
+})
+
+test_that("interact_plot: robust standard errors work", {
   expect_silent(p <- interact_plot(model = fit,
                                    pred = Murder,
                                    modx = Illiteracy,
                                    mod2 = HSGrad,
                                    centered = "all",
                                    robust = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("rug plots work", {
+  expect_silent(p <- interact_plot(model = fit,
+                                   pred = Murder,
+                                   modx = Illiteracy,
+                                   mod2 = HSGrad,
+                                   centered = "all",
+                                   rug = TRUE))
+  expect_silent(print(p))
+
+  expect_silent(p <- interact_plot(model = fit,
+                                   pred = Murder,
+                                   modx = Illiteracy,
+                                   mod2 = HSGrad,
+                                   centered = "all",
+                                   rug = TRUE,
+                                   rug_sides = "lb"))
   expect_silent(print(p))
 })
 
@@ -177,7 +199,7 @@ if (requireNamespace("lme4")) {
   test_that("interact_plot works for lme4", {
     expect_error(p <- interact_plot(mve, pred = mode, modx = Gender))
     expect_silent(p <- interact_plot(mv, pred = mode_numeric, modx = Gender))
-    expect_silent(p <- interact_plot(mv, pred = mode_numeric, modx = Gender,
+    expect_message(p <- interact_plot(mv, pred = mode_numeric, modx = Gender,
                                      interval = TRUE))
     expect_silent(print(p))
   })
@@ -185,7 +207,7 @@ if (requireNamespace("lme4")) {
   test_that("effect_plot works for lme4", {
     expect_error(p <- effect_plot(mve, pred = mode))
     expect_silent(p <- effect_plot(mv, pred = mode_numeric))
-    expect_silent(p <- effect_plot(mv, pred = mode_numeric, interval = TRUE))
+    expect_message(p <- effect_plot(mv, pred = mode_numeric, interval = TRUE))
     expect_silent(print(p))
   })
 }
@@ -230,10 +252,27 @@ test_that("effect_plot works for lm", {
                                  pred = Murder,
                                  centered = "HSGrad"))
   expect_silent(print(p))
+})
+
+test_that("effect_plot: robust intervals works", {
   expect_silent(p <- effect_plot(model = fit,
                                  pred = Murder,
                                  centered = "HSGrad",
                                  robust = TRUE))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot: rug plots work", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 rug = TRUE))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 rug = TRUE,
+                                 rug_sides = "lb"))
   expect_silent(print(p))
 })
 

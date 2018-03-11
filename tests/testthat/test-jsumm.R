@@ -96,10 +96,11 @@ test_that("jsumm: partial correlations work", {
 x1 <- rnorm(100)
 x2 <- 2 * x1
 y <- rnorm(100)
-sing_fit <- lm(y ~ x1 + x2)
-sing_fitg <- glm(y ~ x1 + x2)
-int_fit <- lm(y ~ 1)
-int_fitg <- glm(y ~ 1)
+sing_dat <- as.data.frame(cbind(x1, x2, y))
+sing_fit <- lm(y ~ x1 + x2, data = sing_dat)
+sing_fitg <- glm(y ~ x1 + x2, data = sing_dat)
+int_fit <- lm(y ~ 1, data = sing_dat)
+int_fitg <- glm(y ~ 1, data = sing_dat)
 
 test_that("summ handles singular and intercept-only models", {
   expect_is(summ(sing_fit), "summ.lm")
