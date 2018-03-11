@@ -55,6 +55,8 @@ scale_lm <- scale_mod
 #'
 #' @param ... Ignored.
 #'
+#' @inheritParams gscale
+#'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
 #'   interaction terms. It can also mean-center all of them as well, if
@@ -122,9 +124,10 @@ scale_lm <- scale_mod
 #'
 
 scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
-                                  center = TRUE, scale.response = FALSE,
-                                  center.only = FALSE, data = NULL,
-                                  vars = NULL, ...) {
+   center = TRUE, scale.response = FALSE, center.only = FALSE, data = NULL,
+   vars = NULL,
+   apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+   ...) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -220,7 +223,8 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   mf <- gscale(vars = all_vars, data = mf, binary.inputs = binary.inputs,
                n.sd = n.sd, scale.only = !center,
-               center.only = center.only, weights = the_weights)
+               center.only = center.only, weights = the_weights,
+               apply.weighted.contrasts = apply.weighted.contrasts)
 
   form <- as.formula(formc)
 
@@ -250,9 +254,10 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
 #'
 
 scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
-                             center = TRUE, scale.response = FALSE,
-                             center.only = FALSE, data = NULL,
-                             vars = NULL, ...) {
+   center = TRUE, scale.response = FALSE, center.only = FALSE, data = NULL,
+   vars = NULL,
+   apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+   ...) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -433,11 +438,13 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 #' @aliases center_lm
 
 center_mod <- center_lm <- function(model, binary.inputs = "0/1",
-                                    center.response = FALSE, data = NULL) {
+    center.response = FALSE, data = NULL,
+    apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE)) {
 
   out <- scale_mod(model, binary.inputs = binary.inputs,
                   scale.response = center.response, center.only = TRUE,
-                  data = data)
+                  data = data,
+                  apply.weighted.contrasts = apply.weighted.contrasts)
 
   return(out)
 
