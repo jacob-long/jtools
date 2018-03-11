@@ -9,7 +9,8 @@ effect_plot(model, pred, centered = "all", plot.points = FALSE,
   int.width = 0.95, outcome.scale = "response", robust = FALSE,
   cluster = NULL, vcov = NULL, set.offset = 1, x.label = NULL,
   y.label = NULL, pred.labels = NULL, main.title = NULL,
-  color.class = NULL, line.thickness = 1.1, jitter = 0.1)
+  color.class = NULL, line.thickness = 1.1, jitter = 0.1, rug = FALSE,
+  rug_sides = "b")
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -113,6 +114,16 @@ values or cause other visual issues. Default is 0.1, but set to 0 if
 you want no jittering. If the argument is vector with two values,
 then the first is assumed to be the jitter for height and the second the
 jitter for the width.}
+
+\item{rug}{Show a rug plot in the margins? This uses \code{\link[ggplot2:geom_rug]{ggplot2::geom_rug()}}
+to show the distribution of the predictor (top/bottom) and/or
+response variable (left/right) in the original data. Default is
+FALSE.}
+
+\item{rug_sides}{On which sides should rug plots appear? Default is "b",
+meaning bottom. "t" and/or "b" show the distribution of the predictor
+while "l" and/or "r" show the distribution of the response. "bl" is
+a good option to show both the predictor and response.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated

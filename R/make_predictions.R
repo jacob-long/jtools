@@ -190,6 +190,7 @@ make_predictions.default <-
     }
 
     pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    pm$mod2_group <- pm[[mod2]]
 
   }
 
@@ -336,8 +337,13 @@ make_predictions.svyglm <-
   # Setting labels for second moderator
   if (!is.null(mod2)) {
 
-    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    # Convert character moderators to factor
+    if (is.character(d[[mod2]])) {
+      d[[mod2]] <- factor(d[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    }
 
+    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    pm$mod2_group <- pm[[mod2]]
     d[[mod2]] <- d$mod2_group
 
   }
@@ -511,8 +517,13 @@ make_predictions.merMod <-
   # Setting labels for second moderator
   if (!is.null(mod2)) {
 
+    # Convert character moderators to factor
+    if (is.character(d[[mod2]])) {
+      d[[mod2]] <- factor(d[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    }
     pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
 
+    pm$mod2_group <- pm[[mod2]]
 
     d[[mod2]] <- d$mod2_group
 

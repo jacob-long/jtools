@@ -292,7 +292,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
 
   # If third mod, facet by third mod
   if (!is.null(mod2)) {
-    facets <- facet_grid(paste(". ~", mod2))
+    facets <- facet_grid(paste(". ~ mod2_group"))
     p <- p + facets
   } else if (linearity.check == TRUE) {
     facets <- facet_grid(paste(". ~ modx_group"))
