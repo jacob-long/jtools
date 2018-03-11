@@ -190,7 +190,8 @@ export_summs <- function(...,
   if (!grepl("conf.low", error_format, fixed = TRUE) &
     !grepl("conf.high", error_format, fixed = TRUE)) {
 
-    # ci_level <- NULL
+    dots$confint <- FALSE
+    ci_level <- NULL
 
   } else {
 
@@ -272,11 +273,18 @@ export_summs <- function(...,
 
     hux_args <- dots[names(dots) %in% names(hux_formals)]
 
-    hux_args <- as.list(c(jsumms, hux_args,
-                          error_pos = error_pos[1],
-                          error_format = error_format,
-                          statistics = list(statistics),
-                          ci_level = ci_level))
+    if (dots$confint == TRUE) {
+      hux_args <- as.list(c(jsumms, hux_args,
+                            error_pos = error_pos[1],
+                            error_format = error_format,
+                            statistics = list(statistics),
+                            ci_level = ci_level))
+    } else {
+      hux_args <- as.list(c(jsumms, hux_args,
+                            error_pos = error_pos[1],
+                            error_format = error_format,
+                            statistics = list(statistics)))
+    }
 
     if (!("note" %in% names(hux_args))) {
 
@@ -318,10 +326,18 @@ export_summs <- function(...,
 
   } else {
 
-    out <- huxtable::huxreg(jsumms, error_pos = error_pos[1],
+    if (dots$confint == TRUE) {
+      hux_args <- as.list(c(jsumms, hux_args,
+                            error_pos = error_pos[1],
                             error_format = error_format,
-                            statistics = statistics,
-                            ci_level = ci_level)
+                            statistics = list(statistics),
+                            ci_level = ci_level))
+    } else {
+      hux_args <- as.list(c(jsumms, hux_args,
+                            error_pos = error_pos[1],
+                            error_format = error_format,
+                            statistics = list(statistics)))
+    }
 
   }
 
