@@ -5,19 +5,20 @@
 \title{Plot interaction effects between categorical predictors.}
 \usage{
 cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
-  geom = c("dot", "line", "bar", "boxplot"), interval = TRUE,
+  geom = c("dot", "line", "bar", "boxplot"), predvals = NULL,
+  modxvals = NULL, mod2vals = NULL, interval = TRUE,
   plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
   centered = "all", int.type = c("confidence", "prediction"),
   int.width = 0.95, outcome.scale = "response", robust = FALSE,
-  cluster = NULL, vcov = NULL, set.offset = 1, x.label = NULL,
-  y.label = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "Set2")
+  cluster = NULL, vcov = NULL, pred.labels = NULL, modx.labels = NULL,
+  mod2.labels = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
+  main.title = NULL, legend.main = NULL, color.class = "Set2")
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
-contain the interaction of interest. Models from other classes may work as
-well but are not officially supported.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
 \item{pred}{A categorical predictor variable that will appear on the x-axis.}
 
@@ -30,7 +31,8 @@ fit the model. This can be a better way to get mean values for centering
 and can be crucial for models with variable transformations in the formula
 (e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
 see a warning if the function detects problems that would likely be
-solved by providing the data with this argument.}
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
 
 \item{geom}{What type of plot should this be? There are several options
 here since the best way to visualize categorical interactions varies by
@@ -55,6 +57,27 @@ to plot all the observed points (especially helpful with larger data
 sets). \strong{However}, it is important to note the boxplots are not based
 on the model whatsoever.
 }}
+
+\item{predvals}{Which values of the predictor should be included in the
+plot? By default, all levels are included.}
+
+\item{modxvals}{For which values of the moderator should lines be plotted?
+Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
+deviation from the mean as well as the mean itself are used for continuous
+moderators. If \code{"plus-minus"}, plots lines when the moderator is at
++/- 1 standard deviation without the mean. You may also choose \code{"terciles"}
+to split the data into equally-sized groups and choose the point at the
+mean of each of those groups.
+
+If the moderator is a factor variable and \code{modxvals} is
+\code{NULL}, each level of the factor is included. You may specify
+any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
+as there is more than 1. The levels will be plotted in the order you
+provide them, so this can be used to reorder levels as well.}
+
+\item{mod2vals}{For which values of the second moderator should the plot be
+facetted by? That is, there will be a separate plot for each level of this
+moderator. Defaults are the same as \code{modxvals}.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals. Not supported for \code{merMod} models.}
@@ -114,7 +137,23 @@ coefficients yourself. This is useful if you are using some method for
 robust standard error calculation not supported by the \pkg{sandwich}
 package.}
 
-\item{set.offset}{For models with an offset (e.g., Poisson models), sets a
+\item{pred.labels}{A character vector of equal length to the number of
+factor levels of the predictor (or number specified in \code{predvals}). If
+\code{NULL}, the default, the factor labels are used.}
+
+\item{modx.labels}{A character vector of labels for each level of the
+moderator values, provided in the same order as the \code{modxvals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{mod2.labels}{A character vector of labels for each level of the 2nd
+moderator values, provided in the same order as the \code{mod2vals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{set.offset}{For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}

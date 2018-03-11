@@ -6,7 +6,9 @@
 \usage{
 gscale(data = NULL, vars = NULL, binary.inputs = "center",
   binary.factors = TRUE, n.sd = 2, center.only = FALSE,
-  scale.only = FALSE, weights = NULL, x = NULL, messages = FALSE)
+  scale.only = FALSE, weights = NULL,
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+  x = NULL, messages = FALSE)
 }
 \arguments{
 \item{data}{A data frame or survey design. Only needed if you would like to
@@ -40,6 +42,16 @@ over a data frame, the weights will need to be equal in length to all the
 columns to avoid errors. You may need to remove missing values before using
 the weights.}
 
+\item{apply.weighted.contrasts}{Factor variables cannot be scaled, but you
+can set the contrasts such that the intercept in a regression model will
+reflect the true mean (assuming all other variables are centered). If set
+to TRUE, the argument will apply weighted effects coding to all factors.
+This is similar to the R default effects coding, but weights according to
+how many observations are at each level. An adapted version of
+\code{\link[wec:contr.wec]{wec::contr.wec()}} from the \pkg{wec} package is used to do this. See
+that package's documentation and/or Grotenhuis et al. (2016) for more
+info.}
+
 \item{x}{Deprecated. Pass numeric vectors to \code{data}. Pass vectors of column
 names to \code{vars}.}
 
@@ -65,13 +77,13 @@ can also accept multiple types of input without breaking a sweat.
 Only numeric variables are altered when in a data.frame or survey design.
 Character variables, factors, etc. are skipped.
 
-For those dealing with survey data, if you provide a \code{survey.design} object
-you can rest assured that the mean-centering and scaling is performed
+For those dealing with survey data, if you provide a \code{survey.design}
+object you can rest assured that the mean-centering and scaling is performed
 with help from the \code{\link[survey]{svymean}} and
-\code{\link[survey]{svyvar}} functions, respectively. It was among the primary
-motivations for creating this function. \code{gscale()} will not center or
-scale the weights variables defined in the survey design unless the user
-specifically requests them in the \code{x =} argument.
+\code{\link[survey]{svyvar}} functions, respectively. It was among the
+primary motivations for creating this function. \code{gscale()} will not
+center or scale the weights variables defined in the survey design unless
+the user specifically requests them in the \code{x =} argument.
 }
 \examples{
 
@@ -131,6 +143,12 @@ if (requireNamespace("survey")) {
 Gelman, A. (2008). Scaling regression inputs by dividing by two standard
 deviations. \emph{Statistics in Medicine}, \emph{27}, 2865–2873.
 \url{http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
+
+Grotenhuis, M. te, Pelzer, B., Eisinga, R., Nieuwenhuis, R.,
+Schmidt-Catran, A., & Konig, R. (2017). When size matters: Advantages of
+weighted effect coding in observational studies. \emph{International Journal of
+Public Health}, \emph{62}, 163–167. https://doi.org/10.1007/s00038-016-0901-1 (
+open access)
 }
 \seealso{
 \code{\link{j_summ}} is a replacement for the \code{summary} function for

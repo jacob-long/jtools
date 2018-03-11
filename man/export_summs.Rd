@@ -69,11 +69,16 @@ on the table output.
 The default model summary statistics reporting follows this logic:
 
 \itemize{
-\item summ.lm = c(N = "nobs", R2 = "r.squared"),
-\item summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
-\item summ.svyglm = c(N = "nobs", R2 = "r.squared"),
-\item summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+\item summ.lm = \code{c(N = "nobs", R2 = "r.squared")},
+\item summ.glm = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC")},
+\item summ.svyglm = \code{c(N = "nobs", R2 = "r.squared")},
+\item summ.merMod = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
+                          `R2 (fixed)` = "r.squared.fixed",
+                          `R2 (total)` = "r.squared")}
 }
+
+Be sure to look at the \code{\link[=summ]{summ()}} documentation for more on the calculation
+of these and other statistics, especially for mixed models.
 
 If you set \code{statistics = "all"}, then the statistics argument
 passed to \code{huxreg} will be \code{NULL}, which reports whichever

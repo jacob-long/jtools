@@ -6,7 +6,8 @@
 \usage{
 theme_apa(legend.pos = "topleft", legend.use.title = FALSE,
   legend.font.size = 12, x.font.size = 12, y.font.size = 12,
-  facet.title.size = 12)
+  facet.title.size = 12, remove.y.gridlines = TRUE,
+  remove.x.gridlines = TRUE)
 }
 \arguments{
 \item{legend.pos}{One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
@@ -28,6 +29,12 @@ may be necessary to choose a smaller size.}
 \item{y.font.size}{Font size of x-axis label.}
 
 \item{facet.title.size}{Font size of facet labels.}
+
+\item{remove.y.gridlines}{Should the coordinate grid on the y-axis
+(horizontal lines) be removed? Default is TRUE.}
+
+\item{remove.x.gridlines}{Should the coordinate grid on the x-axis (vertical
+lines) be removed? Default is TRUE.}
 }
 \description{
 \code{theme_apa()} is designed to work like any other complete theme from

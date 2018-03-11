@@ -5,11 +5,15 @@
 \alias{j_summ.svyglm}
 \title{Complex survey regression summaries with options}
 \usage{
-\method{summ}{svyglm}(model, scale = FALSE, confint = FALSE,
-  ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  pvals = TRUE, n.sd = 1, center = FALSE, transform.response = FALSE,
-  odds.ratio = FALSE, vifs = FALSE, model.info = TRUE, model.fit = TRUE,
-  model.check = FALSE, ...)
+\method{summ}{svyglm}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  digits = getOption("jtools-digits", default = 2),
+  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  transform.response = FALSE, odds.ratio = FALSE,
+  vifs = getOption("summ-vifs", FALSE),
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE, ...)
 }
 \arguments{
 \item{model}{A \code{svyglm} object.}

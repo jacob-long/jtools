@@ -10,12 +10,16 @@ scale_mod(model, ...)
 
 \method{scale_mod}{default}(model, binary.inputs = "0/1", n.sd = 1,
   center = TRUE, scale.response = FALSE, center.only = FALSE,
-  data = NULL, vars = NULL)
+  data = NULL, vars = NULL,
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+  ...)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
 \code{\link[survey]{svyglm}}, or \link[lme4:merMod]{lme4::merMod}. Other model types
 may work as well but are not tested.}
+
+\item{...}{Ignored.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{"0/1"};
 \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5
@@ -44,6 +48,16 @@ transformations or polynomial terms specified in the formula.}
 
 \item{vars}{A character vector of variable names that you want to be
 scaled. If NULL, the default, it is all predictors.}
+
+\item{apply.weighted.contrasts}{Factor variables cannot be scaled, but you
+can set the contrasts such that the intercept in a regression model will
+reflect the true mean (assuming all other variables are centered). If set
+to TRUE, the argument will apply weighted effects coding to all factors.
+This is similar to the R default effects coding, but weights according to
+how many observations are at each level. An adapted version of
+\code{\link[wec:contr.wec]{wec::contr.wec()}} from the \pkg{wec} package is used to do this. See
+that package's documentation and/or Grotenhuis et al. (2016) for more
+info.}
 }
 \value{
 The functions returns a re-fitted model object, inheriting

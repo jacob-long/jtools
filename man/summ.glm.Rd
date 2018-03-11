@@ -5,11 +5,14 @@
 \alias{j_summ.glm}
 \title{Generalized linear regression summaries with options}
 \usage{
-\method{summ}{glm}(model, scale = FALSE, confint = FALSE, ci.width = 0.95,
-  robust = FALSE, cluster = NULL, vifs = FALSE,
-  digits = getOption("jtools-digits", default = 2), odds.ratio = FALSE,
-  model.info = TRUE, model.fit = TRUE, pvals = TRUE, n.sd = 1,
-  center = FALSE, transform.response = FALSE, data = NULL, ...)
+\method{summ}{glm}(model, scale = FALSE, confint = getOption("summ-confint",
+  FALSE), ci.width = getOption("summ-ci.width", 0.95),
+  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  vifs = getOption("summ-vifs", FALSE), digits = getOption("jtools-digits",
+  default = 2), odds.ratio = FALSE, pvals = getOption("summ-pvals", TRUE),
+  n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), ...)
 }
 \arguments{
 \item{model}{A \code{glm} object.}
@@ -53,11 +56,6 @@ confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
 
-\item{model.info}{Toggles printing of basic information on sample size,
-name of DV, and number of predictors.}
-
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
-
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
 details).}
@@ -76,6 +74,11 @@ frame is used to re-fit the model (if \code{scale} is \code{TRUE})
 instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
 of the model. This is particularly useful if you have variable
 transformations or polynomial terms specified in the formula.}
+
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}

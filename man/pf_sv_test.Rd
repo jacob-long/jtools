@@ -4,13 +4,14 @@
 \alias{pf_sv_test}
 \title{Test whether sampling weights are needed}
 \usage{
-pf_sv_test(model, data, weights, sims = 1000,
+pf_sv_test(model, data = NULL, weights, sims = 1000,
   digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The fitted model, without weights}
 
-\item{data}{The data frame with the data fed to the fitted model and the weights}
+\item{data}{The data frame with the data fed to the fitted model and the
+weights}
 
 \item{weights}{The name of the weights column in \code{model}'s data frame
 or a vector of weights equal in length to the number of observations

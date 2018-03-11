@@ -6,7 +6,8 @@
 \title{Center variables in fitted regression models}
 \usage{
 center_mod(model, binary.inputs = "0/1", center.response = FALSE,
-  data = NULL)
+  data = NULL,
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE))
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -25,6 +26,16 @@ Default is \code{FALSE}.}
 frame is used to re-fit the model instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
 of the model. This is particularly useful if you have variable
 transformations or polynomial terms specified in the formula.}
+
+\item{apply.weighted.contrasts}{Factor variables cannot be scaled, but you
+can set the contrasts such that the intercept in a regression model will
+reflect the true mean (assuming all other variables are centered). If set
+to TRUE, the argument will apply weighted effects coding to all factors.
+This is similar to the R default effects coding, but weights according to
+how many observations are at each level. An adapted version of
+\code{\link[wec:contr.wec]{wec::contr.wec()}} from the \pkg{wec} package is used to do this. See
+that package's documentation and/or Grotenhuis et al. (2016) for more
+info.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting

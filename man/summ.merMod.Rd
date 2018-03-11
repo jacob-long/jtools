@@ -5,11 +5,14 @@
 \alias{j_summ.merMod}
 \title{Mixed effects regression summaries with options}
 \usage{
-\method{summ}{merMod}(model, scale = FALSE, confint = FALSE,
-  ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  r.squared = TRUE, pvals = NULL, n.sd = 1, center = FALSE,
+\method{summ}{merMod}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
+  pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, odds.ratio = FALSE,
-  t.df = NULL, model.info = TRUE, model.fit = TRUE, ...)
+  t.df = NULL, model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}

@@ -11,10 +11,10 @@ sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   ...)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
-contain the interaction of interest. Models from other classes may work as
-well but are not officially supported.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
 \item{pred}{The predictor variable involved in the interaction.}
 
@@ -58,7 +58,8 @@ fit the model. This can be a better way to get mean values for centering
 and can be crucial for models with variable transformations in the formula
 (e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
 see a warning if the function detects problems that would likely be
-solved by providing the data with this argument.}
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
 
 \item{cond.int}{Should conditional intercepts be printed in addition to the
 slopes? Default is \code{FALSE}.}
@@ -129,6 +130,7 @@ fiti <- lm(Income ~ Frost + Murder * Illiteracy,
 sim_slopes(model = fiti, pred = Murder, modx = Illiteracy)
 
 # With svyglm
+if (requireNamespace("survey")) {
 library(survey)
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
@@ -139,6 +141,7 @@ sim_slopes(regmodel, pred = ell, modx = meals)
 # 3-way with survey and factor input
 regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
+}
 
 }
 \references{

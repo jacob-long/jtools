@@ -12,13 +12,13 @@ effect_plot(model, pred, centered = "all", plot.points = FALSE,
   color.class = NULL, line.thickness = 1.1, jitter = 0.1)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
-contain the interaction of interest. Models from other classes may work as
-well but are not officially supported.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
 \item{pred}{The name of the predictor variable involved
-in the interaction.}
+in the interaction. This can be a bare name or string.}
 
 \item{centered}{A vector of quoted variable names that are to be
 mean-centered. If \code{"all"}, all non-focal predictors are centered. You
@@ -32,15 +32,15 @@ scatterplot on top of the interaction lines. The color of the dots will be
 based on their moderator value.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
-intervals around the line using \code{\link[ggplot2]{geom_ribbon}}. Not
-supported for \code{merMod} models.}
+intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
 
 \item{data}{Optional, default is NULL. You may provide the data used to
 fit the model. This can be a better way to get mean values for centering
 and can be crucial for models with variable transformations in the formula
 (e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
 see a warning if the function detects problems that would likely be
-solved by providing the data with this argument.}
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or
 "prediction". Default is confidence interval.}
@@ -77,7 +77,7 @@ coefficients yourself. This is useful if you are using some method for
 robust standard error calculation not supported by the \pkg{sandwich}
 package.}
 
-\item{set.offset}{For models with an offset (e.g., Poisson models), sets a
+\item{set.offset}{For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}
@@ -110,7 +110,9 @@ other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering.}
+you want no jittering. If the argument is vector with two values,
+then the first is assumed to be the jitter for height and the second the
+jitter for the width.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated

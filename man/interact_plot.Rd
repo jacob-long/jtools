@@ -12,32 +12,36 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
   legend.main = NULL, color.class = NULL, line.thickness = 1.1,
-  vary.lty = TRUE, jitter = 0.1)
+  vary.lty = TRUE, jitter = 0.1, rug = FALSE, rug_sides = "b")
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
-contain the interaction of interest. Models from other classes may work as
-well but are not officially supported.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
 \item{pred}{The name of the predictor variable involved
-in the interaction.}
+in the interaction. This can be a bare name or string.}
 
 \item{modx}{The name of the moderator variable involved
-in the interaction.}
+in the interaction. This can be a bare name or string.}
 
 \item{modxvals}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 deviation from the mean as well as the mean itself are used for continuous
-moderators. If the moderator is a factor variable and \code{modxvals} is
-\code{NULL}, each level of the factor is included. If
-\code{"plus-minus"}, plots lines when the moderator is at +/- 1 standard
-deviation without the mean. You may also choose \code{"terciles"} to split
-the data into equally-sized groups and choose the point at the mean of
-each of those groups.}
+moderators. If \code{"plus-minus"}, plots lines when the moderator is at
++/- 1 standard deviation without the mean. You may also choose \code{"terciles"}
+to split the data into equally-sized groups and choose the point at the
+mean of each of those groups.
+
+If the moderator is a factor variable and \code{modxvals} is
+\code{NULL}, each level of the factor is included. You may specify
+any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
+as there is more than 1. The levels will be plotted in the order you
+provide them, so this can be used to reorder levels as well.}
 
 \item{mod2}{Optional. The name of the second moderator
-variable involved in the interaction.}
+variable involved in the interaction. This can be a bare name or string.}
 
 \item{mod2vals}{For which values of the second moderator should the plot be
 facetted by? That is, there will be a separate plot for each level of this
@@ -55,15 +59,15 @@ fit the model. This can be a better way to get mean values for centering
 and can be crucial for models with variable transformations in the formula
 (e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
 see a warning if the function detects problems that would likely be
-solved by providing the data with this argument.}
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines. The color of the dots will be
 based on their moderator value.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
-intervals around the line using \code{\link[ggplot2]{geom_ribbon}}. Not
-supported for \code{merMod} models.}
+intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or
 "prediction". Default is confidence interval.}
@@ -108,7 +112,7 @@ coefficients yourself. This is useful if you are using some method for
 robust standard error calculation not supported by the \pkg{sandwich}
 package.}
 
-\item{set.offset}{For models with an offset (e.g., Poisson models), sets a
+\item{set.offset}{For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}
@@ -160,7 +164,19 @@ other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering.}
+you want no jittering. If the argument is vector with two values,
+then the first is assumed to be the jitter for height and the second the
+jitter for the width.}
+
+\item{rug}{Show a rug plot in the margins? This uses \code{\link[ggplot2:geom_rug]{ggplot2::geom_rug()}}
+to show the distribution of the predictor (top/bottom) and/or
+response variable (left/right) in the original data. Default is
+FALSE.}
+
+\item{rug_sides}{On which sides should rug plots appear? Default is "b",
+meaning bottom. "t" and/or "b" show the distribution of the predictor
+while "l" and/or "r" show the distribution of the response. "bl" is
+a good option to show both the predictor and response.}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
@@ -173,17 +189,15 @@ moderator variable to explore interactions. The plotting is done with
 }
 \details{
 This function provides a means for plotting conditional effects
-for the purpose of exploring interactions in the context of regression.
-You must have the
-package \code{ggplot2} installed to benefit from these plotting functions.
+for the purpose of exploring interactions in regression models.
 
 The function is designed for two and three-way interactions. For
-additional terms, the
-\code{\link[effects]{effects}} package may be better suited to the task.
+additional terms, the \pkg{effects} package may be better suited to the
+task.
 
 This function supports nonlinear and generalized linear models and by
-default will plot them on
-their original scale (\code{outcome.scale = "response"}).
+default will plot them on their original scale
+(\code{outcome.scale = "response"``). To plot them on the linear scale, use "link" for}outcome.scale`.
 
 While mixed effects models from \code{lme4} are supported, only the fixed
 effects are plotted. \code{lme4} does not provide confidence intervals,
@@ -229,17 +243,9 @@ terciles.
 Offsets are partially supported by this function with important
 limitations. First of all, only a single offset per model is supported.
 Second, it is best in general to specify offsets with the offset argument
-of the model fitting function rather than in the formula. If it is
-specified in the formula with a svyglm, this function will stop with an
-error message.
-
-It is also advised not to do any transformations to the offset other than
-the common log transformation. If you apply a log transform, this function
-will deal with it sensibly. So if your offset is a logged count, the
-exposure you set will be the non-logged version, which is much easeir to
-wrap one's head around. For any other transformation you may apply, or
-if you apply no transformation at all, the exposures used will be the
-post-tranformation number (which is by default 1).
+of the model fitting function rather than in the formula. You are much
+more likely to have success if you provide the data used to fit the model
+with the \code{data} argument.
 }
 \examples{
 # Using a fitted lm model
