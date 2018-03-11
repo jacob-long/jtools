@@ -49,11 +49,16 @@
 #'   The default model summary statistics reporting follows this logic:
 #'
 #'   \itemize{
-#'     \item summ.lm = c(N = "nobs", R2 = "r.squared"),
-#'     \item summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
-#'     \item summ.svyglm = c(N = "nobs", R2 = "r.squared"),
-#'     \item summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+#'     \item summ.lm = `c(N = "nobs", R2 = "r.squared")`,
+#'     \item summ.glm = `c(N = "nobs", AIC = "AIC", BIC = "BIC")`,
+#'     \item summ.svyglm = `c(N = "nobs", R2 = "r.squared")`,
+#'     \item summ.merMod = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
+#'                           `R2 (fixed)` = "r.squared.fixed",
+#'                           `R2 (total)` = "r.squared")}
 #'   }
+#'
+#'   Be sure to look at the [summ()] documentation for more on the calculation
+#'   of these and other statistics, especially for mixed models.
 #'
 #'   If you set \code{statistics = "all"}, then the statistics argument
 #'   passed to \code{huxreg} will be \code{NULL}, which reports whichever
@@ -141,13 +146,15 @@ export_summs <- function(...,
 
   if (!requireNamespace("huxtable", quietly = TRUE)) {
 
-    stop("Install the huxtable package to use the export_summs function.")
+    stop("Install the huxtable package to use the export_summs function.",
+         call. = FALSE)
 
   }
 
   if (!requireNamespace("broom", quietly = TRUE)) {
 
-    stop("Install the broom package to use the export_summs function.")
+    stop("Install the broom package to use the export_summs function.",
+         call. = FALSE)
 
   }
 
@@ -258,7 +265,9 @@ export_summs <- function(...,
            summ.lm = c(N = "nobs", R2 = "r.squared"),
            summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
            summ.svyglm = c(N = "nobs", R2 = "r.squared"),
-           summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC")
+           summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC",
+                           `R2 (fixed)` = "r.squared.fixed",
+                           `R2 (total)` = "r.squared")
     )
 
   } else if (statistics == "all") {
@@ -345,19 +354,22 @@ export_summs <- function(...,
 
     if (!requireNamespace("officer", quietly = TRUE)) {
 
-      stop("Install the officer package to use the to.word functionality.")
+      stop("Install the officer package to use the to.word functionality.",
+           call. = FALSE)
 
     }
 
     if (!requireNamespace("flextable", quietly = TRUE)) {
 
-      stop("Install the flextable package to use the to.word functionality.")
+      stop("Install the flextable package to use the to.word functionality.",
+           call. = FALSE)
 
     }
 
     if (is.null(word.file)) {
 
-      message("You did not provide a file name, so it will be called untitled.docx.")
+      message(wrap_str("You did not provide a file name, so it will be called
+                       untitled.docx."))
       word.file <- "untitled.docx"
 
     }
@@ -822,8 +834,8 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
       base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
     } else {
       conf.level <- as.numeric(deparse(conf.level))
-      x <- update_summ(x, confint = TRUE, ci.width = conf.level,
-                       call.env = environment())
+      e <- environment()
+      x <- update_summ(x, confint = TRUE, ci.width = conf.level, call.env = e)
       base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
       base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
     }
@@ -835,7 +847,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     the_coefs <- attr(x, "coef_export")
     base <- base[base$term %in% the_coefs,]
     if (!is.null(names(the_coefs))) {
-      for (i in 1:length(the_coefs)) { # seq_len fails with error here?
+      for (i in seq_along(the_coefs)) {
         if (names(the_coefs[i]) != "") {
           base$term[base$term == the_coefs[i]] <- names(the_coefs[i])
         }
@@ -844,11 +856,12 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
-  zeroes <- check_if_zero(base[names(base) %nin% "term"])
+  num_cols <- sapply(base, is.numeric)
+  zeroes <- check_if_zero(base[num_cols])
   if (any(zeroes == TRUE)) {
-    basenums <- base[names(base) %nin% "term"]
+    basenums <- base[num_cols]
     basenums[zeroes] <- 0
-    base[names(base) %nin% "term"] <- basenums
+    base[num_cols] <- basenums
   }
 
   return(base)
@@ -934,6 +947,14 @@ glance.summ.merMod <- function(x, ...) {
 
   base <- broom::glance(x$model)
   if (lme4::isLMM(x$model)) {base$p.value <- NA}
+  # Get attributes
+  atts <- attributes(x)
+  # Change NULLs to missing
+  if (is.null(atts$rsqs$Marginal)) {atts$rsqs$Marginal <- NA}
+  if (is.null(atts$rsqs$Conditional)) {atts$rsqs$Conditional <- NA}
+  # Add r.squared columns
+  base$r.squared <- atts$rsqs$Conditional
+  base$r.squared.fixed <- atts$rsqs$Marginal
   return(base)
 
 }
