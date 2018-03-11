@@ -264,15 +264,6 @@ summ.lm <- function(
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
 
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package",
-              "installed. Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
   # Using information from summary()
   sum <- summary(model)
 
