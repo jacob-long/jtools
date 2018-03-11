@@ -447,7 +447,8 @@ pR2 <- function(object) {
   .weights <- model.weights(frame)
   .offset <- model.offset(frame)
 
-  objectNull <- j_update(object, ~ 1, weights = .weights, offset = .offset)
+  objectNull <- j_update(object, formula =  ~ 1, weights = .weights,
+                         offset = .offset)
 
   llhNull <- getLL(objectNull)
   n <- dim(object$model)[1]
@@ -492,7 +493,8 @@ getLL <- function(object) {
 #   pR2Work(llh,llhNull,n)
 # }
 
-#### Weighted SD ############################################################
+#### Weighted helpers ########################################################
+
 wtd.sd <- function(x, w) {
   # Get the mean
   xm <- weighted.mean(x, w, na.rm = TRUE)
@@ -502,6 +504,30 @@ wtd.sd <- function(x, w) {
   sd <- sqrt(variance)
   # Return the SD
   return(sd)
+}
+
+wtd.table <- function(x, weights = NULL, na.rm = TRUE) {
+
+  if (is.null(weights)) {
+    weights <- rep(1, length(x))
+  }
+
+  if (length(x) != length(weights)) {
+    stop("x and weights lengths must be the same")
+  }
+
+  if (na.rm) {
+    s <- !is.na(x) & !is.na(weights)
+    x <- x[s, drop = FALSE]
+    weights <- weights[s]
+  }
+
+  result <- tapply(weights, x, sum, simplify = TRUE)
+
+  result[is.na(result)] <- 0
+
+  as.table(result)
+
 }
 
 #### Regex helper ############################################################
@@ -571,7 +597,7 @@ ncvTest.lm <- function(model, var.formula, ...) {
 #' @importFrom stats update.formula
 
 j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
-                     weights = NULL, ...) {
+                     weights = NULL, call.env = NULL, ...) {
   call <- getCall(mod)
   if (is.null(call)) {
     stop("Model object does not support updating (no call)", call. = FALSE)
@@ -590,9 +616,9 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
   # if (!is.null(weights))
     call$weights <- weights
 
+  if (is.null(call.env)) {call.env <- parent.frame()}
 
-
-  eval(call, env, parent.frame())
+  eval(call, env, call.env)
 }
 
 ### cut2 ######################################################################
@@ -727,6 +753,28 @@ cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE, digits,
   # if (length(xlab))
   #   label(y) <- xlab
   y
+}
+
+### weighted effects coding ##################################################
+
+#' @importFrom stats contr.treatment
+
+contr.weighted <- function(x, base = 1, weights = NULL) {
+
+  frequencies <- wtd.table(x, weights = weights)
+  n.cat <- length(frequencies)
+
+  # If base level is named, get the index
+  if (is.character(base)) {
+    base <- which(levels(x) == base)
+  }
+
+  new.contrasts <- contr.treatment(n.cat, base = base)
+  new.contrasts[base, ] <- -1 * frequencies[-base]/frequencies[base]
+  colnames(new.contrasts) <- names(frequencies[-base])
+
+  return(new.contrasts)
+
 }
 
 ### coeftest ##################################################################
