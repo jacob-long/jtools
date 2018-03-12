@@ -130,7 +130,7 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   modxvals2 <- modxvals
   mod2vals2 <- mod2vals
 
-  if (is.factor(predictions[[pred]] | is.character(predictions[[pred]]))) {
+  if (is.factor(predictions[[pred]]) | is.character(predictions[[pred]])) {
 
     if (is.null(vary.lty)) {vary.lty <- FALSE}
 
