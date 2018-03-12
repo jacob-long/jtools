@@ -195,10 +195,13 @@ if (requireNamespace("lme4")) {
   mve <- lmer(Anger ~ Gender * mode + btype +  (1 | item), data = VerbAgg)
   mv <- lmer(Anger ~ Gender * mode_numeric + btype +  (1 | item),
              data = VerbAgg)
+  gm <- glmer(incidence ~ period + (1 | herd), family = poisson, data = cbpp,
+              offset = log(size))
 
   test_that("interact_plot works for lme4", {
     expect_error(p <- interact_plot(mve, pred = mode, modx = Gender))
     expect_silent(p <- interact_plot(mv, pred = mode_numeric, modx = Gender))
+    expect_silent(print(p))
     expect_message(p <- interact_plot(mv, pred = mode_numeric, modx = Gender,
                                      interval = TRUE))
     expect_silent(print(p))
@@ -207,9 +210,11 @@ if (requireNamespace("lme4")) {
   test_that("effect_plot works for lme4", {
     expect_error(p <- effect_plot(mve, pred = mode))
     expect_silent(p <- effect_plot(mv, pred = mode_numeric))
+    expect_silent(print(p))
     expect_message(p <- effect_plot(mv, pred = mode_numeric, interval = TRUE))
     expect_silent(print(p))
   })
+
 }
 
 context("interactions offsets")
@@ -603,3 +608,17 @@ test_that("cat_plot handles plotted points w/ no mod. (boxplot)", {
                          plot.points = TRUE, geom = "boxplot"))
   expect_silent(print(p))
 })
+
+if (requireNamespace("lme4", quietly = TRUE)) {
+  test_that("make_predictions.merMod bootstrap intervals work", {
+    mp <- make_predictions(gm, pred = "period", interval = TRUE, boot = TRUE,
+                           sims = 10, progress = "none")
+    expect_silent(p <- plot_predictions(mp, interval = TRUE))
+    expect_silent(print(p))
+  })
+
+  test_that("glmer works", {
+    expect_message(p <- cat_plot(gm, pred = period, interval = TRUE))
+    expect_silent(print(p))
+  })
+}

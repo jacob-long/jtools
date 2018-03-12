@@ -143,14 +143,22 @@ if (requireNamespace("survey")) {
 #### lme4 tests #############################################################
 
 if (requireNamespace("lme4")) {
+
+  gm <- glmer(incidence ~ period + (1 | herd), family = poisson, data = cbpp,
+              offset = log(size))
+
   test_that("jsumm: merMod CIs work", {
-    expect_is(summ(mv, confint = TRUE, pvals = FALSE), "summ.merMod")
-    expect_output(print(summ(mv, confint = TRUE, pvals = FALSE)))
+    expect_is(s <- summ(mv, confint = TRUE), "summ.merMod")
+    expect_output(print(s))
+    expect_is(s <- summ(gm, confint = TRUE), "summ.merMod")
+    expect_output(print(s))
   })
 
   test_that("jsumm: merMod dropping pvals works", {
-    expect_is(summ(mv, pvals = FALSE), "summ.merMod")
+    expect_is(s <- summ(mv, pvals = FALSE), "summ.merMod")
     expect_output(print(summ(mv, pvals = FALSE)))
+    expect_is(s <- summ(gm, pvals = FALSE), "summ.merMod")
+    expect_output(print(s))
   })
 
   test_that("jsumm and merMod objects: everything works", {
@@ -160,11 +168,6 @@ if (requireNamespace("lme4")) {
     expect_warning(summ(mv, robust = TRUE))
   })
 
-  test_that("summ.merMod: r.squared works", {
-    skip_on_cran()
-    expect_is(j <- summ(mv, pvals = FALSE, r.squared = TRUE), "summ.merMod")
-    expect_output(print(j))
-  })
 }
 
 test_that("jsumm: lm CIs work", {

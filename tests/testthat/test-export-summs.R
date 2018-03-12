@@ -44,6 +44,20 @@ test_that("Export doesn't fail with lm", {
   expect_is(export_summs(fit,fit2,fitw), "huxtable")
 })
 
+test_that("Export accepts named list input", {
+  expect_is(export_summs(list("Model 1" = fit, "Model 2" = fit2,
+                              "Weighted" = fitw)), "huxtable")
+})
+
+test_that("Export uses statistics = 'all' argument", {
+  expect_is(export_summs(fit,fit2,fitw, statistics = "all"), "huxtable")
+})
+
+test_that("Export works with no summ/huxtable args", {
+  expect_is(export_summs(fit,fit2,fitw, statistics = "all",
+                         confint = TRUE), "huxtable")
+})
+
 test_that("Export accepts summ args with lm", {
   expect_is(export_summs(fit,fit2,fitw, scale = T, robust = T),
             "huxtable")
@@ -56,7 +70,8 @@ test_that("Export accepts huxreg args with lm", {
 
 test_that("Export accepts huxreg and summ args with lm", {
   expect_is(export_summs(fit,fit2,fitw, pad_decimal = ",",
-                         robust = T), "huxtable")
+                         robust = T, n.sd = 2, digits = 1,
+                         scale = T), "huxtable")
 })
 
 test_that("Export doesn't fail with glm", {
@@ -78,27 +93,25 @@ test_that("Export accepts huxreg and summ args with glm", {
                          robust = T), "huxtable")
 })
 
-test_that("Export doesn't fail with svyglm", {
-  expect_is(export_summs(regmodel, statistics = c(N = "nobs")), "huxtable")
-})
-
-test_that("Export accepts summ args with svyglm", {
-  expect_is(export_summs(regmodel, scale = T),
-            "huxtable")
-})
-
 if (requireNamespace("survey")) {
+  test_that("Export doesn't fail with svyglm", {
+    expect_is(export_summs(regmodel, statistics = c(N = "nobs")), "huxtable")
+  })
+
+  test_that("Export accepts summ args with svyglm", {
+    expect_is(export_summs(regmodel, scale = T),
+              "huxtable")
+  })
   test_that("Export accepts huxreg args with svyglm", {
     expect_is(export_summs(regmodel, pad_decimal = ",",
                            statistics = c(N = "nobs")),
               "huxtable")
   })
+  test_that("Export accepts huxreg and summ args with svyglm", {
+    expect_is(export_summs(regmodel, pad_decimal = ",",
+                           scale = T), "huxtable")
+  })
 }
-
-test_that("Export accepts huxreg and summ args with svyglm", {
-  expect_is(export_summs(regmodel, pad_decimal = ",",
-                         scale = T), "huxtable")
-})
 
 if (requireNamespace("lme4")) {
   test_that("Export doesn't fail with merMod", {
@@ -166,7 +179,8 @@ test_that("plot_summs doesn't fail with lm", {
 })
 
 test_that("plot_summs accepts summ args with lm", {
-  expect_is(p <- plot_summs(fit,fit2,fitw, scale = T, robust = T),
+  expect_is(p <- plot_summs(fit,fit2,fitw, scale = T, robust = T,
+                            n.sd = 2, digits = 2),
    "ggplot")
   expect_silent(print(p))
 })
@@ -183,7 +197,8 @@ test_that("plot_summs accepts summ args with glm", {
 })
 
 test_that("plot_summs accepts odds ratios with glm", {
-  expect_is(p <- plot_summs(pmod, pmod_a, scale = T, robust = T),
+  expect_is(p <- plot_summs(pmod, pmod_a, scale = T, robust = T,
+                            odds.ratio = TRUE, model.names = "Mod1"),
    "ggplot")
   expect_silent(print(p))
 })
@@ -228,6 +243,11 @@ test_that("plot_summs can omit coefficients", {
 
 context("plot_coefs")
 
+test_that("plot_coefs works", {
+  expect_is(p <- plot_coefs(fit, pmod, model.names = c("Mod1")), "ggplot")
+  expect_silent(print(p))
+})
+
 test_that("plot_coefs can take manual coefficient names", {
   expect_is(p <- plot_coefs(fit,fit2,fitw,
                          coefs = c("HS Grad %" = "HSGrad",
@@ -238,11 +258,6 @@ test_that("plot_coefs can take manual coefficient names", {
 test_that("plot_coefs can omit coefficients", {
   expect_is(p <- plot_coefs(fit,fit2,fitw,
                          coefs = c("HSGrad","Murder")), "ggplot")
-  expect_silent(print(p))
-})
-
-test_that("plot_coefs works", {
-  expect_is(p <- plot_coefs(fit, pmod), "ggplot")
   expect_silent(print(p))
 })
 

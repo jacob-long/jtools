@@ -74,6 +74,16 @@ test_that("gscale: selected vars in dataframes are centered without scaling", {
                 length(mtcars))
 })
 
+# Make a factor to test weighted contrasts
+mtcars2 <- mtcars
+mtcars2$vs <- as.factor(mtcars2$vs)
+
+test_that("gscale: weighted contrasts work", {
+  expect_length(gscale(vars = c("hp", "wt", "vs"), data = mtcars,
+                       apply.weighted.contrasts = TRUE),
+                length(mtcars))
+})
+
 if (requireNamespace("survey")) {
   suppressMessages(library(survey, quietly = TRUE))
   data(api)
