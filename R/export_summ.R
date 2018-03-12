@@ -165,6 +165,7 @@ export_summs <- function(...,
   if (inherits(dots[[1]], 'list')) {
 
     mods <- dots[[1]]
+    if (is.null(model.names)) {model.names <- names(mods)}
 
   } else {
   # Otherwise assume unnamed arguments are models and everything else is args
@@ -276,79 +277,59 @@ export_summs <- function(...,
 
   }
 
-  if (!is.null(names(dots))) {
+  hux_formals <- formals(huxtable::huxreg)
 
-    hux_formals <- formals(huxtable::huxreg)
+  hux_args <- dots[names(dots) %in% names(hux_formals)]
 
-    hux_args <- dots[names(dots) %in% names(hux_formals)]
+  if (dots$confint == TRUE) {
+    hux_args <- as.list(c(jsumms, hux_args,
+                          error_pos = error_pos[1],
+                          error_format = error_format,
+                          statistics = list(statistics),
+                          ci_level = ci_level))
+  } else {
+    hux_args <- as.list(c(jsumms, hux_args,
+                          error_pos = error_pos[1],
+                          error_format = error_format,
+                          statistics = list(statistics)))
+  }
 
-    if (dots$confint == TRUE) {
-      hux_args <- as.list(c(jsumms, hux_args,
-                            error_pos = error_pos[1],
-                            error_format = error_format,
-                            statistics = list(statistics),
-                            ci_level = ci_level))
-    } else {
-      hux_args <- as.list(c(jsumms, hux_args,
-                            error_pos = error_pos[1],
-                            error_format = error_format,
-                            statistics = list(statistics)))
-    }
+  if ("note" %nin% names(hux_args)) {
 
-    if (!("note" %in% names(hux_args))) {
+    if (scale == TRUE) {
 
-      if (scale == TRUE) {
+      note <- paste("All continuous predictors are mean-centered and scaled",
+              "by 1 standard deviation.")
 
-        note <- paste("All continuous predictors are mean-centered and scaled",
-                "by 1 standard deviation.")
+      if (robust == TRUE) {
 
-        if (robust == TRUE) {
+        note <- paste(note,
+                  "Standard errors are heteroskedasticity robust. %stars%.")
 
-          note <- paste(note,
-                    "Standard errors are heteroskedasticity robust. %stars%.")
+      } else {
 
-        } else {
-
-          note <- paste(note, "{stars}.")
-
-        }
-
-        hux_args$note <- note
-
-      } else if (robust == TRUE & scale == FALSE) {
-
-        note <- paste("Standard errors are heteroskedasticity robust. %stars%.")
-        hux_args$note <- note
+        note <- paste(note, "{stars}.")
 
       }
 
-    }
+      hux_args$note <- note
 
-    if (!("number_format" %in% names(hux_args))) {
+    } else if (robust == TRUE & scale == FALSE) {
 
-      hux_args$number_format <- paste("%.", digits, "f", sep = "")
+      note <- paste("Standard errors are heteroskedasticity robust. %stars%.")
+      hux_args$note <- note
 
-    }
-
-    out <- do.call(what = huxtable::huxreg, args = hux_args)
-
-
-  } else {
-
-    if (dots$confint == TRUE) {
-      hux_args <- as.list(c(jsumms, hux_args,
-                            error_pos = error_pos[1],
-                            error_format = error_format,
-                            statistics = list(statistics),
-                            ci_level = ci_level))
-    } else {
-      hux_args <- as.list(c(jsumms, hux_args,
-                            error_pos = error_pos[1],
-                            error_format = error_format,
-                            statistics = list(statistics)))
     }
 
   }
+
+  if ("number_format" %nin% names(hux_args)) {
+
+    hux_args$number_format <- paste("%.", digits, "f", sep = "")
+
+  }
+
+  out <- do.call(what = huxtable::huxreg, args = hux_args)
 
   if (to.word == TRUE) {
 
@@ -510,42 +491,29 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   # Since I'm looping, I'm creating the list before the loop
   jsumms <- as.list(rep(NA, length(mods)))
 
-  if (!is.null(names(dots))) {
+  # Because deprecated args aren't in formals, I add them here
+  dep_names <- c("standardize", "scale.response", "standardize.response",
+                 "center.response", "robust.type")
+  summ_args <- dots[names(dots) %in% c(names(summ_formals), dep_names)]
 
-    # Because deprecated args aren't in formals, I add them here
-    dep_names <- c("standardize", "scale.response", "standardize.response",
-                   "center.response", "robust.type")
-    summ_args <- dots[names(dots) %in% names(summ_formals)]
+  # For those critical arguments that require a note, see if they were
+  # provided by the user and overwrite if so
+  if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
+  if ("scale" %in% names(summ_args)) {scale <- summ_args$scale}
+  if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
+  if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
+  if ("odds.ratio" %in% names(summ_args)) {
+    odds.ratio <- summ_args$odds.ratio
+  }
 
-    # For those critical arguments that require a note, see if they were
-    # provided by the user and overwrite if so
-    if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
-    if ("scale" %in% names(summ_args)) {scale <- summ_args$scale}
-    if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
-    if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
-    if ("odds.ratio" %in% names(summ_args)) {
-      odds.ratio <- summ_args$odds.ratio
-    }
+  for (i in seq_len(length(mods))) {
 
-    for (i in seq_len(length(mods))) {
+    the_args <- summ_args
+    the_args$model <- mods[[i]]
 
-      the_args <- summ_args
-      the_args$model <- mods[[i]]
-
-      jsumms[[i]] <- do.call(what = summ, args = the_args)
-      if (!is.null(coefs)) {
-        attr(jsumms[[i]], "coef_export") <- coefs
-      }
-
-    }
-
-  } else {
-
-    jsumms <- lapply(mods, FUN = summ)
+    jsumms[[i]] <- do.call(what = summ, args = the_args)
     if (!is.null(coefs)) {
-      for (i in 1:length(jsumms)) {
-        attr(jsumms[[i]], "coef_export") <- coefs
-      }
+      attr(jsumms[[i]], "coef_export") <- coefs
     }
 
   }
