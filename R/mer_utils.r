@@ -401,7 +401,7 @@ predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
                         allow.new.levels = TRUE,
                         type = c("link", "response", "terms"),
                         na.action = na.pass, re.form = NULL,
-                        boot = FALSE, sims = 100, ...) {
+                        boot = FALSE, sims = 100, prog_arg = "none", ...) {
 
   if (is.null(newdata) && is.null(re.form)) {
     ## raw predict() call, just return fitted values
@@ -504,7 +504,8 @@ predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
     bootfun <- function(model) {
       drop( X  %*% lme4::fixef(model) )
     }
-    bo <- lme4::bootMer(model, FUN = bootfun, nsim = sims, .progress = "txt")
+
+    bo <- lme4::bootMer(model, FUN = bootfun, nsim = sims, .progress = prog_arg)
     fit <- bo$t
 
     if (lme4::isGLMM(model)) {

@@ -374,7 +374,8 @@ make_predictions.merMod <-
            int.width = .95, outcome.scale = "response", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
            mod2.labels = NULL, int.type = c("confidence","prediction"),
-           preds.per.level = 100, boot = FALSE, sims = 100, ...) {
+           preds.per.level = 100, boot = FALSE, sims = 100, progress = "txt",
+           ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -477,12 +478,15 @@ make_predictions.merMod <-
   # bar won't make sense.
   if (interval == TRUE && boot == TRUE) {
 
-    cat("Bootstrap progress:\n")
+    if (interactive() & progress != "none") {
+      cat("Bootstrap progress:\n")
+    }
     predicted <- predict_mer(model, newdata = pm,
                              use_re_var = FALSE, se.fit = TRUE,
                              allow.new.levels = FALSE, type = outcome.scale,
                              re.form = ~0,
-                             boot = TRUE, sims = sims, ...)
+                             boot = TRUE, sims = sims, prog_bar = progress,
+                             ...)
 
     raw_boot <- predicted
 
