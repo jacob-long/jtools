@@ -21,12 +21,10 @@ Suggests:
   boot,
   broom,
   cowplot,
-  flextable,
   grid,
-  huxtable (>= 1.0.0),
+  huxtable (>= 3.0.0),
   lme4,
   methods,
-  officer,
   pbkrtest,
   RColorBrewer,
   sandwich,
@@ -36,6 +34,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
+Enhances: brms,
+  rstanarm
 RoxygenNote: 6.0.1.9000
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
