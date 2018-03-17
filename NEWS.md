@@ -5,6 +5,8 @@
 This release has several big changes embedded within, side projects that needed
 a lot of work to implement and required some user-facing changes. Overall
 these are improvements, but in some edge cases they could break old code.
+The following sections are divided by the affected functions. Some of the 
+functions are discussed in more than one section.
 
 ### `interact_plot`, `cat_plot`, and `effect_plot`
 
@@ -52,7 +54,8 @@ for `sim_slopes` or `summ`.
 **Preliminary support for confidence intervals for `merMod` models**: You may 
 now get confidence intervals when using `merMod` objects as input to the
 plotting functions. Of importance, though, is the uncertainty is *only for
-the fixed effects*. For now, a warning is printed. 
+the fixed effects*. For now, a warning is printed. See the next session for
+another option for `merMod` confidence intervals.
 
 ### `make_predictions` and `plot_predictions`: New tools for plotting 
 
@@ -77,7 +80,7 @@ All these tools have a new default `centered` argument. They are now set to
 to *all variables not included in the interaction, including the dependent
 variable*. This means that in effect, the default option does the same thing
 that previous versions did. But instead of having that occur when 
-`cenetered = NULL`, that's what `centered = "all"` means. There is no 
+`centered = NULL`, that's what `centered = "all"` means. There is no 
 `NULL` option any longer. Note that with `sim_slopes`, the focal predictor
 (`pred`) will now be centered --- this only affects the conditional intercept.
 
@@ -161,6 +164,35 @@ scaling to whichever variables are included in that character vector.
 I've also implemented a neat technical fix that allows the updated model to
 itself be updated while not also including the actual raw data in the model
 call.
+
+### `plot_coefs` and `plot_summs`
+
+A variety of fixes and optimizations have been added to these functions. 
+Now, by default, there are two confidence intervals plotted, a thick line
+representing (with default settings) the 90% interval and a thinner line
+for the 95% intervals. You can set `inner_ci_level` to `NULL` to get rid of
+the thicker line.
+
+With `plot_summs`, you can also set per-model `summ` arguments by providing
+the argument as a vector (e.g., `robust = c(TRUE, FALSE)`). Length 1 arguments
+are applied to all models. `plot_summs` will now also support models not 
+accepted by `summ` by just passing those models to `plot_coefs` without
+using `summ` on them.
+
+### `theme_apa` plus new functions `add_gridlines`, `drop_gridlines`
+
+New arguments have been added to `theme_apa`: `remove.x.gridlines` and 
+`remove.y.gridlines`, both of which are `TRUE` by default. APA hates giving
+hard and fast rules, but the norm is that gridlines should be omitted unless
+they are crucial for interpretation. `theme_apa` is also now a "complete" 
+theme, which means specifying further options via `theme` will not revert
+`theme_apa`'s changes to the base theme. 
+
+Behind the scenes the helper functions `add_gridlines` and `drop_gridlines`
+are used, which do what they sound like they do. To avoid using the arguments
+to those functions, you can also use `add_x_gridlines`/`add_y_gridlines` or
+`drop_x_gridlines`/`drop_y_gridlines` which are wrappers around the 
+more general functions.
 
 ### Survey tools
 
