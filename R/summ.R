@@ -1975,10 +1975,10 @@ update_summ <- function(summ, call.env, ...) {
   summ_formals <- formals(getFromNamespace(class(summ), "jtools"))
 
   extras <- as.list(match.call())
-  indices <- match(names(extras), names(summ_formals))
+  indices <- which(names(extras) %in% names(summ_formals))
   extras <- extras[indices]
 
-  for (i in 1:length(extras)) {
+  for (i in seq_along(extras)) {
     if (is.name(extras[[i]])) {
       extras[[i]] <- eval(extras[[i]], envir = call.env)
     }
@@ -1995,5 +1995,50 @@ update_summ <- function(summ, call.env, ...) {
   call$model <- summ$model
 
   eval(call, env, parent.frame())
+
+}
+
+# Use summ over a list of models and return them.
+# If model isn't supported, just return it.
+summs <- function(models, ...) {
+
+  # Create empty list to hold tidy frames
+  the_summs <- as.list(rep(NA, times = length(models)))
+
+  ex_args <- list(...)
+
+  for (i in seq_along(models)) {
+
+    method_stub <- find_S3_class("summ", models[[i]], package = "jtools")
+
+    if (!is.na(method_stub)) {
+      # Get the right summ function's arguments
+      method_args <- formals(getS3method("summ", method_stub))
+      # Because deprecated args aren't in formals, I add them here
+      dep_names <- c("standardize", "scale.response", "standardize.response",
+                     "center.response", "robust.type")
+      # Match the args
+      extra_args <- ex_args[names(ex_args) %in% c(names(method_args),
+                                                  dep_names)]
+      if (!is.null(extra_args)) {
+        extra_args <- lapply(extra_args, function(x) {
+          if (length(x) > 1) {return(x[i])} else {return(x)}
+        })
+      }
+
+      all_args <- as.list(c(models[i], extra_args))
+
+      the_summs[[i]] <- do.call(getS3method("summ", method_stub),
+                                args = all_args)
+
+    } else {
+
+      the_summs[[i]] <- models[[i]]
+
+    }
+
+  }
+
+  return(the_summs)
 
 }

@@ -431,174 +431,39 @@ export_summs <- function(...,
 #' @importFrom ggplot2 element_blank element_text ylab
 
 plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
-                       omit.coefs = "(Intercept)", color.class = "Set2") {
-
-  if (!requireNamespace("broom", quietly = TRUE)) {
-
-    stop("Install the broom package to use the plot_summs function.")
-
-  }
-
-  # Nasty workaround for R CMD Check warnings for global variable bindings
-  model <- term <- estimate <- conf.low <- conf.high <- NULL
+                       omit.coefs = "(Intercept)", inner_ci_level = NULL,
+                       color.class = "Set2") {
 
   # Capture arguments
   dots <- list(...)
 
-  # If first element of list is a list, assume the list is a list of models
-  if (inherits(dots[[1]], 'list')) {
+  # assume unnamed arguments are models and everything else is args
+  if (!is.null(names(dots))) {
 
-    mods <- dots[[1]]
+    mods <- dots[names(dots) == ""]
+    ex_args <- dots[names(dots) != ""]
 
   } else {
-    # Otherwise assume unnamed arguments are models and everything else is args
 
-    if (!is.null(names(dots))) {
-
-      mods <- dots[names(dots) == ""]
-
-    } else {
-
-      mods <- dots
-
-    }
+    mods <- dots
+    ex_args <- NULL
 
   }
 
-  if (!is.null(omit.coefs) & !is.null(coefs)) {
-    if (omit.coefs != "(Intercept)") {
-      message("coefs argument overrides omit.coefs argument, displaying ",
-              "coefficients listed in coefs argument.")
-    }
-    omit.coefs <- NULL
-  }
+  # Add mandatory arguments
+  ex_args$confint <- TRUE
+  ex_args$ci.width <- ci_level
 
-  # Assuming all models are the same type as first
-  mod_type <- class(j_summ(mods[[1]]))[1]
+  the_summs <- do.call("summs", as.list(c(list(models = mods), ex_args)))
 
-  # Now get the argument names for that version of summ
-  summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
+  args <- as.list(c(the_summs, ci_level = ci_level,
+            model.names = list(model.names), coefs = list(coefs),
+            omit.coefs = list(omit.coefs),
+            inner_ci_level = inner_ci_level, color.class = color.class,
+            ex_args))
 
-  # Setting defaults for summ functions I want to add captions about
-  robust <- FALSE
-  scale <- FALSE
-  n.sd <- 1
-  odds.ratio <- FALSE
+  do.call("plot_coefs", args = args)
 
-  dots$confint <- TRUE
-  dots$ci.width <- ci_level
-
-  # Since I'm looping, I'm creating the list before the loop
-  jsumms <- as.list(rep(NA, length(mods)))
-
-  # Because deprecated args aren't in formals, I add them here
-  dep_names <- c("standardize", "scale.response", "standardize.response",
-                 "center.response", "robust.type")
-  summ_args <- dots[names(dots) %in% c(names(summ_formals), dep_names)]
-
-  # For those critical arguments that require a note, see if they were
-  # provided by the user and overwrite if so
-  if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
-  if ("scale" %in% names(summ_args)) {scale <- summ_args$scale}
-  if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
-  if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
-  if ("odds.ratio" %in% names(summ_args)) {
-    odds.ratio <- summ_args$odds.ratio
-  }
-
-  for (i in seq_len(length(mods))) {
-
-    the_args <- summ_args
-    the_args$model <- mods[[i]]
-
-    jsumms[[i]] <- do.call(what = summ, args = the_args)
-    if (!is.null(coefs)) {
-      attr(jsumms[[i]], "coef_export") <- coefs
-    }
-
-  }
-
-  # If user gave model names, apply them now
-  if (!is.null(model.names)) {
-
-    names(jsumms) <- model.names
-
-  }
-
-  # Create empty list to hold tidy frames
-  tidies <- as.list(rep(NA, times = length(jsumms)))
-
-  for (i in 1:length(jsumms)) {
-
-    tidies[[i]] <- broom::tidy(jsumms[[i]], conf.int = TRUE,
-                               conf.level = ci_level)
-    if (!is.null(names(jsumms))) {
-      tidies[[i]]$model <- names(jsumms)[i]
-    } else {
-      modname <- paste("Model", i)
-      tidies[[i]]$model <- modname
-    }
-
-  }
-
-  # Combine the tidy frames into one, long frame
-  tidies <- do.call(rbind, tidies)
-
-  # Drop omitted coefficients
-  if (!is.null(omit.coefs)) {
-
-    tidies <- tidies[tidies$term %nin% omit.coefs,]
-
-  }
-
-  # For consistency in creating the factors apply contrived names to model.names
-  if (is.null(model.names)) {
-
-    model.names <- unique(tidies$model)
-
-  }
-
-  # For some reason, the order of the legend and the dodged colors
-  # only line up when they are reversed here and in the limits arg of
-  # scale_colour_brewer...no clue why that has to be the case
-  tidies$model <- factor(tidies$model, levels = rev(model.names))
-  tidies$term <- factor(tidies$term, levels = unique(tidies$term))
-
-  p <- ggplot(data = tidies)
-
-  if (length(jsumms) > 1) {
-    p <- p + geom_pointrange_h( # jtools function
-        aes(y = term, x = estimate, xmin = conf.low, xmax = conf.high,
-            colour = model),
-        position = position_dodgev(height = 0.5), # jtools function
-        shape = 21, fill = "white", fatten = 3, size = 0.8)
-  } else {
-    p <- p + geom_pointrange_h( # jtools function
-      aes(y = term, x = estimate, xmin = conf.low, xmax = conf.high,
-          colour = model),
-      shape = 21, fill = "white", fatten = 3, size = 0.8,
-      show.legend = FALSE) # omit legend for single models
-  }
-
-  p <- p +
-    scale_colour_brewer(palette = color.class,
-            limits = rev(levels(tidies$model))) +
-    scale_y_discrete(limits = rev(levels(tidies$term))) +
-    theme_apa(legend.pos = "right", legend.font.size = 9,
-              remove.x.gridlines = FALSE) +
-    theme(axis.title.y = element_blank(),
-                   axis.title.x = element_blank(),
-                   axis.text.y = element_text(size = 10)) +
-    xlab("Estimate")
-
-  # Dealing with exponentiated coefficients, where vline should be at 1
-  if (odds.ratio == FALSE) {
-    p <- p + geom_vline(xintercept = 0, linetype = 2, size = .25)
-  } else {
-    p <- p + geom_vline(xintercept = 1, linetype = 2, size = .25)
-  }
-
-  return(p)
 
 }
 
@@ -607,12 +472,14 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 #' @importFrom ggplot2 ggplot aes_string geom_vline scale_colour_brewer theme
 #' @importFrom ggplot2 element_blank element_text ylab
 
-plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
-                       omit.coefs = "(Intercept)", color.class = "Set2") {
+plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
+                       model.names = NULL, coefs = NULL,
+                       omit.coefs = c("(Intercept)", "Intercept"),
+                       color.class = "Set2") {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
 
-    stop("Install the broom package to use the plot_summs function.")
+    stop("Install the broom package to use the plot_coefs function.")
 
   }
 
@@ -622,30 +489,22 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   # Capture arguments
   dots <- list(...)
 
-  # If first element of list is a list, assume the list is a list of models
-  if (inherits(dots[[1]], 'list')) {
+  if (!is.null(names(dots))) {
 
-    mods <- dots[[1]]
+    mods <- dots[names(dots) == ""]
+    ex_args <- dots[names(dots) != ""]
 
   } else {
-    # Otherwise assume unnamed arguments are models and everything else is args
 
-    if (!is.null(names(dots))) {
-
-      mods <- dots[names(dots) == ""]
-
-    } else {
-
-      mods <- dots
-
-    }
+    mods <- dots
+    ex_args <- NULL
 
   }
 
   if (!is.null(omit.coefs) & !is.null(coefs)) {
-    if (omit.coefs != "(Intercept)") {
-      message("coefs argument overrides omit.coefs argument, displaying ",
-              "coefficients listed in coefs argument.")
+    if (any(omit.coefs %nin% c("(Intercept)", "Intercept"))) {
+      msg_wrap("coefs argument overrides omit.coefs argument. Displaying
+               coefficients listed in coefs argument.")
     }
     omit.coefs <- NULL
   }
@@ -657,14 +516,88 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 
   }
 
+  tidies <- make_tidies(mods = mods, ex_args = ex_args, ci_level = ci_level,
+                        model.names = model.names, omit.coefs = omit.coefs,
+                        coefs = coefs)
+
+  if (!is.null(inner_ci_level)) {
+
+    tidies_inner <- make_tidies(mods = mods, ex_args = ex_args,
+                                ci_level = inner_ci_level,
+                                model.names = model.names,
+                                omit.coefs = omit.coefs, coefs = coefs)
+
+    tidies_inner$conf.low.inner <- tidies_inner$conf.low
+    tidies_inner$conf.high.inner <- tidies_inner$conf.high
+    tidies_inner <-
+      tidies_inner[names(tidies_inner) %nin% c("conf.low", "conf.high")]
+
+    tidies <- merge(tidies, tidies_inner, by = c("term","model"),
+                    suffixes = c("", ".y"))
+
+  }
+
+  p <- ggplot(data = tidies)
+
+  # Plot the inner CI using linerange first, so the point can overlap it
+  if (!is.null(inner_ci_level)) {
+    p <- p + geom_linerange_h(
+      aes(y = term, xmin = conf.low.inner, xmax = conf.high.inner,
+          colour = model), position = position_dodgev(height = 0.5),
+      size = 2, show.legend = length(mods) > 1)
+  }
+
+  p <- p + geom_pointrange_h( # jtools function
+    aes(y = term, x = estimate, xmin = conf.low,
+               xmax = conf.high, colour = model),
+    position = position_dodgev(height = 0.5), # jtools function
+    shape = 21, fill = "white", fatten = 3, size = 0.8,
+    show.legend = length(mods) > 1) # omit legend if just a single model
+
+  p <- p +
+    geom_vline(xintercept = 0, linetype = 2, size = .25) +
+    scale_colour_brewer(palette = color.class,
+     limits = rev(levels(tidies$model))) +
+    scale_y_discrete(limits = rev(levels(tidies$term))) +
+    theme_apa(legend.pos = "right", legend.font.size = 9,
+              remove.x.gridlines = FALSE) +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_text(size = 10)) +
+    xlab("Estimate")
+
+  return(p)
+
+}
+
+make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
+                        coefs) {
   # Create empty list to hold tidy frames
   tidies <- as.list(rep(NA, times = length(mods)))
 
-  for (i in 1:length(mods)) {
+  for (i in seq_along(mods)) {
 
-    tidies[[i]] <- broom::tidy(mods[[i]], conf.int = TRUE,
-                               conf.level = ci_level)
-    if (!is.null(names(mods))) {
+    if (!is.null(ex_args)) {
+
+      method_stub <- find_S3_class("tidy", mods[[i]], package = "broom")
+      method_args <-
+        formals(getS3method("tidy", method_stub, envir = getNamespace("broom")))
+
+      method_args <-
+        method_args[names(method_args) %nin% c("intervals", "prob")]
+
+      extra_args <- ex_args[names(ex_args) %in% names(method_args)]
+
+    } else {
+      extra_args <- NULL
+    }
+
+    all_args <- as.list(c(x = list(mods[[i]]), conf.int = TRUE,
+                          conf.level = ci_level,
+                          intervals = TRUE, prob = ci_level,
+                          extra_args))
+
+    tidies[[i]] <- do.call(broom::tidy, args = all_args)
+    if (!is.null(names(mods)) & any(names(mods) != "")) {
       tidies[[i]]$model <- names(mods)[i]
     } else {
       modname <- paste("Model", i)
@@ -711,35 +644,13 @@ plot_coefs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   tidies$model <- factor(tidies$model, levels = rev(model.names))
   tidies$term <- factor(tidies$term, levels = coefs, labels = names(coefs))
 
-  p <- ggplot(data = tidies)
-
-  if (length(mods) > 1) {
-    p <- p + geom_pointrange_h( # jtools function
-      aes(y = term, x = estimate, xmin = conf.low,
-                 xmax = conf.high, colour = model),
-      position = position_dodgev(height = 0.5), # jtools function
-      shape = 21, fill = "white", fatten = 3, size = 0.8)
-  } else {
-    p <- p + geom_pointrange_h( # jtools function
-      aes(y = term, x = estimate, xmin = conf.low,
-                 xmax = conf.high, colour = model),
-      shape = 21, fill = "white", fatten = 3, size = 0.8,
-      show.legend = FALSE) # omit legend if just a single model
+  if (all(c("upper", "lower") %in% names(tidies)) &
+      "conf.high" %nin% names(tidies)) {
+    tidies$conf.high <- tidies$upper
+    tidies$conf.low <- tidies$lower
   }
 
-  p <- p +
-    geom_vline(xintercept = 0, linetype = 2, size = .25) +
-    scale_colour_brewer(palette = color.class,
-     limits = rev(levels(tidies$model))) +
-    scale_y_discrete(limits = rev(levels(tidies$term))) +
-    theme_apa(legend.pos = "right", legend.font.size = 9,
-              remove.x.gridlines = FALSE) +
-    theme(axis.title.y = element_blank(),
-          axis.title.x = element_blank(),
-          axis.text.y = element_text(size = 10)) +
-    xlab("Estimate")
-
-  return(p)
+  return(tidies)
 
 }
 
@@ -797,7 +708,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     uci_lab <- 1 - alpha
     uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
 
-    if (attributes(x)$confint == TRUE | attributes(x)$ci.width != conf.level) {
+    if (attributes(x)$confint == TRUE & attributes(x)$ci.width == conf.level) {
       base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
       base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
     } else {
