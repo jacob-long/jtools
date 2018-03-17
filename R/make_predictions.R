@@ -371,7 +371,8 @@ make_predictions.merMod <-
   function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
            mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
            plot.points = FALSE, interval = FALSE,
-           int.width = .95, outcome.scale = "response", linearity.check = FALSE,
+           int.width = .95, outcome.scale = "response", add.re.variance = FALSE,
+           linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
            mod2.labels = NULL, int.type = c("confidence","prediction"),
            preds.per.level = 100, boot = FALSE, sims = 100, progress = "txt",
@@ -445,7 +446,7 @@ make_predictions.merMod <-
               bold("variance of the fixed effects"), ", not\n",
               "the random effects.")
       predicted <- predict_mer(model, newdata = pms[[i]],
-                               use_re_var = FALSE, se.fit = TRUE,
+                               use_re_var = add.re.variance, se.fit = TRUE,
                                allow.new.levels = FALSE, type = outcome.scale,
                                re.form = ~0,
                                boot = FALSE, sims = sims, ...)
@@ -482,7 +483,7 @@ make_predictions.merMod <-
       cat("Bootstrap progress:\n")
     }
     predicted <- predict_mer(model, newdata = pm,
-                             use_re_var = FALSE, se.fit = TRUE,
+                             use_re_var = add.re.variance, se.fit = TRUE,
                              allow.new.levels = FALSE, type = outcome.scale,
                              re.form = ~0,
                              boot = TRUE, sims = sims, prog_bar = progress,
