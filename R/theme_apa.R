@@ -28,9 +28,9 @@
 #' @param remove.y.gridlines Should the coordinate grid on the y-axis
 #'   (horizontal lines) be removed? Default is TRUE.
 #'
-#' @details This function applies a theme to \code{ggplot2} figures with a style
-#'   that is roughly in line with APA guidelines. Users may need to perform further
-#'   operations for their specific use cases.
+#' @details This function applies a theme to \code{ggplot2} figures with a
+#'   style that is roughly in line with APA guidelines. Users may need to
+#'   perform further operations for their specific use cases.
 #'
 #'   There are some things to keep in mind about APA style figures:
 #'   \itemize{
@@ -87,7 +87,7 @@
 #'
 #' @export theme_apa
 
-theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
+theme_apa <- function(legend.pos = "right", legend.use.title = FALSE,
                       legend.font.size = 12, x.font.size = 12, y.font.size = 12,
                       facet.title.size = 12, remove.y.gridlines = TRUE,
                       remove.x.gridlines = TRUE) {
@@ -106,16 +106,9 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
     strip.text.x = ggplot2::element_text(size = facet.title.size), # facet labs
     strip.text.y = ggplot2::element_text(size = facet.title.size),
     # facet titles
-    strip.background = ggplot2::element_rect(colour = "white", fill = "white")
+    strip.background = ggplot2::element_rect(colour = "white", fill = "white"),
+    complete = TRUE
   )
-
-  if (remove.y.gridlines == TRUE) {
-    plot <- plot + drop_y_gridlines()
-  }
-
-  if (remove.x.gridlines == TRUE) {
-    plot <- plot + drop_x_gridlines()
-  }
 
   # Choose legend position. APA figures generally include legends that
   # are embedded on the plane, so there is no efficient way to have it
@@ -149,12 +142,25 @@ theme_apa <- function(legend.pos = "topleft", legend.use.title = FALSE,
   # Should legend have title? If so, format it correctly
   if (legend.use.title == FALSE) {
     # switch off the legend title
-    plot <- plot + ggplot2::theme(legend.title = ggplot2::element_blank())
+    plot <- plot +
+      ggplot2::theme(legend.title = ggplot2::element_blank())
 
   } else {
     plot <- plot +
       ggplot2::theme(legend.title =
                        ggplot2::element_text(size = 12, face = "bold"))
+  }
+
+  if (remove.y.gridlines == TRUE) {
+    plot <- plot + drop_y_gridlines()
+  } else {
+    plot <- plot + add_y_gridlines()
+  }
+
+  if (remove.x.gridlines == TRUE) {
+    plot <- plot + drop_x_gridlines()
+  } else {
+    plot <- plot + add_x_gridlines()
   }
 
   return(plot)
