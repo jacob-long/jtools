@@ -545,6 +545,50 @@ predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
 }
 
 
+# ### Add random effects to df ################################################
+#
+# add_ranefs <- function(model, data = NULL) {
+#
+#   the_res <- lme4::ranef(model)
+#
+#   for (i in seq_along(the_res)) {
+#
+#     grp_var <- names(the_res)[i]
+#
+#     for (j in seq_along(the_res[[grp_var]])) {
+#
+#       # Name of the predictor with random effect
+#       ran_var <- names(the_res[[grp_var]])[j]
+#       # Name of the column to be added to original data
+#       new_var <- paste0(grp_var, "_", ran_var)
+#       # If it's the intercept, give it a syntactically valid name
+#       new_var <- gsub("(Intercept)", "intercept", new_var, fixed = TRUE)
+#
+#       # Create 1-column data frame with the random effects
+#       grps_plus_effects <- the_res[[grp_var]][, j, drop = FALSE]
+#       # Add the rownames --- the value of the grouping var
+#       grps_plus_effects[grp_var] <- rownames(grps_plus_effects)
+#
+#       # Going to coerce grouping factor to character in both DFs
+#       temp_dat <- data
+#       temp_dat[[grp_var]] <- as.character(temp_dat[[grp_var]])
+#
+#       # Match the ranefs to observations by inner joining
+#       new_dat <- merge(temp_dat, grps_plus_effects, by = grp_var)
+#       # Keep just the new column, and keep it separate
+#       new_col <- new_dat[names(new_dat) %nin% names(temp_dat)]
+#       # Append new column to original data frame with pre-specified var name
+#       data[[new_var]] <- unlist(new_col)
+#
+#     }
+#
+#   }
+#
+#   return(data)
+#
+# }
+#
+
 ### Lifted from lme4 ########################################################
 
 noReForm <- function(re.form) {
