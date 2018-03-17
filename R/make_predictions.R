@@ -548,3 +548,269 @@ make_predictions.merMod <-
   return(out)
 
 }
+
+
+#### stanreg method ##########################################################
+
+#' @export
+
+make_predictions.stanreg <-
+  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
+           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+           plot.points = FALSE, interval = TRUE,
+           int.width = .95, estimate = "mean", linearity.check = FALSE,
+           set.offset = 1, pred.labels = NULL, modx.labels = NULL,
+           mod2.labels = NULL, preds.per.level = 100, ...) {
+
+    # Avoid CRAN barking
+    d <- facvars <- wts <- wname <- NULL
+
+    # This internal function has side effects that create
+    # objects in this environment
+    data_checks(model = model, data = data, predvals = predvals,
+                modxvals = modxvals, mod2vals = mod2vals,
+                pred.labels = pred.labels, modx.labels = modx.labels,
+                mod2.labels = mod2.labels)
+
+#### Prep data for predictions ##############################################
+
+    prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
+                         mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                         survey = FALSE, modx.labels = modx.labels,
+                         mod2.labels = mod2.labels, wname = wname,
+                         weights = weights, wts = wts,
+                         linearity.check = linearity.check,
+                         interval = interval, set.offset = set.offset,
+                         facvars = facvars, centered = centered,
+                         preds.per.level = preds.per.level,
+                         predvals = predvals, pred.labels = pred.labels)
+
+    pm <- prepped$pm
+    d <- prepped$d
+    resp <- prepped$resp
+    facmod <- prepped$facmod
+    modxvals2 <- prepped$modxvals2
+    modx.labels <- prepped$modx.labels
+    mod2vals2 <- prepped$mod2vals2
+    mod2.labels <- prepped$mod2.labels
+
+#### Predicting with update models ############################################
+
+  # Create predicted values based on specified levels of the moderator,
+  # focal predictor
+
+  if (!is.null(modx)) {
+    pms <- split(pm, pm[[modx]])
+  } else {
+    pms <- list(pm)
+  }
+
+  if (!is.null(mod2)) {
+    pms <- unlist(
+      lapply(pms, function(x, y) {split(x, x[[y]])}, y = mod2),
+      recursive = FALSE
+    )
+  }
+
+  for (i in seq_along(pms)) {
+
+    predicted <- rstanarm::posterior_predict(model, newdata = pms[[i]],
+                                   re.form = ~0)
+
+    # the 'ppd' object is a weird pseudo-matrix that misbehaves when
+    # I try to make it into a data frame
+    if (estimate == "mean") {
+      pms[[i]][[resp]] <- colMeans(predicted)
+    } else if (estimate == "median") {
+      pms[[i]][[resp]] <- apply(predicted, 2, median)
+    }
+
+    if (interval == TRUE) {
+
+      ints <- rstanarm::predictive_interval(predicted, prob = int.width)
+
+      pms[[i]][["ymax"]] <- ints[,2]
+      pms[[i]][["ymin"]] <- ints[,1]
+
+    }
+
+    pms[[i]] <- pms[[i]][complete.cases(pms[[i]]),]
+
+  }
+
+  pm <- do.call("rbind", pms)
+
+  # Labels for values of moderator
+  if (!is.null(modx)) {
+    pm[[modx]] <- factor(pm[[modx]], levels = modxvals2, labels = modx.labels)
+  }
+  if (facmod == TRUE) {
+    d[[modx]] <- factor(d[[modx]], levels = modxvals2, labels = modx.labels)
+  }
+  if (!is.null(modx)) {
+    pm$modx_group <- pm[[modx]]
+  }
+
+  # Setting labels for second moderator
+  if (!is.null(mod2)) {
+
+    # Convert character moderators to factor
+    if (is.character(d[[mod2]])) {
+      d[[mod2]] <- factor(d[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    }
+    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
+
+    pm$mod2_group <- pm[[mod2]]
+
+    d[[mod2]] <- d$mod2_group
+
+
+  }
+
+  # Get rid of those ugly row names
+  row.names(pm) <- seq(nrow(pm))
+
+  # Set up return object
+  out <- list(predicted = pm, original = d)
+  out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
+                   pred = pred, modx = modx, mod2 = mod2, resp = resp,
+                   linearity.check = linearity.check, weights = wts,
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+  class(out) <- "predictions"
+
+  return(out)
+
+}
+
+#### stanreg method ##########################################################
+
+#' @export
+
+make_predictions.brmsfit <-
+  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
+           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+           plot.points = FALSE, interval = TRUE,
+           int.width = .95, estimate = "mean", linearity.check = FALSE,
+           set.offset = 1, pred.labels = NULL, modx.labels = NULL,
+           mod2.labels = NULL, preds.per.level = 100, ...) {
+
+  # Avoid CRAN barking
+  d <- facvars <- wts <- wname <- NULL
+
+  # This internal function has side effects that create
+  # objects in this environment
+  data_checks(model = model, data = data, predvals = predvals,
+              modxvals = modxvals, mod2vals = mod2vals,
+              pred.labels = pred.labels, modx.labels = modx.labels,
+              mod2.labels = mod2.labels)
+
+  #### Prep data for predictions ##############################################
+
+  prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
+                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       survey = FALSE, modx.labels = modx.labels,
+                       mod2.labels = mod2.labels, wname = wname,
+                       weights = weights, wts = wts,
+                       linearity.check = linearity.check,
+                       interval = interval, set.offset = set.offset,
+                       facvars = facvars, centered = centered,
+                       preds.per.level = preds.per.level,
+                       predvals = predvals, pred.labels = pred.labels)
+
+  pm <- prepped$pm
+  d <- prepped$d
+  resp <- prepped$resp
+  facmod <- prepped$facmod
+  modxvals2 <- prepped$modxvals2
+  modx.labels <- prepped$modx.labels
+  mod2vals2 <- prepped$mod2vals2
+  mod2.labels <- prepped$mod2.labels
+
+#### Predicting with update models ############################################
+
+  # Create predicted values based on specified levels of the moderator,
+  # focal predictor
+
+  if (!is.null(modx)) {
+    pms <- split(pm, pm[[modx]])
+  } else {
+    pms <- list(pm)
+  }
+
+  if (!is.null(mod2)) {
+    pms <- unlist(
+      lapply(pms, function(x, y) {split(x, x[[y]])}, y = mod2),
+      recursive = FALSE
+    )
+  }
+
+  for (i in seq_along(pms)) {
+
+    ## Convert the confidence percentile to a number of S.E. to multiply by
+    intw <- c(((1 - int.width)/2), 1 - ((1 - int.width)/2))
+
+    # the 'ppd' object is a weird pseudo-matrix that misbehaves when
+    # I try to make it into a data frame
+    if (estimate == "mean") {
+      predicted <- as.data.frame(predict(model, newdata = pms[[i]],
+                                         re_formula = ~0, robust = FALSE,
+                                         probs = intw))
+      pms[[i]][[resp]] <- predicted[[1]]
+    } else if (estimate == "median") {
+      predicted <- as.data.frame(predict(model, newdata = pms[[i]],
+                                         re_formula = ~0, robust = TRUE,
+                                         probs = intw))
+      pms[[i]][[resp]] <- predicted[[1]]
+    }
+
+    pms[[i]][["ymax"]] <- predicted[[4]]
+    pms[[i]][["ymin"]] <- predicted[[3]]
+
+    pms[[i]] <- pms[[i]][complete.cases(pms[[i]]),]
+
+  }
+
+  pm <- do.call("rbind", pms)
+
+  # Labels for values of moderator
+  if (!is.null(modx)) {
+    pm[[modx]] <- factor(pm[[modx]], levels = modxvals2, labels = modx.labels)
+  }
+  if (facmod == TRUE) {
+    d[[modx]] <- factor(d[[modx]], levels = modxvals2, labels = modx.labels)
+  }
+  if (!is.null(modx)) {
+    pm$modx_group <- pm[[modx]]
+  }
+
+  # Setting labels for second moderator
+  if (!is.null(mod2)) {
+
+    # Convert character moderators to factor
+    if (is.character(d[[mod2]])) {
+      d[[mod2]] <- factor(d[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    }
+    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
+
+    pm$mod2_group <- pm[[mod2]]
+
+    d[[mod2]] <- d$mod2_group
+
+
+  }
+
+  # Get rid of those ugly row names
+  row.names(pm) <- seq(nrow(pm))
+
+  # Set up return object
+  out <- list(predicted = pm, original = d)
+  out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
+                   pred = pred, modx = modx, mod2 = mod2, resp = resp,
+                   linearity.check = linearity.check, weights = wts,
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+  class(out) <- "predictions"
+
+  return(out)
+
+}
+
