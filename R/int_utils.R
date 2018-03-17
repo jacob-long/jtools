@@ -351,7 +351,8 @@ center_ss_non_survey <- function(d, weights, facvars = NULL, fvars, pred,
 
     for (v in fv2) {
 
-      if (is.factor(d[[v]]) && length(unique(d[[v]])) == 2 && v %nin% centered) {
+      if (is.factor(d[[v]]) &&
+          length(unique(d[[v]])) == 2 && v %nin% centered) {
 
         facvars <- c(facvars, v)
 
@@ -416,7 +417,8 @@ center_ss_survey <- function(d, weights, facvars = NULL, fvars, pred, resp,
     # Dealing with two-level factors that aren't part
     # of an interaction/focal pred
     for (v in fv2) {
-      if (is.factor(d[[v]]) && length(unique(d[[v]])) == 2 && v %nin% centered) {
+      if (is.factor(d[[v]]) &&
+          length(unique(d[[v]])) == 2 && v %nin% centered) {
 
         facvars <- c(facvars, v)
 
@@ -597,13 +599,15 @@ data_checks <- function(model, data, predvals = NULL,
     varnames <- names(d)
     # Drop weights and offsets
     varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
-    if (any(varnames %nin% all.vars(formula(model)))) {
-      warning("Variable transformations in the model formula detected.\n ",
-              "Trying to use ", as.character(getCall(model)$data), "from \n",
-              "global environment instead. This could cause incorrect \n",
-              "results if", as.character(getCall(model)$data), "has been\n",
-              "altered since the model was fit. You can manually provide \n",
-              "the data to the \"data =\" argument.", call. = FALSE)
+    if (any(varnames %nin% all.vars(as.formula(formula(model))))) {
+
+      warn_wrap("Variable transformations in the model formula
+      detected. Trying to use ", as.character(getCall(model)$data), " from
+      global environment instead. This could cause incorrect results if ",
+      as.character(getCall(model)$data), " has been altered since the model was
+      fit. You can manually provide the data to the \"data =\" argument.",
+      call. = FALSE)
+
       d <- data <- eval(getCall(model)$data)
     }
   } else {
@@ -1092,7 +1096,7 @@ make_pred_frame_cat <- function(d, pred,
     }
 
     pm[[offname]] <- offset.num
-    msg <- paste("Outcome is based on a total of", offset.num, "exposures")
+    msg <- paste("Outcome is based on a total of", offset.num, "exposures\n")
     message(msg)
   }
 

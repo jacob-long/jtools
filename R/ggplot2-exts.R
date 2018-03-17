@@ -29,7 +29,8 @@ draw_key_pointrange_h <- function(data, params, size) {
 
 geom_pointrange_h <- function(mapping = NULL, data = NULL, stat = "identity",
                               position = "identity", ..., fatten = 4,
-                              na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+                              na.rm = FALSE, show.legend = NA,
+                              inherit.aes = TRUE) {
   layer(
     data = data,
     mapping = mapping,
@@ -55,7 +56,8 @@ GeomPointrangeh <-
   ggplot2::ggproto("GeomPointrangeh", ggplot2::Geom,
     default_aes = ggplot2::aes(colour = "black", size = 0.5, linetype = 1,
                                shape = 19, fill = NA, alpha = NA, stroke = 1),
-    draw_key = draw_key_pointrange_h, required_aes = c("x", "y", "xmin", "xmax"),
+    draw_key = draw_key_pointrange_h,
+    required_aes = c("x", "y", "xmin", "xmax"),
     draw_panel = function(data, panel_scales, coord, fatten = 4) {
      if (is.null(data$y)) {
       return(GeomLinerange$draw_panel(data, panel_scales, coord))
@@ -209,11 +211,9 @@ pos_dodgev <- function(df, height) {
 
   d_height <- max(df$ymax - df$ymin)
 
-  # df <- data.frame(n = c(2:5, 10, 26), div = c(4, 3, 2.666666,  2.5, 2.2, 2.1))
-  # ggplot(df, aes(n, div)) + geom_point()
-
   # Have a new group index from 1 to number of groups.
-  # This might be needed if the group numbers in this set don't include all of 1:n
+  # This might be needed if the group numbers in this set don't include all
+  # of 1:n
   groupidx <- match(df$group, sort(unique(df$group)))
 
   # Find the center for each group, then use that to calculate ymin and lmax

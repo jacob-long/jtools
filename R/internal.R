@@ -105,7 +105,7 @@ add_stars <- function(table, digits, p_vals) {
     sigstars <- rep(NA, times = nrow(table))
 
     # Add the stars
-    for (y in 1:length(pvals)) {
+    for (y in seq_along(pvals)) {
 
       if (is.na(pvals[y]) || pvals[y] > 0.1) {
         sigstars[y] <- ""
@@ -753,7 +753,8 @@ cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE, digits,
         else if (sum(s) < 2)
           max(xx)
         else approx(cum[s] - cum.used, xx[s], xout = (nnm -
-                                                        cum.used)/(g - j + 1), method = "constant",
+                                                        cum.used)/(g - j + 1),
+                    method = "constant",
                     rule = 2, f = 1)$y
       }
       if (cj == upper)
@@ -785,11 +786,13 @@ cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE, digits,
                    paste("[", flow, ",", fup, bb, sep = ""))
     ss <- y == 0 & !is.na(y)
     if (any(ss))
-      stop(paste("categorization error in cut2.  Values of x not appearing in any interval:\n",
-                 paste(format(x[ss], digits = 12), collapse = " "),
-                 "\nLower endpoints:", paste(format(low, digits = 12),
-                                             collapse = " "), "\nUpper endpoints:", paste(format(up,
-                                                                                                 digits = 12), collapse = " ")))
+      stop_wrap("categorization error in cut2.  Values of x not appearing in
+                any interval:", paste(format(x[ss], digits = 12),
+                                        collapse = " "),
+                 "Lower endpoints:", paste(format(low, digits = 12),
+                                             collapse = " "),
+                "\nUpper endpoints:", paste(format(up, digits = 12),
+                                            collapse = " "))
     y <- structure(y, class = "factor", levels = labs)
   }
   else {

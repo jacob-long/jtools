@@ -11,7 +11,8 @@ icc <- function(fit, obj.name) {
   # get family
   fitfam <- stats::family(fit)$family
   # is neg. binomial? Dropped sjstats' internal function in favor of regexp
-  # is_negbin <- sjmisc::str_contains(fitfam, "Negative Binomial", ignore.case = TRUE)
+  # is_negbin <-
+  # sjmisc::str_contains(fitfam, "Negative Binomial", ignore.case = TRUE)
   is_negbin <- grepl(ignore.case = TRUE, pattern = "Negative Binomial",
                      x = fitfam)
 
@@ -75,8 +76,8 @@ icc <- function(fit, obj.name) {
     # get standard deviations, multiplied
     std_ <- lapply(rnd_slope, function(x) prod(attr(x, "stddev")))
     # bind to matrix
-    tau.01 <-
-      apply(as.matrix(cbind(unlist(cor_), unlist(std_))), MARGIN = 1, FUN = prod)
+    tau.01 <- apply(as.matrix(cbind(unlist(cor_), unlist(std_))),
+                    MARGIN = 1, FUN = prod)
     rho.01 <- unlist(cor_)
   }
 
@@ -112,7 +113,7 @@ icc <- function(fit, obj.name) {
 ### piecewisesem implementation
 #' @importFrom stats var
 
-pR2_merMod = function(model) {
+pR2_merMod <- function(model) {
 
   ret <- list()
 
@@ -159,12 +160,12 @@ pR2_merMod = function(model) {
     )
 
     # Get residual variance
-    varResid = attr(lme4::VarCorr(model), "sc")^2
+    varResid <- attr(lme4::VarCorr(model), "sc")^2
 
     # Calculate R2 values
-    ret$Marginal = varF / (varF + varRand + varResid)
+    ret$Marginal <- varF / (varF + varRand + varResid)
 
-    ret$Conditional = (varF + varRand) / (varF + varRand + varResid)
+    ret$Conditional <- (varF + varRand) / (varF + varRand + varResid)
 
   }
 
@@ -205,11 +206,11 @@ pR2_merMod = function(model) {
 
       sapply(lme4::VarCorr(model)[n.obs], function(Sigma) {
 
-        X = model.matrix(model)
+        X <- model.matrix(model)
 
-        Z = X[, rownames(Sigma), drop = FALSE]
+        Z <- X[, rownames(Sigma), drop = FALSE]
 
-        Z.m = Z %*% Sigma
+        Z.m <- Z %*% Sigma
 
         sum(diag(crossprod(Z.m, Z))) / nrow(X)
 
@@ -280,7 +281,7 @@ pR2_merMod = function(model) {
       # Get the fixed effects of the null model
       null.fixef <- as.numeric(lme4::fixef(null.model))
 
-      if (ret$Link == "log") {varDist = log(1 + 1/exp(null.fixef))}
+      if (ret$Link == "log") {varDist <- log(1 + 1/exp(null.fixef))}
 
     } else if (ret$Link == "sqrt") {
 
@@ -308,7 +309,7 @@ pR2_merMod = function(model) {
 
 }
 
-get.random.formula = function(model, rhs) {
+get.random.formula <- function(model, rhs) {
 
   if (class(rhs) == "formula") {rhs <- Reduce(paste, deparse(rhs))}
 
@@ -324,7 +325,7 @@ get.random.formula = function(model, rhs) {
   random.structure <- if (any(class(model) %in% c("lmerMod", "merModLmerTest",
                                                   "glmerMod", "glmmTMB"))) {
 
-      ran.ef.splt = strsplit(random.formula, "\\+.")[[1]]
+      ran.ef.splt <- strsplit(random.formula, "\\+.")[[1]]
 
       sapply(ran.ef.splt[sapply(ran.ef.splt, function(x) grepl("\\|", x))],
 
@@ -338,7 +339,8 @@ get.random.formula = function(model, rhs) {
 
   random.structure <- unname(random.structure[!duplicated(random.structure)])
 
-  # Get random slopes in the model list, otherwise return vector of terms to drop
+  # Get random slopes in the model list, otherwise return vector of
+  # terms to drop
   random.slopes <- if (any(class(model) %in% c("glmerMod", "merModLmerTest",
                                                "glmmTMB"))) {
 
@@ -358,9 +360,9 @@ get.random.formula = function(model, rhs) {
                                              unlist(strsplit(rhs, ".\\+.")))]
 
   if (length(new.random.slopes) == 0) {
-    new.random.slopes = 1
+    new.random.slopes <- 1
   } else {
-    new.random.slopes = paste0(new.random.slopes, collapse = " + ")
+    new.random.slopes <- paste0(new.random.slopes, collapse = " + ")
   }
 
   # Replace random slopes if any variables in model formula appear in
@@ -396,7 +398,7 @@ get.random.formula = function(model, rhs) {
 #### merMod prediction #######################################################
 
 #' @importFrom stats vcov model.frame terms delete.response na.omit
-predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
+predict_mer <- function(model, newdata = NULL, use_re_var = FALSE,
                         se.fit = TRUE, dispersion = NULL, terms = NULL,
                         allow.new.levels = TRUE,
                         type = c("link", "response", "terms"),
@@ -442,7 +444,8 @@ predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
     } else {  ## new data specified
       ## evaluate new fixed effect
       RHS <- formula(substitute(~R,
-                                list(R = RHSForm(formula(model, fixed.only = TRUE)))))
+                                list(R = RHSForm(formula(model,
+                                                         fixed.only = TRUE)))))
       Terms <- terms(model, fixed.only = TRUE)
       mf <- model.frame(model, fixed.only = TRUE)
       isFac <- vapply(mf, is.factor, FUN.VALUE = TRUE)
@@ -593,7 +596,8 @@ predict_mer <- function(model, newdata = NULL, use_re_var = TRUE,
 
 noReForm <- function(re.form) {
   (!is.null(re.form) && !methods::is(re.form, "formula") && is.na(re.form)) ||
-  (methods::is(re.form, "formula") && length(re.form) == 2 && identical(re.form[[2]], 0))
+  (methods::is(re.form, "formula") && length(re.form) == 2 &&
+     identical(re.form[[2]], 0))
 }
 
 reOnly <- function(f, response = FALSE) {
