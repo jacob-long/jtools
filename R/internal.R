@@ -30,13 +30,62 @@ check_if_zero <- Vectorize(check_if_zero_base)
 
 # Automate the addition of newline characters for long strings
 wrap_str <- function(..., sep = "") {
-  paste0(strwrap(paste(..., sep = sep), width = 0.9 * getOption("width", 80)),
+  paste0(strwrap(paste(..., sep = sep), width = 0.95 * getOption("width", 80)),
          collapse = "\n")
 }
 
 # Go ahead and wrap the cat function too
 cat_wrap <- function(..., brk = "") {
   cat(wrap_str(...), brk, sep = "")
+}
+
+# Like cat_wrap but for warnings
+warn_wrap <- function(..., call. = TRUE, brk = "\n") {
+  warning(wrap_str(...), brk, call. = call.)
+}
+
+# Like cat_wrap but for errors
+stop_wrap <- function(..., call. = TRUE, brk = "\n") {
+  stop(wrap_str(...), brk, call. = call.)
+}
+
+# Like cat_wrap but for messages
+msg_wrap <- function(..., brk = "\n") {
+  message(wrap_str(...), brk)
+}
+
+# Try to anticipate which S3 will be called (sloop package should have
+# something like this when it is released)
+# Code adapted from G. Grothendieck's at Stack Overflow:
+# https://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-
+# will-be-called-on-an-object
+find_S3_class <- function(generic, ..., package) {
+
+  # not going to provide function, just function name as character
+  # ch <- deparse(substitute(generic))
+
+  f <- X <- function(x, ...) UseMethod("X")
+  for (m in .S3methods(generic, envir = getNamespace(package))) {
+    assign(sub(generic, "X", m, fixed = TRUE), "body<-"(f, value = m))
+  }
+
+  char_meth <- tryCatch(X(...), error = function(e) {return(NA)})
+
+  if (is.na(char_meth)) {return(char_meth)}
+
+  # Return the stub for dispatch to getS3method as class
+  return(reg_match("(?<=\\.).*", char_meth, perl = TRUE))
+
+}
+
+# I'm sure stingr/stringi have this, but I don't want to import them
+reg_match <- function(pattern, text, ignore.case = FALSE, perl = FALSE,
+                      fixed = FALSE, useBytes = FALSE, invert = FALSE) {
+  matches <- gregexpr(pattern, text, ignore.case, perl, fixed, useBytes)
+  # If only 1 match, return just the one match rather than a list
+  if (length(matches) == 1) {matches <- matches[[1]]}
+  regmatches(text, matches, invert)
+
 }
 
 #### summ helpers ############################################################
