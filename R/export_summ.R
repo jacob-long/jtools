@@ -30,11 +30,14 @@
 #'   the table, specify them here in a character vector. If you want the
 #'   table to show different names for the coefficients, give a named vector
 #'   where the names are the preferred coefficient names. See details for more.
-#' @param to.word Export the table to a Microsoft Word document?
-#'   This functionality relies on the \pkg{officer}
-#'   and \pkg{flextable} packages. Default: FALSE
-#' @param word.file File name with (optionally) file path to save the Word
-#'   file. Ignored if \code{to.word} is FALSE. Default: NULL
+#' @param to.file Export the table to a Microsoft Word, PDF, or HTML document?
+#'   This functionality relies on \pkg{huxtable}'s `quick_` functions (
+#'   [huxtable::quick_docx()], [huxtable::quick_pdf()],
+#'   [huxtable::quick_html()], [huxtable::quick_xlsx()]). Acceptable arguments
+#'   are "Word" or "docx" (equivalent), "pdf", "html", or "xlsx". All are
+#'   case insensitive. Default is NULL, meaning the table is not saved.
+#' @param file.name File name with (optionally) file path to save the
+#'   file. Ignored if `to.file` is FALSE. Default: NULL
 #'
 #' @return If \code{to.word} is FALSE, a \code{\link[huxtable]{huxtable}}
 #'   object. If \code{to.word} is TRUE, it just writes the table to file and
@@ -111,17 +114,19 @@
 #'   HTML or LaTeX, see \code{huxtable}'s documentation.
 #'
 #' @examples
-#'
-#' fit1 <- lm(Income ~ Frost, data = as.data.frame(state.x77))
-#' fit2 <- lm(Income ~ Frost + Illiteracy, data = as.data.frame(state.x77))
-#' fit3 <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
+#' states <- as.data.frame(state.x77)
+#' fit1 <- lm(Income ~ Frost, data = states)
+#' fit2 <- lm(Income ~ Frost + Illiteracy, data = states)
+#' fit3 <- lm(Income ~ Frost + Illiteracy + Murder, data = states)
 #'
 #' if (requireNamespace("huxtable")) {
 #'   # Export all 3 regressions with "Model #" labels,
 #'   # standardized coefficients, and robust standard errors
-#'   export_summs(fit1, fit2, fit3, model.names = c("Model 1","Model 2","Model 3"),
-#'                coefs = c("Frost Days" = "Frost", "% Illiterate" = "Illiteracy",
-#'                "Murder Rate" = "Murder"),
+#'   export_summs(fit1, fit2, fit3,
+#'                model.names = c("Model 1","Model 2","Model 3"),
+#'                coefs = c("Frost Days" = "Frost",
+#'                          "% Illiterate" = "Illiteracy",
+#'                          "Murder Rate" = "Murder"),
 #'                scale = TRUE, robust = TRUE)
 #' }
 #'
@@ -131,8 +136,6 @@
 #'
 #'  \code{\link[huxtable]{huxreg}}
 #'
-#'  \code{\link[ReporteRs]{writeDoc}}
-#'
 #' @export
 #' @importFrom utils getFromNamespace
 
@@ -141,8 +144,8 @@ export_summs <- function(...,
                          error_pos = c("below", "right", "same"),
                          ci_level = .95, statistics = NULL,
                          model.names = NULL, coefs = NULL,
-                         to.word = FALSE,
-                         word.file = NULL) {
+                         to.file = NULL,
+                         file.name = NULL) {
 
   if (!requireNamespace("huxtable", quietly = TRUE)) {
 
@@ -165,7 +168,12 @@ export_summs <- function(...,
   if (inherits(dots[[1]], 'list')) {
 
     mods <- dots[[1]]
-    if (is.null(model.names)) {model.names <- names(mods)}
+    if (is.null(model.names) & !is.null(names(mods))) {
+      model.names <- names(mods)
+    }
+    if (length(dots) > 1) {
+      dots <- dots[-1]
+    } else {dots <- NULL}
 
   } else {
   # Otherwise assume unnamed arguments are models and everything else is args
@@ -173,80 +181,88 @@ export_summs <- function(...,
     if (!is.null(names(dots))) {
 
       mods <- dots[names(dots) == ""]
+      dots <- dots[names(dots) != ""]
 
     } else {
 
       mods <- dots
+      dots <- NULL
 
     }
 
   }
 
-  # Assuming all models are the same type as first
-  mod_type <- class(j_summ(mods[[1]]))[1]
-
-  # Now get the argument names for that version of summ
-  summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
-
-  # Setting defaults for summ functions I want to add captions about
-  robust <- FALSE
+  # # Assuming all models are the same type as first
+  # mod_type <- class(j_summ(mods[[1]]))[1]
+  #
+  # # Now get the argument names for that version of summ
+  # summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
+  #
+  # # Setting defaults for summ functions I want to add captions about
+  robust <- getOption("summ-robust", FALSE)
   scale <- FALSE
   n.sd <- 1
   digits <- getOption("jtools-digits", 2)
-
-  # Check for need to fit confidence intervals
-  if (!grepl("conf.low", error_format, fixed = TRUE) &
-    !grepl("conf.high", error_format, fixed = TRUE)) {
-
-    dots$confint <- FALSE
-    ci_level <- NULL
-
-  } else {
-
-    dots$confint <- TRUE
-    dots$ci.width <- ci_level
-
-  }
+  #
+  # # Check for need to fit confidence intervals
+  # if (!grepl("conf.low", error_format, fixed = TRUE) &
+  #   !grepl("conf.high", error_format, fixed = TRUE)) {
+  #
+  #   dots$confint <- FALSE
+  #   ci_level <- NULL
+  #
+  # } else {
+  #
+  #   dots$confint <- TRUE
+  #   dots$ci.width <- ci_level
+  #
+  # }
 
   # Since I'm looping, I'm creating the list before the loop
-  jsumms <- as.list(rep(NA, length(mods)))
+  # jsumms <- as.list(rep(NA, length(mods)))
+  #
+  # if (!is.null(names(dots))) {
+  #
+  #   # Because deprecated args aren't in formals, I add them here
+  #   dep_names <- c("standardize", "scale.response", "standardize.response",
+  #                  "center.response", "robust.type")
+  #   summ_args <- dots[names(dots) %in% c(names(summ_formals), dep_names)]
+  #
+  #   # For those critical arguments that require a note, see if they were
+  #   # provided by the user and overwrite if so
+  if ("robust" %in% names(dots)) {robust <- dots$robust}
+  robust <- ifelse(all(robust) != FALSE, yes = TRUE, no = FALSE)
+  if ("scale" %in% names(dots)) {scale <- dots$scale}
+  scale <- ifelse(all(robust) == TRUE, yes = TRUE, no = FALSE)
+  if ("n.sd" %in% names(dots)) {n.sd <- dots$n.sd}
+  n.sd <- ifelse(length(unique(n.sd)) == 1, yes = n.sd[1], no = NULL)
+  if (is.null(n.sd)) {scale <- FALSE}
+  if ("digits" %in% names(dots)) {digits <- dots$digits}
+  #
+  #   for (i in seq_len(length(mods))) {
+  #
+  #     the_args <- summ_args
+  #     the_args$model <- mods[[i]]
+  #
+  #     jsumms[[i]] <- do.call(what = summ, args = the_args)
+  #     if (!is.null(coefs)) {
+  #       attr(jsumms[[i]], "coef_export") <- coefs
+  #     }
+  #
+  #   }
+  #
+  # } else {
+  #
+  #   jsumms <- lapply(mods, FUN = summ)
+  #   if (!is.null(coefs)) {
+  #     for (i in 1:length(jsumms)) {
+  #       attr(jsumms[[i]], "coef_export") <- coefs
+  #     }
+  #   }
+  #
+  # }
 
-  if (!is.null(names(dots))) {
-
-    # Because deprecated args aren't in formals, I add them here
-    dep_names <- c("standardize", "scale.response", "standardize.response",
-                   "center.response", "robust.type")
-    summ_args <- dots[names(dots) %in% c(names(summ_formals), dep_names)]
-
-    # For those critical arguments that require a note, see if they were
-    # provided by the user and overwrite if so
-    if ("robust" %in% names(summ_args)) {robust <- summ_args$robust}
-    if ("scale" %in% names(summ_args)) {scale <- summ_args$scale}
-    if ("n.sd" %in% names(summ_args)) {n.sd <- summ_args$n.sd}
-    if ("digits" %in% names(summ_args)) {digits <- summ_args$digits}
-
-    for (i in seq_len(length(mods))) {
-
-      the_args <- summ_args
-      the_args$model <- mods[[i]]
-
-      jsumms[[i]] <- do.call(what = summ, args = the_args)
-      if (!is.null(coefs)) {
-        attr(jsumms[[i]], "coef_export") <- coefs
-      }
-
-    }
-
-  } else {
-
-    jsumms <- lapply(mods, FUN = summ)
-    if (!is.null(coefs)) {
-      for (i in 1:length(jsumms)) {
-        attr(jsumms[[i]], "coef_export") <- coefs
-      }
-    }
-
-  }
+  jsumms <- do.call("summs", as.list(c(list(mods), dots)))
 
   # If user gave model names, apply them now
   if (!is.null(model.names)) {
@@ -255,21 +271,34 @@ export_summs <- function(...,
 
   } else {
 
-    names(jsumms) <- as.character(seq_along(jsumms))
+    names(jsumms) <- paste("Model", seq_along(jsumms))
 
   }
 
   ## Setting statistics option
   if (is.null(statistics)) {
 
-    statistics <- switch(mod_type,
-           summ.lm = c(N = "nobs", R2 = "r.squared"),
-           summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
-           summ.svyglm = c(N = "nobs", R2 = "r.squared"),
-           summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC",
-                           `R2 (fixed)` = "r.squared.fixed",
-                           `R2 (total)` = "r.squared")
-    )
+    # Create empty vector
+    stats <- c()
+    # Iterate through each model
+    for (i in seq_along(jsumms)) {
+
+      # Get class of model
+      mod_type <- class(jsumms[[i]])[1]
+      # If a summ object, get its default statistics
+      statistics <- switch(mod_type,
+             summ.lm = c(N = "nobs", R2 = "r.squared"),
+             summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
+             summ.svyglm = c(N = "nobs", R2 = "r.squared"),
+             summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC",
+                             `R2 (fixed)` = "r.squared.fixed",
+                             `R2 (total)` = "r.squared")
+      )
+      # Append those statistics to the vector
+      stats <- c(stats, statistics)
+    }
+    # Keep just the unique entries
+    statistics <- stats[!duplicated(stats)]
 
   } else if (statistics == "all") {
 
@@ -281,25 +310,27 @@ export_summs <- function(...,
 
   hux_args <- dots[names(dots) %in% names(hux_formals)]
 
-  if (dots$confint == TRUE) {
-    hux_args <- as.list(c(jsumms, hux_args,
-                          error_pos = error_pos[1],
-                          error_format = error_format,
-                          statistics = list(statistics),
-                          ci_level = ci_level))
-  } else {
-    hux_args <- as.list(c(jsumms, hux_args,
-                          error_pos = error_pos[1],
-                          error_format = error_format,
-                          statistics = list(statistics)))
-  }
+  # if (dots$confint == TRUE) {
+  hux_args <- as.list(c(jsumms, hux_args,
+                        error_pos = error_pos[1],
+                        error_format = error_format,
+                        statistics = list(statistics),
+                        ci_level = ci_level))
+  # } else {
+  #   hux_args <- as.list(c(jsumms, hux_args,
+  #                         error_pos = error_pos[1],
+  #                         error_format = error_format,
+  #                         statistics = list(statistics)))
+  # }
 
   if ("note" %nin% names(hux_args)) {
 
     if (scale == TRUE) {
 
       note <- paste("All continuous predictors are mean-centered and scaled",
-              "by 1 standard deviation.")
+              "by",  n.sd[1], "standard",  ifelse(n.sd > 1,
+                                                  no = "deviation.",
+                                                  yes = "deviations."))
 
       if (robust == TRUE) {
 
@@ -331,38 +362,49 @@ export_summs <- function(...,
 
   out <- do.call(what = huxtable::huxreg, args = hux_args)
 
-  if (to.word == TRUE) {
+  if (!is.null(dots$to.word) && dots$to.word == TRUE) {
 
-    if (!requireNamespace("officer", quietly = TRUE)) {
+    warn_wrap('The to.word argument is deprecated. Use to.file = "word" or
+              to.file = "docx" instead.')
 
-      stop("Install the officer package to use the to.word functionality.",
-           call. = FALSE)
+    to.file <- "docx"
 
+  }
+
+  if (!is.null(dots$word.file)) {
+
+    warn_wrap("The word.file argument is deprecated. Use file.name instead.")
+
+    file.name <- dots$word.file
+
+  }
+
+  if (!is.null(to.file)) {
+
+    # Make lowercase for ease and consistency with huxtable quick_ funs
+    to.file <- tolower(to.file)
+    if (to.file == "word") {to.file <- "docx"}
+
+    if (to.file %nin% c("pdf", "html", "docx", "xlsx")) {
+      warn_wrap('to.file must be one of "docx", "html", "pdf", or "xlsx" if
+                you want to write to a file. File not written.')
     }
 
-    if (!requireNamespace("flextable", quietly = TRUE)) {
 
-      stop("Install the flextable package to use the to.word functionality.",
-           call. = FALSE)
-
+    if (is.null(file.name)) {
+      msg_wrap("You did not provide a file name, so it will be called
+               untitled.", to.file)
+      file.name <- paste0("untitled.", to.file)
     }
 
-    if (is.null(word.file)) {
+    # Weird header is included in Word files
+    if (to.file == "docx") {out$header <- NULL}
 
-      message(wrap_str("You did not provide a file name, so it will be called
-                       untitled.docx."))
-      word.file <- "untitled.docx"
-
-    }
-
-    wout <- huxtable::as_flextable(out)
-    wout$header <- NULL
-
-    doc <- officer::read_docx()
-
-    doc <- flextable::body_add_flextable(doc, wout)
-
-    print(doc, target = word.file)
+    # Create the function name based on file type
+    fun_name <- paste0("quick_", to.file)
+    # Call the function
+    do.call(fun_name, list(out, file = file.name),
+            envir = getNamespace("huxtable"))
 
   }
 
@@ -746,6 +788,10 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
   return(base)
 
 }
+
+
+
+
 
 #' @title Broom extensions for summ objects
 #' @description These are functions used for compatibility with broom's tidying
