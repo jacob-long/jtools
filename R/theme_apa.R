@@ -4,15 +4,13 @@
 #'   \code{\link[ggplot2]{ggplot}}. To the extent possible, it aligns with
 #'   the (vague) APA figure guidelines.
 #'
-#' @param legend.pos One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
-#'   \code{"bottomleft"}, \code{"bottomright"}, or \code{"bottommiddle"}.
+#' @param legend.pos One of `"right"`, `"left"`, `"top"`, `"bottom"`,
+#'   `"topleft"`, `"topright"`, `"topmiddle"`, `"bottomleft"`,
+#'    `"bottomright"`, or `"bottommiddle"`.
 #'   Positions the legend, which will layer on top of any geoms, on the plane.
-#'   Any other arguments will be passed to \code{\link[ggplot2]{theme}}'s
-#'   \code{legend.position =} argument, which takes \code{"left"},
-#'   \code{"right"}, \code{"top"}, and \code{"bottom"}.
 #'
-#' @param legend.use.title Logical. Specify whether to include a legend title. Defaults
-#'   to \code{FALSE}.
+#' @param legend.use.title Logical. Specify whether to include a legend title.
+#'   Defaults to \code{FALSE}.
 #'
 #' @param legend.font.size Integer indicating the font size of the labels in the
 #'   legend. Default and APA-recommended is 12, but if there are many labels it
