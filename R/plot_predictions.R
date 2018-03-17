@@ -78,7 +78,7 @@
 #'
 plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   resp = NULL, data = NULL, geom = c("dot","line","bar","boxplot"),
-  plot.points = FALSE, interval = FALSE,
+  plot.points = FALSE, interval = TRUE,
   predvals = NULL, modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
   x.label = NULL, y.label = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL, color.class = NULL,
@@ -210,6 +210,9 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     }
   }
 
+  # If only 1 jitter arg, just duplicate it
+  if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
+
   # If no user-supplied legend title, set it to name of moderator
   if (is.null(legend.main)) {
     legend.main <- modx
@@ -243,7 +246,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
         num_colors <- length(modxvals2)
       }
       colors <- RColorBrewer::brewer.pal(num_colors, color.class)
-      colors <- colors[1:length(modxvals2)]
+      colors <- colors[seq_along(modxvals2)]
     }
   } else { # Allow manually defined colors
     colors <- color.class
@@ -254,7 +257,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
 
   # Manually set linetypes
   types <- c("solid", "4242", "2222", "dotdash", "dotted", "twodash")
-  ltypes <- types[1:length(modxvals2)]
+  ltypes <- types[seq_along(modxvals2)]
 
   if (is.null(mod2)) {
     colors <- rev(colors)
@@ -319,8 +322,8 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
                                                colour = modx,
                                                size = "the_weights"),
-                          position = position_jitter(width = jitter,
-                                                     height = jitter),
+                          position = position_jitter(width = jitter[1],
+                                                     height = jitter[2]),
                           inherit.aes = TRUE, show.legend = FALSE)
     } else if (!is.factor(d[[modx]])) {
       # using alpha for same effect with continuous vars
@@ -328,8 +331,8 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                           aes_string(x = pred, y = resp, alpha = modx,
                                      size = "the_weights"),
                           colour = pp_color, inherit.aes = FALSE,
-                          position = position_jitter(width = jitter,
-                                                     height = jitter),
+                          position = position_jitter(width = jitter[1],
+                                                     height = jitter[2]),
                           show.legend = FALSE) +
         scale_alpha_continuous(range = c(0.25, 1), guide = "none")
     }
@@ -345,15 +348,15 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
       p <- p + geom_rug(data = d,
                         aes_string(x = pred, y = resp, colour = modx),
                         alpha = 0.6,
-                        position = position_jitter(width = jitter,
-                                                   height = jitter),
+                        position = position_jitter(width = jitter[1],
+                                                   height = jitter[2]),
                         sides = rug_sides)
     } else {
       p <- p + geom_rug(data = d,
                         aes_string(x = pred, y = resp),
                         alpha = 0.6,
-                        position = position_jitter(width = jitter,
-                                                   height = jitter),
+                        position = position_jitter(width = jitter[1],
+                                                   height = jitter[2]),
                         sides = rug_sides, inherit.aes = FALSE)
     }
   }
@@ -425,6 +428,9 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
     y.label <- resp
   }
 
+  # If only 1 jitter arg, just duplicate it
+  if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
+
   # Starting plot object
   p <- ggplot(pm, aes_string(x = pred, y = resp))
 
@@ -448,8 +454,8 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
     d[["the_weights"]] <- wts
     p <- p + geom_point(data = d,
                         aes_string(x = pred, y = resp, size = "the_weights"),
-                        position = position_jitter(width = jitter,
-                                                   height = jitter),
+                        position = position_jitter(width = jitter[1],
+                                                   height = jitter[2]),
                         inherit.aes = FALSE, show.legend = FALSE)
     # Add size aesthetic to avoid giant points
     # p <- p + scale_size(range = c(0.3, 4))
@@ -461,8 +467,7 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
   if (rug == TRUE) {
     p <- p + geom_rug(data = d,
                       mapping = aes_string(x = pred, y = resp), alpha = 0.6,
-                      position = position_jitter(width = jitter,
-                                                 height = jitter),
+                      position = position_jitter(width = jitter[1]),
                       sides = rug_sides, inherit.aes = FALSE)
   }
 
@@ -505,12 +510,15 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
    point.shape = FALSE, vary.lty = FALSE,  pred.labels = NULL,
    modx.labels = NULL, mod2.labels = NULL, x.label = NULL, y.label = NULL,
    main.title = NULL, legend.main = NULL, color.class = "Set2", wts = NULL,
-   resp = NULL) {
+   resp = NULL, jitter = 0.1) {
 
   pm <- predictions
   d <- data
 
   geom <- geom[1]
+
+  # If only 1 jitter arg, just duplicate it
+  if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
 
   # If no user-supplied legend title, set it to name of moderator
   if (is.null(legend.main)) {
@@ -577,21 +585,7 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
                                  shape = modx, linetype = modx))
     }
   } else {
-    if (point.shape == FALSE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred))
-    } else if (point.shape == TRUE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred,
-                                 shape = pred))
-    } else if (point.shape == FALSE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred))
-    } else if (point.shape == TRUE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp,
-                                 colour = pred, fill = pred,
-                                 shape = pred))
-    }
+    p <- ggplot(pm, aes_string(x = pred, y = resp, group = 1))
   }
 
   if (geom == "bar") {
@@ -602,8 +596,7 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
                                 colour = modx)) +
         geom_boxplot(position = position_dodge(0.9))
     } else {
-      p <- ggplot(d, aes_string(x = pred, y = resp,
-                                colour = pred)) +
+      p <- ggplot(d, aes_string(x = pred, y = resp)) +
         geom_boxplot(position = position_dodge(0.9))
     }
   } else if (geom == "line") {
@@ -648,8 +641,8 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
                                                size = "the_weights",
                                                shape = modx),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
+                                                    jitter.width = jitter[1],
+                                                    jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
@@ -658,8 +651,8 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
                                                colour = modx,
                                                size = "the_weights"),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
+                                                    jitter.width = jitter[1],
+                                                    jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
@@ -669,18 +662,17 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
                                                size = "the_weights",
                                                shape = modx),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
+                                                    jitter.width = jitter[1],
+                                                    jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
     } else if (point.shape == FALSE & is.null(modx)) {
       p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = pred,
                                                size = "the_weights"),
                           position = position_jitterdodge(dodge.width = 0.9,
-                                                          jitter.width = 0.25,
-                                                          jitter.height = 0.25),
+                                                    jitter.width = jitter[1],
+                                                    jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
