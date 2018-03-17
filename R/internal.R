@@ -491,6 +491,12 @@ pR2 <- function(object) {
 
   llh <- getLL(object)
 
+  if (family(object)$family %in% c("quasibinomial","quasipoisson")) {
+    msg_wrap("Note: Pseudo-R2 for quasibinomial/quasipoisson families is
+             calculated by refitting the fitted and null models as
+             binomial/poisson.")
+  }
+
   frame <- model.frame(object)
 
   .weights <- model.weights(frame)
@@ -517,9 +523,11 @@ getLL <- function(object) {
     return(logLik(object))
   } else {
     if (fam == "quasipoisson") {
-      logLik(j_update(object, family = poisson(link = link)))
+      poisson_family <- poisson(link = link)
+      logLik(j_update(object, family = poisson_family))
     } else if (fam == "quasibinomial") {
-      logLik(j_update(object, family = binomial(link = link)))
+      binom_family <- binomial(link = link)
+      logLik(j_update(object, family = binom_family))
     } else {
       NA
     }
@@ -646,7 +654,7 @@ ncvTest.lm <- function(model, var.formula, ...) {
 #' @importFrom stats update.formula
 
 j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
-                     weights = NULL, call.env = NULL, ...) {
+                     weights = NULL, call.env = parent.frame(), ...) {
   call <- getCall(mod)
   if (is.null(call)) {
     stop("Model object does not support updating (no call)", call. = FALSE)
@@ -661,9 +669,27 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
   env <- attr(term, ".Environment")
   # Jacob add
   # if (!is.null(offset))
-    call$offset <- offset
+  call$offset <- offset
   # if (!is.null(weights))
-    call$weights <- weights
+  call$weights <- weights
+
+
+  extras <- as.list(match.call())[-1]
+  extras <- extras[which(names(extras) %nin% c("mod", "formula", "data",
+                                               "offset", "weights",
+                                               "call.env"))]
+  for (i in seq_along(extras)) {
+    if (is.name(extras[[i]])) {
+      extras[[i]] <- eval(extras[[i]], envir = call.env)
+    }
+  }
+
+  existing <- !is.na(match(names(extras), names(call)))
+  for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
+  if (any(!existing)) {
+    call <- c(as.list(call), extras[!existing])
+    call <- as.call(call)
+  }
 
   if (is.null(call.env)) {call.env <- parent.frame()}
 
