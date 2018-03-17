@@ -566,6 +566,18 @@ center_values_survey <- function(d, omitvars, design = NULL,
 
 }
 
+#### Send deprecation warnings ##############################################
+
+ss_dep_check <- function(fun_name, dots) {
+
+  dep_names <- c("scale", "standardize")
+  if (any(names(dots) %in% dep_names)) {
+    warn_wrap(fun_name, " no longer supports variable scaling. You can use
+              gscale to scale your data or scale_mod to scale your model.")
+  }
+
+}
+
 #### predict helpers ########################################################
 
 get_offname <- function(model, survey) {
@@ -705,7 +717,7 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
 
   # Get the formula from lm object if given
-  formula <- formula(model)
+  formula <- as.formula(formula(model))
   formula <- paste(formula[2], formula[1], formula[3])
 
   # Pulling the name of the response variable for labeling
