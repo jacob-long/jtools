@@ -53,13 +53,6 @@
 #' @param jnalpha What should the alpha level be for the Johnson-Neyman
 #'   interval? Default is .05, which corresponds to a 95\% confidence interval.
 #'
-#' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust
-#'   standard errors.
-#'
-#' @param robust.type Type of heteroskedasticity-robust standard errors to use
-#'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
-#'   options.
-#'
 #' @param digits An integer specifying the number of digits past the decimal to
 #'   report in the output. Default is 2. You can change the default number of
 #'   digits for all jtools functions with
@@ -98,6 +91,7 @@
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @inheritParams interact_plot
+#' @inheritParams summ.lm
 #'
 #' @family interaction tools
 #'
@@ -148,7 +142,7 @@
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        mod2vals = NULL, centered = "all", data = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
-                       jnalpha = .05, robust = FALSE, robust.type = "HC3",
+                       jnalpha = .05, robust = FALSE,
                        digits = getOption("jtools-digits", default = 2), ...) {
 
   # Allows unquoted variable names
@@ -161,13 +155,27 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     mod2vals2 <- NULL
   }
 
+  # Capture extra arguments
+  dots <- list(...)
+  if (length(dots) > 0) { # See if there were any extra args
+    # Check for deprecated arguments
+    ss_dep_check("sim_slopes", dots)
+
+    # Get j_n args from dots
+    if (johnson_neyman == TRUE) {
+      jn_arg_names <- formals("johnson_neyman")
+      if (any(names(dots) %in% jn_arg_names)) {
+        jn_args <- list()
+        for (n in names(dots)[which(names(dots) %in% jn_arg_names)]) {
+          jn_args[[n]] <- dots[[n]]
+        }
+      }
+    }
+  }
+
   # Create object to return
   ss <- list()
 
-  # Check arguments
-  if (!is.numeric(digits)) { # digits
-    stop("The digits argument must be an integer.")
-  }
   ss <- structure(ss, digits = digits)
 
   if (!is.null(modxvals) && !is.vector(modxvals)) {
@@ -206,9 +214,13 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       # Drop weights and offsets
       varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
       if (any(varnames %nin% all.vars(formula(model)))) {
-        warning("Variable transformations in the model formula detected. ",
-                "This will likely cause an error. To fix, pass the original ",
-                "data to the \"data =\" argument.")
+
+        warn_wrap("Variable transformations in the model formula
+                  detected. Trying to use ", as.character(getCall(model)$data),
+                  " from global environment instead. This could cause incorrect
+                  results if ", as.character(getCall(model)$data), " has been
+                  altered since the model was fit. You can manually provide the
+                  data to the \"data =\" argument.", call. = FALSE)
       }
     } else {
       d <- data
@@ -232,10 +244,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   # Check for factor predictor
   if (is.factor(d[[pred]])) {
     # I could assume the factor is properly ordered, but that's too risky
-    stop("Focal predictor (\"pred\") cannot be a factor. Either",
-         " use it as modx, convert it to a numeric dummy variable,",
-         " or use the cat_plot function for factor by factor interaction",
-         " plots.")
+    stop(wrap_str("Focal predictor (\"pred\") cannot be a factor. Either
+          use it as modx, convert it to a numeric dummy variable
+          or use the cat_plot function for factor by factor interaction
+          plots."))
   }
 
   # weights?
@@ -260,7 +272,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (!is.null(model.offset(model.frame(model)))) {
 
     off <- TRUE
-    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare varname
+    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare name
 
     # Getting/setting offset name depending on whether it was specified in
     # argument or formula
@@ -341,8 +353,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                         sims = TRUE)
 
   if (is.factor(d[[modx]]) & johnson_neyman == TRUE) {
-        warning("Johnson-Neyman intervals are not available for factor ",
-                "moderators.", call. = FALSE)
+        warn_wrap("Johnson-Neyman intervals are not available for factor
+                   moderators.", call. = FALSE)
         johnson_neyman <- FALSE
   }
 
@@ -374,8 +386,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
         if (all(mod2vals %in% levels(d[[mod2]]))) {
           mod2vals2 <- mod2vals
         } else {
-          warning("mod2vals argument must include only levels of the factor.",
-                  " Using all factor levels instead.")
+          warn_wrap("mod2vals argument must include only levels of the
+                    factor. Using all factor levels instead.", call. = FALSE)
           mod2vals2 <- levels(d[[mod2]])
         }
       }
@@ -400,7 +412,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
 #### Fit models ##############################################################
 
-  # Need to make a matrix filled with NAs to store values from looped model-making
+  # Need to make a matrix filled with NAs to store values from looped
+  # model-making
   holdvals <- rep(NA, length(modxvals2) * 4)
   retmat <- matrix(holdvals, nrow = length(modxvals2))
 
@@ -411,8 +424,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   jns <- list()
 
   # Value labels
-  colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
-  colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+  colnames(retmat) <- c(paste("Value of ", modx, sep = ""),
+                        "Est.", "S.E.", "p")
+  colnames(retmati) <- c(paste("Value of ", modx, sep = ""),
+                         "Est.", "S.E.", "p")
 
   mod2val_len <- length(mod2vals2)
   if (mod2val_len == 0) {mod2val_len <- 1}
@@ -488,11 +503,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     if (robust == FALSE) {covmat <- NULL}
 
     if (johnson_neyman == TRUE) {
-      jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
-                                  vmat = covmat, plot = jnplot,
-                                  alpha = jnalpha, digits = digits, ...),
-                   error = function(e) {return("No values")},
-                   warning = function(w) {return("No values")})
+      args <- list(newmod, pred = pred, modx = modx, vmat = covmat,
+                         plot = jnplot, alpha = jnalpha, digits = digits)
+      if (exists("jn_args")) {args <- as.list(c(args, jn_args))}
+      jn <- do.call("johnson_neyman", args)
     } else {
 
       jn <- NULL
@@ -633,18 +647,18 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     plots <- as.list(rep(NA, length(mod2vals)))
     the_legend <- NULL
 
-    for (j in 1:length(jns)) {
+    for (j in seq_along(jns)) {
 
     # Tell user we can't plot if they don't have cowplot installed
-    if (jnplot == TRUE && !is.null(mod2) &&
+    if (jnplot == TRUE & !is.null(mod2) &
       !requireNamespace("cowplot", quietly = TRUE)) {
 
-      msg <- "To plot Johnson-Neyman plots for 3-way interactions,
-      you need the cowplot package."
+      msg <- wrap_str("To plot Johnson-Neyman plots for 3-way interactions,
+                       you need the cowplot package.")
       warning(msg)
       jnplot <- FALSE # No more attempts at plotting
 
-    } else if (jnplot == TRUE && !is.null(mod2)) {
+    } else if (jnplot == TRUE & !is.null(mod2)) {
 
       if (is.null(the_legend)) {
         # We save the legend the first time around to use w/ cowplot
@@ -666,6 +680,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
       # Add a label for cowplot
       mod2lab <- names(mod2vals2)[j]
+      if (is.null(mod2lab)) {mod2lab <- mod2vals2[j]}
       jns[[j]]$plot <-
         jns[[j]]$plot + ggplot2::ggtitle(paste(mod2, "=", mod2lab)) +
         ggplot2::theme(plot.title = ggplot2::element_text(size = 11))
@@ -843,3 +858,4 @@ print.sim_slopes <- function(x, ...) {
   }
 
 }
+
