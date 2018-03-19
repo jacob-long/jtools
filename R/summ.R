@@ -2031,7 +2031,7 @@ summs <- function(models, ...) {
         })
       }
 
-      all_args <- as.list(c(models[i], extra_args))
+      all_args <- as.list(c(unname(models[i]), extra_args))
 
       the_summs[[i]] <- do.call(getS3method("summ", method_stub),
                                 args = all_args)
