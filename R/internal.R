@@ -147,7 +147,7 @@ add_stars <- function(table, digits, p_vals) {
 ## Outputs a data.frame of character vectors containing the corrected
 ## values.
 
-round_df_char <- function(df, digits, pad = " ") {
+round_df_char <- function(df, digits, pad = " ", na_vals = NA) {
 
   nas <- is.na(df)
   if (!is.data.frame(df)) {
@@ -213,6 +213,9 @@ round_df_char <- function(df, digits, pad = " ") {
 
   if (length(rn) > 0) rownames(df) <- rn
   if (length(cn) > 0) names(df) <- cn
+
+  # Insert NA placeholders
+  df[df == ""] <- na_vals
 
   return(df)
 }

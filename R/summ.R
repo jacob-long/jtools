@@ -407,8 +407,12 @@ summ.lm <- function(
   for (i in seq_len(length(params))) {
     # Handle rank-deficient models
     if (length(ucoefs) > length(params[[i]])) {
-      params[[i]] <- c(params[[i]],
-                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+      # Creating a vector the length of ucoefs (which has the NAs)
+      temp_vec <- rep(NA, times = length(ucoefs))
+      # Now I replace only at indices where ucoefs is non-missing
+      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
+      # Now replace params[[i]] with the vector that includes the missings
+      params[[i]] <- temp_vec
     }
 
     if (is.numeric(params[[i]])) {
@@ -785,8 +789,12 @@ summ.glm <- function(
   for (i in seq_len(length(params))) {
     # Handle rank-deficient models
     if (length(ucoefs) > length(params[[i]])) {
-      params[[i]] <- c(params[[i]],
-                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+      # Creating a vector the length of ucoefs (which has the NAs)
+      temp_vec <- rep(NA, times = length(ucoefs))
+      # Now I replace only at indices where ucoefs is non-missing
+      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
+      # Now replace params[[i]] with the vector that includes the missings
+      params[[i]] <- temp_vec
     }
 
     if (is.numeric(params[[i]])) {
@@ -1182,8 +1190,12 @@ summ.svyglm <- function(
   for (i in seq_len(length(params))) {
     # Handle rank-deficient models
     if (length(ucoefs) > length(params[[i]])) {
-      params[[i]] <- c(params[[i]],
-                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+      # Creating a vector the length of ucoefs (which has the NAs)
+      temp_vec <- rep(NA, times = length(ucoefs))
+      # Now I replace only at indices where ucoefs is non-missing
+      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
+      # Now replace params[[i]] with the vector that includes the missings
+      params[[i]] <- temp_vec
     }
 
     if (is.numeric(params[[i]])) {
@@ -1724,8 +1736,12 @@ summ.merMod <- function(
   for (i in seq_len(length(params))) {
     # Handle rank-deficient models
     if (length(ucoefs) > length(params[[i]])) {
-      params[[i]] <- c(params[[i]],
-                       rep(NA, times = length(ucoefs) - length(params[[i]])))
+      # Creating a vector the length of ucoefs (which has the NAs)
+      temp_vec <- rep(NA, times = length(ucoefs))
+      # Now I replace only at indices where ucoefs is non-missing
+      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
+      # Now replace params[[i]] with the vector that includes the missings
+      params[[i]] <- temp_vec
     }
 
     if (is.numeric(params[[i]])) {
