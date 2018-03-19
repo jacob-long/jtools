@@ -1,5 +1,5 @@
 
-# Stolen from sjstats so I don't have to list it as import
+# Taken from sjstats so I don't have to list it as import
 
 icc <- function(fit, obj.name) {
   # check if suggested package is available
@@ -104,6 +104,28 @@ icc <- function(fit, obj.name) {
   # return results
   return(ri.icc)
 
+}
+
+get_re_tables_mer <- function(model, re.variance, groups, ngroups, iccs) {
+  ## Make a table summarizing grouping vars
+  gvmat <- matrix(ncol = 3, nrow = length(ngroups))
+  colnames(gvmat) <- c("Group","# groups","ICC")
+  for (i in seq_len(length(ngroups))) {
+    gvmat[i,1] <- groups[i]
+    gvmat[i,2] <- ngroups[i]
+    gvmat[i,3] <- iccs[i]
+  }
+
+  ## Make table explaining random coefs
+  rcmat <- as.data.frame(lme4::VarCorr(model))
+  rcmat <- rcmat[is.na(rcmat$var2),]
+  re_variance <- switch(re.variance, sd = "sdcor", var = "vcov")
+  re_var_lab <- switch(re.variance, sd = "Std. Dev.", var = "Var.")
+  rcmat <- rcmat[, names(rcmat) %in% c("grp", "var1", re_variance)]
+  rcmat <- as.matrix(rcmat)
+  colnames(rcmat) <- c("Group"," Parameter", re_var_lab)
+
+  return(list(gvmat = gvmat, rcmat = rcmat))
 }
 
 ##########################################################################

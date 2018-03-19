@@ -1340,7 +1340,9 @@ print.summ.svyglm <- function(x, ...) {
 #'  rate ratio for count models.
 #' @param t.df For \code{lmerMod} models only. User may set the degrees of
 #'  freedom used in conducting t-tests. See details for options.
-#'
+#' @param re.variance Should random effects variances be expressed in
+#'  standard deviations or variances? Default, to be consistent with previous
+#'  versions of `jtools`, is `"sd"`. Use `"var"` to get the variance instead.
 #' @inheritParams summ.lm
 #'
 #' @details By default, this function will print the following items to the
@@ -1493,7 +1495,8 @@ summ.merMod <- function(
   pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, odds.ratio = FALSE, t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), ...) {
+  model.fit = getOption("summ-model.fit", TRUE),
+  re.variance = getOption("summ-re.variance", c("sd", "var")), ...) {
 
   j <- list()
 
@@ -1528,6 +1531,9 @@ summ.merMod <- function(
     warning("VIFs are not supported for mixed models.")
   }
 
+
+  # Get random effects variances argument
+  re.variance <- match.arg(re.variance, c("sd", "var"), several.ok = FALSE)
   # If pbkrtest is installed, using the Kenward-Roger approximation
   if (requireNamespace("pbkrtest", quietly = TRUE)) {
 
@@ -1770,22 +1776,9 @@ summ.merMod <- function(
   ## Calculate ICCs w/ internal function from sjstats
   iccs <- icc(model)
 
-  ## Make a table summarizing grouping vars
-  gvmat <- matrix(ncol = 3, nrow = length(ngroups))
-  colnames(gvmat) <- c("Group","# groups","ICC")
-  for (i in seq_len(length(ngroups))) {
-    gvmat[i,1] <- groups[i]
-    gvmat[i,2] <- ngroups[i]
-    gvmat[i,3] <- iccs[i]
-  }
-
-  ## Make table explaining random coefs
-  rcmat <- as.data.frame(lme4::VarCorr(model))
-  rcmat <- rcmat[is.na(rcmat$var2),]
-  rcmat <- rcmat[,names(rcmat) %in% c("grp","var1","sdcor")]
-  rcmat <- as.matrix(rcmat)
-  colnames(rcmat) <- c("Group","Parameter","Std.Dev.")
-
+  tables <- get_re_tables_mer(model = model, re.variance = re.variance,
+                              groups = groups, ngroups = ngroups,
+                              iccs = iccs)
 
   j <- structure(j, groups = groups, ngroups = ngroups, iccs = iccs,
                  vcnames = names(iccs), dv = names(model.frame(model)[1]),
@@ -1800,8 +1793,8 @@ summ.merMod <- function(
   j <- structure(j, lmFamily = family(model))
 
   j$coeftable <- mat
-  j$rcoeftable <- rcmat # Random effects table
-  j$gvars <- gvmat # Grouping variables table
+  j$rcoeftable <- tables$rcmat # Random effects table
+  j$gvars <- tables$gvmat # Grouping variables table
   j$model <- model
   class(j) <- c("summ.merMod", "summ")
   return(j)
@@ -1886,12 +1879,12 @@ print.summ.merMod <- function(x, ...) {
   }
 
   cat(underline("\nRANDOM EFFECTS:\n"))
-  rtable <- round_df_char(j$rcoeftable, digits = x$digits)
+  rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
   #rownames(rtable) <- rep("", times = nrow(rtable))
   print(rtable, row.names = FALSE)
 
   cat(underline("\nGrouping variables:\n"))
-  gtable <- round_df_char(j$gvars, digits = x$digits)
+  gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
   gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
   #rownames(gtable) <- rep("", times = nrow(gtable))
   print(gtable, row.names = FALSE)
