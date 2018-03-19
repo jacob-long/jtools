@@ -688,9 +688,11 @@ summ.glm <- function(
     rsq <- pr$r2CU
     ## McFadden
     rsqmc <- pr$McFadden
+    chisq <- list(chi = pr$chisq, df = pr$chisq_df, p = pr$chisq_p)
   } else {
     rsq <- NULL
     rsqmc <- NULL
+    chisq <- NULL
   }
 
   # AIC for GLMs
@@ -823,7 +825,7 @@ summ.glm <- function(
                  standardize.response = transform.response,
                  odds.ratio = odds.ratio,
                  scale.response = transform.response,
-                 lmFamily = model$family)
+                 lmFamily = model$family, chisq = chisq)
 
   j$coeftable <- mat
   j$model <- model
@@ -860,7 +862,10 @@ print.summ.glm <- function(x, ...) {
   }
 
   if (x$model.fit == TRUE) {
-    stats <- paste(italic("Pseudo R-squared (Cragg-Uhler)"), " = ",
+    stats <- paste("𝛘²(", # symbol messes up my editor for rest of line
+                  x$chisq$df,  ") = ", num_print(x$chisq$chi, x$digits), ", ",
+                  italic("p"), " = ", num_print(x$chisq$p, x$digits), "\n",
+                   italic("Pseudo R-squared (Cragg-Uhler)"), " = ",
                    num_print(x$rsq, digits = x$digits), "\n",
                    italic("Pseudo R-squared (McFadden)"), " = ",
                    num_print(x$rsqmc, digits = x$digits), "\n",
@@ -1099,7 +1104,7 @@ summ.svyglm <- function(
       }
       llhNull <- logLik(objectNull)
       n <- dim(object$model)[1]
-      pR2Work(llh,llhNull,n)
+      pR2Work(llh, llhNull, n)
     }
 
     # Final calculations (linear pseudo-rsq)

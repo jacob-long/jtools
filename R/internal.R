@@ -484,23 +484,33 @@ make_ci_labs <- function(alpha) {
 
 ## This is taken from pscl package, I don't want to list it as import for
 ## this alone. The return object needs tweaking for me anyway
-pR2Work <- function(llh, llhNull, n) {
-  McFadden <- 1 - llh / llhNull
-  G2 <- -2 * (llhNull - llh)
-  r2ML <- 1 - exp(-G2 / n)
-  r2ML.max <- 1 - exp(llhNull * 2 / n)
+pR2Work <- function(llh, llhNull, n, object = NULL, objectNull = NULL) {
+  McFadden <- as.numeric(1 - llh / llhNull)
+  G2 <- as.numeric(-2 * (llhNull - llh))
+  r2ML <- as.numeric(1 - exp(-G2 / n))
+  r2ML.max <- as.numeric(1 - exp(llhNull * 2 / n))
   r2CU <- r2ML / r2ML.max
+
   out <- NULL
   out$llh <- llh
   out$llhNull <- llhNull
+
   out$G2 <- G2
   out$McFadden <- McFadden
   out$r2ML <- r2ML
   out$r2CU <- r2CU
+
+  if (!is.null(object)) {
+    the_aov <- anova(objectNull, object, test = "Chisq")
+
+    out$chisq <- the_aov$Deviance[2]
+    out$chisq_df <- the_aov$Df[2]
+    out$chisq_p <- the_aov$`Pr(>Chi)`[2]
+  }
+
   out
 }
 
-## Namespace issues require me to define pR2 here
 pR2 <- function(object) {
 
   llh <- getLL(object)
@@ -521,7 +531,7 @@ pR2 <- function(object) {
 
   llhNull <- getLL(objectNull)
   n <- dim(object$model)[1]
-  pR2Work(llh,llhNull,n)
+  pR2Work(llh, llhNull, n, object, objectNull)
 
 }
 
