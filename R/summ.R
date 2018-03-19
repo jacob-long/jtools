@@ -499,7 +499,7 @@ print.summ.lm <- function(x, ...) {
         "\n\n", sep = "")
   }
 
-  print_se_info(x$robust, x$use_cluster)
+  print_se_info(x$robust, x$use_cluster, ols = TRUE)
 
   print(ctable)
 
