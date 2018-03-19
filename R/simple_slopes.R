@@ -143,7 +143,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        mod2vals = NULL, centered = "all", data = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE,
-                       digits = getOption("jtools-digits", default = 2), ...) {
+                       digits = getOption("jtools-digits", default = 2),
+                       confint = FALSE, ci.width = .95, ...) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -412,22 +413,24 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
 #### Fit models ##############################################################
 
+  # Since output columns are conditional, I call summ here to see what they will
+  # be. I set vifs = FALSE to make sure it isn't fit due to user options.
+  the_col_names <- colnames(summ(model, confint = confint, ci.width = ci.width, 
+                                 vifs = FALSE)$coeftable)
+
   # Need to make a matrix filled with NAs to store values from looped
   # model-making
-  holdvals <- rep(NA, length(modxvals2) * 4)
+  holdvals <- rep(NA, length(modxvals2) * (length(the_col_names) + 1))
   retmat <- matrix(holdvals, nrow = length(modxvals2))
-
-  # Create another matrix to hold intercepts (no left-hand column needed)
-  retmati <- retmat
 
   # Create a list to hold Johnson-Neyman objects
   jns <- list()
 
   # Value labels
-  colnames(retmat) <- c(paste("Value of ", modx, sep = ""),
-                        "Est.", "S.E.", "p")
-  colnames(retmati) <- c(paste("Value of ", modx, sep = ""),
-                         "Est.", "S.E.", "p")
+  colnames(retmat) <- c(paste("Value of ", modx, sep = ""), the_col_names)
+
+  # Create another matrix to hold intercepts (no left-hand column needed)
+  retmati <- retmat
 
   mod2val_len <- length(mod2vals2)
   if (mod2val_len == 0) {mod2val_len <- 1}
@@ -563,34 +566,26 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     if (robust == TRUE) {
 
       # Use j_summ to get the coefficients
-      sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type,
-                              model.fit = F)
-      summat <- sum$coeftable
-
-      slopep <- summat[pred,c("Est.","S.E.","p")]
-      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
-
-      retmat[i,1] <- modxvals2[i]
-      retmat[i,2:4] <- slopep[]
-
-      retmati[i,1] <- modxvals2[i]
-      retmati[i,2:4] <- intp[]
+      sum <- jtools::j_summ(newmod, robust = robust, model.fit = FALSE,
+                            confint = confint, ci.width = ci.width,
+                            vifs = FALSE)
 
     } else {
 
-      sum <- jtools::j_summ(newmod, model.fit = F)
-      summat <- sum$coeftable
-
-      slopep <- summat[pred,c("Est.","S.E.","p")]
-      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
-
-      retmat[i,1] <- modxvals2[i]
-      retmat[i,2:4] <- slopep[]
-
-      retmati[i,1] <- modxvals2[i]
-      retmati[i,2:4] <- intp[]
+      sum <- jtools::j_summ(newmod, model.fit = FALSE, confint = confint,
+                            ci.width = ci.width, vifs = FALSE)
 
     }
+
+    summat <- sum$coeftable
+    slopep <- summat[pred, ]
+    intp <- summat["(Intercept)", ]
+
+    retmat[i,1] <- modxvals2[i]
+    retmat[i,2:ncol(retmat)] <- slopep[]
+
+    retmati[i,1] <- modxvals2[i]
+    retmati[i,2:ncol(retmat)] <- intp[]
 
     mods[[i + (j - 1) * modxval_len]] <- newmod
 
@@ -602,17 +597,17 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       imats[[j]] <- retmati
 
       # Now reset the return matrices
-      holdvals <- rep(NA, length(modxvals2) * 4)
-      retmat <- matrix(holdvals, nrow=length(modxvals2))
+      holdvals <- rep(NA, length(modxvals2) * ncol(retmat) + 1)
+      retmat <- matrix(holdvals, nrow = length(modxvals2))
 
       # Create another matrix to hold intercepts (no left-hand column needed)
       retmati <- retmat
 
       # Value labels
       colnames(retmat) <-
-        c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+        c(paste("Value of ", modx, sep = ""), colnames(slopep))
       colnames(retmati) <-
-        c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+        c(paste("Value of ", modx, sep = ""), colnames(slopep))
 
     }
 
@@ -799,7 +794,7 @@ print.sim_slopes <- function(x, ...) {
     # Clearly label simple slopes
     cat(bold(underline("SIMPLE SLOPES ANALYSIS")), "\n\n")
 
-    for (i in seq_len(length(x$modxvals))) {
+    for (i in seq_along(x$modxvals)) {
 
       if (class(x$modxvals) != "character") {
         x$modxvals <- format(x$modxvals, nsmall = x$digits, digits = 0)
@@ -808,7 +803,9 @@ print.sim_slopes <- function(x, ...) {
       # Use the labels for the automatic +/- 1 SD
       if (x$def == TRUE) {
 
-        slopes <- as.data.frame(lapply(m$slopes[i,2:4], as.numeric))
+        slopes <- 
+          as.data.frame(lapply(m$slopes[i,2:ncol(m$slopes)], as.numeric),
+            check.names = FALSE)
 
         cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
             x$modxvals[i], " (", names(x$modxvals)[i], ")",
@@ -819,7 +816,8 @@ print.sim_slopes <- function(x, ...) {
         # Print conditional intercept
         if (x$cond.int == TRUE) {
 
-          ints <- as.data.frame(lapply(m$ints[i,2:4], as.numeric))
+          ints <- as.data.frame(lapply(m$ints[i,2:ncol(m$slopes)], as.numeric),
+                    check.names = FALSE)
 
           cat(italic(paste0("Conditional intercept"," when ", x$modx, " = ",
               x$modxvals[i], " (", names(x$modxvals)[i], ")",
@@ -831,7 +829,9 @@ print.sim_slopes <- function(x, ...) {
 
       } else { # otherwise don't use labels
 
-        slopes <- as.data.frame(lapply(m$slopes[i,2:4], as.numeric))
+        slopes <-
+          as.data.frame(lapply(m$slopes[i, 2:ncol(m$slopes)], as.numeric),
+            check.names = FALSE)
 
         cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
             x$modxvals[i],
@@ -841,7 +841,8 @@ print.sim_slopes <- function(x, ...) {
         # Print conditional intercept
         if (x$cond.int == TRUE) {
 
-          ints <- as.data.frame(lapply(m$ints[i,2:4], as.numeric))
+          ints <- as.data.frame(lapply(m$ints[i, 2:ncol(m$slopes)], as.numeric),
+                    check.names = FALSE)
 
           cat(italic(paste0("Conditional intercept", " when ", x$modx, " = ",
               x$modxvals[i], ": \n")))
