@@ -95,8 +95,7 @@ j_summ <- summ
 #'   number.
 #'
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
-#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
-#'  details).
+#'  are not printed. Default is \code{TRUE}.
 #'
 #' @param n.sd If \code{scale = TRUE}, how many standard deviations should
 #'  predictors be divided by? Default is 1, though some suggest 2.
