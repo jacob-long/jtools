@@ -376,8 +376,8 @@ scale_statement <- function(scale, center, transform.response, n.sd) {
 vif <- function(mod, ...) {
 
   if (any(is.na(coef(mod)))) {
-    stop("VIFs cannot be calculated because",
-         " there are aliased coefficients in the model.")
+    stop_wrap("VIFs cannot be calculated because there are aliased
+              coefficients in the model.")
   }
 
   v <- vcov(mod)
@@ -394,8 +394,8 @@ vif <- function(mod, ...) {
   n.terms <- length(terms)
 
   if (n.terms < 2) {
-    stop("VIFS cannot be calculated because the model contains fewer ",
-         "than 2 terms.")
+    stop_wrap("VIFS cannot be calculated because the model contains fewer
+              than 2 terms.")
   }
 
   R <- cov2cor(v)
