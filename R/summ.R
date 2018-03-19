@@ -253,7 +253,7 @@ summ.lm <- function(
   # Check for deprecated arguments with helper function
   deps <- dep_checks(dots)
   any_deps <- sapply(deps, is.null)
-  if (any(any_deps)) {
+  if (any(!any_deps)) {
     for (n in names(any_deps)[which(any_deps == FALSE)]) {
       # Reassign values as needed
       assign(n, deps[[n]])
@@ -620,7 +620,7 @@ summ.glm <- function(
   # Check for deprecated argument
   deps <- dep_checks(dots)
   any_deps <- sapply(deps, is.null)
-  if (any(any_deps)) {
+  if (any(!any_deps)) {
     for (n in names(any_deps)[which(any_deps == FALSE)]) {
       # Reassign values as needed
       assign(n, deps[[n]])
@@ -962,7 +962,7 @@ summ.svyglm <- function(
   # Check for deprecated arguments with helper function
   deps <- dep_checks(dots)
   any_deps <- sapply(deps, is.null)
-  if (any(any_deps)) {
+  if (any(!any_deps)) {
     for (n in names(any_deps)[which(any_deps == FALSE)]) {
       # Reassign values as needed
       assign(n, deps[[n]])
@@ -1485,7 +1485,7 @@ summ.merMod <- function(
   # Check for deprecated arguments with helper function
   deps <- dep_checks(dots)
   any_deps <- sapply(deps, is.null)
-  if (any(any_deps)) {
+  if (any(!any_deps)) {
     for (n in names(any_deps)[which(any_deps == FALSE)]) {
       # Reassign values as needed
       assign(n, deps[[n]])
