@@ -364,11 +364,9 @@ summ.lm <- function(
     alpha <- (1 - ci.width) / 2
     tcrit <- abs(qnorm(alpha))
 
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
+    labs <- make_ci_labs(alpha)
+    lci_lab <- labs$lci
+    uci_lab <- labs$uci
 
     lci <- ucoefs - (ses * tcrit)
     uci <- ucoefs + (ses * tcrit)
@@ -742,11 +740,9 @@ summ.glm <- function(
     alpha <- (1 - ci.width) / 2
     tcrit <- abs(qnorm(alpha))
 
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+    labs <- make_ci_labs(alpha)
+    lci_lab <- labs$lci
+    uci_lab <- labs$uci
 
   }
 
@@ -1142,11 +1138,9 @@ summ.svyglm <- function(
     alpha <- (1 - ci.width)/2
     tcrit <- abs(qnorm(alpha))
 
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
+    labs <- make_ci_labs(alpha)
+    lci_lab <- labs$lci
+    uci_lab <- labs$uci
 
   }
 
@@ -1683,11 +1677,9 @@ summ.merMod <- function(
 
     alpha <- (1 - ci.width) / 2
 
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+    labs <- make_ci_labs(alpha)
+    lci_lab <- labs$lci
+    uci_lab <- labs$uci
 
   }
 

@@ -744,11 +744,9 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     # Need to use this to get the right coeftable colnames
     alpha <- (1 - conf.level) / 2
 
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+    labs <- make_ci_labs(alpha)
+    lci_lab <- labs$lci
+    uci_lab <- labs$uci
 
     if (attributes(x)$confint == TRUE & attributes(x)$ci.width == conf.level) {
       base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]

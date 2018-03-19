@@ -465,6 +465,17 @@ print_se_info <- function(robust, use_cluster) {
 
 }
 
+make_ci_labs <- function(alpha) {
+
+  lci_lab <- 0 + alpha
+  lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
+
+  uci_lab <- 1 - alpha
+  uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
+
+  list(lci = lci_lab, uci = uci_lab)
+
+}
 
 ### pseudo-R2 ################################################################
 
