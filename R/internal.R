@@ -522,10 +522,14 @@ print_mod_info <- function(missing, n, dv, type) {
   cat(italic("Type:"), type, "\n\n")
 }
 
+## Print model fit info
+
 print_mod_fit <- function(stats) {
   cat(underline("MODEL FIT:"), "\n", sep = "")
   cat(stats, "\n\n")
 }
+
+## Print line about standard errors
 
 print_se_info <- function(robust, use_cluster, ols = FALSE) {
 
@@ -553,7 +557,11 @@ print_se_info <- function(robust, use_cluster, ols = FALSE) {
 
 }
 
-make_ci_labs <- function(alpha) {
+## Create confidence interval column labels
+
+make_ci_labs <- function(ci.width) {
+
+  alpha <- (1 - ci.width) / 2
 
   lci_lab <- 0 + alpha
   lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
