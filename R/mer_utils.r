@@ -123,7 +123,8 @@ get_re_tables_mer <- function(model, re.variance, groups, ngroups, iccs) {
   re_var_lab <- switch(re.variance, sd = "Std. Dev.", var = "Var.")
   rcmat <- rcmat[, names(rcmat) %in% c("grp", "var1", re_variance)]
   rcmat <- as.matrix(rcmat)
-  colnames(rcmat) <- c("Group"," Parameter", re_var_lab)
+  colnames(rcmat) <- c("Group", "Parameter", re_var_lab)
+  attr(rcmat, "variance") <- re_var_lab
 
   return(list(gvmat = gvmat, rcmat = rcmat))
 }
@@ -568,7 +569,6 @@ predict_mer <- function(model, newdata = NULL, use_re_var = FALSE,
 
 
 }
-
 
 # ### Add random effects to df ################################################
 #
