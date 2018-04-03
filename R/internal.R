@@ -136,8 +136,6 @@ add_stars <- function(table, digits, p_vals) {
     colnames(table) <- c(tnames, "")
   }
 
-  #table <- as.table(table)
-
   return(table)
 
 }
@@ -220,6 +218,8 @@ round_df_char <- function(df, digits, pad = " ", na_vals = NA) {
   return(df)
 }
 
+## This function gets the robust SEs
+
 do_robust <- function(model, robust, cluster, data) {
 
   if (!requireNamespace("sandwich", quietly = TRUE)) {
@@ -291,6 +291,72 @@ do_robust <- function(model, robust, cluster, data) {
 
 }
 
+## Put together the coefficient table
+
+create_table <- function(params, which.cols, ivs) {
+
+  if (any(which.cols %nin% names(params))) {
+    stop_wrap("One of the requested columns does not exist.")
+  }
+
+  coefs <- params[["Est."]]
+
+  params <- params[unlist(which.cols)]
+
+  mat <- matrix(nrow = length(ivs), ncol = length(which.cols))
+  rownames(mat) <- ivs
+  colnames(mat) <- which.cols
+
+  # Put each column in the return matrix
+  for (i in seq_along(params)) {
+
+    # Handle rank-deficient models
+    if (length(coefs) > length(params[[i]])) {
+      # Creating a vector the length of ucoefs (which has the NAs)
+      temp_vec <- rep(NA, times = length(coefs))
+      # Now I replace only at indices where ucoefs is non-missing
+      temp_vec[which(!is.na(coefs))] <- params[[i]]
+      # Now replace params[[i]] with the vector that includes the missings
+      params[[i]] <- temp_vec
+    }
+
+    mat[,i] <- params[[i]]
+
+  }
+
+  return(mat)
+
+}
+
+## Decide which columns will be included in the output
+
+which_columns <- function(which.cols, confint, ci.labs, vifs, pvals, t.col,
+                          exp = NULL, others = NULL) {
+
+  if (!is.null(which.cols)) {
+    return(which.cols)
+  } else {
+    if (is.null(exp) || exp == FALSE) {
+      cols <- c("Est.")
+    } else {
+      cols <- c("exp(Est.)")
+    }
+    if (confint == TRUE) {
+      cols <- c(cols, ci.labs)
+    } else {
+      cols <- c(cols, "S.E.")
+    }
+    cols <- c(cols, t.col)
+    if (pvals == TRUE) {cols <- c(cols, "p")}
+    if (vifs == TRUE) {cols <- c(cols, "VIF")}
+    if (!is.null(others)) {cols <- c(cols, others)}
+    return(cols)
+  }
+
+}
+
+## Partial and semipartial correlation calculations
+
 part_corr <- function(ts, df.int, rsq, robust, n) {
 
   # Need df
@@ -321,11 +387,11 @@ part_corr <- function(ts, df.int, rsq, robust, n) {
 
 }
 
+## Checking for presence of deprecated 
+
 dep_checks <- function(dots) {
 
-  scale <- NULL
-  transform.response <- NULL
-  robust <- NULL
+  scale <-  transform.response <- robust <- odds.ratio <- NULL
 
   if ("standardize" %in% names(dots)) {
     warn_wrap("The standardize argument is deprecated. Please use 'scale'
@@ -357,9 +423,18 @@ dep_checks <- function(dots) {
     robust <- dots$robust.type
   }
 
-  list(scale = scale, transform.response = transform.response, robust = robust)
+  if ("odds.ratio" %in% names(dots)) {
+    warn_wrap("The odds.ratio argument is deprecated. Use 'exp' instead.",
+              call. = FALSE)
+    robust <- dots$robust.type
+  }
+
+  list(scale = scale, transform.response = transform.response, robust = robust,
+       exp = odds.ratio)
 
 }
+
+## Form the sentence that says what happened with variable transformations
 
 scale_statement <- function(scale, center, transform.response, n.sd) {
   part_1 <- "Continuous "
@@ -375,7 +450,7 @@ scale_statement <- function(scale, center, transform.response, n.sd) {
   }
 }
 
-# Adapted from car::vif
+## Adapted from car::vif
 vif <- function(mod, ...) {
 
   if (any(is.na(coef(mod)))) {

@@ -243,7 +243,8 @@ summ.lm <- function(
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE, ...) {
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
+  which.cols = NULL,  ...) {
 
   j <- list()
 
@@ -314,7 +315,8 @@ summ.lm <- function(
   ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(model))
+  coefs <- unname(coef(model))
+  params <- list("Est." = coefs)
 
   # Model statistics
   fstat <- unname(sum$fstatistic[1])
@@ -331,8 +333,11 @@ summ.lm <- function(
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(vif(model))
     }
+    the_vifs <- unname(vif(model))
+    if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
+    tvifs[-1] <- the_vifs
+    params[["VIF"]] <- tvifs
   }
 
   # Standard errors and t-statistics
@@ -348,7 +353,6 @@ summ.lm <- function(
     # Pass to robust helper function
     rob_info <- do_robust(model, robust, cluster, data)
 
-    coefs <- rob_info$coefs
     ses <- rob_info$ses
     ts <- rob_info$ts
     ps <- rob_info$ps
@@ -358,75 +362,48 @@ summ.lm <- function(
 
   }
 
-  if (confint == TRUE) {
-
-    alpha <- (1 - ci.width) / 2
-    tcrit <- abs(qnorm(alpha))
-
-    labs <- make_ci_labs(alpha)
-    lci_lab <- labs$lci
-    uci_lab <- labs$uci
-
-    lci <- ucoefs - (ses * tcrit)
-    uci <- ucoefs + (ses * tcrit)
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, "t val.", "p")
-
-  } else {
-
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", "t val.", "p")
-
+  # Handle rank-deficient models
+  if (length(coefs) > length(ses)) {
+    # Creating a vector the length of ucoefs (which has the NAs)
+    temp_vec <- rep(NA, times = length(coefs))
+    # Now I replace only at indices where ucoefs is non-missing
+    temp_vec[which(!is.na(coefs))] <- ses
+    # Now replace params[[i]] with the vector that includes the missings
+    ses <- temp_vec
   }
+  params[c("S.E.", "t val.", "p")] <- list(ses, ts, ps)
 
-  if (vifs == TRUE) {
-
-    params[length(params) + 1] <- list(tvifs)
-    namevec <- c(namevec, "VIF")
-
-  }
+  # Alpha level to find critical t-statistic for confidence intervals
+  alpha <- (1 - ci.width) / 2
+  # Get the critical t
+  tcrit <- abs(qt(alpha, df = df.residual(model)))
+  # Make confidence interval labels
+  labs <- make_ci_labs(ci.width)
+  # Get the lower and upper CI bounds
+  lci <- coefs - (ses * tcrit)
+  uci <- coefs + (ses * tcrit)
+  # Store cis in list
+  cis <- list(lci, uci)
+  names(cis) <- labs
+  
+  params[names(cis)] <- cis 
 
   if (part.corr == TRUE) {
 
     pcs <- part_corr(ts, df.int, rsq, robust, n)
 
-    namevec <- c(namevec, "partial.r", "part.r")
-    pl <- length(params)
-    params[(pl + 1)] <- list(pcs$partial_corrs)
-    params[(pl + 2)] <- list(pcs$semipart_corrs)
+    partial_corr <- pcs$partial_corrs
+    part_corr <- pcs$semipart_corrs
+    params[c("partial.r", "part.r")] <- list(partial_corr, part_corr)
 
+  } 
 
-  }
-
-  mat <- matrix(nrow = length(ivs), ncol = length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  # Put each column in the return matrix
-  for (i in seq_len(length(params))) {
-    # Handle rank-deficient models
-    if (length(ucoefs) > length(params[[i]])) {
-      # Creating a vector the length of ucoefs (which has the NAs)
-      temp_vec <- rep(NA, times = length(ucoefs))
-      # Now I replace only at indices where ucoefs is non-missing
-      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
-      # Now replace params[[i]] with the vector that includes the missings
-      params[[i]] <- temp_vec
-    }
-
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  # Drop p-vals if user requests
-  if (pvals == FALSE) {
-
-    mat <- mat[,colnames(mat) %nin% "p"]
-
-  }
+  part.corr.arg <- if (part.corr) {c("partial.r", "part.r")} else {NULL}
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs, 
+                              pvals = pvals, t.col = "t val.",
+                              others = part.corr.arg)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Implement model checking features
   if (model.check == TRUE) {
@@ -447,7 +424,7 @@ summ.lm <- function(
                  standardize.response = transform.response,
                  scale.response = transform.response,
                  transform.response = transform.response,
-                 odds.ratio = FALSE)
+                 exp = FALSE)
 
   j$coeftable <- mat
   j$model <- model
@@ -480,8 +457,8 @@ print.summ.lm <- function(x, ...) {
     stats <- paste(italic("F"), "(", x$fnum, ",", x$fden, ") = ",
         num_print(x$fstat, digits = x$digits), ", ", italic("p"), " = ",
         num_print(x$modpval, digits = x$digits), "\n",
-        italic("R-squared = "), num_print(x$rsq, digits = x$digits), "\n",
-        italic("Adj. R-squared = "), num_print(x$arsq, digits = x$digits),
+        italic("R\u00B2 = "), num_print(x$rsq, digits = x$digits), "\n",
+        italic("Adj. R\u00B2 = "), num_print(x$arsq, digits = x$digits),
         sep = "")
     print_mod_fit(stats)
   }
@@ -520,7 +497,7 @@ print.summ.lm <- function(x, ...) {
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A `glm` object.
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#' @param exp If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
@@ -611,10 +588,10 @@ summ.glm <- function(
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", default = 2),
-  odds.ratio = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
+  exp = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
   center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), ...) {
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
 
   j <- list()
 
@@ -701,7 +678,8 @@ summ.glm <- function(
   ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(model))
+  coefs <- unname(coef(model))
+  params <- list("Est." = coefs)
 
   # VIFs
   if (vifs == TRUE) {
@@ -711,6 +689,7 @@ summ.glm <- function(
       tvifs <- rep(NA, length(ivs))
       tvifs[-1] <- unname(vif(model))
     }
+    params[["VIF"]] <- tvifs
   }
 
   # Standard errors and t-statistics
@@ -726,7 +705,6 @@ summ.glm <- function(
     # Pass to robust helper function
     rob_info <- do_robust(model, robust, cluster, data)
 
-    coefs <- rob_info$coefs
     ses <- rob_info$ses
     ts <- rob_info$ts
     ps <- rob_info$ps
@@ -736,81 +714,55 @@ summ.glm <- function(
 
   }
 
+  # Handle rank-deficient models
+  if (length(coefs) > length(ses)) {
+    # Creating a vector the length of ucoefs (which has the NAs)
+    temp_vec <- rep(NA, times = length(coefs))
+    # Now I replace only at indices where ucoefs is non-missing
+    temp_vec[which(!is.na(coefs))] <- ses
+    # Now replace params[[i]] with the vector that includes the missings
+    ses <- temp_vec
+  }
   # Need proper name for test statistic
   tcol <- colnames(coef(sum))[3]
   tcol <- gsub("value", "val.", tcol)
+  # Add SE, test statistic, p to params
+  params[c("S.E.", tcol, "p")] <- list(ses, ts, ps)
 
-  if (confint == TRUE | odds.ratio == TRUE) {
-
-    alpha <- (1 - ci.width) / 2
-    tcrit <- abs(qnorm(alpha))
-
-    labs <- make_ci_labs(alpha)
-    lci_lab <- labs$lci
-    uci_lab <- labs$uci
-
-  }
+  # Alpha level to find critical t-statistic for confidence intervals
+  alpha <- (1 - ci.width) / 2
+  # Get the critical t
+  tcrit <- abs(qnorm(alpha))
+  # Make confidence interval labels
+  labs <- make_ci_labs(ci.width)
 
   # Report odds ratios instead, with conf. intervals
-  if (odds.ratio == TRUE) {
+  if (exp == TRUE) {
 
-    ecoefs <- exp(ucoefs)
-    lci <- exp(ucoefs - (ses*tcrit))
-    uci <- exp(ucoefs + (ses*tcrit))
-    params <- list(ecoefs, lci, uci, ts, ps)
-    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
-
-  } else if (odds.ratio == FALSE & confint == TRUE) {
-
-    lci <- ucoefs - (ses*tcrit)
-    uci <- ucoefs + (ses*tcrit)
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
+    ecoefs <- exp(coefs)
+    lci <- exp(coefs - (ses * tcrit))
+    uci <- exp(coefs + (ses * tcrit))
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[["exp(Est.)"]] <- ecoefs
+    params[names(cis)] <- cis
 
   } else {
 
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", tcol, "p")
+    lci <- coefs - (ses * tcrit)
+    uci <- coefs + (ses * tcrit)
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[names(cis)] <- cis
 
   }
 
   # Put things together
-
-  # Calculate vifs
-  if (vifs == TRUE) {
-    params[length(params) + 1] <- list(tvifs)
-    namevec <- c(namevec, "VIF")
-  }
-
-  mat <- matrix(nrow = length(ivs), ncol = length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  # Put each column in the return matrix
-  for (i in seq_len(length(params))) {
-    # Handle rank-deficient models
-    if (length(ucoefs) > length(params[[i]])) {
-      # Creating a vector the length of ucoefs (which has the NAs)
-      temp_vec <- rep(NA, times = length(ucoefs))
-      # Now I replace only at indices where ucoefs is non-missing
-      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
-      # Now replace params[[i]] with the vector that includes the missings
-      params[[i]] <- temp_vec
-    }
-
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  # Drop p-vals if user requests
-  if (pvals == FALSE) {
-
-    mat <- mat[, colnames(mat) %nin% "p"]
-
-  }
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs, 
+                              pvals = pvals, t.col = tcol,
+                              exp = exp)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Extract dispersion parameter
   dispersion <- sum$dispersion
@@ -822,7 +774,7 @@ summ.glm <- function(
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
                  standardize.response = transform.response,
-                 odds.ratio = odds.ratio,
+                 exp = exp,
                  scale.response = transform.response,
                  lmFamily = model$family, chisq = chisq)
 
@@ -861,12 +813,12 @@ print.summ.glm <- function(x, ...) {
   }
 
   if (x$model.fit == TRUE) {
-    stats <- paste("𝛘²(", # symbol messes up my editor for rest of line
+    stats <- paste("\U1D6D8\u00B2(", # symbol messes up my editor for rest of line
                   x$chisq$df,  ") = ", num_print(x$chisq$chi, x$digits), ", ",
                   italic("p"), " = ", num_print(x$chisq$p, x$digits), "\n",
-                   italic("Pseudo R-squared (Cragg-Uhler)"), " = ",
+                   italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
                    num_print(x$rsq, digits = x$digits), "\n",
-                   italic("Pseudo R-squared (McFadden)"), " = ",
+                   italic("Pseudo-R\u00B2 (McFadden)"), " = ",
                    num_print(x$rsqmc, digits = x$digits), "\n",
                    italic("AIC"), " = ", num_print(x$aic, x$digits),
                    ", ", italic("BIC"), " = ", num_print(x$bic, x$digits),
@@ -897,7 +849,7 @@ print.summ.glm <- function(x, ...) {
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A `svyglm` object.
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#' @param exp If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
@@ -962,10 +914,10 @@ summ.svyglm <- function(
   digits = getOption("jtools-digits", default = 2),
   pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE,
-  odds.ratio = FALSE, vifs = getOption("summ-vifs", FALSE),
+  exp = FALSE, vifs = getOption("summ-vifs", FALSE),
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
-  model.check = FALSE, ...) {
+  model.check = FALSE, which.cols = NULL, ...) {
 
   j <- list()
 
@@ -1055,28 +1007,20 @@ summ.svyglm <- function(
     f <- model$fitted.values
     w <- model$weights
     ## Dealing with no-intercept models, getting the df.int
-    if (is.null(w)) {
-      mss <- if (df.int == 1L)
-        sum((f - mean(f))^2)
-      else sum(f^2)
-      rss <- sum(r^2)
-    } else {
-      mss <- if (df.int == 1L) {
-        m <- sum(w * f/sum(w))
-        sum(w * (f - m)^2)
-      } else sum(w * f^2)
-      rss <- sum(w * r^2)
-      r <- sqrt(w) * r
-    }
-
+    mss <- if (df.int == 1L) {
+      m <- sum(w * f/sum(w))
+      sum(w * (f - m)^2)
+    } else sum(w * f^2)
+    rss <- sum(w * r^2)
+    r <- sqrt(w) * r
     ## Final calculations
     rsq <- mss/(mss + rss)
     arsq <- 1 - (1 - rsq) * ((n - df.int)/model$df.residual)
-
     j <- structure(j, rsq = rsq, arsq = arsq)
+
   } else { # If not linear, calculate pseudo-rsq
 
-    ## Have to specify pR2 here to fix namespace issues
+    ## Have to specify pR2 here to avoid namespace issues
     svypR2 <- function(object) {
 
       llh <- suppressWarnings(logLik(object))
@@ -1123,7 +1067,8 @@ summ.svyglm <- function(
   ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(model))
+  coefs <- unname(coef(model))
+  params <- list("Est." = coefs)
 
   # VIFs
   if (vifs == TRUE) {
@@ -1131,8 +1076,11 @@ summ.svyglm <- function(
       tvifs <- rep(NA, 1)
     } else {
       tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(vif(model))
     }
+    the_vifs <- unname(vif(model))
+    if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
+    tvifs[-1] <- the_vifs
+    params[["VIF"]] <- tvifs
   }
 
   # Standard errors and t-statistics
@@ -1144,77 +1092,46 @@ summ.svyglm <- function(
   tcol <- colnames(coef(sum))[3]
   tcol <- gsub("value", "val.", tcol)
 
+  params[c("S.E.", tcol, "p")] <- list(ses, ts, ps)
+
   # Groundwork for CIs and ORs
-  if (confint == TRUE | odds.ratio == TRUE) {
-
-    alpha <- (1 - ci.width)/2
+  alpha <- (1 - ci.width)/2
+  if (linear == TRUE) {
+    tcrit <- abs(qt(alpha, df = df.residual(model)))
+  } else {
     tcrit <- abs(qnorm(alpha))
-
-    labs <- make_ci_labs(alpha)
-    lci_lab <- labs$lci
-    uci_lab <- labs$uci
-
   }
 
+  labs <- make_ci_labs(ci.width)
+
   # Report odds ratios instead, with conf. intervals
-  if (odds.ratio == TRUE) {
+  if (exp == TRUE) {
 
-    ecoefs <- exp(ucoefs)
-    lci <- exp(ucoefs - (ses * tcrit))
-    uci <- exp(ucoefs + (ses * tcrit))
-    params <- list(ecoefs, lci, uci, ts, ps)
-    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+    ecoefs <- exp(coefs)
+    lci <- exp(coefs - (ses * tcrit))
+    uci <- exp(coefs + (ses * tcrit))
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[["exp(Est.)"]] <- ecoefs
+    params[names(cis)] <- cis
 
-  } else if (odds.ratio == FALSE & confint == TRUE) { # regular CIs
+  } else { # regular CIs
 
-    lci <- ucoefs - (ses*tcrit)
-    uci <- ucoefs + (ses*tcrit)
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
-
-  } else {
-
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", tcol, "p")
+    lci <- coefs - (ses * tcrit)
+    uci <- coefs + (ses * tcrit)
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[names(cis)] <- cis
 
   }
 
   # Put things together
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs, 
+                              pvals = pvals, t.col = tcol,
+                              exp = exp)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
-  if (vifs == TRUE) {
-    params[length(params)+1] <- list(tvifs)
-    namevec <- c(namevec, "VIF")
-  }
-
-  mat <- matrix(nrow=length(ivs), ncol=length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  # Put each column in the return matrix
-  for (i in seq_len(length(params))) {
-    # Handle rank-deficient models
-    if (length(ucoefs) > length(params[[i]])) {
-      # Creating a vector the length of ucoefs (which has the NAs)
-      temp_vec <- rep(NA, times = length(ucoefs))
-      # Now I replace only at indices where ucoefs is non-missing
-      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
-      # Now replace params[[i]] with the vector that includes the missings
-      params[[i]] <- temp_vec
-    }
-
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  # Dropping p-vals if requested by user
-  if (pvals == FALSE) {
-
-    mat <- mat[,!(colnames(mat) == "p")]
-
-  }
 
   if (model.check == TRUE && linear == TRUE) {
     cd <- table(cooks.distance(model) > 4 / n)
@@ -1235,7 +1152,7 @@ summ.svyglm <- function(
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
                  standardize.response = transform.response,
-                 odds.ratio = odds.ratio,
+                 exp = exp,
                  scale.response = transform.response)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
@@ -1281,15 +1198,15 @@ print.summ.svyglm <- function(x, ...) {
     if (as.character(x$lmFamily[1]) == "gaussian" &&
         as.character(x$lmFamily[2]) == "identity") {
       # If it's a linear model, show regular lm fit stats
-      stats <- paste(italic("R-squared"), " = ",
+      stats <- paste(italic("R\u00B2"), " = ",
                      num_print(x$rsq, digits = x$digits), "\n",
-                     italic("Adj. R-squared"), " = ",
+                     italic("Adj. R\u00B2"), " = ",
                      num_print(x$arsq, digits = x$digits), sep = "")
     } else {
       # If it isn't linear, show GLM fit stats
-      stats <- paste(italic("Pseudo R-squared (Cragg-Uhler)"), " = ",
+      stats <- paste(italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
                      num_print(x$rsq, digits = x$digits), "\n",
-                     italic("Pseudo R-squared (McFadden)"), " = ",
+                     italic("Pseudo-R\u00B2 (McFadden)"), " = ",
                      num_print(x$rsqmc, digits = x$digits), "\n",
                      italic("AIC"), " = ", num_print(x$aic, x$digits), sep = "")
     }
@@ -1333,7 +1250,7 @@ print.summ.svyglm <- function(x, ...) {
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#' @param exp If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
@@ -1492,10 +1409,11 @@ summ.merMod <- function(
   ci.width = getOption("summ-ci.width", .95),
   digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
   pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
-  transform.response = FALSE, data = NULL, odds.ratio = FALSE, t.df = NULL,
+  transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
-  re.variance = getOption("summ-re.variance", c("sd", "var")), ...) {
+  re.variance = getOption("summ-re.variance", c("sd", "var")), 
+  which.cols = NULL, ...) {
 
   j <- list()
 
@@ -1603,8 +1521,7 @@ summ.merMod <- function(
   n <- length(residuals(model))
   j <- structure(j, n = n)
 
-  # TODO: Figure out model fit indices for MLMs
-  ## This is a start
+  # Model fit
   failed.rsq <- FALSE
   if (r.squared == TRUE) {
 
@@ -1643,15 +1560,22 @@ summ.merMod <- function(
   ivs <- rownames(sum$coefficients)
 
   # Unstandardized betas
-  ucoefs <- unname(sum$coefficients[,1])
+  coefs <- unname(sum$coefficients[,1])
+  params <- list("Est." = coefs)
 
   # Standard errors and t-statistics
   ses <- sum$coefficients[,2]
   ts <- sum$coefficients[,3]
+  # Need proper name for test statistic
+  tcol <- colnames(sum$coefficients)[3]
+  tcol <- gsub("value", "val.", tcol)
+
+  params[c("Est.", "S.E.", tcol)] <- list(coefs, ses, ts)
 
   # lmerMod doesn't have p values, so
   if (!sum$isLmer) {
     ps <- sum$coefficients[,4]
+    params[["p"]] <- ps
   } else {
     # Use Kenward-Roger if available
     if (pbkr == FALSE & is.null(t.df)) { # If not, do it like any lm
@@ -1688,37 +1612,33 @@ summ.merMod <- function(
     }
 
     ps <- vec
+    params[["p"]] <- ps
 
   }
 
-  # Need proper name for test statistic
-  tcol <- colnames(sum$coefficients)[3]
-  tcol <- gsub("value", "val.", tcol)
-
-  if (confint == TRUE | odds.ratio == TRUE) {
+  if (confint == TRUE | exp == TRUE) {
 
     alpha <- (1 - ci.width) / 2
-
-    labs <- make_ci_labs(alpha)
-    lci_lab <- labs$lci
-    uci_lab <- labs$uci
+    labs <- make_ci_labs(ci.width)
 
   }
 
   # Report odds ratios instead, with conf. intervals
-  if (odds.ratio == TRUE) {
+  if (exp == TRUE) {
   # TODO: revisit after lme4 bug fixed
     the_cis <-
       suppressWarnings(confint(model, parm = "beta_", method = "profile",
                        level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
-    ecoefs <- exp(ucoefs)
+    ecoefs <- exp(coefs)
     lci <- exp(the_cis[,1])
     uci <- exp(the_cis[,2])
-    params <- list(ecoefs, lci, uci, ts, ps)
-    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[["exp(Est.)"]] <- ecoefs
+    params[names(cis)] <- cis
 
-  } else if (odds.ratio == FALSE & confint == TRUE) {
+  } else if (exp == FALSE & confint == TRUE) {
 
     the_cis <-
       suppressWarnings(confint(model, parm = "beta_", method = "profile",
@@ -1726,46 +1646,18 @@ summ.merMod <- function(
     the_cis <- the_cis[rownames(sum$coefficients),]
     lci <- the_cis[,1]
     uci <- the_cis[,2]
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
-
-  } else {
-
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", tcol, "p")
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[names(cis)] <- cis
 
   }
 
   # Put things together
-
-  mat <- matrix(nrow = length(ivs), ncol = length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  # Put each column in the return matrix
-  for (i in seq_len(length(params))) {
-    # Handle rank-deficient models
-    if (length(ucoefs) > length(params[[i]])) {
-      # Creating a vector the length of ucoefs (which has the NAs)
-      temp_vec <- rep(NA, times = length(ucoefs))
-      # Now I replace only at indices where ucoefs is non-missing
-      temp_vec[which(!is.na(ucoefs))] <- params[[i]]
-      # Now replace params[[i]] with the vector that includes the missings
-      params[[i]] <- temp_vec
-    }
-
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  if (pvals == FALSE) {
-
-    mat <- mat[, seq_len(ncol(mat) - 1)]
-
-  }
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = FALSE, 
+                              pvals = pvals, t.col = tcol,
+                              exp = exp)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Dealing with random effects
   ## Names of grouping vars
@@ -1786,7 +1678,7 @@ summ.merMod <- function(
                  df = df, pbkr = pbkr, r.squared = r.squared,
                  failed.rsq = failed.rsq, test.stat = tcol,
                  standardize.response = transform.response,
-                 odds.ratio = odds.ratio,
+                 exp = exp,
                  scale.response = transform.response)
 
   j <- structure(j, lmFamily = family(model))
@@ -1832,9 +1724,9 @@ print.summ.merMod <- function(x, ...) {
                    ", ", italic("BIC"), " = ",
                    num_print(x$bic, x$digits), sep = "")
     if (x$r.squared == TRUE) {
-      stats <- paste(stats, "\n", italic("Pseudo R-squared (fixed effects)"),
+      stats <- paste(stats, "\n", italic("Pseudo-R\u00B2 (fixed effects)"),
                      " = ", num_print(x$rsq$Marginal, x$digits), "\n",
-                     italic("Pseudo R-squared (total)"), " = ",
+                     italic("Pseudo-R\u00B2 (total)"), " = ",
                      num_print(x$rsq$Conditional, x$digits), sep = "")
     }
     print_mod_fit(stats)
@@ -1861,7 +1753,7 @@ print.summ.merMod <- function(x, ...) {
 
     } else if (!is.null(x$t.df)) {
 
-      if (x$t.df %in% c("residual","resid")) {
+      if (x$t.df %in% c("residual", "resid")) {
 
         cat(italic("\nNote: p values calculated based on residual d.f. ="),
             x$df, "\n")
