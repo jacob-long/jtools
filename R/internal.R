@@ -461,7 +461,7 @@ vif <- function(mod, ...) {
   v <- vcov(mod)
   assign <- attr(model.matrix(mod), "assign")
 
-  if (names(coefficients(mod)[1]) == "(Intercept)") {
+  if ("(Intercept)" %in% names(coefficients(mod))) {
     v <- v[-1, -1]
     assign <- assign[-1]
   } else {
@@ -492,11 +492,21 @@ vif <- function(mod, ...) {
     result <- result[, 1]
   } else {
     result[, 3] <- result[, 1]^(1/(2 * result[, 2]))
+    expand_fun <- function(x) {
+      if ("(Intercept)" %in% names(coefficients(mod))) {
+        rep(x, times = table(attr(model.matrix(mod), "assign")[-1]))
+      } else {
+        rep(x, times = table(attr(model.matrix(mod), "assign")))
+      }
+    }
+    result <- apply(result, MARGIN = 2, FUN = expand_fun)
   }
 
   return(result)
 
 }
+
+## Print the model info output
 
 print_mod_info <- function(missing, n, dv, type) {
   if (is.null(missing) || missing == 0) {
