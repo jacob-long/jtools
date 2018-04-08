@@ -63,6 +63,7 @@ msg_wrap <- function(..., brk = "\n") {
 # Code adapted from G. Grothendieck's at Stack Overflow:
 # https://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-
 # will-be-called-on-an-object
+#' @importFrom utils .S3methods getS3method
 find_S3_class <- function(generic, ..., package) {
 
   # not going to provide function, just function name as character

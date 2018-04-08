@@ -534,7 +534,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   }
 
   # Nasty workaround for R CMD Check warnings for global variable bindings
-  model <- term <- estimate <- conf.low <- conf.high <- NULL
+  model <- term <- estimate <- conf.low <- conf.high <- conf.low.inner <-
+  conf.high.inner <- curve <- est <- NULL
 
   # Capture arguments
   dots <- list(...)
@@ -775,6 +776,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
 
 }
 
+#' @importFrom stats dnorm
 get_dist_curves <- function(tidies, order, models) {
 
   term_names <- tidies$term
