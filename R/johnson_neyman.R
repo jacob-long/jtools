@@ -568,7 +568,7 @@ print.johnson_neyman <- function(x, ...) {
   } else {
     cat_wrap("The Johnson-Neyman interval could not be found.
         Is the p value for your interaction term below
-        the specified alpha?\n\n")
+        the specified alpha?", brk = "\n\n")
   }
   if (atts$control.fdr == TRUE) {
     cat("Interval calculated using false discovery rate adjusted",

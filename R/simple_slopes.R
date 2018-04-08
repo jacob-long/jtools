@@ -597,7 +597,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       imats[[j]] <- retmati
 
       # Now reset the return matrices
-      holdvals <- rep(NA, length(modxvals2) * ncol(retmat) + 1)
+      holdvals <- rep(NA, length(modxvals2) * ncol(retmat))
       retmat <- matrix(holdvals, nrow = length(modxvals2))
 
       # Create another matrix to hold intercepts (no left-hand column needed)
@@ -605,9 +605,9 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
       # Value labels
       colnames(retmat) <-
-        c(paste("Value of ", modx, sep = ""), colnames(slopep))
+        c(paste("Value of ", modx, sep = ""), names(slopep))
       colnames(retmati) <-
-        c(paste("Value of ", modx, sep = ""), colnames(slopep))
+        c(paste("Value of ", modx, sep = ""), names(slopep))
 
     }
 
