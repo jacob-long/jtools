@@ -531,7 +531,8 @@ predict_mer <- function(model, newdata = NULL, use_re_var = FALSE,
       drop( X  %*% lme4::fixef(model) )
     }
 
-    bo <- lme4::bootMer(model, FUN = bootfun, nsim = sims, .progress = prog_arg)
+    bo <- lme4::bootMer(model, FUN = bootfun, nsim = sims,
+                        .progress = prog_arg, ...)
     fit <- bo$t
 
     if (lme4::isGLMM(model)) {

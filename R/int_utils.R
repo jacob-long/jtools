@@ -615,7 +615,7 @@ data_checks <- function(model, data, predvals = NULL,
 
       warn_wrap("Variable transformations in the model formula
       detected. Trying to use ", as.character(getCall(model)$data), " from
-      global environment instead. This could cause incorrect results if ",
+      global environment. This could cause incorrect results if ",
       as.character(getCall(model)$data), " has been altered since the model was
       fit. You can manually provide the data to the \"data =\" argument.",
       call. = FALSE)
@@ -726,15 +726,13 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
   # Get the formula from lm object if given
   formula <- as.formula(formula(model))
-  formula <- paste(formula[2], formula[1], formula[3])
 
   # Pulling the name of the response variable for labeling
-  resp <- sub("(.*)(?=~).*", x = formula, perl = TRUE, replacement = "\\1")
-  resp <- trimws(resp)
+  resp <- all.vars(formula)[1]
 
   # Drop unneeded columns from data frame
   if (off == TRUE) {offs <- d[[offname]]}
-  d <- get_all_vars(formula, d)
+  d <- d[all.vars(formula)]
   # For setting dimensions correctly later
   nc <- sum(names(d) %nin% c(wname, offname))
   if (off == TRUE) {d[[offname]] <- offs}
@@ -1122,7 +1120,7 @@ make_pred_frame_cat <- function(d, pred,
 
   # Adding mean values to newdata in lieu of actually re-fitting model
   if (!is.null(vals)) {
-    vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
+    vals <- vals[names(vals) %nin% c(offname, modx, mod2, pred, resp)]
     for (var in names(vals)) {
       pm[[var]] <- rep(vals[var], times = nrow(pm))
     }

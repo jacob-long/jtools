@@ -372,6 +372,32 @@ make_predictions.svyglm <-
 
 #### merMod method ##########################################################
 
+#' @title Generate predicted data for merMod models
+#' @inheritParams make_predictions
+#' @param add.re.variance Experimental. Adds variance specific to the 
+#'   *random* effects in the model. Often overwhelms the fixed effects
+#'   variances and makes the plot uninterpretable.
+#' @param boot Use [lme4::bootMer()] to generate confidence intervals instead
+#'   of estimating fixed effects variance with variance-covariance matrices?
+#'   Default is FALSE but this is probably more defensible for publication-level
+#'   output. See Details for a little bit more information.
+#' @param sims How many bootstrap simulations should be used? Default is 100,
+#'   but should usually be much higher. Just be aware that runtime may be
+#'   considerable.
+#' @param progress Should a progress bar be shown during bootstrapping and if
+#'   so, how should it look?
+#'   Default is "txt", which is probably what you want to use, but "none" will
+#'   suppress the progress bar.
+#' @param ... Extra arguments passed to [lme4::bootMer()] if `boot` is TRUE.
+#'
+#' @details
+#' The ability to bootstrap the variances is not available through 
+#' `interact_plot`, `effect_plot`, and `cat_plot` to keep those functions
+#' as simple as possible. Internally, [lme4::bootMer()] is called with 
+#' with default arguments (`type = "parametric"`, `use.u = FALSE`). To 
+#' get parallel processing, add the arguments `parallel = "multicore"` or
+#' `parallel = "snow"` and `ncpus =` the number of cores.
+#' 
 #' @export
 
 make_predictions.merMod <-
@@ -438,29 +464,23 @@ make_predictions.merMod <-
 
   for (i in seq_along(pms)) {
 
-
-    if (interval == FALSE) {
+    if (interval == FALSE || boot == TRUE) {
       predicted <- as.data.frame(predict(model, newdata = pms[[i]],
                                   type = outcome.scale, allow.new.levels = F,
                                   re.form = ~0))
 
       pms[[i]][[resp]] <- predicted[[1]] # this is the actual values
 
-    } else if (interval == TRUE) {
+    } else if (interval == TRUE && boot == FALSE) {
       # only create SE columns if intervals are needed
-
-      message("Confidence intervals for merMod models is an experimental ",
-              "feature.\nThe intervals reflect only the ",
-              bold("variance of the fixed effects"), ", not\n",
-              "the random effects.")
       predicted <- predict_mer(model, newdata = pms[[i]],
                                use_re_var = add.re.variance, se.fit = TRUE,
-                               allow.new.levels = FALSE, type = outcome.scale,
+                               allow.new.levels = TRUE, type = outcome.scale,
                                re.form = ~0,
                                boot = FALSE, sims = sims, ...)
 
       ## Convert the confidence percentile to a number of S.E. to multiply by
-      intw <- 1 - ((1 - int.width)/2)
+      intw <- 1 - ((1 - int.width) / 2)
       ## Try to get the residual degrees of freedom to get the critical value
       r.df <- df.residual(model)
       ses <- qt(intw, r.df)
@@ -471,8 +491,12 @@ make_predictions.merMod <-
 
     }
 
-    # pms[[i]] <- pms[[i]][complete.cases(pms[[i]]),]
+  }
 
+  if (interval == TRUE && boot == FALSE) {
+    msg_wrap("Confidence intervals for merMod models is an experimental
+              feature. The intervals reflect only the variance of the
+              fixed effects, not the random effects.")
   }
 
   # Binding those separate frames
@@ -492,9 +516,9 @@ make_predictions.merMod <-
     }
     predicted <- predict_mer(model, newdata = pm,
                              use_re_var = add.re.variance, se.fit = TRUE,
-                             allow.new.levels = FALSE, type = outcome.scale,
+                             allow.new.levels = TRUE, type = outcome.scale,
                              re.form = ~0,
-                             boot = TRUE, sims = sims, prog_bar = progress,
+                             boot = TRUE, sims = sims, prog_arg = progress,
                              ...)
 
     raw_boot <- predicted
@@ -561,6 +585,12 @@ make_predictions.merMod <-
 
 #### stanreg method ##########################################################
 
+#' @title Make predictions for stanreg models
+#' @details This method adds support for `plot_predictions`, `interact_plot`,
+#'  `cat_plot`, and `effect_plot` for models fit with `rstanarm`.
+#' @inheritParams make_predictions
+#' @param estimate Should estimates be based on mean or median simulation? 
+#'  Default is "mean".
 #' @export
 
 make_predictions.stanreg <-
@@ -692,8 +722,14 @@ make_predictions.stanreg <-
 
 }
 
-#### stanreg method ##########################################################
+#### brmsfit method ##########################################################
 
+#' @title Make predictions for brmsfit models
+#' @details This method adds support for `plot_predictions`, `interact_plot`,
+#'  `cat_plot`, and `effect_plot` for models fit with `brms`.
+#' @inheritParams make_predictions
+#' @param estimate Should estimates be based on mean or median simulation? 
+#'  Default is "mean".
 #' @export
 
 make_predictions.brmsfit <-
