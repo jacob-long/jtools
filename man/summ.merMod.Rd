@@ -8,11 +8,14 @@
 \method{summ}{merMod}(model, scale = FALSE,
   confint = getOption("summ-confint", FALSE),
   ci.width = getOption("summ-ci.width", 0.95),
+  conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
   digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
   pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
-  transform.response = FALSE, data = NULL, odds.ratio = FALSE,
-  t.df = NULL, model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), ...)
+  transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE),
+  re.variance = getOption("summ-re.variance", c("sd", "var")),
+  which.cols = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
@@ -26,6 +29,11 @@ is \code{FALSE}.}
 \item{ci.width}{A number between 0 and 1 that signifies the width of the
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
+
+\item{conf.method}{Argument passed to \code{\link[lme4:confint.merMod]{lme4::confint.merMod()}}. Default
+is \code{"Wald"}, but \code{"profile"} or \code{"boot"} are better when accuracy is a
+priority. Be aware that both of the alternate methods are sometimes very
+time-consuming.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
@@ -56,7 +64,7 @@ instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
 of the model. This is particularly useful if you have variable
 transformations or polynomial terms specified in the formula.}
 
-\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+\item{exp}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
@@ -68,6 +76,10 @@ freedom used in conducting t-tests. See details for options.}
 name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
+
+\item{re.variance}{Should random effects variances be expressed in
+standard deviations or variances? Default, to be consistent with previous
+versions of \code{jtools}, is \code{"sd"}. Use \code{"var"} to get the variance instead.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}

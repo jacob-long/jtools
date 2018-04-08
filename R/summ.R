@@ -385,8 +385,8 @@ summ.lm <- function(
   # Store cis in list
   cis <- list(lci, uci)
   names(cis) <- labs
-  
-  params[names(cis)] <- cis 
+
+  params[names(cis)] <- cis
 
   if (part.corr == TRUE) {
 
@@ -396,11 +396,11 @@ summ.lm <- function(
     part_corr <- pcs$semipart_corrs
     params[c("partial.r", "part.r")] <- list(partial_corr, part_corr)
 
-  } 
+  }
 
   part.corr.arg <- if (part.corr) {c("partial.r", "part.r")} else {NULL}
   which.cols <- which_columns(which.cols = which.cols, confint = confint,
-                              ci.labs = make_ci_labs(ci.width), vifs = vifs, 
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs,
                               pvals = pvals, t.col = "t val.",
                               others = part.corr.arg)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
@@ -759,7 +759,7 @@ summ.glm <- function(
 
   # Put things together
   which.cols <- which_columns(which.cols = which.cols, confint = confint,
-                              ci.labs = make_ci_labs(ci.width), vifs = vifs, 
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs,
                               pvals = pvals, t.col = tcol,
                               exp = exp)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
@@ -1127,7 +1127,7 @@ summ.svyglm <- function(
 
   # Put things together
   which.cols <- which_columns(which.cols = which.cols, confint = confint,
-                              ci.labs = make_ci_labs(ci.width), vifs = vifs, 
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs,
                               pvals = pvals, t.col = tcol,
                               exp = exp)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
@@ -1259,6 +1259,10 @@ print.summ.svyglm <- function(x, ...) {
 #' @param re.variance Should random effects variances be expressed in
 #'  standard deviations or variances? Default, to be consistent with previous
 #'  versions of `jtools`, is `"sd"`. Use `"var"` to get the variance instead.
+#' @param conf.method Argument passed to [lme4::confint.merMod()]. Default
+#'  is `"Wald"`, but `"profile"` or `"boot"` are better when accuracy is a
+#'  priority. Be aware that both of the alternate methods are sometimes very
+#'  time-consuming.
 #' @inheritParams summ.lm
 #'
 #' @details By default, this function will print the following items to the
@@ -1407,12 +1411,13 @@ print.summ.svyglm <- function(x, ...) {
 summ.merMod <- function(
   model, scale = FALSE, confint = getOption("summ-confint", FALSE),
   ci.width = getOption("summ-ci.width", .95),
+  conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
   digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
   pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
-  re.variance = getOption("summ-re.variance", c("sd", "var")), 
+  re.variance = getOption("summ-re.variance", c("sd", "var")),
   which.cols = NULL, ...) {
 
   j <- list()
@@ -1627,7 +1632,7 @@ summ.merMod <- function(
   if (exp == TRUE) {
   # TODO: revisit after lme4 bug fixed
     the_cis <-
-      suppressWarnings(confint(model, parm = "beta_", method = "profile",
+      suppressWarnings(confint(model, parm = "beta_", method = conf.method[1],
                        level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
     ecoefs <- exp(coefs)
@@ -1641,7 +1646,7 @@ summ.merMod <- function(
   } else if (exp == FALSE & confint == TRUE) {
 
     the_cis <-
-      suppressWarnings(confint(model, parm = "beta_", method = "profile",
+      suppressWarnings(confint(model, parm = "beta_", method = conf.method[1],
                        level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
     lci <- the_cis[,1]
@@ -1654,7 +1659,7 @@ summ.merMod <- function(
 
   # Put things together
   which.cols <- which_columns(which.cols = which.cols, confint = confint,
-                              ci.labs = make_ci_labs(ci.width), vifs = FALSE, 
+                              ci.labs = make_ci_labs(ci.width), vifs = FALSE,
                               pvals = pvals, t.col = tcol,
                               exp = exp)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
@@ -1807,7 +1812,8 @@ print.summ.merMod <- function(x, ...) {
 
 set_summ_defaults <- function(digits = NULL, model.info = NULL,
                               model.fit = NULL, pvals = NULL, robust = NULL,
-                              confint = NULL, ci.width = NULL, vifs = NULL) {
+                              confint = NULL, ci.width = NULL, vifs = NULL,
+                              conf.method = NULL) {
 
   if ("confint" %in% names(match.call())) {
     options("summ-confint" = confint)
@@ -1832,6 +1838,9 @@ set_summ_defaults <- function(digits = NULL, model.info = NULL,
   }
   if ("pvals" %in% names(match.call())) {
     options("summ-pvals" = pvals)
+  }
+  if ("conf.method" %in% names(match.call())) {
+    options("summ-conf.method" = pvals)
   }
 
 }
