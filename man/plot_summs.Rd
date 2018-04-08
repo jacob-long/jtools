@@ -6,10 +6,13 @@
 \title{Plot Regression Summaries}
 \usage{
 plot_summs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = "(Intercept)", color.class = "Set2")
+  omit.coefs = "(Intercept)", inner_ci_level = NULL, color.class = "Set2",
+  plot.distributions = FALSE, exp = FALSE)
 
-plot_coefs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = "(Intercept)", color.class = "Set2")
+plot_coefs(..., ci_level = 0.95, inner_ci_level = NULL,
+  model.names = NULL, coefs = NULL, omit.coefs = c("(Intercept)",
+  "Intercept"), color.class = "Set2", plot.distributions = FALSE,
+  exp = FALSE)
 }
 \arguments{
 \item{...}{regression model(s).}
@@ -30,9 +33,22 @@ in the plot, provide them as a vector. This argument is overridden by
 \code{coefs} if both are provided. By default, the intercept term is omitted.
 To include the intercept term, just set omit.coefs to NULL.}
 
+\item{inner_ci_level}{Plot a thicker line representing some narrower span
+than \code{ci_level}. Default is NULL, but good options are .9, .8, or .5.}
+
 \item{color.class}{A color class understood by
 \code{\link[ggplot2:scale_colour_brewer]{ggplot2::scale_colour_brewer()}} for differentiating multiple models.
 Not used if only one model is plotted. Default: 'Set2'}
+
+\item{plot.distributions}{Instead of just plotting the ranges, you may
+plot normal distributions representing the width of each estimate. Note
+that these are completely theoretical and not based on a bootstrapping
+or MCMC procedure, even if the source model was fit that way. Default is
+FALSE.}
+
+\item{exp}{If TRUE, all coefficients are exponentiated (e.g., transforms
+logit coefficents from log odds scale to odds). The reference line is
+also moved to 1 instead of 0.}
 }
 \value{
 A ggplot object.

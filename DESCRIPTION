@@ -21,7 +21,7 @@ Suggests:
   boot,
   broom,
   cowplot,
-  grid,
+  ggstance,
   huxtable (>= 3.0.0),
   lme4,
   methods,

@@ -418,6 +418,8 @@ export_summs <- function(...,
 #' @param ... regression model(s).
 #' @param ci_level The desired width of confidence intervals for the
 #'   coefficients. Default: 0.95
+#' @param inner_ci_level Plot a thicker line representing some narrower span
+#'   than `ci_level`. Default is NULL, but good options are .9, .8, or .5.
 #' @param model.names If plotting multiple models simultaneously, you can
 #'   provide a vector of names here. If NULL, they will be named sequentially
 #'   as "Model 1", "Model 2", and so on. Default: NULL
@@ -431,6 +433,14 @@ export_summs <- function(...,
 #' @param color.class A color class understood by
 #'   [ggplot2::scale_colour_brewer()] for differentiating multiple models.
 #'   Not used if only one model is plotted. Default: 'Set2'
+#' @param plot.distributions Instead of just plotting the ranges, you may
+#'   plot normal distributions representing the width of each estimate. Note 
+#'   that these are completely theoretical and not based on a bootstrapping
+#'   or MCMC procedure, even if the source model was fit that way. Default is
+#'   FALSE.
+#' @param exp If TRUE, all coefficients are exponentiated (e.g., transforms 
+#'   logit coefficents from log odds scale to odds). The reference line is
+#'   also moved to 1 instead of 0.
 #' @return A ggplot object.
 #' @details A note on the distinction between `plot_summs` and `plot_coefs`:
 #'   `plot_summs` only accepts models supported by [summ()] and allows users
@@ -474,22 +484,19 @@ export_summs <- function(...,
 
 plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
-                       color.class = "Set2") {
+                       color.class = "Set2", plot.distributions = FALSE,
+                       exp = FALSE) {
 
   # Capture arguments
   dots <- list(...)
 
   # assume unnamed arguments are models and everything else is args
   if (!is.null(names(dots))) {
-
     mods <- dots[names(dots) == ""]
     ex_args <- dots[names(dots) != ""]
-
   } else {
-
     mods <- dots
     ex_args <- NULL
-
   }
 
   # Add mandatory arguments
@@ -502,10 +509,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
             model.names = list(model.names), coefs = list(coefs),
             omit.coefs = list(omit.coefs),
             inner_ci_level = inner_ci_level, color.class = color.class,
-            ex_args))
+            plot.distributions = plot.distributions, exp = exp, ex_args))
 
   do.call("plot_coefs", args = args)
-
 
 }
 
@@ -517,12 +523,14 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        model.names = NULL, coefs = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
-                       color.class = "Set2") {
+                       color.class = "Set2", plot.distributions = FALSE,
+                       exp = FALSE) {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
-
-    stop("Install the broom package to use the plot_coefs function.")
-
+    stop_wrap("Install the broom package to use the plot_coefs function.")
+  }
+  if (!requireNamespace("ggstance", quietly = TRUE)) {
+    stop_wrap("Install the ggstance package to use the plot_coefs function.")
   }
 
   # Nasty workaround for R CMD Check warnings for global variable bindings
@@ -532,15 +540,11 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   dots <- list(...)
 
   if (!is.null(names(dots))) {
-
     mods <- dots[names(dots) == ""]
     ex_args <- dots[names(dots) != ""]
-
   } else {
-
     mods <- dots
     ex_args <- NULL
-
   }
 
   if (!is.null(omit.coefs) & !is.null(coefs)) {
@@ -553,59 +557,127 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 
   # If user gave model names, apply them now
   if (!is.null(model.names)) {
-
     names(mods) <- model.names
-
   }
 
+  # Create tidy data frame combining each model's tidy output
   tidies <- make_tidies(mods = mods, ex_args = ex_args, ci_level = ci_level,
                         model.names = model.names, omit.coefs = omit.coefs,
                         coefs = coefs)
 
+  n_models <- length(unique(tidies$model))
+
+  # Create more data for the inner interval
   if (!is.null(inner_ci_level)) {
+    if (plot.distributions == FALSE | n_models == 1) {
+      tidies_inner <- make_tidies(mods = mods, ex_args = ex_args,
+                                  ci_level = inner_ci_level,
+                                  model.names = model.names,
+                                  omit.coefs = omit.coefs, coefs = coefs)
 
-    tidies_inner <- make_tidies(mods = mods, ex_args = ex_args,
-                                ci_level = inner_ci_level,
-                                model.names = model.names,
-                                omit.coefs = omit.coefs, coefs = coefs)
+      tidies_inner$conf.low.inner <- tidies_inner$conf.low
+      tidies_inner$conf.high.inner <- tidies_inner$conf.high
+      tidies_inner <-
+        tidies_inner[names(tidies_inner) %nin% c("conf.low", "conf.high")]
 
-    tidies_inner$conf.low.inner <- tidies_inner$conf.low
-    tidies_inner$conf.high.inner <- tidies_inner$conf.high
-    tidies_inner <-
-      tidies_inner[names(tidies_inner) %nin% c("conf.low", "conf.high")]
+      tidies <- merge(tidies, tidies_inner, by = c("term", "model"),
+                      suffixes = c("", ".y"))
+    } else {
+      msg_wrap("inner_ci_level is ignored when plot.distributions == TRUE and
+                more than one model is used.")
+      inner_ci_level <- NULL
+    }
+  }
 
-    tidies <- merge(tidies, tidies_inner, by = c("term","model"),
-                    suffixes = c("", ".y"))
-
+  if (exp == TRUE) {
+    if (plot.distributions == TRUE) {
+      warn_wrap("Distributions cannot be plotted when exp == TRUE.")
+      plot.distributions <- FALSE
+    }
+    exp_cols <- c("estimate", "conf.low", "conf.high")
+    if (!is.null(inner_ci_level)) {
+      exp_cols <- c(exp_cols, "conf.low.inner", "conf.high.inner")
+    }
+    tidies[exp_cols] <- exp(tidies[exp_cols])
   }
 
   p <- ggplot(data = tidies)
 
+  # "dodge height" determined by presence of distribution plots
+  dh <- as.numeric(!plot.distributions) * 0.5
+  # Plot distribution layer first so it is beneath the pointrange
+  if (plot.distributions == TRUE) {
+    # Helper function to generate data for geom_polygon
+    dist_curves <- get_dist_curves(tidies, order = rev(levels(tidies$term)),
+                                   models = levels(tidies$model))
+    # Draw the distributions
+    p <- p + geom_polygon(data = dist_curves,
+                          aes(x = est, y = curve, 
+                              group = interaction(term, model), fill = model),
+                          alpha = 0.7, show.legend = FALSE) +
+    scale_fill_brewer(palette = color.class, limits = rev(levels(tidies$model)))
+  }
+
   # Plot the inner CI using linerange first, so the point can overlap it
   if (!is.null(inner_ci_level)) {
-    p <- p + geom_linerange_h(
+    p <- p + ggstance::geom_linerangeh(
       aes(y = term, xmin = conf.low.inner, xmax = conf.high.inner,
-          colour = model), position = position_dodgev(height = 0.5),
+          colour = model), position = ggstance::position_dodgev(height = dh),
       size = 2, show.legend = length(mods) > 1)
   }
 
-  p <- p + geom_pointrange_h( # jtools function
-    aes(y = term, x = estimate, xmin = conf.low,
-               xmax = conf.high, colour = model),
-    position = position_dodgev(height = 0.5), # jtools function
-    shape = 21, fill = "white", fatten = 3, size = 0.8,
-    show.legend = length(mods) > 1) # omit legend if just a single model
+  # If there are overlapping distributions, the overlapping pointranges
+  # are confusing and look bad. If plotting distributions with more than one
+  # model, just plot the points with no ranges.
+  if (plot.distributions == FALSE | n_models == 1) {
+    # Plot the pointranges
+    p <- p + ggstance::geom_pointrangeh( 
+      aes(y = term, x = estimate, xmin = conf.low,
+                xmax = conf.high, colour = model, shape = model),
+      position = ggstance::position_dodgev(height = dh), 
+      fill = "white", fatten = 3, size = 0.8,
+      show.legend = length(mods) > 1) # omit legend if just a single model
+  } else {
+    p <- p + geom_point( 
+      aes(y = term, x = estimate, colour = model, shape = model),
+      fill = "white", size = 3, stroke = 1, show.legend = TRUE) 
+  }
+
+  # To set the shape aesthetic, I prefer the points that can be filled. But
+  # there are only 6 such shapes, so I need to check how many models there are.
+  if (n_models < 7) {
+    shapes <- 21:(21 + n_models)
+  } else {
+    shapes <- 1:n_models
+  }
 
   p <- p +
-    geom_vline(xintercept = 0, linetype = 2, size = .25) +
+    geom_vline(xintercept = 1 - !exp, linetype = 2, size = .25) +
     scale_colour_brewer(palette = color.class,
      limits = rev(levels(tidies$model))) +
     scale_y_discrete(limits = rev(levels(tidies$term))) +
+    scale_shape_manual(limits = rev(levels(tidies$model)), 
+      values = shapes) + 
     theme_apa(legend.pos = "right", legend.font.size = 9,
               remove.x.gridlines = FALSE) +
     theme(axis.title.y = element_blank(),
           axis.text.y = element_text(size = 10)) +
-    xlab("Estimate")
+    xlab(ifelse(exp, no = "Estimate", yes = "exp(Estimate)"))
+
+  # Plotting distributions often causes distributions to poke out above top
+  # of plotting area so I need to set manually
+  if (plot.distributions == TRUE) {
+    yrange <- ggplot_build(p)$layout$panel_ranges[[1]]$y.range
+    xrange <- ggplot_build(p)$layout$panel_ranges[[1]]$x.range
+
+    if (yrange[2] <= (length(unique(tidies$term)) + 0.8)) {
+      upper_y <- length(unique(tidies$term)) + 0.8
+    } else {upper_y <- yrange[2]}
+    lower_y <- 0.8
+
+    p <- p + coord_cartesian(ylim = c(lower_y, upper_y), xlim = xrange,
+     expand = FALSE)
+  }
 
   return(p)
 
@@ -692,7 +764,53 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     tidies$conf.low <- tidies$lower
   }
 
+  # For merMod and other models, we may not get CIs for the random terms
+  # and don't want blank rows on the plot.
+  which_complete <- which(!is.na(tidies$conf.high) & !is.na(tidies$conf.low) &
+                         !is.na(tidies$estimate))
+  tidies <- tidies[which_complete,]
+  tidies$term <- droplevels(tidies$term)
+
   return(tidies)
+
+}
+
+get_dist_curves <- function(tidies, order, models) {
+
+  term_names <- tidies$term
+  means <- tidies$estimate
+  sds <- tidies$`std.error`
+
+  cfs <- as.list(rep(NA, length(means)))
+  for (i in seq_along(means)) {
+    y_pos <- which(order == term_names[i])
+    # If I watchd to vertically dodge the distributions, I'd use this...but 
+    # for now I am omitting it. Took long enough to figure out that I don't 
+    # want to delete it.
+    # if (length(models) > 1) {
+    #   groupid <- which(models == tidies$model[i])
+    #   y_pos <- y_pos + 0.25 * ((groupid - 0.5) / length(models) - .5)
+    # }
+    ests <- seq(tidies$conf.low[i], tidies$conf.high[i], length = 198)
+    ests <- c(ests[1], ests, ests[198])
+    cfs[[i]] <- data.frame(
+        term = rep(tidies$term[i], 200),
+        model = rep(tidies$model[i], 200),
+        est = ests,
+        curve = c(0, dnorm(ests[2:199], mean = means[i], sd = sds[i]), 0) +
+         y_pos
+    )
+    this_curve <- cfs[[i]]$curve
+    height <- max(this_curve - y_pos)
+    multiplier <- .6 / height
+    this_curve <- (this_curve - y_pos) * multiplier + y_pos
+    # offset <- min(this_curve - y_pos)
+    # this_curve <- this_curve - offset
+    cfs[[i]]$curve <- this_curve
+  }
+
+  out <- do.call("rbind", cfs)
+  return(out)
 
 }
 
@@ -733,18 +851,15 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
-  if (attr(x, "odds.ratio") == TRUE) {
+  if (attr(x, "exp") == TRUE) {
 
-    base$estimate <- x$coeftable[,"Odds Ratio"]
+    base$estimate <- x$coeftable[,"exp(Est.)"]
 
   }
 
   if (attributes(x)$confint == TRUE | conf.int == TRUE) {
 
-    # Need to use this to get the right coeftable colnames
-    alpha <- (1 - conf.level) / 2
-
-    labs <- make_ci_labs(alpha)
+    labs <- make_ci_labs(conf.level)
     lci_lab <- labs$lci
     uci_lab <- labs$uci
 
