@@ -37,6 +37,10 @@ make_predictions <- function(model, ...) {
 #'  how many points are used for that. Default is 100, but for complicated
 #'  models larger numbers may better capture the curvature.
 #'
+#' @param force.cat If `TRUE`, treats numeric predictor as categorical. This 
+#'  can be helpful when you have 0/1 dummy variables that you don't want to 
+#'  plot as if intermediate values are possible.
+#'
 #' @param ... Ignored.
 #'
 #'
@@ -55,8 +59,8 @@ make_predictions.default <-
            int.width = .95, outcome.scale = "response", linearity.check = FALSE,
            robust = FALSE, cluster = NULL, vcov = NULL, set.offset = 1,
            pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
-           int.type = c("confidence","prediction"), preds.per.level = 100,
-           ...) {
+           int.type = c("confidence", "prediction"), preds.per.level = 100,
+           force.cat = FALSE, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -88,7 +92,8 @@ make_predictions.default <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels)
+                       predvals = predvals, pred.labels = pred.labels,
+                       force.cat = force.cat)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -220,7 +225,8 @@ make_predictions.svyglm <-
     plot.points = FALSE, interval = FALSE, int.width = .95,
     outcome.scale = "response", linearity.check = FALSE, set.offset = 1,
     pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
-    int.type = c("confidence","prediction"), preds.per.level = 100, ...) {
+    int.type = c("confidence","prediction"), preds.per.level = 100,
+    force.cat = FALSE, ...) {
 
   design <- model$survey.design
   # assign("design", design, pos = parent.frame())
@@ -266,7 +272,8 @@ make_predictions.svyglm <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels)
+                       predvals = predvals, pred.labels = pred.labels,
+                       force.cat = force.cat)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -374,9 +381,9 @@ make_predictions.merMod <-
            int.width = .95, outcome.scale = "response", add.re.variance = FALSE,
            linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-           mod2.labels = NULL, int.type = c("confidence","prediction"),
+           mod2.labels = NULL, int.type = c("confidence", "prediction"),
            preds.per.level = 100, boot = FALSE, sims = 100, progress = "txt",
-           ...) {
+           force.cat = FALSE, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -399,7 +406,8 @@ make_predictions.merMod <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels)
+                       predvals = predvals, pred.labels = pred.labels,
+                       force.cat = force.cat)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -561,7 +569,7 @@ make_predictions.stanreg <-
            plot.points = FALSE, interval = TRUE,
            int.width = .95, estimate = "mean", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-           mod2.labels = NULL, preds.per.level = 100, ...) {
+           mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE, ...) {
 
     # Avoid CRAN barking
     d <- facvars <- wts <- wname <- NULL
@@ -584,7 +592,8 @@ make_predictions.stanreg <-
                          interval = interval, set.offset = set.offset,
                          facvars = facvars, centered = centered,
                          preds.per.level = preds.per.level,
-                         predvals = predvals, pred.labels = pred.labels)
+                         predvals = predvals, pred.labels = pred.labels,
+                         force.cat = force.cat)
 
     pm <- prepped$pm
     d <- prepped$d
@@ -693,7 +702,7 @@ make_predictions.brmsfit <-
            plot.points = FALSE, interval = TRUE,
            int.width = .95, estimate = "mean", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-           mod2.labels = NULL, preds.per.level = 100, ...) {
+           mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -716,7 +725,8 @@ make_predictions.brmsfit <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels)
+                       predvals = predvals, pred.labels = pred.labels,
+                       force.cat = force.cat)
 
   pm <- prepped$pm
   d <- prepped$d

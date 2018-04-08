@@ -672,7 +672,7 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
                       mod2vals, survey, pred.labels = NULL, modx.labels,
                       mod2.labels, wname, weights, wts, linearity.check,
                       interval, set.offset, facvars, centered,
-                      preds.per.level) {
+                      preds.per.level, force.cat = FALSE) {
   # offset?
   if (!is.null(model.offset(model.frame(model)))) {
 
@@ -689,7 +689,11 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
   if (is.factor(d[[pred]]) | is.character(d[[pred]])) {
     facpred <- TRUE
     if (is.character(d[[pred]])) {d[[pred]] <- factor(d[[pred]])}
-  } else {facpred <- FALSE}
+  } else if (force.cat == FALSE) {
+    facpred <- FALSE
+  } else {
+    facpred <- TRUE
+  }
 
   # Setting default for colors
   if (!is.null(modx) && (is.factor(d[[modx]]) | is.character(d[[modx]]))) {
@@ -701,8 +705,10 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
     #           " argument...")
     #   modxvals <- NULL
     # }
-  } else {
+  } else if (force.cat == FALSE | is.null(modx)) {
     facmod <- FALSE
+  } else if (!is.null(modx)) {
+    facmod <- TRUE
   }
 
   # Fix character mod2 as well
@@ -711,8 +717,10 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
   } else if (!is.null(mod2) && is.character(d[[mod2]])) {
     d[[mod2]] <- factor(d[[mod2]])
     facmod2 <- TRUE
-  } else {
+  } else if (force.cat == FALSE | is.null(mod2)) {
     facmod2 <- FALSE
+  } else if (!is.null(mod2)) {
+    facmod2 <- TRUE
   }
 
 
@@ -798,21 +806,21 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 ### Drop unwanted factor levels ###############################################
 
 
-  if (facpred == TRUE) {
+  if (facpred == TRUE && !is.numeric(d[[pred]])) {
 
     d <- drop_factor_levels(d = d, var = pred, values = predvals,
                             labels = pred.labels)
 
   }
 
-  if (facmod == TRUE) {
+  if (facmod == TRUE && !is.numeric(d[[modx]])) {
 
     d <- drop_factor_levels(d = d, var = modx, values = modxvals2,
                             labels = modx.labels)
 
   }
 
-  if (facmod2 == TRUE) {
+  if (facmod2 == TRUE && !is.numeric(d[[mod2]])) {
 
     d <- drop_factor_levels(d = d, var = mod2, values = mod2vals2,
                             labels = mod2.labels)
@@ -1042,24 +1050,24 @@ make_pred_frame_cat <- function(d, pred,
                                 interval, nc, facvars, off, offname, set.offset,
                                 vals, resp, wname, preds.per.level) {
   # Creating a set of dummy values of the focal predictor for use in predict()
-  pred_len <- nlevels(d[[pred]])
+  pred_len <- length(unique((d[[pred]])))
 
   if (!is.null(modx)) {
-    combos <- expand.grid(levels(factor(d[[pred]])), levels(factor(d[[modx]])))
+    combos <- expand.grid(unique(d[[pred]]), unique(d[[modx]]))
     combo_pairs <- paste(combos[[1]], combos[[2]])
     og_pairs <- paste(d[[pred]], d[[modx]])
     combos <- combos[combo_pairs %in% og_pairs,]
     xpred_len <- nrow(combos)
   } else {
     xpred_len <- pred_len
-    combos <- as.data.frame(levels(d[[pred]]))
+    combos <- as.data.frame(unique(d[[pred]]))
   }
 
   # Takes some rejiggering to get this right with second moderator
   if (!is.null(mod2)) {
-    combos <- expand.grid(levels(d[[pred]]), levels(d[[modx]]),
-                          levels(d[[mod2]]))
-    combo_pairs <- paste(combos[[1]],combos[[2]],combos[[3]])
+    combos <- expand.grid(unique(d[[pred]]), unique(d[[modx]]),
+                          unique(d[[mod2]]))
+    combo_pairs <- paste(combos[[1]], combos[[2]], combos[[3]])
     og_pairs <- paste(d[[pred]], d[[modx]], d[[mod2]])
     combos <- combos[combo_pairs %in% og_pairs,]
     xpred_len <- nrow(combos)
