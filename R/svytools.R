@@ -254,9 +254,10 @@ print.wgttest <- function(x, ...) {
 
   }
 
-  cat("\nLower p values indicate greater influence of the weights.")
+  cat("\nLower p values indicate greater influence of the weights.\n")
 
   if (x$model_output == TRUE) {
+    cat("\n")
     print(j_summ(x$newmod, model.info = F, model.fit = F))
     cat("\n")
   } else {
