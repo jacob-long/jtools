@@ -2,6 +2,9 @@ library(jtools)
 
 context("export_summs")
 
+device <- getOption("device")
+options(device = "pdf")
+
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
@@ -198,7 +201,7 @@ test_that("plot_summs accepts summ args with glm", {
 
 test_that("plot_summs accepts odds ratios with glm", {
   expect_is(p <- plot_summs(pmod, pmod_a, scale = T, robust = T,
-                            odds.ratio = TRUE, model.names = "Mod1"),
+                            exp = TRUE, model.names = "Mod1"),
    "ggplot")
   expect_silent(print(p))
 })
@@ -229,36 +232,54 @@ if (requireNamespace("lme4")) {
 }
 
 test_that("plot_summs can take manual coefficient names", {
-  expect_is(p <- plot_summs(fit,fit2,fitw,
+  expect_is(p <- plot_summs(fit, fit2, fitw,
                          coefs = c("HS Grad %" = "HSGrad",
                           "Murder Rate" = "Murder")), "ggplot")
   expect_silent(print(p))
 })
 
 test_that("plot_summs can omit coefficients", {
-  expect_is(p <- plot_summs(fit,fit2,fitw,
-                         coefs = c("HSGrad","Murder")), "ggplot")
+  expect_is(p <- plot_summs(fit, fit2, fitw,
+                         coefs = c("HSGrad", "Murder")), "ggplot")
   expect_silent(print(p))
 })
 
 context("plot_coefs")
 
 test_that("plot_coefs works", {
-  expect_is(p <- plot_coefs(fit, pmod, model.names = c("Mod1")), "ggplot")
+  expect_is(p <- plot_coefs(fit, pmod, model.names = c("Mod1", "Mod2")),
+    "ggplot")
   expect_silent(print(p))
 })
 
 test_that("plot_coefs can take manual coefficient names", {
-  expect_is(p <- plot_coefs(fit,fit2,fitw,
+  expect_is(p <- plot_coefs(fit, fit2, fitw,
                          coefs = c("HS Grad %" = "HSGrad",
                           "Murder Rate" = "Murder")), "ggplot")
   expect_silent(print(p))
 })
 
 test_that("plot_coefs can omit coefficients", {
-  expect_is(p <- plot_coefs(fit,fit2,fitw,
-                         coefs = c("HSGrad","Murder")), "ggplot")
+  expect_is(p <- plot_coefs(fit, fit2, fitw,
+                         coefs = c("HSGrad", "Murder")), "ggplot")
   expect_silent(print(p))
 })
 
+test_that("inner_ci_level works", {
+  expect_silent(print(plot_coefs(fit, fitw, inner_ci_level = 0.9)))
+})
+
+test_that("plot.distributions works", {
+  expect_silent(print(plot_coefs(fit, plot.distributions = TRUE)))
+  expect_silent(print(plot_coefs(fit, fitw, plot.distributions = TRUE)))
+  expect_silent(print(plot_coefs(pmod, plot.distributions = TRUE)))
+  expect_warning(print(plot_coefs(pmod, plot.distributions = TRUE, exp = TRUE)))
+  expect_message(print(plot_coefs(fit, fitw, plot.distributions = TRUE,
+                                  inner_ci_level = .9)))
+  expect_silent(print(plot_coefs(fit, plot.distributions = TRUE,
+                                  inner_ci_level = .9)))
+})
+
 }
+
+options(device = device)

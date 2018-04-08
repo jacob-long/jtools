@@ -1,5 +1,8 @@
 context("interactions lm")
 
+device <- getOption("device")
+options(device = "pdf")
+
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
@@ -243,6 +246,54 @@ test_that("sim_slopes handles offsets", {
   expect_s3_class(sim_slopes(pmod, pred = talent, modx = money), "sim_slopes")
 })
 
+### Code used to create brmsfit and stanreg test objects
+# library(brms)
+# fit1 <- brm(count ~ log_Age_c + log_Base4_c * Trt
+#                    + (1 | patient) + (1 | obs),
+#                  data = epilepsy, family = poisson(),
+#                  prior = c(prior(student_t(5,0,10), class = b),
+#                            prior(cauchy(0,2), class = sd)),
+#                  cores = 2, chains = 2, iter = 2000)
+# saveRDS(fit1, "brmfit.rds")
+#
+# library(rstanarm)
+# cbpp2 <- lme4::cbpp
+# fitrs <- stan_glmer(incidence ~ size * as.numeric(period) + (1 | herd),
+#                   data = cbpp2, family = poisson,
+#                   # this next line is only to keep the example small in size!
+#                   chains = 2, cores = 2, seed = 12345, iter = 2000)
+# saveRDS(fitrs, "rsafit.rds")
+
+if (requireNamespace("brms")) {
+  context("brmsfit plots")
+  bfit <- readRDS("brmfit.rds")
+  test_that("brmsfit objects are supported", {
+    expect_silent(print(effect_plot(bfit, pred = "log_Base4_c",
+                  interval = TRUE)))
+    expect_silent(print(cat_plot(bfit, pred = "Trt",
+                  interval = TRUE)))
+    expect_silent(print(interact_plot(bfit, pred = "log_Base4_c", modx = "Trt",
+                  interval = TRUE)))
+    expect_is(make_predictions(bfit, pred = "log_Base4_c", modx = "Trt",
+                               interval = TRUE, estimate = "median"), 
+                               "predictions")
+  })
+}
+
+if (requireNamespace("rstanarm") & requireNamespace("lme4")) {
+  context("stanreg plots")
+  rsfit <- readRDS("rsafit.rds")
+  cbpp2 <- lme4::cbpp
+  test_that("stanreg objects are supported", {
+    expect_silent(print(effect_plot(rsfit, pred = "size", interval = TRUE)))
+    expect_silent(print(interact_plot(rsfit, pred = "size",
+      modx = "as.numeric(period)", interval = TRUE)))
+    expect_silent(print(interact_plot(rsfit, pred = "size",
+      modx = "as.numeric(period)", interval = TRUE)))
+    expect_is(make_predictions(rsfit, pred = "size", interval = TRUE, 
+      estimate = "median"))
+  })
+}
 
 ### effect_plot ###############################################################
 
@@ -622,3 +673,6 @@ if (requireNamespace("lme4", quietly = TRUE)) {
     expect_silent(print(p))
   })
 }
+
+options(device = device)
+dev.off()

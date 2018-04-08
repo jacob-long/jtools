@@ -135,8 +135,9 @@ if (requireNamespace("survey")) {
   })
 
   test_that("jsumm: svyglm odds ratios", {
-    expect_is(summ(regmodel, odds.ratio = T), "summ.svyglm")
-    expect_output(print(summ(regmodel, odds.ratio = T)))
+    expect_warning(summ(regmodel, odds.ratio = T))
+    expect_is(summ(regmodel, exp = T), "summ.svyglm")
+    expect_output(print(summ(regmodel, exp = T)))
   })
 }
 
