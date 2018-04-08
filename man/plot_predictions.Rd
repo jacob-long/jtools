@@ -6,7 +6,7 @@
 \usage{
 plot_predictions(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   resp = NULL, data = NULL, geom = c("dot", "line", "bar", "boxplot"),
-  plot.points = FALSE, interval = FALSE, predvals = NULL,
+  plot.points = FALSE, interval = TRUE, predvals = NULL,
   modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
   x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
@@ -42,7 +42,7 @@ There are several options
 here since the best way to visualize categorical interactions varies by
 context. Here are the options:
 \itemize{
-\item \code{"dot"}: The default. Simply plot the point estimates. You may want to
+\item \code{"point"}: The default. Simply plot the point estimates. You may want to
 use
 \code{point.shape = TRUE} with this and you should also consider
 \code{interval = TRUE} to visualize uncertainty.
@@ -62,9 +62,9 @@ sets). \strong{However}, it is important to note the boxplots are not based
 on the model whatsoever.
 }}
 
-\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
-scatterplot on top of the interaction lines. The color of the dots will be
-based on their moderator value.}
+\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as
+a scatterplot on top of the interaction lines. The color of the dots will
+be based on their moderator value.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
@@ -146,9 +146,9 @@ other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering. If the argument is vector with two values,
-then the first is assumed to be the jitter for height and the second the
-jitter for the width.}
+you want no jittering. If the argument is a vector with two values,
+then the first is assumed to be the jitter for width and the second the
+for the height.}
 
 \item{weights}{If the data are weighted, provide a vector of weights here.
 This is only used if \code{plot.points = TRUE} and \code{data} is not NULL.}

@@ -5,12 +5,14 @@
 \title{Plot interaction effects between categorical predictors.}
 \usage{
 cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
-  geom = c("dot", "line", "bar", "boxplot"), predvals = NULL,
+  geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
   modxvals = NULL, mod2vals = NULL, interval = TRUE,
   plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
   centered = "all", int.type = c("confidence", "prediction"),
-  int.width = 0.95, outcome.scale = "response", robust = FALSE,
-  cluster = NULL, vcov = NULL, pred.labels = NULL, modx.labels = NULL,
+  int.width = 0.95, geom.alpha = NULL, dodge.width = NULL,
+  errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
+  outcome.scale = "response", robust = FALSE, cluster = NULL,
+  vcov = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
   main.title = NULL, legend.main = NULL, color.class = "Set2")
 }
@@ -38,9 +40,8 @@ attempt to retrieve the original data from the global environment.}
 here since the best way to visualize categorical interactions varies by
 context. Here are the options:
 \itemize{
-\item \code{"dot"}: The default. Simply plot the point estimates. You may want to
-use
-\code{point.shape = TRUE} with this and you should also consider
+\item \code{"point"}: The default. Simply plot the point estimates. You may want to
+use \code{point.shape = TRUE} with this and you should also consider
 \code{interval = TRUE} to visualize uncertainty.
 \item \code{"line"}: This connects observations across levels of the \code{pred}
 variable with a line. This is a good option when the \code{pred} variable
@@ -80,7 +81,7 @@ facetted by? That is, there will be a separate plot for each level of this
 moderator. Defaults are the same as \code{modxvals}.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
-intervals. Not supported for \code{merMod} models.}
+intervals.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines. Note that if
@@ -109,6 +110,23 @@ centered.}
 error? The default, .95, corresponds to roughly 1.96 standard errors and
 a .05 alpha level for values outside the range. In other words, for a
 confidence interval, .95 is analogous to a 95\% confidence interval.}
+
+\item{geom.alpha}{What should the alpha aesthetic be for the plotted
+lines/bars? Default is NULL, which means it is set depending on the value
+of \code{geom} and \code{plot.points}.}
+
+\item{dodge.width}{What should the \code{width} argument to
+\code{\link[ggplot2:position_dodge]{ggplot2::position_dodge()}} be? Default is NULL, which means it is set
+depending on the value of \code{geom}.}
+
+\item{errorbar.width}{How wide should the error bars be? Default is NULL,
+meaning it is set depending on the value \code{geom}. Ignored if \code{interval}
+is FALSE.}
+
+\item{interval.geom}{For categorical by categorical interactions.
+One of "errorbar" or "linerange". If the former,
+\code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}} is used. If the latter,
+\code{\link[ggplot2:geom_linerange]{ggplot2::geom_linerange()}} is used.}
 
 \item{outcome.scale}{For nonlinear models (i.e., GLMs), should the outcome
 variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -172,8 +190,8 @@ appears above the legend. If \code{NULL}, the name of the moderating
 variable is used.}
 
 \item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators. You may also simply supply a vector of colors accepted by
+\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2".
+You may also simply supply a vector of colors accepted by
 \code{ggplot2} and of equal length to the number of moderator levels.}
 }
 \value{
@@ -204,7 +222,8 @@ effects are plotted. \code{lme4} does not provide confidence intervals,
 so they are not supported with this function either.
 
 Note: to use transformed predictors, e.g., \code{log(variable)},
-put its name in quotes or backticks in the argument.
+provide only the variable name to \code{pred}, \code{modx}, or \code{mod2} and supply
+the original data separately to the \code{data} argument.
 
 \emph{Info about offsets:}
 

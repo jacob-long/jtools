@@ -7,8 +7,8 @@
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   mod2vals = NULL, centered = "all", data = NULL, cond.int = FALSE,
   johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
-  robust.type = "HC3", digits = getOption("jtools-digits", default = 2),
-  ...)
+  digits = getOption("jtools-digits", default = 2), confint = FALSE,
+  ci.width = 0.95, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -74,18 +74,29 @@ is \code{FALSE}.}
 \item{jnalpha}{What should the alpha level be for the Johnson-Neyman
 interval? Default is .05, which corresponds to a 95\% confidence interval.}
 
-\item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust
-standard errors.}
+\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
+errors instead of conventional SEs. These are also known as Huber-White
+standard errors. There are several options provided by
+\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
+\code{"HC4m"}, \code{"HC5"}.
 
-\item{robust.type}{Type of heteroskedasticity-robust standard errors to use
-if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
-options.}
+Default is \code{FALSE}.
+
+This requires the \code{sandwich} package to compute the
+standard errors.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
 digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
+
+\item{confint}{Show confidence intervals instead of standard errors? Default
+is \code{FALSE}.}
+
+\item{ci.width}{A number between 0 and 1 that signifies the width of the
+desired confidence interval. Default is \code{.95}, which corresponds
+to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{...}{Arguments passed to \code{\link{johnson_neyman}}.}
 }

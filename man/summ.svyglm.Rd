@@ -10,10 +10,10 @@
   ci.width = getOption("summ-ci.width", 0.95),
   digits = getOption("jtools-digits", default = 2),
   pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
-  transform.response = FALSE, odds.ratio = FALSE,
-  vifs = getOption("summ-vifs", FALSE),
-  model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE, ...)
+  transform.response = FALSE, exp = FALSE, vifs = getOption("summ-vifs",
+  FALSE), model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
+  which.cols = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{svyglm} object.}
@@ -35,8 +35,7 @@ digits for all jtools functions with
 number.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
-are not printed. Default is \code{TRUE}, except for merMod objects (see
-details).}
+are not printed. Default is \code{TRUE}.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
@@ -47,7 +46,7 @@ want to standardize, set this to \code{TRUE}.}
 \item{transform.response}{Should scaling/centering apply to response
 variable? Default is \code{FALSE}.}
 
-\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+\item{exp}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}

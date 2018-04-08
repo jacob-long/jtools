@@ -12,7 +12,8 @@
   2), pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, part.corr = FALSE,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE, ...)
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
+  which.cols = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{lm} object.}
@@ -52,8 +53,7 @@ digits for all jtools functions with
 number.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
-are not printed. Default is \code{TRUE}, except for merMod objects (see
-details).}
+are not printed. Default is \code{TRUE}.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}

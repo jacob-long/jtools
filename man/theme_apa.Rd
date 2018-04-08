@@ -4,21 +4,19 @@
 \alias{theme_apa}
 \title{Format ggplot2 figures in APA style}
 \usage{
-theme_apa(legend.pos = "topleft", legend.use.title = FALSE,
+theme_apa(legend.pos = "right", legend.use.title = FALSE,
   legend.font.size = 12, x.font.size = 12, y.font.size = 12,
   facet.title.size = 12, remove.y.gridlines = TRUE,
   remove.x.gridlines = TRUE)
 }
 \arguments{
-\item{legend.pos}{One of \code{"topleft"}, \code{"topright"}, \code{"topmiddle"},
-\code{"bottomleft"}, \code{"bottomright"}, or \code{"bottommiddle"}.
-Positions the legend, which will layer on top of any geoms, on the plane.
-Any other arguments will be passed to \code{\link[ggplot2]{theme}}'s
-\code{legend.position =} argument, which takes \code{"left"},
-\code{"right"}, \code{"top"}, and \code{"bottom"}.}
+\item{legend.pos}{One of \code{"right"}, \code{"left"}, \code{"top"}, \code{"bottom"},
+\code{"topleft"}, \code{"topright"}, \code{"topmiddle"}, \code{"bottomleft"},
+\code{"bottomright"}, or \code{"bottommiddle"}.
+Positions the legend, which will layer on top of any geoms, on the plane.}
 
-\item{legend.use.title}{Logical. Specify whether to include a legend title. Defaults
-to \code{FALSE}.}
+\item{legend.use.title}{Logical. Specify whether to include a legend title.
+Defaults to \code{FALSE}.}
 
 \item{legend.font.size}{Integer indicating the font size of the labels in the
 legend. Default and APA-recommended is 12, but if there are many labels it
@@ -42,9 +40,9 @@ lines) be removed? Default is TRUE.}
 the (vague) APA figure guidelines.
 }
 \details{
-This function applies a theme to \code{ggplot2} figures with a style
-that is roughly in line with APA guidelines. Users may need to perform further
-operations for their specific use cases.
+This function applies a theme to \code{ggplot2} figures with a
+style that is roughly in line with APA guidelines. Users may need to
+perform further operations for their specific use cases.
 
 There are some things to keep in mind about APA style figures:
 \itemize{

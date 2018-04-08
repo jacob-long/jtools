@@ -6,7 +6,7 @@
 \usage{
 set_summ_defaults(digits = NULL, model.info = NULL, model.fit = NULL,
   pvals = NULL, robust = NULL, confint = NULL, ci.width = NULL,
-  vifs = NULL)
+  vifs = NULL, conf.method = NULL)
 }
 \arguments{
 \item{digits}{An integer specifying the number of digits past the decimal to
@@ -21,8 +21,7 @@ name of DV, and number of predictors.}
 \item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
-are not printed. Default is \code{TRUE}, except for merMod objects (see
-details).}
+are not printed. Default is \code{TRUE}.}
 
 \item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
 errors instead of conventional SEs. These are also known as Huber-White

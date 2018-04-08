@@ -9,10 +9,10 @@
   FALSE), ci.width = getOption("summ-ci.width", 0.95),
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE), digits = getOption("jtools-digits",
-  default = 2), odds.ratio = FALSE, pvals = getOption("summ-pvals", TRUE),
+  default = 2), exp = FALSE, pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), ...)
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{glm} object.}
@@ -51,14 +51,13 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+\item{exp}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
-are not printed. Default is \code{TRUE}, except for merMod objects (see
-details).}
+are not printed. Default is \code{TRUE}.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}

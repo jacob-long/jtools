@@ -8,15 +8,15 @@
 \alias{glance.summ.merMod}
 \title{Broom extensions for summ objects}
 \usage{
-\method{tidy}{summ}(x, conf.int = FALSE, conf.level = 0.95, ...)
+tidy.summ(x, conf.int = FALSE, conf.level = 0.95, ...)
 
-\method{glance}{summ.lm}(x, ...)
+glance.summ.lm(x, ...)
 
-\method{glance}{summ.glm}(x, ...)
+glance.summ.glm(x, ...)
 
-\method{glance}{summ.svyglm}(x, ...)
+glance.summ.svyglm(x, ...)
 
-\method{glance}{summ.merMod}(x, ...)
+glance.summ.merMod(x, ...)
 }
 \arguments{
 \item{x}{The \code{summ} object.}

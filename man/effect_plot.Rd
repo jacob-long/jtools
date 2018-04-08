@@ -28,9 +28,9 @@ also use "none" to base all predictions on variables set at 0.
 The response variable, \code{pred}, \code{modx}, and \code{mod2} variables are never
 centered.}
 
-\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
-scatterplot on top of the interaction lines. The color of the dots will be
-based on their moderator value.}
+\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as
+a scatterplot on top of the interaction lines. The color of the dots will
+be based on their moderator value.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
@@ -111,9 +111,9 @@ other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
 values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering. If the argument is vector with two values,
-then the first is assumed to be the jitter for height and the second the
-jitter for the width.}
+you want no jittering. If the argument is a vector with two values,
+then the first is assumed to be the jitter for width and the second the
+for the height.}
 
 \item{rug}{Show a rug plot in the margins? This uses \code{\link[ggplot2:geom_rug]{ggplot2::geom_rug()}}
 to show the distribution of the predictor (top/bottom) and/or
