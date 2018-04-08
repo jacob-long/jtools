@@ -541,9 +541,8 @@ print.effect_plot <- function(x, ...) {
 #'   here since the best way to visualize categorical interactions varies by
 #'   context. Here are the options:
 #'
-#'   * `"dot"`: The default. Simply plot the point estimates. You may want to
-#'      use
-#'     `point.shape = TRUE` with this and you should also consider
+#'   * `"point"`: The default. Simply plot the point estimates. You may want to
+#'      use `point.shape = TRUE` with this and you should also consider
 #'     `interval = TRUE` to visualize uncertainty.
 #'
 #'   * `"line"`: This connects observations across levels of the `pred`
@@ -584,9 +583,26 @@ print.effect_plot <- function(x, ...) {
 #'   be black and white printing- or colorblind-friendly.
 #'
 #' @param color.class Any palette argument accepted by
-#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-#'    moderators. You may also simply supply a vector of colors accepted by
-#'    `ggplot2` and of equal length to the number of moderator levels.
+#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2".
+#'   You may also simply supply a vector of colors accepted by
+#'   `ggplot2` and of equal length to the number of moderator levels.
+#'
+#' @param interval.geom For categorical by categorical interactions. 
+#'   One of "errorbar" or "linerange". If the former, 
+#'   [ggplot2::geom_errorbar()] is used. If the latter,
+#'   [ggplot2::geom_linerange()] is used.
+#'
+#' @param geom.alpha What should the alpha aesthetic be for the plotted
+#'   lines/bars? Default is NULL, which means it is set depending on the value
+#'   of `geom` and `plot.points`. 
+#' 
+#' @param dodge.width What should the `width` argument to 
+#'   [ggplot2::position_dodge()] be? Default is NULL, which means it is set
+#'   depending on the value of `geom`. 
+#'
+#' @param errorbar.width How wide should the error bars be? Default is NULL,
+#'   meaning it is set depending on the value `geom`. Ignored if `interval`
+#'   is FALSE.
 #'
 #' @inheritParams interact_plot
 #'
@@ -726,8 +742,8 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
            pred.labels = pred.labels, modx.labels = modx.labels,
            mod2.labels = mod2.labels, x.label = x.label, y.label = y.label,
            main.title = main.title, legend.main = legend.main,
-           color.class = color.class, wts = weights, resp = resp)
-
-
+           color.class = color.class, wts = weights, resp = resp,
+           geom.alpha = geom.alpha, dodge.width = dodge.width, 
+           errorbar.width = errorbar.width, interval.geom = interval.geom)
 
 }

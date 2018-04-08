@@ -18,7 +18,7 @@
 #'   here since the best way to visualize categorical interactions varies by
 #'   context. Here are the options:
 #'
-#'   * `"dot"`: The default. Simply plot the point estimates. You may want to
+#'   * `"point"`: The default. Simply plot the point estimates. You may want to
 #'      use
 #'     `point.shape = TRUE` with this and you should also consider
 #'     `interval = TRUE` to visualize uncertainty.
@@ -540,17 +540,19 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
 
 
 plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
-   data = NULL, geom = c("dot","line","bar","boxplot"), predvals = NULL,
+   data = NULL, geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
    modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
    point.shape = FALSE, vary.lty = FALSE,  pred.labels = NULL,
    modx.labels = NULL, mod2.labels = NULL, x.label = NULL, y.label = NULL,
    main.title = NULL, legend.main = NULL, color.class = "Set2", wts = NULL,
-   resp = NULL, jitter = 0.1) {
+   resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL, 
+   errorbar.width = NULL, interval.geom = c("errorbar", "linerange")) {
 
   pm <- predictions
   d <- data
 
   geom <- geom[1]
+  if (geom == "dot") {geom <- "point"}
 
   # If only 1 jitter arg, just duplicate it
   if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
@@ -629,72 +631,72 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
 
   names(colors) <- levels(d[[pred]])
 
-  a_level <- 1
-  if (plot.points == TRUE) {
-    if (!is.null(modx)) {
-      a_level <- 0
-    } else {
+  if (is.null(geom.alpha)) {
+    a_level <- 1
+    if (plot.points == TRUE) {
+      if (!is.null(modx)) {
+        a_level <- 0
+      } else {
+        a_level <- 0.5
+      }
+    } else if (interval == TRUE) {
       a_level <- 0.5
     }
-  } else if (interval == TRUE) {
-    a_level <- 0.5
+  } else {a_level <- geom.alpha}
+  
+  if (is.null(dodge.width)) {
+    dodge.width <- if (geom %in% c("bar", "point", "boxplot")) {0.9} else {0}
+  }
+  if (is.null(errorbar.width)) {
+    errorbar.width <- if (geom %in% c("bar", "point")) {0.9} else {0.5}
   }
 
   if (!is.null(modx)) {
-    if (point.shape == FALSE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx))
-    } else if (point.shape == TRUE & vary.lty == FALSE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx,
-                                 shape = modx))
-    } else if (point.shape == FALSE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx,
-                                 linetype = modx))
-    } else if (point.shape == TRUE & vary.lty == TRUE) {
-      p <- ggplot(pm, aes_string(x = pred, y = resp, group = modx,
-                                 colour = modx, fill = modx,
-                                 shape = modx, linetype = modx))
-    }
+    shape_arg <- if (point.shape == TRUE) {modx_g} else {NULL}
+    lty_arg <- if (vary.lty == TRUE) {modx_g} else {NULL}
+
+    p <- ggplot(pm, aes_string(x = pred_g, y = resp_g, group = modx_g,
+                                 colour = modx_g, fill = modx_g,
+                                 shape = shape_arg, linetype = lty_arg))
   } else {
-    p <- ggplot(pm, aes_string(x = pred, y = resp, group = 1))
+    p <- ggplot(pm, aes_string(x = pred_g, y = resp_g, group = 1))
   }
 
   if (geom == "bar") {
     p <- p + geom_bar(stat = "identity", position = "dodge", alpha = a_level)
   } else if (geom == "boxplot") {
     if (!is.null(modx)) {
-      p <- ggplot(d, aes_string(x = pred, y = resp,
-                                colour = modx)) +
-        geom_boxplot(position = position_dodge(0.9))
+      p <- ggplot(d, aes_string(x = pred_g, y = resp_g,
+                                colour = modx_g)) +
+        geom_boxplot(position = position_dodge(dodge.width))
     } else {
-      p <- ggplot(d, aes_string(x = pred, y = resp)) +
-        geom_boxplot(position = position_dodge(0.9))
+      p <- ggplot(d, aes_string(x = pred_g, y = resp_g)) +
+        geom_boxplot(position = position_dodge(dodge.width))
     }
-  } else if (geom == "line") {
-    p <- p + geom_path() + geom_point(size = 4)
-  } else if (geom == "dot") {
-    p <- p + geom_point(size = 3, position = position_dodge(0.9))
-  }
+  } else if (geom %in% c("point", "line")) {
+    p <- p + geom_point(size = 3, position = position_dodge(dodge.width))
+  } 
+  
+  if (geom == "line") {
+    p <- p + geom_path(position = position_dodge(dodge.width))
+  } 
 
   # Plot intervals if requested
-  if (interval == TRUE & geom %in% c("bar", "dot")) {
-
+  if (interval == TRUE && geom != "boxplot" && interval.geom == "errorbar") {
     p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
                            alpha = 1, show.legend = FALSE,
-                           position = position_dodge(0.9), width = 0.8)
-
-  } else if (interval == TRUE & geom %in% c("line")) {
-
-    p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
-                           alpha = 0.8, show.legend = FALSE, width = 0.5)
-
+                           position = position_dodge(dodge.width),
+                           width = errorbar.width)
+  } else if (interval == TRUE && geom != "boxplot" && interval.geom %in%
+                                                    c("line", "linerange")) {
+    p <- p + geom_linerange(aes_string(ymin = "ymin", ymax = "ymax"),
+                           alpha = 0.8, show.legend = FALSE,
+                           position = position_dodge(dodge.width))
   }
 
   # If third mod, facet by third mod
   if (!is.null(mod2)) {
-    facets <- facet_grid(paste(". ~", mod2))
+    facets <- facet_grid(paste(". ~", mod2_g))
     p <- p + facets
   }
 
@@ -702,55 +704,36 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
   # and coloring them by factor looks great
   if (plot.points == TRUE) {
     # Transform weights so they have mean = 1
-    const <- length(wts)/sum(wts) # scaling constant
+    const <- length(wts) / sum(wts) # scaling constant
     const <- const * 2 # make the range of values larger
     wts <- const * wts
     # Append weights to data
     d[,"the_weights"] <- wts
 
-    if (point.shape == TRUE & !is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = modx,
+    if (!is.null(modx)) {
+      p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
+                                               colour = modx_g,
                                                size = "the_weights",
-                                               shape = modx),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                    jitter.width = jitter[1],
-                                                    jitter.height = jitter[2]),
+                                               shape = shape_arg),
+                          position = 
+                            position_jitterdodge(dodge.width = dodge.width,
+                                                 jitter.width = jitter[1],
+                                                 jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
-    } else if (point.shape == FALSE & !is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = modx,
-                                               size = "the_weights"),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                    jitter.width = jitter[1],
-                                                    jitter.height = jitter[2]),
-                          inherit.aes = FALSE,
-                          show.legend = FALSE,
-                          alpha = 0.6)
-    } else if (point.shape == TRUE & is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = pred,
+    } else if (is.null(modx)) {
+      p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                size = "the_weights",
-                                               shape = modx),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                    jitter.width = jitter[1],
-                                                    jitter.height = jitter[2]),
+                                               shape = pred_g),
+                          position = 
+                            position_jitterdodge(dodge.width = dodge.width,
+                                                 jitter.width = jitter[1],
+                                                 jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
-    } else if (point.shape == FALSE & is.null(modx)) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               size = "the_weights"),
-                          position = position_jitterdodge(dodge.width = 0.9,
-                                                    jitter.width = jitter[1],
-                                                    jitter.height = jitter[2]),
-                          inherit.aes = FALSE,
-                          show.legend = FALSE,
-                          alpha = 0.6)
-    }
-
+    } 
 
     # Add size aesthetic to avoid giant points
     p <- p + scale_size_identity()
