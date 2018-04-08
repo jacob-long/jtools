@@ -192,44 +192,14 @@ export_summs <- function(...,
 
   }
 
-  # # Assuming all models are the same type as first
-  # mod_type <- class(j_summ(mods[[1]]))[1]
-  #
-  # # Now get the argument names for that version of summ
-  # summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
-  #
   # # Setting defaults for summ functions I want to add captions about
   robust <- getOption("summ-robust", FALSE)
   scale <- FALSE
   n.sd <- 1
   digits <- getOption("jtools-digits", 2)
-  #
-  # # Check for need to fit confidence intervals
-  # if (!grepl("conf.low", error_format, fixed = TRUE) &
-  #   !grepl("conf.high", error_format, fixed = TRUE)) {
-  #
-  #   dots$confint <- FALSE
-  #   ci_level <- NULL
-  #
-  # } else {
-  #
-  #   dots$confint <- TRUE
-  #   dots$ci.width <- ci_level
-  #
-  # }
 
-  # Since I'm looping, I'm creating the list before the loop
-  # jsumms <- as.list(rep(NA, length(mods)))
-  #
-  # if (!is.null(names(dots))) {
-  #
-  #   # Because deprecated args aren't in formals, I add them here
-  #   dep_names <- c("standardize", "scale.response", "standardize.response",
-  #                  "center.response", "robust.type")
-  #   summ_args <- dots[names(dots) %in% c(names(summ_formals), dep_names)]
-  #
-  #   # For those critical arguments that require a note, see if they were
-  #   # provided by the user and overwrite if so
+  # For those critical arguments that require a note, see if they were
+  # provided by the user and overwrite if so
   if ("robust" %in% names(dots)) {robust <- dots$robust}
   robust <- ifelse(all(robust) != FALSE, yes = TRUE, no = FALSE)
   if ("scale" %in% names(dots)) {scale <- dots$scale}
@@ -238,29 +208,6 @@ export_summs <- function(...,
   n.sd <- ifelse(length(unique(n.sd)) == 1, yes = n.sd[1], no = NULL)
   if (is.null(n.sd)) {scale <- FALSE}
   if ("digits" %in% names(dots)) {digits <- dots$digits}
-  #
-  #   for (i in seq_len(length(mods))) {
-  #
-  #     the_args <- summ_args
-  #     the_args$model <- mods[[i]]
-  #
-  #     jsumms[[i]] <- do.call(what = summ, args = the_args)
-  #     if (!is.null(coefs)) {
-  #       attr(jsumms[[i]], "coef_export") <- coefs
-  #     }
-  #
-  #   }
-  #
-  # } else {
-  #
-  #   jsumms <- lapply(mods, FUN = summ)
-  #   if (!is.null(coefs)) {
-  #     for (i in 1:length(jsumms)) {
-  #       attr(jsumms[[i]], "coef_export") <- coefs
-  #     }
-  #   }
-  #
-  # }
 
   jsumms <- do.call("summs", as.list(c(list(mods), dots)))
 
@@ -316,71 +263,47 @@ export_summs <- function(...,
                         error_format = error_format,
                         statistics = list(statistics),
                         ci_level = ci_level))
-  # } else {
-  #   hux_args <- as.list(c(jsumms, hux_args,
-  #                         error_pos = error_pos[1],
-  #                         error_format = error_format,
-  #                         statistics = list(statistics)))
-  # }
 
   if ("note" %nin% names(hux_args)) {
-
     if (scale == TRUE) {
-
       note <- paste("All continuous predictors are mean-centered and scaled",
               "by",  n.sd[1], "standard",  ifelse(n.sd > 1,
                                                   no = "deviation.",
                                                   yes = "deviations."))
-
+      
       if (robust == TRUE) {
-
         note <- paste(note,
                   "Standard errors are heteroskedasticity robust. %stars%.")
-
       } else {
-
         note <- paste(note, "{stars}.")
-
       }
 
       hux_args$note <- note
 
     } else if (robust == TRUE & scale == FALSE) {
-
       note <- paste("Standard errors are heteroskedasticity robust. %stars%.")
       hux_args$note <- note
-
     }
-
   }
 
   if ("number_format" %nin% names(hux_args)) {
-
     hux_args$number_format <- paste("%.", digits, "f", sep = "")
-
   }
 
   out <- do.call(what = huxtable::huxreg, args = hux_args)
 
   if (!is.null(dots$to.word) && dots$to.word == TRUE) {
-
     warn_wrap('The to.word argument is deprecated. Use to.file = "word" or
               to.file = "docx" instead.')
-
     to.file <- "docx"
-
   }
 
   if (!is.null(dots$word.file)) {
-
     warn_wrap("The word.file argument is deprecated. Use file.name instead.")
-
     file.name <- dots$word.file
-
   }
 
   if (!is.null(to.file)) {
-
     # Make lowercase for ease and consistency with huxtable quick_ funs
     to.file <- tolower(to.file)
     if (to.file == "word") {to.file <- "docx"}
@@ -389,17 +312,13 @@ export_summs <- function(...,
       warn_wrap('to.file must be one of "docx", "html", "pdf", or "xlsx" if
                 you want to write to a file. File not written.')
     }
-
-
     if (is.null(file.name)) {
       msg_wrap("You did not provide a file name, so it will be called
                untitled.", to.file)
       file.name <- paste0("untitled.", to.file)
     }
-
     # Weird header is included in Word files
     if (to.file == "docx") {out$header <- NULL}
-
     # Create the function name based on file type
     fun_name <- paste0("quick_", to.file)
     # Call the function
