@@ -294,7 +294,7 @@
 interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           mod2vals = NULL, centered = "all", data = NULL,
                           plot.points = FALSE, interval = FALSE,
-                          int.type = c("confidence","prediction"),
+                          int.type = c("confidence", "prediction"),
                           int.width = .95, outcome.scale = "response",
                           linearity.check = FALSE,
                           robust = FALSE, cluster = NULL, vcov = NULL,
@@ -307,11 +307,15 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           jitter = 0.1, rug = FALSE, rug_sides = "b") {
 
   # Evaluate the modx, mod2, pred args
-  pred <- as.character(substitute(pred))
-  modx <- as.character(substitute(modx))
-  mod2 <- as.character(substitute(mod2))
+  # This is getting nasty due to my decision to use NSE
+  pred <- as.character(deparse(substitute(pred)))
+  pred <- gsub("\"", "", pred, fixed = TRUE)
+  modx <- as.character(deparse(substitute(modx)))
+  modx <- gsub("\"", "", modx, fixed = TRUE)
+  mod2 <- as.character(deparse(substitute(mod2)))
+  mod2 <- gsub("\"", "", mod2, fixed = TRUE)
   # To avoid unexpected behavior, need to un-un-parse mod2 when it is NULL
-  if (length(mod2) == 0) {
+  if (length(mod2) == 0 | mod2 == "NULL") {
     mod2 <- NULL
   }
 
@@ -464,7 +468,8 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         jitter = 0.1, rug = FALSE, rug_sides = "b") {
 
   # Evaluate the pred arg
-  pred <- as.character(substitute(pred))
+  pred <- as.character(deparse(substitute(pred)))
+  pred <- gsub("\"", "", pred, fixed = TRUE)
 
   # Defining "global variables" for CRAN
   resp <- NULL
@@ -603,7 +608,8 @@ print.effect_plot <- function(x, ...) {
 #'   so they are not supported with this function either.
 #'
 #'   Note: to use transformed predictors, e.g., \code{log(variable)},
-#'   put its name in quotes or backticks in the argument.
+#'   provide only the variable name to `pred`, `modx`, or `mod2` and supply
+#'   the original data separately to the `data` argument.
 #'
 #'   \emph{Info about offsets:}
 #'
@@ -660,57 +666,48 @@ print.effect_plot <- function(x, ...) {
 #'
 
 cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
-                     data = NULL,
-                     geom = c("dot","line","bar","boxplot"),
-                     predvals = NULL,
-                     modxvals = NULL, mod2vals = NULL,
-                     interval = TRUE, plot.points = FALSE,
-                     point.shape = FALSE, vary.lty = FALSE,
-                     centered = "all",
-                     int.type = c("confidence","prediction"),
-                     int.width = .95, outcome.scale = "response",
-                     robust = FALSE, cluster = NULL, vcov = NULL,
-                     pred.labels = NULL,
-                     modx.labels = NULL, mod2.labels = NULL,
-                     set.offset = 1, x.label = NULL, y.label = NULL,
-                     main.title = NULL, legend.main = NULL,
-                     color.class = "Set2") {
+  data = NULL, geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
+  modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
+  point.shape = FALSE, vary.lty = FALSE, centered = "all", 
+  int.type = c("confidence", "prediction"), int.width = .95,
+  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL, 
+  interval.geom = c("errorbar", "linerange"), outcome.scale = "response",
+  robust = FALSE, cluster = NULL, vcov = NULL, pred.labels = NULL,
+  modx.labels = NULL, mod2.labels = NULL, set.offset = 1, x.label = NULL,
+  y.label = NULL, main.title = NULL, legend.main = NULL,
+  color.class = "Set2") {
 
   # Evaluate the modx, mod2, pred args
-  pred <- as.character(substitute(pred))
-  modx <- as.character(substitute(modx))
+  pred <- as.character(deparse(substitute(pred)))
+  pred <- gsub("\"", "", pred, fixed = TRUE)
+  modx <- as.character(deparse(substitute(modx)))
+  modx <- gsub("\"", "", modx, fixed = TRUE)
   # To avoid unexpected behavior, need to un-un-parse modx when it is NULL
-  if (length(modx) == 0) {
+  if (length(modx) == 0 | modx == "NULL") {
     modx <- NULL
   }
-  mod2 <- as.character(substitute(mod2))
+  mod2 <- as.character(deparse(substitute(mod2)))
+  mod2 <- gsub("\"", "", mod2, fixed = TRUE)
   # To avoid unexpected behavior, need to un-un-parse mod2 when it is NULL
-  if (length(mod2) == 0) {
+  if (length(mod2) == 0 | mod2 == "NULL") {
     mod2 <- NULL
   }
 
   # Get the geom if not specified
   geom <- geom[1]
-  if (geom == "point") {geom <- "dot"}
+  if (geom == "dot") {geom <- "point"}
 
   # Defining "global variables" for CRAN
   modxvals2 <- mod2vals2 <- resp <- NULL
 
-  pred_out <- make_predictions(model = model, pred = pred,
-                               modx = modx,
-                               modxvals = modxvals, mod2 = mod2,
-                               mod2vals = mod2vals, centered = centered,
-                               data = data, interval = interval,
-                               int.type = int.type,
-                               int.width = int.width,
-                               outcome.scale = outcome.scale,
-                               linearity.check = FALSE,
-                               robust = robust, cluster = cluster,
-                               vcov = vcov, set.offset = set.offset,
-                               modx.labels = modx.labels,
-                               mod2.labels = mod2.labels,
-                               predvals = predvals,
-                               pred.labels = pred.labels)
+  pred_out <- make_predictions(model = model, pred = pred, modx = modx,
+    modxvals = modxvals, mod2 = mod2, mod2vals = mod2vals, centered = centered,
+    data = data, interval = interval, int.type = int.type, 
+    int.width = int.width, outcome.scale = outcome.scale, 
+    linearity.check = FALSE, robust = robust, cluster = cluster, vcov = vcov,
+    set.offset = set.offset, modx.labels = modx.labels, 
+    mod2.labels = mod2.labels, predvals = predvals, pred.labels = pred.labels,
+    force.cat = TRUE)
 
   # These are the variables created in the helper functions
   meta <- attributes(pred_out)

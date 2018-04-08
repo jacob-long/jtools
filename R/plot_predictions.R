@@ -270,23 +270,45 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   names(colors) <- modx.labels
   names(ltypes) <- modx.labels
 
+  # Deal with non-syntactic names
+  if (make.names(pred) !=  pred) {
+    pred_g <- paste0("`", pred, "`")
+  } else {
+    pred_g <- pred
+  }
+  if (make.names(modx) !=  modx) {
+    modx_g <- paste0("`", modx, "`")
+  } else {
+    modx_g <- modx
+  }
+  if (!is.null(mod2) && make.names(mod2) !=  mod2) {
+    mod2_g <- paste0("`", mod2, "`")
+  } else if (!is.null(mod2)) {
+    mod2_g <- mod2
+  }
+  if (make.names(resp) !=  resp) {
+    resp_g <- paste0("`", resp, "`")
+  } else {
+    resp_g <- resp
+  }
+
   # Defining linetype here
   if (vary.lty == TRUE) {
-    p <- ggplot(pm, aes_string(x = pred, y = resp, colour = modx,
-                               group = modx, linetype = modx))
+    p <- ggplot(pm, aes_string(x = pred_g, y = resp_g, colour = modx_g,
+                               group = modx_g, linetype = modx_g))
   } else {
-    p <- ggplot(pm, aes_string(x = pred, y = resp, colour = modx,
-                               group = modx))
+    p <- ggplot(pm, aes_string(x = pred_g, y = resp_g, colour = modx_g,
+                               group = modx_g))
   }
 
   p <- p + geom_path(size = line.thickness)
 
   # Plot intervals if requested
   if (interval == TRUE) {
-    p <- p + geom_ribbon(data = pm, aes_string(x = pred,
+    p <- p + geom_ribbon(data = pm, aes_string(x = pred_g,
                                                ymin = "ymin", ymax = "ymax",
-                                               fill = modx, group = modx,
-                                               colour = modx, linetype = NA),
+                                               fill = modx_g, group = modx_g,
+                                               colour = modx_g, linetype = NA),
                          alpha = 1/5, show.legend = FALSE,
                          inherit.aes = FALSE)
 
@@ -299,9 +321,9 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     p <- p + facets
   } else if (linearity.check == TRUE) {
     facets <- facet_grid(paste(". ~ modx_group"))
-    modxgroup <- "modx_group"
-    p <- p + facets + stat_smooth(data = d, aes_string(x = pred, y = resp,
-                                                       group = modxgroup),
+    # modxgroup <- "modx_group"
+    p <- p + facets + stat_smooth(data = d, aes_string(x = pred_g, y = resp_g,
+                                                       group = "modx_group"),
                                   method = "loess", size = 1,
                                   show.legend = FALSE, inherit.aes = FALSE,
                                   se = FALSE, span = 2, geom = "line",
@@ -319,8 +341,8 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     d[["the_weights"]] <- wts
 
     if (is.factor(d[[modx]])) {
-      p <- p + geom_point(data = d, aes_string(x = pred, y = resp,
-                                               colour = modx,
+      p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
+                                               colour = modx_g,
                                                size = "the_weights"),
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
@@ -328,7 +350,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     } else if (!is.factor(d[[modx]])) {
       # using alpha for same effect with continuous vars
       p <- p + geom_point(data = d,
-                          aes_string(x = pred, y = resp, alpha = modx,
+                          aes_string(x = pred_g, y = resp_g, alpha = modx_g,
                                      size = "the_weights"),
                           colour = pp_color, inherit.aes = FALSE,
                           position = position_jitter(width = jitter[1],
@@ -346,14 +368,14 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   if (rug == TRUE) {
     if (is.factor(d[[modx]])) {
       p <- p + geom_rug(data = d,
-                        aes_string(x = pred, y = resp, colour = modx),
+                        aes_string(x = pred_g, y = resp_g, colour = modx_g),
                         alpha = 0.6,
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
                         sides = rug_sides)
     } else {
       p <- p + geom_rug(data = d,
-                        aes_string(x = pred, y = resp),
+                        aes_string(x = pred_g, y = resp_g),
                         alpha = 0.6,
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
@@ -428,11 +450,23 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
     y.label <- resp
   }
 
+  # Deal with non-syntactic names
+  if (make.names(pred) !=  pred) {
+    pred_g <- paste0("`", pred, "`")
+  } else {
+    pred_g <- pred
+  }
+  if (make.names(resp) !=  resp) {
+    resp_g <- paste0("`", resp, "`")
+  } else {
+    resp_g <- resp
+  }
+
   # If only 1 jitter arg, just duplicate it
   if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
 
   # Starting plot object
-  p <- ggplot(pm, aes_string(x = pred, y = resp))
+  p <- ggplot(pm, aes_string(x = pred_g, y = resp_g))
 
   # Define line thickness
   p <- p + geom_path(size = line.thickness)
@@ -453,7 +487,8 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
     # Append weights to data
     d[["the_weights"]] <- wts
     p <- p + geom_point(data = d,
-                        aes_string(x = pred, y = resp, size = "the_weights"),
+                        aes_string(x = pred_g, y = resp_g,
+                         size = "the_weights"),
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
                         inherit.aes = FALSE, show.legend = FALSE)
@@ -466,7 +501,7 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
   # Rug plot for marginal distributions
   if (rug == TRUE) {
     p <- p + geom_rug(data = d,
-                      mapping = aes_string(x = pred, y = resp), alpha = 0.6,
+                      mapping = aes_string(x = pred_g, y = resp_g), alpha = 0.6,
                       position = position_jitter(width = jitter[1]),
                       sides = rug_sides, inherit.aes = FALSE)
   }
@@ -531,6 +566,44 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
 
   if (is.null(y.label)) {
     y.label <- resp
+  }
+
+  # Deal with non-syntactic names
+  if (make.names(pred) !=  pred) {
+    pred_g <- paste0("`", pred, "`")
+  } else {
+    pred_g <- pred
+  }
+  if (!is.null(modx) && make.names(modx) !=  modx) {
+    modx_g <- paste0("`", modx, "`")
+  } else if (!is.null(modx)) {
+    modx_g <- modx
+  }
+  if (!is.null(mod2) && make.names(mod2) !=  mod2) {
+    mod2_g <- paste0("`", mod2, "`")
+  } else if (!is.null(mod2)) {
+    mod2_g <- mod2
+  }
+  if (make.names(resp) !=  resp) {
+    resp_g <- paste0("`", resp, "`")
+  } else {
+    resp_g <- resp
+  }
+
+  # Deal with numeric predictors coerced into factors
+  if (is.numeric(pm[[pred]])) {
+    pred.levels <- if (!is.null(predvals)) {predvals} else {
+      unique(pm[[pred]])
+    }
+    pred.labels <- if (!is.null(pred.labels)) {pred.labels} else {
+      unique(pm[[pred]])
+    }
+    pm[[pred]] <- factor(pm[[pred]], levels = pred.levels,
+                         labels = pred.labels)
+
+    # Make sure only observations of requested levels of predictor are included
+    d <- d[d[[pred]] %in% pred.levels,]
+    d[[pred]] <- factor(d[[pred]], levels = pred.levels, labels = pred.labels)
   }
 
   # Sequential palettes get different treatment
