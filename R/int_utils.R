@@ -162,7 +162,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
 
   # Testing whether modxvals refers to pre-defined arg or list of factor levels
   char1 <- FALSE
-  if (is.character(modxvals) & length(modxvals) > 1) {char1 <- TRUE}
+  if (is.character(modxvals) & length(modxvals) == 1) {char1 <- TRUE}
 
   # If using a preset, send to auto_mod_vals function
   if (!is.factor(d[[modx]]) & (is.null(modxvals) | is.character(modxvals))) {
@@ -185,14 +185,14 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
     }
     names(modxvals2) <- modx.labels
 
-  } else if (!is.null(modxvals) & (is.numeric(modxvals) | char1 == TRUE)) {
+  } else if (!is.null(modxvals) & (is.numeric(modxvals) | char1 == FALSE)) {
     # Use user-supplied values otherwise
 
     if (!is.null(modx.labels)) {
       # What I'm doing here is preserving the label order
       names(modxvals) <- modx.labels
       if (!is.mod2) {
-        modxvals2 <- sort(modxvals, decreasing = T)
+        modxvals2 <- rev(modxvals)
       } else {
         modxvals2 <- modxvals
       }
@@ -202,7 +202,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
 
       names(modxvals) <- modxvals
       if (!is.mod2) {
-        modxvals2 <- sort(modxvals, decreasing = T)
+        modxvals2 <- rev(modxvals)
       } else {
         modxvals2 <- modxvals
       }
