@@ -39,19 +39,23 @@ cat_wrap <- function(..., brk = "") {
   cat(wrap_str(...), brk, sep = "")
 }
 
+# Define orange crayon output
+orange <- crayon::make_style("orange")
+
 # Like cat_wrap but for warnings
 warn_wrap <- function(..., call. = TRUE, brk = "\n") {
-  warning(wrap_str(...), brk, call. = call.)
+  warning(orange(wrap_str(...)), brk, call. = call.)
 }
 
 # Like cat_wrap but for errors
 stop_wrap <- function(..., call. = TRUE, brk = "\n") {
-  stop(wrap_str(...), brk, call. = call.)
+  stop(red(wrap_str(...)), brk, call. = call.)
 }
 
 # Like cat_wrap but for messages
+#' @importFrom crayon cyan
 msg_wrap <- function(..., brk = "\n") {
-  message(wrap_str(...), brk)
+  message(cyan(wrap_str(...)), brk)
 }
 
 # Try to anticipate which S3 will be called (sloop package should have
