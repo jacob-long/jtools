@@ -144,7 +144,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE,
                        digits = getOption("jtools-digits", default = 2),
-                       confint = FALSE, ci.width = .95, ...) {
+                       confint = FALSE, ci.width = .95, cluster = NULL, ...) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -164,13 +164,19 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     # Get j_n args from dots
     if (johnson_neyman == TRUE) {
-      jn_arg_names <- formals("johnson_neyman")
+      jn_arg_names <- names(formals("johnson_neyman"))
       if (any(names(dots) %in% jn_arg_names)) {
         jn_args <- list()
         for (n in names(dots)[which(names(dots) %in% jn_arg_names)]) {
           jn_args[[n]] <- dots[[n]]
         }
       }
+    }
+
+    if ("robust.type" %in% names(dots)) {
+      warn_wrap("The robust.type argument is deprecated. Please specify the
+       type as the value for the 'robust' argument instead.", call. = FALSE)
+      robust <- dots$robust.type
     }
   }
 
@@ -491,10 +497,10 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     }
 
     # Getting SEs, robust or otherwise
-    if (robust == TRUE) {
+    if (robust != FALSE) {
 
       # For J-N
-      covmat <- sandwich::vcovHC(newmod, type = robust.type)
+      covmat <- do_robust(newmod, robust, cluster, dt)$vcov
 
     } else {
 

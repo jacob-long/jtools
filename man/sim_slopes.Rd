@@ -8,7 +8,7 @@ sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   mod2vals = NULL, centered = "all", data = NULL, cond.int = FALSE,
   johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
   digits = getOption("jtools-digits", default = 2), confint = FALSE,
-  ci.width = 0.95, ...)
+  ci.width = 0.95, cluster = NULL, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -97,6 +97,10 @@ is \code{FALSE}.}
 \item{ci.width}{A number between 0 and 1 that signifies the width of the
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
+
+\item{cluster}{For clustered standard errors, provide the column name of
+the cluster variable in the input data frame (as a string). Alternately,
+provide a vector of clusters.}
 
 \item{...}{Arguments passed to \code{\link{johnson_neyman}}.}
 }
