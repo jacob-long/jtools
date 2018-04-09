@@ -624,8 +624,10 @@ pR2 <- function(object) {
   .weights <- model.weights(frame)
   .offset <- model.offset(frame)
 
-  objectNull <- j_update(object, formula =  ~ 1, weights = .weights,
-                         offset = .offset)
+  dv <- names(frame)[1]
+  form <- as.formula(paste(paste0("`", dv, "`", "~ 1")))
+  objectNull <- j_update(object, formula = form, weights = .weights,
+                         offset = .offset, data = frame)
 
   llhNull <- getLL(objectNull)
   n <- dim(object$model)[1]
