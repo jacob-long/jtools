@@ -126,6 +126,10 @@ j_summ <- summ
 #'   of the model. This is particularly useful if you have variable
 #'   transformations or polynomial terms specified in the formula.
 #'
+#' @param which.cols Developmental feature. By providing columns by name,
+#'   you can add/remove/reorder requested columns in the output. Not fully
+#'   supported, for now.
+#'
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
 #'
@@ -1806,6 +1810,7 @@ print.summ.merMod <- function(x, ...) {
 #'  are silently ignored when those types of models are used.
 #'
 #' @inheritParams summ.lm
+#' @inheritParams summ.merMod
 #'
 #' @export
 #'
