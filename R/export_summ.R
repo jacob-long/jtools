@@ -262,7 +262,8 @@ export_summs <- function(...,
                         error_pos = error_pos[1],
                         error_format = error_format,
                         statistics = list(statistics),
-                        ci_level = ci_level))
+                        ci_level = ci_level,
+                        coefs = coefs))
 
   if ("note" %nin% names(hux_args)) {
     if (scale == TRUE) {
