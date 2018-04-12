@@ -77,13 +77,16 @@
 #' @export
 #'
 plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
-  resp = NULL, data = NULL, geom = c("dot","line","bar","boxplot"),
+  resp = NULL, data = NULL, geom = c("point", "line", "bar", "boxplot"),
   plot.points = FALSE, interval = TRUE,
   predvals = NULL, modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
   x.label = NULL, y.label = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL, color.class = NULL,
   line.thickness = 1.1, vary.lty = NULL, jitter = 0.1, weights = NULL,
-  rug = FALSE, rug_sides = "b", ...) {
+  rug = FALSE, rug.sides = "b", force.cat = FALSE, point.shape = FALSE,
+  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
+  interval.geom = c("errorbar", "linerange"), pred.point.size = 3.5,
+  point.size = 1, ...) {
 
   # Capture user-specified arguments
   # I'm more interested in the names than the actual content
@@ -130,7 +133,8 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   modxvals2 <- modxvals
   mod2vals2 <- mod2vals
 
-  if (is.factor(predictions[[pred]]) | is.character(predictions[[pred]])) {
+  if (is.factor(predictions[[pred]]) | is.character(predictions[[pred]]) |
+      force.cat == TRUE) {
 
     if (is.null(vary.lty)) {vary.lty <- FALSE}
 
@@ -192,7 +196,8 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   x.label = NULL, y.label = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL, color.class = NULL,
   line.thickness = 1.1, vary.lty = TRUE, jitter = 0.1, modxvals2 = NULL,
-  mod2vals2 = NULL, wts = NULL, rug = FALSE, rug_sides = "b") {
+  mod2vals2 = NULL, wts = NULL, rug = FALSE, rug.sides = "b",
+  point.shape = FALSE, point.size = 1) {
 
   d <- data
   pm <- predictions
@@ -335,15 +340,19 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   if (plot.points == TRUE) {
     # Transform weights so they have mean = 1
     const <- length(wts)/sum(wts) # scaling constant
-    const <- const * 2 # make the range of values larger
+    # make the range of values larger, but only if there are non-1 weights
+    const <- const * (1 * all(wts == 1) + point.size)
     wts <- const * wts
     # Append weights to data
     d[["the_weights"]] <- wts
 
+    # Create shape aesthetic argument
+    shape_arg <- if (point.shape == TRUE) {modx_g} else {NULL}
     if (is.factor(d[[modx]])) {
       p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                colour = modx_g,
-                                               size = "the_weights"),
+                                               size = "the_weights",
+                                               shape = shape_arg),
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
                           inherit.aes = TRUE, show.legend = FALSE)
@@ -372,14 +381,14 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                         alpha = 0.6,
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
-                        sides = rug_sides)
+                        sides = rug.sides)
     } else {
       p <- p + geom_rug(data = d,
                         aes_string(x = pred_g, y = resp_g),
                         alpha = 0.6,
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
-                        sides = rug_sides, inherit.aes = FALSE)
+                        sides = rug.sides, inherit.aes = FALSE)
     }
   }
 
@@ -437,7 +446,7 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
   interval = FALSE, data = NULL, x.label = NULL, y.label = NULL,
   pred.labels = NULL, main.title = NULL, color.class = NULL,
   line.thickness = 1.1, jitter = 0.1, resp = NULL, wts = NULL,
-  rug = FALSE, rug_sides = "b") {
+  rug = FALSE, rug.sides = "b", point.size = 1) {
 
   pm <- predictions
   d <- data
@@ -482,7 +491,8 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
   if (plot.points == TRUE) {
     # Transform weights so they have mean = 1
     const <- length(wts)/sum(wts) # scaling constant
-    const <- const * 2 # make the range of values larger
+    # make the range of values larger, but only if there are non-1 weights
+    const <- const * (1 * all(wts == 1) + point.size)
     wts <- const * wts
     # Append weights to data
     d[["the_weights"]] <- wts
@@ -503,7 +513,7 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
     p <- p + geom_rug(data = d,
                       mapping = aes_string(x = pred_g, y = resp_g), alpha = 0.6,
                       position = position_jitter(width = jitter[1]),
-                      sides = rug_sides, inherit.aes = FALSE)
+                      sides = rug.sides, inherit.aes = FALSE)
   }
 
   # Using theme_apa for theming...but using legend title and side positioning
@@ -545,8 +555,9 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
    point.shape = FALSE, vary.lty = FALSE,  pred.labels = NULL,
    modx.labels = NULL, mod2.labels = NULL, x.label = NULL, y.label = NULL,
    main.title = NULL, legend.main = NULL, color.class = "Set2", wts = NULL,
-   resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL, 
-   errorbar.width = NULL, interval.geom = c("errorbar", "linerange")) {
+   resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL,
+   errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
+   line.thickness = 1.1, point.size = 1, pred.point.size = 3.5) {
 
   pm <- predictions
   d <- data
@@ -615,21 +626,25 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
       "YlOrBr", "YlOrRd")
 
   # Checking if user provided the colors his/herself
-  if (length(color.class) == 1 |
-      length(color.class) != length(levels(d[[pred]]))) {
+  if (length(color.class) == 1 | length(color.class) != length(modxvals)) {
     # Get palette from RColorBrewer myself so I can use darker values
     if (color.class %in% sequentials) {
-      colors <- RColorBrewer::brewer.pal((length(unique(d[[pred]])) + 1),
-                                         color.class)
+      colors <- RColorBrewer::brewer.pal((length(modxvals) + 1), color.class)
       colors <- rev(colors)[-1]
     } else {
-      suppressWarnings(colors <-
-                         RColorBrewer::brewer.pal(length(unique(d[[pred]])),
-                                                  color.class))
+      suppressWarnings(
+        colors <- RColorBrewer::brewer.pal(length(modxvals), color.class))
     }
+  } else {
+    colors <- color.class
   }
 
-  names(colors) <- levels(d[[pred]])
+  # Manually set linetypes
+  types <- c("solid", "4242", "2222", "dotdash", "dotted", "twodash")
+  ltypes <- types[seq_along(modx.labels)]
+
+  names(ltypes) <- modx.labels
+  names(colors) <- modx.labels
 
   if (is.null(geom.alpha)) {
     a_level <- 1
@@ -643,7 +658,7 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
       a_level <- 0.5
     }
   } else {a_level <- geom.alpha}
-  
+
   if (is.null(dodge.width)) {
     dodge.width <- if (geom %in% c("bar", "point", "boxplot")) {0.9} else {0}
   }
@@ -674,24 +689,28 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
         geom_boxplot(position = position_dodge(dodge.width))
     }
   } else if (geom %in% c("point", "line")) {
-    p <- p + geom_point(size = 3, position = position_dodge(dodge.width))
-  } 
-  
+    p <- p + geom_point(size = pred.point.size,
+                        position = position_dodge(dodge.width))
+  }
+
   if (geom == "line") {
-    p <- p + geom_path(position = position_dodge(dodge.width))
-  } 
+    p <- p + geom_path(position = position_dodge(dodge.width),
+                       size = line.thickness)
+  }
 
   # Plot intervals if requested
   if (interval == TRUE && geom != "boxplot" && interval.geom == "errorbar") {
     p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
                            alpha = 1, show.legend = FALSE,
                            position = position_dodge(dodge.width),
-                           width = errorbar.width)
+                           width = errorbar.width,
+                           size = line.thickness)
   } else if (interval == TRUE && geom != "boxplot" && interval.geom %in%
                                                     c("line", "linerange")) {
     p <- p + geom_linerange(aes_string(ymin = "ymin", ymax = "ymax"),
                            alpha = 0.8, show.legend = FALSE,
-                           position = position_dodge(dodge.width))
+                           position = position_dodge(dodge.width),
+                           size = line.thickness)
   }
 
   # If third mod, facet by third mod
@@ -705,7 +724,8 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
   if (plot.points == TRUE) {
     # Transform weights so they have mean = 1
     const <- length(wts) / sum(wts) # scaling constant
-    const <- const * 2 # make the range of values larger
+    # make the range of values larger, but only if there are non-1 weights
+    const <- const * (1 * all(wts == 1) + point.size)
     wts <- const * wts
     # Append weights to data
     d[,"the_weights"] <- wts
@@ -715,7 +735,7 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
                                                colour = modx_g,
                                                size = "the_weights",
                                                shape = shape_arg),
-                          position = 
+                          position =
                             position_jitterdodge(dodge.width = dodge.width,
                                                  jitter.width = jitter[1],
                                                  jitter.height = jitter[2]),
@@ -726,14 +746,14 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
       p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                size = "the_weights",
                                                shape = pred_g),
-                          position = 
+                          position =
                             position_jitterdodge(dodge.width = dodge.width,
                                                  jitter.width = jitter[1],
                                                  jitter.height = jitter[2]),
                           inherit.aes = FALSE,
                           show.legend = FALSE,
                           alpha = 0.6)
-    } 
+    }
 
     # Add size aesthetic to avoid giant points
     p <- p + scale_size_identity()
@@ -751,11 +771,21 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
   p <- p + labs(x = x.label, y = y.label) # better labels for axes
 
   # Get scale colors, provide better legend title
-  p <- p + scale_colour_brewer(name = legend.main, palette = color.class)
-  p <- p + scale_fill_brewer(name = legend.main, palette = color.class)
+  p <- p + scale_colour_manual(name = legend.main,
+                               values = colors,
+                               breaks = names(colors))
+  p <- p + scale_fill_manual(name = legend.main,
+                             values = colors,
+                             breaks = names(colors))
+  p <- p + scale_shape(name = legend.main)
 
-  # Need some extra width to show the linetype pattern fully
-  p <- p + theme(legend.key.width = grid::unit(2, "lines"))
+  if (vary.lty == TRUE) { # Add line-specific changes
+    p <- p + scale_linetype_manual(name = legend.main, values = ltypes,
+                                   breaks = names(ltypes),
+                                   na.value = "blank")
+    # Need some extra width to show the linetype pattern fully
+    p <- p + theme(legend.key.width = grid::unit(3, "lines"))
+  }
 
   # Give the plot the user-specified title if there is one
   if (!is.null(main.title)) {

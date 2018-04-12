@@ -304,7 +304,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE,
-                          jitter = 0.1, rug = FALSE, rug_sides = "b") {
+                          point.size = 1, point.shape = FALSE,
+                          jitter = 0.1, rug = FALSE, rug.sides = "b") {
 
   # Evaluate the modx, mod2, pred args
   # This is getting nasty due to my decision to use NSE
@@ -366,7 +367,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                       line.thickness = line.thickness,
                       vary.lty = vary.lty, jitter = jitter,
                       modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                      wts = weights, rug = rug, rug_sides = rug_sides)
+                      wts = weights, rug = rug, rug.sides = rug.sides,
+                      point.size = point.size, point.shape = point.shape)
 
 }
 
@@ -465,6 +467,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
+                        point.size = 1,
                         jitter = 0.1, rug = FALSE, rug_sides = "b") {
 
   # Evaluate the pred arg
@@ -514,7 +517,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                          color.class = color.class,
                          line.thickness = line.thickness, jitter = jitter,
                          resp = resp, wts = weights, rug = rug,
-                         rug_sides = rug_sides)
+                         rug_sides = rug_sides, point.size = point.size)
 
 
 }
@@ -587,18 +590,18 @@ print.effect_plot <- function(x, ...) {
 #'   You may also simply supply a vector of colors accepted by
 #'   `ggplot2` and of equal length to the number of moderator levels.
 #'
-#' @param interval.geom For categorical by categorical interactions. 
-#'   One of "errorbar" or "linerange". If the former, 
+#' @param interval.geom For categorical by categorical interactions.
+#'   One of "errorbar" or "linerange". If the former,
 #'   [ggplot2::geom_errorbar()] is used. If the latter,
 #'   [ggplot2::geom_linerange()] is used.
 #'
 #' @param geom.alpha What should the alpha aesthetic be for the plotted
 #'   lines/bars? Default is NULL, which means it is set depending on the value
-#'   of `geom` and `plot.points`. 
-#' 
-#' @param dodge.width What should the `width` argument to 
+#'   of `geom` and `plot.points`.
+#'
+#' @param dodge.width What should the `width` argument to
 #'   [ggplot2::position_dodge()] be? Default is NULL, which means it is set
-#'   depending on the value of `geom`. 
+#'   depending on the value of `geom`.
 #'
 #' @param errorbar.width How wide should the error bars be? Default is NULL,
 #'   meaning it is set depending on the value `geom`. Ignored if `interval`
@@ -684,9 +687,10 @@ print.effect_plot <- function(x, ...) {
 cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   data = NULL, geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
   modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
-  point.shape = FALSE, vary.lty = FALSE, centered = "all", 
+  point.shape = FALSE, vary.lty = FALSE, centered = "all",
   int.type = c("confidence", "prediction"), int.width = .95,
-  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL, 
+  line.thickness = 1.1, point.size = 1, pred.point.size = 3.5,
+  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
   interval.geom = c("errorbar", "linerange"), outcome.scale = "response",
   robust = FALSE, cluster = NULL, vcov = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, set.offset = 1, x.label = NULL,
@@ -718,10 +722,10 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
 
   pred_out <- make_predictions(model = model, pred = pred, modx = modx,
     modxvals = modxvals, mod2 = mod2, mod2vals = mod2vals, centered = centered,
-    data = data, interval = interval, int.type = int.type, 
-    int.width = int.width, outcome.scale = outcome.scale, 
+    data = data, interval = interval, int.type = int.type,
+    int.width = int.width, outcome.scale = outcome.scale,
     linearity.check = FALSE, robust = robust, cluster = cluster, vcov = vcov,
-    set.offset = set.offset, modx.labels = modx.labels, 
+    set.offset = set.offset, modx.labels = modx.labels,
     mod2.labels = mod2.labels, predvals = predvals, pred.labels = pred.labels,
     force.cat = TRUE)
 
@@ -743,7 +747,9 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
            mod2.labels = mod2.labels, x.label = x.label, y.label = y.label,
            main.title = main.title, legend.main = legend.main,
            color.class = color.class, wts = weights, resp = resp,
-           geom.alpha = geom.alpha, dodge.width = dodge.width, 
-           errorbar.width = errorbar.width, interval.geom = interval.geom)
+           geom.alpha = geom.alpha, dodge.width = dodge.width,
+           errorbar.width = errorbar.width, interval.geom = interval.geom,
+           point.size = point.size, line.thickness = line.thickness,
+           pred.point.size = pred.point.size)
 
 }

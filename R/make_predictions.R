@@ -37,8 +37,8 @@ make_predictions <- function(model, ...) {
 #'  how many points are used for that. Default is 100, but for complicated
 #'  models larger numbers may better capture the curvature.
 #'
-#' @param force.cat If `TRUE`, treats numeric predictor as categorical. This 
-#'  can be helpful when you have 0/1 dummy variables that you don't want to 
+#' @param force.cat If `TRUE`, treats numeric predictor as categorical. This
+#'  can be helpful when you have 0/1 dummy variables that you don't want to
 #'  plot as if intermediate values are possible.
 #'
 #' @param ... Ignored.
@@ -207,7 +207,8 @@ make_predictions.default <-
   out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
-                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                   force.cat = force.cat)
   class(out) <- "predictions"
 
   return(out)
@@ -363,7 +364,8 @@ make_predictions.svyglm <-
   out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
-                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                   force.cat = force.cat)
   class(out) <- "predictions"
 
   return(out)
@@ -374,7 +376,7 @@ make_predictions.svyglm <-
 
 #' @title Generate predicted data for merMod models
 #' @inheritParams make_predictions
-#' @param add.re.variance Experimental. Adds variance specific to the 
+#' @param add.re.variance Experimental. Adds variance specific to the
 #'   *random* effects in the model. Often overwhelms the fixed effects
 #'   variances and makes the plot uninterpretable.
 #' @param boot Use [lme4::bootMer()] to generate confidence intervals instead
@@ -391,13 +393,13 @@ make_predictions.svyglm <-
 #' @param ... Extra arguments passed to [lme4::bootMer()] if `boot` is TRUE.
 #'
 #' @details
-#' The ability to bootstrap the variances is not available through 
+#' The ability to bootstrap the variances is not available through
 #' `interact_plot`, `effect_plot`, and `cat_plot` to keep those functions
-#' as simple as possible. Internally, [lme4::bootMer()] is called with 
-#' with default arguments (`type = "parametric"`, `use.u = FALSE`). To 
+#' as simple as possible. Internally, [lme4::bootMer()] is called with
+#' with default arguments (`type = "parametric"`, `use.u = FALSE`). To
 #' get parallel processing, add the arguments `parallel = "multicore"` or
 #' `parallel = "snow"` and `ncpus =` the number of cores.
-#' 
+#'
 #' @export
 
 make_predictions.merMod <-
@@ -575,7 +577,8 @@ make_predictions.merMod <-
   out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
-                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                   force.cat = force.cat)
   class(out) <- "predictions"
 
   return(out)
@@ -589,7 +592,7 @@ make_predictions.merMod <-
 #' @details This method adds support for `plot_predictions`, `interact_plot`,
 #'  `cat_plot`, and `effect_plot` for models fit with `rstanarm`.
 #' @inheritParams make_predictions
-#' @param estimate Should estimates be based on mean or median simulation? 
+#' @param estimate Should estimates be based on mean or median simulation?
 #'  Default is "mean".
 #' @export
 
@@ -715,7 +718,8 @@ make_predictions.stanreg <-
   out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
-                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                   force.cat = force.cat)
   class(out) <- "predictions"
 
   return(out)
@@ -728,7 +732,7 @@ make_predictions.stanreg <-
 #' @details This method adds support for `plot_predictions`, `interact_plot`,
 #'  `cat_plot`, and `effect_plot` for models fit with `brms`.
 #' @inheritParams make_predictions
-#' @param estimate Should estimates be based on mean or median simulation? 
+#' @param estimate Should estimates be based on mean or median simulation?
 #'  Default is "mean".
 #' @export
 
@@ -854,7 +858,8 @@ make_predictions.brmsfit <-
   out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
-                   modxvals2 = modxvals2, mod2vals2 = mod2vals2)
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                   force.cat = force.cat)
   class(out) <- "predictions"
 
   return(out)
