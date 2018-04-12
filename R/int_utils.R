@@ -142,7 +142,8 @@ print.probe_interaction <- function(x, ...) {
 
 mod_vals <- function(d, modx, modxvals, survey, weights,
                      design = design, modx.labels = NULL,
-                     any.mod2 = FALSE, is.mod2 = FALSE, sims = FALSE) {
+                     any.mod2 = FALSE, is.mod2 = FALSE,
+                     sims = FALSE) {
 
   # Get moderator mean
   if (survey == FALSE & !is.factor(d[[modx]])) {
@@ -191,7 +192,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
     if (!is.null(modx.labels)) {
       # What I'm doing here is preserving the label order
       names(modxvals) <- modx.labels
-      if (!is.mod2) {
+      if (!is.mod2 & !is.factor(d[[modx]])) {
         modxvals2 <- rev(modxvals)
       } else {
         modxvals2 <- modxvals
@@ -201,7 +202,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
     } else {
 
       names(modxvals) <- modxvals
-      if (!is.mod2) {
+      if (!is.mod2 & !is.factor(d[[modx]])) {
         modxvals2 <- rev(modxvals)
       } else {
         modxvals2 <- modxvals
