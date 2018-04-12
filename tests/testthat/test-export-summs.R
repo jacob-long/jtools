@@ -67,12 +67,12 @@ test_that("Export accepts summ args with lm", {
 })
 
 test_that("Export accepts huxreg args with lm", {
-  expect_is(export_summs(fit,fit2,fitw, pad_decimal = ","),
+  expect_is(export_summs(fit,fit2,fitw, align = ","),
             "huxtable")
 })
 
 test_that("Export accepts huxreg and summ args with lm", {
-  expect_is(export_summs(fit,fit2,fitw, pad_decimal = ",",
+  expect_is(export_summs(fit,fit2,fitw, align = ",",
                          robust = T, n.sd = 2, digits = 1,
                          scale = T), "huxtable")
 })
@@ -87,12 +87,12 @@ test_that("Export accepts summ args with glm", {
 })
 
 test_that("Export accepts huxreg args with glm", {
-  expect_is(export_summs(pmod, pad_decimal = ","),
+  expect_is(export_summs(pmod, align = ","),
             "huxtable")
 })
 
 test_that("Export accepts huxreg and summ args with glm", {
-  expect_is(export_summs(pmod, pad_decimal = ",",
+  expect_is(export_summs(pmod, align = ",",
                          robust = T), "huxtable")
 })
 
@@ -106,12 +106,12 @@ if (requireNamespace("survey")) {
               "huxtable")
   })
   test_that("Export accepts huxreg args with svyglm", {
-    expect_is(export_summs(regmodel, pad_decimal = ",",
+    expect_is(export_summs(regmodel, align = ",",
                            statistics = c(N = "nobs")),
               "huxtable")
   })
   test_that("Export accepts huxreg and summ args with svyglm", {
-    expect_is(export_summs(regmodel, pad_decimal = ",",
+    expect_is(export_summs(regmodel, align = ",",
                            scale = T), "huxtable")
   })
 }
@@ -127,12 +127,12 @@ if (requireNamespace("lme4")) {
   })
 
   test_that("Export accepts huxreg args with merMod", {
-    expect_is(export_summs(mv, pad_decimal = ","),
+    expect_is(export_summs(mv, align = ","),
               "huxtable")
   })
 
   test_that("Export accepts huxreg and summ args with merMod", {
-    expect_is(export_summs(mv, pad_decimal = ",",
+    expect_is(export_summs(mv, align = ",",
                            scale = T), "huxtable")
   })
 
@@ -219,7 +219,6 @@ if (requireNamespace("survey")) {
 }
 
 if (requireNamespace("lme4")) {
-  # The message expected is the "calculating confidence intervals..." from lme4
   test_that("plot_summs works with lmer", {
     expect_is(p <- plot_summs(mv), "ggplot")
     expect_silent(print(p))
