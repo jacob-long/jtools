@@ -237,10 +237,19 @@ export_summs <- function(...,
              summ.lm = c(N = "nobs", R2 = "r.squared"),
              summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
              summ.svyglm = c(N = "nobs", R2 = "r.squared"),
-             summ.merMod = c(N = "nobs", AIC = "AIC", BIC = "BIC",
-                             `R2 (fixed)` = "r.squared.fixed",
-                             `R2 (total)` = "r.squared")
+             summ.merMod = NULL
       )
+      if (mod_type == "summ.merMod") { # Going to do merMod separately
+        grp_names <- names(lme4::ranef(jsumms[[i]]$model))
+        group_ns <- c()
+        for (j in seq_along(grp_names)) {
+          glance_name <- paste0("group.nobs.", grp_names[j])
+          group_ns <- c(group_ns, glance_name)
+          names(group_ns)[j] <- paste0("N (", grp_names[j], ")")
+        }
+        statistics <- c(N = "nobs", group_ns, AIC = "AIC", BIC = "BIC",
+          `R2 (fixed)` = "r.squared.fixed", `R2 (total)` = "r.squared")
+      }
       # Append those statistics to the vector
       stats <- c(stats, statistics)
     }
@@ -292,6 +301,13 @@ export_summs <- function(...,
   }
 
   out <- do.call(what = huxtable::huxreg, args = hux_args)
+  # Reformat group-level Ns to be expressed as integers
+  if (any(grepl("N (", out[[1]], fixed = TRUE))) {
+    out <-
+      huxtable::set_number_format(out,
+                                  which(grepl("N (", out[[1]], fixed = TRUE)),
+                                  2:(length(mods) + 1), "%7g")
+  }
 
   if (!is.null(dots$to.word) && dots$to.word == TRUE) {
     warn_wrap('The to.word argument is deprecated. Use to.file = "word" or
