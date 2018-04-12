@@ -421,8 +421,16 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   # Since output columns are conditional, I call summ here to see what they will
   # be. I set vifs = FALSE to make sure it isn't fit due to user options.
-  the_col_names <- colnames(summ(model, confint = confint, ci.width = ci.width, 
-                                 vifs = FALSE)$coeftable)
+  # Need proper name for test statistic
+  tcol <- try(colnames(summary(model)$coefficients)[3], silent = TRUE)
+  if (class(tcol) != "try-error") {
+    tcol <- gsub("value", "val.", tcol)
+    which.cols <- c("Est.", "S.E.", unlist(make_ci_labs(ci.width)), tcol, "p")
+  } else {
+    which.cols <- NULL
+  }
+  the_col_names <- colnames(summ(model, confint = TRUE, ci.width = ci.width,
+                              vifs = FALSE, which.cols = which.cols)$coeftable)
 
   # Need to make a matrix filled with NAs to store values from looped
   # model-making
@@ -568,18 +576,26 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       newmod <- update(model, data = dt)
     }
 
+    # Need proper name for test statistic
+    tcol <- try(colnames(summary(newmod)$coefficients)[3], silent = TRUE)
+    if (class(tcol) != "try-error") {
+      tcol <- gsub("value", "val.", tcol)
+      which.cols <- c("Est.", "S.E.", unlist(make_ci_labs(ci.width)), tcol, "p")
+    } else {
+      which.cols <- NULL
+    }
     # Getting SEs, robust or otherwise
     if (robust == TRUE) {
 
       # Use j_summ to get the coefficients
-      sum <- jtools::j_summ(newmod, robust = robust, model.fit = FALSE,
-                            confint = confint, ci.width = ci.width,
-                            vifs = FALSE)
+      sum <- summ(newmod, robust = robust, model.fit = FALSE,
+                  confint = TRUE, ci.width = ci.width, vifs = FALSE,
+                  cluster = cluster, which.cols = which.cols)
 
     } else {
 
-      sum <- jtools::j_summ(newmod, model.fit = FALSE, confint = confint,
-                            ci.width = ci.width, vifs = FALSE)
+      sum <- summ(newmod, model.fit = FALSE, confint = TRUE,
+                  ci.width = ci.width, vifs = FALSE, which.cols = which.cols)
 
     }
 
@@ -622,7 +638,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     ss <- structure(ss, modxvals = modxvals2, robust = robust,
                     cond.int = cond.int, johnson_neyman = johnson_neyman,
-                    jnplot = jnplot, jns = jns)
+                    jnplot = jnplot, jns = jns, confint = confint,
+                    ci.width = ci.width)
 
     ss$mods <- mods
     ss$jn <- jns
@@ -758,7 +775,14 @@ print.sim_slopes <- function(x, ...) {
 
       m <- NULL
       m$slopes <- as.data.frame(ss$slopes[[j]], stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$slopes <-
+          m$slopes[names(m$slopes) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
       m$ints <- as.data.frame(ss$ints[[j]], stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$ints <- m$ints[names(m$ints) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
 
       if (class(x$mod2vals) != "character") {
         x$mod2vals <- format(x$mod2vals, nsmall = x$digits, digits = 0)
@@ -788,8 +812,16 @@ print.sim_slopes <- function(x, ...) {
 
     } else {
       m <- ss
+      m <- NULL
       m$slopes <- as.data.frame(ss$slopes, stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$slopes <-
+          m$slopes[names(m$slopes) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
       m$ints <- as.data.frame(ss$ints, stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$ints <- m$ints[names(m$ints) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
 
       if (x$johnson_neyman == TRUE) {
         print(x$jns[[j]])
@@ -809,7 +841,7 @@ print.sim_slopes <- function(x, ...) {
       # Use the labels for the automatic +/- 1 SD
       if (x$def == TRUE) {
 
-        slopes <- 
+        slopes <-
           as.data.frame(lapply(m$slopes[i,2:ncol(m$slopes)], as.numeric),
             check.names = FALSE)
 
