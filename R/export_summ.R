@@ -272,7 +272,8 @@ export_summs <- function(...,
                         error_format = error_format,
                         statistics = list(statistics),
                         ci_level = ci_level,
-                        coefs = coefs))
+                        coefs = if (is.null(coefs)) {NULL} else {list(coefs)})
+                      )
 
   if ("note" %nin% names(hux_args)) {
     if (scale == TRUE) {
@@ -280,7 +281,7 @@ export_summs <- function(...,
               "by",  n.sd[1], "standard",  ifelse(n.sd > 1,
                                                   no = "deviation.",
                                                   yes = "deviations."))
-      
+
       if (robust == TRUE) {
         note <- paste(note,
                   "Standard errors are heteroskedasticity robust. %stars%.")
@@ -370,11 +371,11 @@ export_summs <- function(...,
 #'   [ggplot2::scale_colour_brewer()] for differentiating multiple models.
 #'   Not used if only one model is plotted. Default: 'Set2'
 #' @param plot.distributions Instead of just plotting the ranges, you may
-#'   plot normal distributions representing the width of each estimate. Note 
+#'   plot normal distributions representing the width of each estimate. Note
 #'   that these are completely theoretical and not based on a bootstrapping
 #'   or MCMC procedure, even if the source model was fit that way. Default is
 #'   FALSE.
-#' @param exp If TRUE, all coefficients are exponentiated (e.g., transforms 
+#' @param exp If TRUE, all coefficients are exponentiated (e.g., transforms
 #'   logit coefficents from log odds scale to odds). The reference line is
 #'   also moved to 1 instead of 0.
 #' @return A ggplot object.
@@ -549,7 +550,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                                    models = levels(tidies$model))
     # Draw the distributions
     p <- p + geom_polygon(data = dist_curves,
-                          aes(x = est, y = curve, 
+                          aes(x = est, y = curve,
                               group = interaction(term, model), fill = model),
                           alpha = 0.7, show.legend = FALSE) +
     scale_fill_brewer(palette = color.class, limits = rev(levels(tidies$model)))
@@ -568,16 +569,16 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # model, just plot the points with no ranges.
   if (plot.distributions == FALSE | n_models == 1) {
     # Plot the pointranges
-    p <- p + ggstance::geom_pointrangeh( 
+    p <- p + ggstance::geom_pointrangeh(
       aes(y = term, x = estimate, xmin = conf.low,
                 xmax = conf.high, colour = model, shape = model),
-      position = ggstance::position_dodgev(height = dh), 
+      position = ggstance::position_dodgev(height = dh),
       fill = "white", fatten = 3, size = 0.8,
       show.legend = length(mods) > 1) # omit legend if just a single model
   } else {
-    p <- p + geom_point( 
+    p <- p + geom_point(
       aes(y = term, x = estimate, colour = model, shape = model),
-      fill = "white", size = 3, stroke = 1, show.legend = TRUE) 
+      fill = "white", size = 3, stroke = 1, show.legend = TRUE)
   }
 
   # To set the shape aesthetic, I prefer the points that can be filled. But
@@ -593,8 +594,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     scale_colour_brewer(palette = color.class,
      limits = rev(levels(tidies$model))) +
     scale_y_discrete(limits = rev(levels(tidies$term))) +
-    scale_shape_manual(limits = rev(levels(tidies$model)), 
-      values = shapes) + 
+    scale_shape_manual(limits = rev(levels(tidies$model)),
+      values = shapes) +
     theme_apa(legend.pos = "right", legend.font.size = 9,
               remove.x.gridlines = FALSE) +
     theme(axis.title.y = element_blank(),
@@ -722,8 +723,8 @@ get_dist_curves <- function(tidies, order, models) {
   cfs <- as.list(rep(NA, length(means)))
   for (i in seq_along(means)) {
     y_pos <- which(order == term_names[i])
-    # If I watchd to vertically dodge the distributions, I'd use this...but 
-    # for now I am omitting it. Took long enough to figure out that I don't 
+    # If I watchd to vertically dodge the distributions, I'd use this...but
+    # for now I am omitting it. Took long enough to figure out that I don't
     # want to delete it.
     # if (length(models) > 1) {
     #   groupid <- which(models == tidies$model[i])
@@ -926,11 +927,16 @@ glance.summ.merMod <- function(x, ...) {
   # Get attributes
   atts <- attributes(x)
   # Change NULLs to missing
-  if (is.null(atts$rsqs$Marginal)) {atts$rsqs$Marginal <- NA}
-  if (is.null(atts$rsqs$Conditional)) {atts$rsqs$Conditional <- NA}
+  if (is.na(atts$rsqs[1])) {
+    atts$rsqs <- list(Marginal = NA, Conditional = NA)
+  }
   # Add r.squared columns
   base$r.squared <- atts$rsqs$Conditional
   base$r.squared.fixed <- atts$rsqs$Marginal
+  groups <- lme4::ngrps(x$model)
+  for (i in seq_along(groups)) {
+    base[paste0("group.nobs.", names(groups)[i])] <- groups[i]
+  }
   return(base)
 
 }
