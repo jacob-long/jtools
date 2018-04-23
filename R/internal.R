@@ -586,6 +586,44 @@ make_ci_labs <- function(ci.width) {
 
 }
 
+format_percentiles <- function(probs, digits) {
+  paste0(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
+        "%")
+}
+
+confint_linear <- function (object, parm, level = 0.95, cov = NULL,
+                            df.residual = NULL, ...) {
+  cf <- coef(object)
+  pnames <- names(cf)
+  if (missing(parm))
+    parm <- pnames
+  else if (is.numeric(parm))
+    parm <- pnames[parm]
+  a <- (1 - level)/2
+  a <- c(a, 1 - a)
+  pct <- format_percentiles(a, 3)
+  if (is.null(df.residual)) {
+    fac <- qnorm(a)
+  } else {
+    fac <- qt(a, df.residual)
+  }
+  ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm,
+                                                             pct))
+  if (is.null(vcov)) {
+    ses <- sqrt(diag(vcov(object)))[parm]
+  } else {
+    ses <- sqrt(diag(cov))[parm]
+  }
+  ci[] <- cf[parm] + ses %o% fac
+  ci
+}
+
+mod_rank <- function(model) {
+  preds <- length(attr(terms(model), "order"))
+  int <- attr(terms(model), "intercept")
+  return(preds + int)
+}
+
 ### pseudo-R2 ################################################################
 
 ## This is taken from pscl package, I don't want to list it as import for
@@ -681,6 +719,37 @@ getLL <- function(object) {
 #   n <- dim(object$model)[1]
 #   pR2Work(llh,llhNull,n)
 # }
+
+#### Quantile regression helpers ##############################################
+
+# Get R1 (Koenker & Machado, 1999)
+R1 <- function(model) {
+  rho_1 <- model$rho
+  null_resids <- model.frame(model)[[1]] - quantile(model.frame(model)[[1]],
+                                                  model$tau)
+
+  rho_0 <- sum(null_resids * (model$tau - (null_resids < 0)))
+
+  return(1 - (rho_1 / rho_0))
+}
+
+rq_model_matrix <- function(object) {
+  mt <- terms(object)
+  m <- model.frame(object)
+  y <- model.response(m)
+  if (object$method == "sfn")
+    x <- object$model$x
+  else x <- model.matrix(mt, m, contrasts = object$contrasts)
+  return(x)
+}
+
+rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
+                      iid = TRUE, interp = TRUE, tcrit = TRUE, ...) {
+
+  rq.fit.br(x, y, tau = tau, alpha = alpha, ci = ci, iid = iid,
+            interp = interp, tcrit = tcrit)
+
+}
 
 #### Weighted helpers ########################################################
 
