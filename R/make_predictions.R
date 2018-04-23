@@ -525,6 +525,8 @@ make_predictions.merMod <-
 
     raw_boot <- predicted
 
+    ## Convert the confidence percentile to a number of S.E. to multiply by
+    intw <- 1 - ((1 - int.width) / 2)
     # Set the predicted values at the median
     fit <- sapply(as.data.frame(raw_boot), median)
     upper <- sapply(as.data.frame(raw_boot), quantile, probs = intw)
@@ -866,3 +868,131 @@ make_predictions.brmsfit <-
 
 }
 
+#### Quantile regression ######################################################
+
+#' @export
+
+make_predictions.rq <-
+  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
+           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+           plot.points = FALSE, int.width = .95, outcome.scale = "response",
+           linearity.check = FALSE, set.offset = 1,
+           pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
+           int.type = c("confidence", "prediction"), preds.per.level = 100,
+           force.cat = FALSE, se = c("nid", "iid", "ker"), ...) {
+
+  # Avoid CRAN barking
+  d <- facvars <- wts <- wname <- NULL
+
+  dots <- list(...)
+  if ("robust" %in% names(dots) && !identical(dots$robust, FALSE)) {
+    msg_wrap("The robust option is not available for rq models.")
+  }
+
+  se <- match.arg(se, c("nid", "iid", "ker"), several.ok = FALSE)
+
+  # This internal function has side effects that create
+  # objects in this environment
+  data_checks(model = model, data = data, predvals = predvals,
+              modxvals = modxvals, mod2vals = mod2vals,
+              pred.labels = pred.labels, modx.labels = modx.labels,
+              mod2.labels = mod2.labels)
+
+#### Prep data for predictions ##############################################
+
+  prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
+                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       survey = FALSE, modx.labels = modx.labels,
+                       mod2.labels = mod2.labels, wname = wname,
+                       weights = weights, wts = wts,
+                       linearity.check = linearity.check,
+                       interval = TRUE, set.offset = set.offset,
+                       facvars = facvars, centered = centered,
+                       preds.per.level = preds.per.level,
+                       predvals = predvals, pred.labels = pred.labels,
+                       force.cat = force.cat)
+
+  pm <- prepped$pm
+  d <- prepped$d
+  resp <- prepped$resp
+  facmod <- prepped$facmod
+  modxvals2 <- prepped$modxvals2
+  modx.labels <- prepped$modx.labels
+  mod2vals2 <- prepped$mod2vals2
+  mod2.labels <- prepped$mod2.labels
+
+#### Predicting with update models ############################################
+
+  # Create predicted values based on specified levels of the moderator,
+  # focal predictor
+
+  if (!is.null(modx)) {
+    pms <- split(pm, pm[[modx]])
+  } else {
+    pms <- list(pm)
+  }
+
+  if (!is.null(mod2)) {
+    pms <- unlist(
+      lapply(pms, function(x, y) {split(x, x[[y]])}, y = mod2),
+      recursive = FALSE
+    )
+  }
+
+  for (i in seq_along(pms)) {
+
+    predicted <- as.data.frame(predict(model, newdata = pms[[i]],
+                                       interval = "confidence",
+                                       se = se, level = int.width))
+
+    pms[[i]][[resp]] <- predicted[[1]] # this is the actual values
+
+    # See minimum and maximum values for plotting intervals
+    pms[[i]][["ymax"]] <- predicted[["higher"]]
+    pms[[i]][["ymin"]] <- predicted[["lower"]]
+
+    pms[[i]] <- pms[[i]][complete.cases(pms[[i]]),]
+
+  }
+
+  pm <- do.call("rbind", pms)
+
+  # Labels for values of moderator
+  if (!is.null(modx)) {
+    pm[[modx]] <- factor(pm[[modx]], levels = modxvals2, labels = modx.labels)
+  }
+  if (facmod == TRUE) {
+    d[[modx]] <- factor(d[[modx]], levels = modxvals2, labels = modx.labels)
+  }
+  if (!is.null(modx)) {
+    pm$modx_group <- pm[[modx]]
+  }
+
+  # Setting labels for second moderator
+  if (!is.null(mod2)) {
+
+    # Convert character moderators to factor
+    if (is.character(d[[mod2]])) {
+      d[[mod2]] <- factor(d[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    }
+
+    pm[[mod2]] <- factor(pm[[mod2]], levels = mod2vals2, labels = mod2.labels)
+    pm$mod2_group <- pm[[mod2]]
+
+  }
+
+  # Get rid of those ugly row names
+  row.names(pm) <- seq(nrow(pm))
+
+  # Set up return object
+  out <- list(predicted = pm, original = d)
+  out <- structure(out, modx.labels = modx.labels, mod2.labels = mod2.labels,
+                   pred = pred, modx = modx, mod2 = mod2, resp = resp,
+                   linearity.check = linearity.check, weights = wts,
+                   modxvals2 = modxvals2, mod2vals2 = mod2vals2,
+                   force.cat = force.cat)
+  class(out) <- "predictions"
+
+  return(out)
+
+}
