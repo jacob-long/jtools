@@ -154,6 +154,11 @@
 #'    while "l" and/or "r" show the distribution of the response. "bl" is
 #'    a good option to show both the predictor and response.
 #'
+#' @param facet.modx Create separate panels for each level of the moderator?
+#'   Default is FALSE, except when `linearity.check` is TRUE.
+#'
+#' @inheritParams cat_plot
+#'
 #' @details This function provides a means for plotting conditional effects
 #'   for the purpose of exploring interactions in regression models.
 #'
@@ -296,7 +301,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence", "prediction"),
                           int.width = .95, outcome.scale = "response",
-                          linearity.check = FALSE,
+                          linearity.check = FALSE, facet.modx = FALSE,
                           robust = FALSE, cluster = NULL, vcov = NULL,
                           set.offset = 1,
                           x.label = NULL, y.label = NULL,
@@ -369,6 +374,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                       modxvals2 = modxvals2, mod2vals2 = mod2vals2,
                       wts = weights, rug = rug, rug.sides = rug.sides,
                       point.size = point.size, point.shape = point.shape)
+                      facet.modx = facet.modx)
 
 }
 

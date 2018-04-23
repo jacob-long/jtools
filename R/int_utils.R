@@ -613,11 +613,12 @@ data_checks <- function(model, data, predvals = NULL,
     # Drop weights and offsets
     varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
     if (any(varnames %nin% all.vars(as.formula(formula(model))))) {
+      dat_name <- as.character(deparse(getCall(model)$data))
 
       warn_wrap("Variable transformations in the model formula
-      detected. Trying to use ", as.character(getCall(model)$data), " from
-      global environment. This could cause incorrect results if ",
-      as.character(getCall(model)$data), " has been altered since the model was
+      detected. Trying to use ", dat_name,
+      " from global environment. This could cause incorrect results if ",
+      dat_name, " has been altered since the model was
       fit. You can manually provide the data to the \"data =\" argument.",
       call. = FALSE)
 
@@ -865,7 +866,8 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
 split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
                            mod2vals, mod2vals2) {
-  if ((!is.null(mod2) | linearity.check == TRUE) & !is.factor(d[[modx]])) {
+
+  if (!is.factor(d[[modx]]) & !is.character(d[[modx]])) {
 
     # Use ecdf function to get quantile of the modxvals
     mod_val_qs <- ecdf(d[[modx]])(sort(modxvals2))
@@ -887,7 +889,8 @@ split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
     cut_points <- c(-Inf, quantile(d[[modx]], cut_points), Inf)
 
     # Create variable storing this info as a factor
-    d$modx_group <- cut(d[[modx]], cut_points, labels = names(sort(modxvals2)))
+    d["modx_group"] <- cut(d[[modx]], cut_points,
+                           labels = names(sort(modxvals2)))
 
     if (!is.null(modxvals) && modxvals == "terciles") {
       d$modx_group <- factor(cut2(d[[modx]], g = 3, levels.mean = TRUE),
@@ -895,32 +898,42 @@ split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
                                         "Upper tercile"))
     }
 
+  } else if (is.factor(d[[modx]]) | is.character(d[[modx]])) {
+
+    d["modx_group"] <- d[[modx]]
+
   }
 
-  if (!is.null(mod2) && !is.factor(d[[mod2]])) {
+  if (!is.null(mod2)) {
+    if (!is.factor(d[[mod2]]) & !is.character(d[[mod2]])) {
 
-    mod_val_qs <- ecdf(d[[mod2]])(sort(mod2vals2))
+      mod_val_qs <- ecdf(d[[mod2]])(sort(mod2vals2))
 
 
-    cut_points2 <- c()
-    for (i in 1:(length(mod2vals2) - 1)) {
+      cut_points2 <- c()
+      for (i in 1:(length(mod2vals2) - 1)) {
 
-      cut_points2 <- c(cut_points2, mean(mod_val_qs[i:(i + 1)]))
+        cut_points2 <- c(cut_points2, mean(mod_val_qs[i:(i + 1)]))
+
+      }
+
+      cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
+
+      d["mod2_group"] <- cut(d[[mod2]], cut_points2,
+                          labels = names(sort(mod2vals2)))
+
+      if (!is.null(mod2vals) && mod2vals == "terciles") {
+        d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
+                               labels = c(paste("Lower tercile of", mod2),
+                                          paste("Middle tercile of", mod2),
+                                          paste("Upper tercile of", mod2)))
+      }
+
+    } else if (is.factor(d[[mod2]]) | is.character(d[[mod2]])) {
+
+      d["mod2_group"] <- d[[mod2]]
 
     }
-
-    cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
-
-    d$mod2_group <- cut(d[[mod2]], cut_points2,
-                        labels = names(sort(mod2vals2)))
-
-    if (!is.null(mod2vals) && mod2vals == "terciles") {
-      d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
-                             labels = c(paste("Lower tercile of", mod2),
-                                        paste("Middle tercile of", mod2),
-                                        paste("Upper tercile of", mod2)))
-    }
-
   }
 
   return(d)
@@ -1081,9 +1094,14 @@ make_pred_frame_cat <- function(d, pred,
 
   # Naming columns
   if (interval == TRUE) { # if intervals, name the SE columns
-    colnames(pm) <- c(colnames(d), "ymax", "ymin")
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin%
+                                    c("modx_group", "mod2_group",
+                                      offname, wname)],
+                      "ymax", "ymin")
   } else {
-    colnames(pm) <- colnames(d)
+    colnames(pm) <- c(colnames(d)[colnames(d) %nin% c("modx_group",
+                                                      "mod2_group", offname,
+                                                      wname)])
   }
 
   # Convert to dataframe
@@ -1134,7 +1152,7 @@ make_pred_frame_cat <- function(d, pred,
 drop_factor_levels <- function(d, var, values, labels) {
 
   d <- d[d[[var]] %in% values,]
-  d[[var]] <- factor(d[[var]], levels = values, labels = labels)
+  d[[var]] <- factor(d[[var]], levels = values)
   return(d)
 
 }

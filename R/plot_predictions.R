@@ -87,6 +87,7 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
   interval.geom = c("errorbar", "linerange"), pred.point.size = 3.5,
   point.size = 1, ...) {
+  facet.modx = FALSE, x.label = NULL, y.label = NULL, pred.labels = NULL,
 
   # Capture user-specified arguments
   # I'm more interested in the names than the actual content
@@ -197,7 +198,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL, color.class = NULL,
   line.thickness = 1.1, vary.lty = TRUE, jitter = 0.1, modxvals2 = NULL,
   mod2vals2 = NULL, wts = NULL, rug = FALSE, rug.sides = "b",
-  point.shape = FALSE, point.size = 1) {
+  point.shape = FALSE, point.size = 1, facet.modx = FALSE) {
 
   d <- data
   pm <- predictions
@@ -321,18 +322,53 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   }
 
   # If third mod, facet by third mod
+  facet_form <- "~"
+  modgroup <- NULL
+  if (!is.null(mod2) || linearity.check == TRUE || facet.modx == TRUE) {
+    do_facets <- TRUE
+    # p <- p + facets
+  } else {do_facets <- FALSE}
+
+  if (linearity.check == TRUE | facet.modx == TRUE) {
+    facet_form <- paste(facet_form, "modx_group")
+    modgroup <- "modx_group"
+  }
+
   if (!is.null(mod2)) {
-    facets <- facet_grid(paste(". ~ mod2_group"))
-    p <- p + facets
-  } else if (linearity.check == TRUE) {
-    facets <- facet_grid(paste(". ~ modx_group"))
-    # modxgroup <- "modx_group"
-    p <- p + facets + stat_smooth(data = d, aes_string(x = pred_g, y = resp_g,
-                                                       group = "modx_group"),
-                                  method = "loess", size = 1,
-                                  show.legend = FALSE, inherit.aes = FALSE,
-                                  se = FALSE, span = 2, geom = "line",
-                                  alpha = 0.5, color = "black")
+    facet_form <- paste(facet_form,
+                        ifelse(facet_form == "~", yes = "mod2_group",
+                               no = "+ mod2_group"))
+    if (!is.null(modgroup)) {
+      modgroup <- "modgroup"
+    } else {
+      modgroup <- "mod2group"
+    }
+  }
+
+  if (do_facets == TRUE) {
+    if (!is.null(mod2) & (linearity.check == TRUE | facet.modx == TRUE)) {
+      num_unique <- nrow(unique(pm[c("modx_group", "mod2_group")]))
+      if (num_unique %in% c(3, 6, 9)) {
+        # 1 x 3, 2 x 3, or (most commonly) 3 x 3
+        num_cols <- 3
+      } else if (num_unique %in% c(4)) {
+        # 2 x 2
+        num_cols <- 2
+      } else { # let ggplot2 decide
+        num_cols <- NULL
+      }
+    } else {num_cols <- NULL}
+    p <- p + facet_wrap(as.formula(facet_form), ncol = num_cols)
+  }
+
+  if (linearity.check == TRUE) {
+    p <- p + stat_smooth(data = d,
+                        aes_string(x = pred_g, y = resp_g,
+                                   group = "modx_group"),
+                        method = "loess", size = 1,
+                        show.legend = FALSE, inherit.aes = FALSE,
+                        se = FALSE, span = 2, geom = "line",
+                        alpha = 0.5, color = "black")
   }
 
   # For factor vars, plotting the observed points
