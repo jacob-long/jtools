@@ -47,17 +47,24 @@ predictor to numeric before fitting the model or use `cat_plot`. Relatedly,
 two-level factor covariates are no longer centered and are simply
 set to their reference value.
 
-**Another cool new feature**: Plotting robust standard errors for compatible
+**Robust confidence intervals**: Plotting robust standard errors for compatible
 models (tested on `lm`, `glm`). Just use the `robust` argument like you would 
 for `sim_slopes` or `summ`.
 
 **Preliminary support for confidence intervals for `merMod` models**: You may 
 now get confidence intervals when using `merMod` objects as input to the
 plotting functions. Of importance, though, is the uncertainty is *only for
-the fixed effects*. For now, a warning is printed. See the next session for
+the fixed effects*. For now, a warning is printed. See the next section for
 another option for `merMod` confidence intervals.
 
-### `make_predictions` and `plot_predictions`: New tools for plotting 
+**Rug plots in the margins**: So-called "rug" plots can be included in the 
+margins of the plots for any of these functions. These show tick marks for 
+each of the observed data points, giving a non-obtrusive impression of the 
+distribution of the `pred` variable and (optionally) the dependent variable.
+See the documentation for `interact_plot` and `effect_plot` and the 
+`rug`/`rug.sides` arguments.
+
+### `make_predictions` and `plot_predictions`: New tools for advanced plotting 
 
 To let users have some more flexibility, `jtools` now lets users directly 
 access the (previously internal) functions that make `effect_plot`, `cat_plot`,
@@ -65,6 +72,16 @@ and `interact_plot` work. This should make it easier to tailor the
 outputs for specific needs. Some features may be implemented for these functions
 only to keep the `_plot` functions from getting any more complicated than they
 already are.
+
+The simplest use of the two functions is to use `make_predictions` just like 
+you would `effect_plot`/`interact_plot`/`cat_plot`. The difference is, of
+course, that `make_predictions` only makes the *data* that would be used for
+plotting. The resulting `predictions` object has both the predicted and original
+data as well as some attributes describing the arguments used. If you pass
+this object to `plot_predictions` with no further arguments, it should do 
+exactly what the corresponding `_plot` function would do. However, you might 
+want to do something entirely different using the predicted data which is part
+of the reason these functions are separate.
 
 One such feature specific to `make_predictions` is **bootstrap confidence
 intervals for `merMod` models**.
@@ -124,12 +141,12 @@ estimator directly to `robust`. For now, if `robust = TRUE`, it defaults to
 errors.
 
 Like the rest of R, when `summ` rounded your output, items rounded exactly to
-zero would be treated as, well, zero. But this can be misleading if the original
-value was actually negative. For instance, if `digits = 2` and a coefficient
-was `-0.003`, the value printed to the console was `0.00`, suggesting a zero
-or slightly positive value when in fact it was the opposite. This is a 
-deficiency of the `round` (and `trunc`) function. I've now changed it so the
-zero-rounded value retains its sign.
+zero would be treated as, well, zero. But this can be misleading if the 
+original value was actually negative. For instance, if `digits = 2` and a 
+coefficient was `-0.003`, the value printed to the console was `0.00`, 
+suggesting a zero or slightly positive value when in fact it was the 
+opposite. This is a limitation of the `round` (and `trunc`) function. I've 
+now changed it so the zero-rounded value retains its sign.
 
 `summ.merMod` now calculates pseudo-R^2 much, much faster. For only modestly
 complex models, the speed-up is roughly 50x faster. Because of how much faster
@@ -142,11 +159,17 @@ binomial/poisson. For now, I'm not touching AIC/BIC for such models
 because the underlying theory is a bit different and the implementation
 more challenging.
 
+`summ.lm` now uses the *t*-distribution for finding critical values for 
+confidence intervals. Previously, a normal approximation was used.
+
 The `summ.default` method has been removed. It was becoming an absolute terror
 to maintain and I doubted anyone found it useful. It's hard to provide the
 value added for models of a type that I do not know (robust errors don't 
 always apply, scaling doesn't always work, model fit statistics may not make
 sense, etc.). Bug me if this has really upset things for you.
+
+One new model type has been supported: `rq` models from the `quantreg` package.
+Please feel free to provide feedback for the output and support of these models.
 
 ### `scale_lm` and `center_lm` are now `scale_mod`/`center_mod`
 
@@ -178,6 +201,25 @@ the argument as a vector (e.g., `robust = c(TRUE, FALSE)`). Length 1 arguments
 are applied to all models. `plot_summs` will now also support models not 
 accepted by `summ` by just passing those models to `plot_coefs` without
 using `summ` on them.
+
+Another new option is `point.shape`, similar to the model plotting functions.
+This is most useful for when you are planning to distribute your output in
+grayscale or to colorblind audiences (though there are some other ways to 
+accommodate the colorblind).
+
+The coolest is the new `plot.distributions` argument, which if TRUE will plot
+normal distributions to even better convey the uncertainty. Of course, you
+should use this judiciously if your modeling or estimation approach doesn't
+produce coefficient estimates that are asymptotically normally distributed.
+Inspiration comes from https://twitter.com/BenJamesEdwards/status/979751070254747650.
+
+Minor fixes: `broom`'s interface for Bayesian methods is inconsistent, so I've
+hacked together a few tweaks to make `brmsfit` and `stanreg` models work with
+`plot_coefs`.
+
+You'll also notice vertical gridlines on the plots, which I think/hope will
+be useful. They are easily removable (see `drop_x_gridlines()`) with ggplot2's
+built-in theming options.
 
 ### `theme_apa` plus new functions `add_gridlines`, `drop_gridlines`
 
