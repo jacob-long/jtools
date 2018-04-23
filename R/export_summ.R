@@ -388,6 +388,9 @@ export_summs <- function(...,
 #' @param exp If TRUE, all coefficients are exponentiated (e.g., transforms
 #'   logit coefficents from log odds scale to odds). The reference line is
 #'   also moved to 1 instead of 0.
+#' @param point.shape When using multiple models, should each model's point
+#'   estimates use a different point shape to visually differentiate each
+#'   model from the others? Default is TRUE.
 #' @return A ggplot object.
 #' @details A note on the distinction between `plot_summs` and `plot_coefs`:
 #'   `plot_summs` only accepts models supported by [summ()] and allows users
@@ -433,6 +436,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        color.class = "Set2", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
+                       point.shape = TRUE) {
 
   # Capture arguments
   dots <- list(...)
@@ -456,8 +460,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
             model.names = list(model.names), coefs = list(coefs),
             omit.coefs = list(omit.coefs),
             inner_ci_level = inner_ci_level, color.class = color.class,
-            plot.distributions = plot.distributions, exp = exp, ex_args))
+            plot.distributions = plot.distributions,
             rescale.distributions = rescale.distributions, exp = exp,
+            point.shape = point.shape, ex_args))
 
   do.call("plot_coefs", args = args)
 
@@ -473,6 +478,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
                        color.class = "Set2", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
+                       exp = FALSE, point.shape = TRUE) {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
@@ -595,10 +601,12 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 
   # To set the shape aesthetic, I prefer the points that can be filled. But
   # there are only 6 such shapes, so I need to check how many models there are.
-  if (n_models < 7) {
+  if (n_models < 7 & point.shape == TRUE) {
     shapes <- 21:(21 + n_models)
-  } else {
+  } else if (point.shape == TRUE) {
     shapes <- 1:n_models
+  } else if (point.shape == FALSE) {
+    shapes <- rep(21, times = n_models)
   }
 
   p <- p +
