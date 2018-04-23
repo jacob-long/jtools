@@ -96,7 +96,7 @@
 #'   * `"[{conf.low}, {conf.high}]"`, which gives the confidence
 #'   interval in the standard bracket notation. You could also explicitly
 #'   write the confidence level, e.g.,
-#'    `"95\% CI [{conf.low}, {conf.high}]"`.
+#'    `"CI [{conf.low}, {conf.high}]"`.
 #'
 #'   For `coefs`, the argument is slightly different than what is default
 #'   in `huxreg`. If you provide a named vector of coefficients, then
