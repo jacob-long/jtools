@@ -379,6 +379,12 @@ export_summs <- function(...,
 #'   that these are completely theoretical and not based on a bootstrapping
 #'   or MCMC procedure, even if the source model was fit that way. Default is
 #'   FALSE.
+#' @param rescale.distributions If `plot.distributions` is TRUE, the default
+#'   behavior is to plot each normal density curve on the same scale. If some
+#'   of the uncertainty intervals are much wider/narrower than others, that
+#'   means the wide ones will have such a low height that you won't be able
+#'   to see the curve. If you set this parameter to TRUE, each curve will
+#'   have the same maximum height regardless of their width.
 #' @param exp If TRUE, all coefficients are exponentiated (e.g., transforms
 #'   logit coefficents from log odds scale to odds). The reference line is
 #'   also moved to 1 instead of 0.
@@ -426,7 +432,7 @@ export_summs <- function(...,
 plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        color.class = "Set2", plot.distributions = FALSE,
-                       exp = FALSE) {
+                       rescale.distributions = FALSE, exp = FALSE,
 
   # Capture arguments
   dots <- list(...)
@@ -451,6 +457,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
             omit.coefs = list(omit.coefs),
             inner_ci_level = inner_ci_level, color.class = color.class,
             plot.distributions = plot.distributions, exp = exp, ex_args))
+            rescale.distributions = rescale.distributions, exp = exp,
 
   do.call("plot_coefs", args = args)
 
@@ -465,7 +472,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        model.names = NULL, coefs = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
                        color.class = "Set2", plot.distributions = FALSE,
-                       exp = FALSE) {
+                       rescale.distributions = FALSE,
 
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
@@ -551,7 +558,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   if (plot.distributions == TRUE) {
     # Helper function to generate data for geom_polygon
     dist_curves <- get_dist_curves(tidies, order = rev(levels(tidies$term)),
-                                   models = levels(tidies$model))
+                    models = levels(tidies$model),
+                    rescale.distributions = rescale.distributions)
     # Draw the distributions
     p <- p + geom_polygon(data = dist_curves,
                           aes(x = est, y = curve,
@@ -718,16 +726,16 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
 }
 
 #' @importFrom stats dnorm
-get_dist_curves <- function(tidies, order, models) {
+get_dist_curves <- function(tidies, order, models, rescale.distributions) {
 
   term_names <- tidies$term
   means <- tidies$estimate
   sds <- tidies$`std.error`
+  heights <- c()
 
   cfs <- as.list(rep(NA, length(means)))
   for (i in seq_along(means)) {
-    y_pos <- which(order == term_names[i])
-    # If I watchd to vertically dodge the distributions, I'd use this...but
+    # If I wanted to vertically dodge the distributions, I'd use this...but
     # for now I am omitting it. Took long enough to figure out that I don't
     # want to delete it.
     # if (length(models) > 1) {
@@ -740,16 +748,33 @@ get_dist_curves <- function(tidies, order, models) {
         term = rep(tidies$term[i], 200),
         model = rep(tidies$model[i], 200),
         est = ests,
-        curve = c(0, dnorm(ests[2:199], mean = means[i], sd = sds[i]), 0) +
-         y_pos
+        curve = c(0, dnorm(ests[2:199], mean = means[i], sd = sds[i]), 0)
     )
     this_curve <- cfs[[i]]$curve
-    height <- max(this_curve - y_pos)
-    multiplier <- .6 / height
-    this_curve <- (this_curve - y_pos) * multiplier + y_pos
-    # offset <- min(this_curve - y_pos)
-    # this_curve <- this_curve - offset
+    height <- max(this_curve)
+    heights <- c(heights, height)
+
+  }
+
+  if (rescale.distributions == FALSE && max(heights) / min(heights) > 50) {
+    msg_wrap("If some of the distribution curves are too short to see,
+             consider rescaling your model coefficients or using the
+             rescale.distributions = TRUE argument.")
+  }
+
+  for (i in seq_along(means)) {
+
+    if (rescale.distributions == FALSE) {
+      multiplier <- .6 / max(heights)
+    } else {
+      multiplier <- .6 / heights[i]
+    }
+
+    y_pos <- which(order == term_names[i])
+    this_curve <- cfs[[i]]$curve
+    this_curve <- (this_curve * multiplier) + y_pos
     cfs[[i]]$curve <- this_curve
+
   }
 
   out <- do.call("rbind", cfs)
