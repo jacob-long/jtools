@@ -795,8 +795,21 @@ get_dist_curves <- function(tidies, order, models, rescale.distributions) {
 
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
-  base <-
-    broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level, ...)
+  if (class(x)[1] != "summ.rq") {
+    base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level,
+                        ...)
+  } else {
+    dots <- list(...)
+    dots <- dots[names(dots) %in% c(names(formals("rq")),
+                                    names(formals("rq.fit.br")),
+                                    "alpha")]
+
+    args <- as.list(c(list(x$model), conf.int = conf.int,
+                      conf.level = conf.level,
+                 se.type = attr(x, "se"), dots))
+
+    base <- do.call(broom::tidy, args)
+  }
 
   if ("S.E." %in% colnames(x$coeftable)) {
     # If conf.int == TRUE, summ does not have a S.E. column
@@ -809,7 +822,10 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   # Filtering to not NA avoids issues with NAs being filled with
   # repetitive values due to replacement being multiple of its length
-  base$statistic[!is.na(base$statistic)] <- x$coeftable[,stat_col]
+
+  if ("statistic" %in% names(base)) {
+    base$statistic[!is.na(base$statistic)] <- x$coeftable[,stat_col]
+  }
 
   if ("p" %in% colnames(x$coeftable)) {
 
@@ -821,7 +837,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
-  if (any(is.na(base[["statistic"]]))) {
+  if ("statistic" %in% names(base) && any(is.na(base[["statistic"]]))) {
 
     base <- base[!is.na(base$statistic),]
 
@@ -840,14 +856,14 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     uci_lab <- labs$uci
 
     if (attributes(x)$confint == TRUE & attributes(x)$ci.width == conf.level) {
-      base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
-      base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
+      base$conf.low <- x$coeftable[,lci_lab]
+      base$conf.high <- x$coeftable[,uci_lab]
     } else {
       conf.level <- as.numeric(deparse(conf.level))
       e <- environment()
       x <- update_summ(x, confint = TRUE, ci.width = conf.level, call.env = e)
-      base$conf.low[!is.na(base$statistic)] <- x$coeftable[,lci_lab]
-      base$conf.high[!is.na(base$statistic)] <- x$coeftable[,uci_lab]
+      base$conf.low <- x$coeftable[,lci_lab]
+      base$conf.high <- x$coeftable[,uci_lab]
     }
 
   }
@@ -877,10 +893,6 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
   return(base)
 
 }
-
-
-
-
 
 #' @title Broom extensions for summ objects
 #' @description These are functions used for compatibility with broom's tidying
