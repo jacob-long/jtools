@@ -392,7 +392,7 @@ part_corr <- function(ts, df.int, rsq, robust, n) {
 
 }
 
-## Checking for presence of deprecated 
+## Checking for presence of deprecated
 
 dep_checks <- function(dots) {
 
@@ -456,15 +456,21 @@ scale_statement <- function(scale, center, transform.response, n.sd) {
 }
 
 ## Adapted from car::vif
-vif <- function(mod, ...) {
+vif <- function(mod, vcov = NULL, mod.matrix = NULL, ...) {
 
   if (any(is.na(coef(mod)))) {
     stop_wrap("VIFs cannot be calculated because there are aliased
               coefficients in the model.")
   }
 
-  v <- vcov(mod)
-  assign <- attr(model.matrix(mod), "assign")
+  if (is.null(vcov)) {
+    v <- vcov(mod)
+  } else {v <- vcov}
+  assign <- if (is.null(mod.matrix)) {
+    attr(model.matrix(mod), "assign")
+  } else {
+    attr(mod.matrix, "assign")
+  }
 
   if ("(Intercept)" %in% names(coefficients(mod))) {
     v <- v[-1, -1]
