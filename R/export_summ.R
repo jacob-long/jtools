@@ -58,6 +58,8 @@
 #'     \item summ.merMod = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
 #'                           `R2 (fixed)` = "r.squared.fixed",
 #'                           `R2 (total)` = "r.squared")}
+#'     \item summ.rq = `c(N = "nobs", tau = "tau", R1 = "r.1",
+#'                        AIC = "AIC", BIC = "BIC")`
 #'   }
 #'
 #'   Be sure to look at the [summ()] documentation for more on the calculation
@@ -237,6 +239,8 @@ export_summs <- function(...,
              summ.lm = c(N = "nobs", R2 = "r.squared"),
              summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
              summ.svyglm = c(N = "nobs", R2 = "r.squared"),
+             summ.rq = c(N = "nobs", tau = "tau", R1 = "r.1",
+                         AIC = "AIC", BIC = "BIC"),
              summ.merMod = NULL
       )
       if (mod_type == "summ.merMod") { # Going to do merMod separately
