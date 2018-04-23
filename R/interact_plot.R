@@ -149,10 +149,13 @@
 #'    response variable (left/right) in the original data. Default is
 #'    FALSE.
 #'
-#' @param rug_sides On which sides should rug plots appear? Default is "b",
+#' @param rug.sides On which sides should rug plots appear? Default is "b",
 #'    meaning bottom. "t" and/or "b" show the distribution of the predictor
 #'    while "l" and/or "r" show the distribution of the response. "bl" is
 #'    a good option to show both the predictor and response.
+#'
+#' @param point.size What size should be used for observed data when
+#'   `plot.points` is TRUE? Default is 1, `ggplot2`'s default.
 #'
 #' @param facet.modx Create separate panels for each level of the moderator?
 #'   Default is FALSE, except when `linearity.check` is TRUE.
@@ -257,10 +260,8 @@
 #' # Using a fitted lm model
 #' states <- as.data.frame(state.x77)
 #' states$HSGrad <- states$`HS Grad`
-#' fit <- lm(Income ~ HSGrad + Murder * Illiteracy,
-#'   data = states)
-#' interact_plot(model = fit, pred = Murder,
-#'   modx = Illiteracy)
+#' fit <- lm(Income ~ HSGrad + Murder * Illiteracy, data = states)
+#' interact_plot(model = fit, pred = Murder, modx = Illiteracy)
 #'
 #' # Using interval feature
 #' fit <- lm(accel ~ mag * dist, data = attenu)
@@ -268,10 +269,8 @@
 #'   int.type = "confidence", int.width = .8)
 #'
 #' # Using second moderator
-#' fit <- lm(Income ~ HSGrad * Murder * Illiteracy,
-#'   data = states)
-#' interact_plot(model = fit, pred = Murder,
-#'   modx = Illiteracy, mod2 = HSGrad)
+#' fit <- lm(Income ~ HSGrad * Murder * Illiteracy, data = states)
+#' interact_plot(model = fit, pred = Murder, modx = Illiteracy, mod2 = HSGrad)
 #'
 #' # With svyglm
 #' library(survey)
@@ -373,7 +372,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                       vary.lty = vary.lty, jitter = jitter,
                       modxvals2 = modxvals2, mod2vals2 = mod2vals2,
                       wts = weights, rug = rug, rug.sides = rug.sides,
-                      point.size = point.size, point.shape = point.shape)
+                      point.size = point.size, point.shape = point.shape,
                       facet.modx = facet.modx)
 
 }
@@ -474,7 +473,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
                         point.size = 1,
-                        jitter = 0.1, rug = FALSE, rug_sides = "b") {
+                        jitter = 0.1, rug = FALSE, rug.sides = "b") {
 
   # Evaluate the pred arg
   pred <- as.character(deparse(substitute(pred)))
@@ -523,7 +522,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                          color.class = color.class,
                          line.thickness = line.thickness, jitter = jitter,
                          resp = resp, wts = weights, rug = rug,
-                         rug_sides = rug_sides, point.size = point.size)
+                         rug.sides = rug.sides, point.size = point.size)
 
 
 }
@@ -613,6 +612,11 @@ print.effect_plot <- function(x, ...) {
 #'   meaning it is set depending on the value `geom`. Ignored if `interval`
 #'   is FALSE.
 #'
+#' @param pred.point.size If TRUE and `geom` is `"point"` or `"line"`,
+#'  sets the size of the predicted points. Default is 3.5.
+#'  Note the distinction from `point.size`, which refers to the
+#'  observed data points.
+#'
 #' @inheritParams interact_plot
 #'
 #' @details This function provides a means for plotting conditional effects
@@ -641,17 +645,9 @@ print.effect_plot <- function(x, ...) {
 #'   Offsets are partially supported by this function with important
 #'   limitations. First of all, only a single offset per model is supported.
 #'   Second, it is best in general to specify offsets with the offset argument
-#'   of the model fitting function rather than in the formula. If it is
-#'   specified in the formula with a svyglm, this function will stop with an
-#'   error message.
-#'
-#'   It is also advised not to do any transformations to the offset other than
-#'   the common log transformation. If you apply a log transform, this function
-#'   will deal with it sensibly. So if your offset is a logged count, the
-#'   exposure you set will be the non-logged version, which is much easeir to
-#'   wrap one's head around. For any other transformation you may apply, or
-#'   if you apply no transformation at all, the exposures used will be the
-#'   post-tranformation number (which is by default 1).
+#'   of the model fitting function rather than in the formula. You are much
+#'   more likely to have success if you provide the data used to fit the model
+#'   with the `data` argument.
 #'
 #' @return The functions returns a \code{ggplot} object, which can be treated
 #'   like a user-created plot and expanded upon as such.

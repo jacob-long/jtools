@@ -80,14 +80,13 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   resp = NULL, data = NULL, geom = c("point", "line", "bar", "boxplot"),
   plot.points = FALSE, interval = TRUE,
   predvals = NULL, modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
-  x.label = NULL, y.label = NULL, pred.labels = NULL, modx.labels = NULL,
-  mod2.labels = NULL, main.title = NULL, legend.main = NULL, color.class = NULL,
-  line.thickness = 1.1, vary.lty = NULL, jitter = 0.1, weights = NULL,
-  rug = FALSE, rug.sides = "b", force.cat = FALSE, point.shape = FALSE,
-  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
-  interval.geom = c("errorbar", "linerange"), pred.point.size = 3.5,
-  point.size = 1, ...) {
   facet.modx = FALSE, x.label = NULL, y.label = NULL, pred.labels = NULL,
+  modx.labels = NULL, mod2.labels = NULL, main.title = NULL, legend.main = NULL,
+  color.class = NULL, line.thickness = 1.1, vary.lty = NULL, jitter = 0.1,
+  weights = NULL, rug = FALSE, rug.sides = "b", force.cat = FALSE,
+  point.shape = FALSE, geom.alpha = NULL, dodge.width = NULL,
+  errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
+  pred.point.size = 3.5, point.size = 1, ...) {
 
   # Capture user-specified arguments
   # I'm more interested in the names than the actual content
@@ -391,7 +390,9 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                                                shape = shape_arg),
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
-                          inherit.aes = TRUE, show.legend = FALSE)
+                          inherit.aes = TRUE, show.legend = TRUE) +
+        scale_shape_discrete(name = legend.main, breaks = names(colors),
+                             na.value = "blank")
     } else if (!is.factor(d[[modx]])) {
       # using alpha for same effect with continuous vars
       p <- p + geom_point(data = d,
@@ -662,14 +663,14 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
       "YlOrBr", "YlOrRd")
 
   # Checking if user provided the colors his/herself
-  if (length(color.class) == 1 | length(color.class) != length(modxvals)) {
+  if (length(color.class) == 1 | length(color.class) != length(modx.labels)) {
     # Get palette from RColorBrewer myself so I can use darker values
     if (color.class %in% sequentials) {
-      colors <- RColorBrewer::brewer.pal((length(modxvals) + 1), color.class)
+      colors <- RColorBrewer::brewer.pal((length(modx.labels) + 1), color.class)
       colors <- rev(colors)[-1]
     } else {
       suppressWarnings(
-        colors <- RColorBrewer::brewer.pal(length(modxvals), color.class))
+        colors <- RColorBrewer::brewer.pal(length(modx.labels), color.class))
     }
   } else {
     colors <- color.class
