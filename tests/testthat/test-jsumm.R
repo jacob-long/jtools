@@ -239,7 +239,7 @@ test_that("jsumm: glm cluster-robust SEs work", {
 })
 
 test_that("jsumm: Printing isn't borked", {
-  expect_output(print(summ(fitgf, vifs = TRUE, robust = TRUE)))
+  expect_error(print(summ(fitgf, vifs = TRUE, robust = TRUE)))
   expect_output(print(summ(fitgf, scale = TRUE)))
   if (requireNamespace("survey")) {
     expect_output(print(summ(regmodel, scale = TRUE, n.sd = 2)))

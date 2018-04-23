@@ -77,7 +77,7 @@ test_that("rug plots work", {
                                    mod2 = HSGrad,
                                    centered = "all",
                                    rug = TRUE,
-                                   rug_sides = "lb"))
+                                   rug.sides = "lb"))
   expect_silent(print(p))
 })
 
@@ -257,12 +257,13 @@ test_that("sim_slopes handles offsets", {
 # saveRDS(fit1, "brmfit.rds")
 #
 # library(rstanarm)
-# cbpp2 <- lme4::cbpp
 # fitrs <- stan_glmer(incidence ~ size * as.numeric(period) + (1 | herd),
-#                   data = cbpp2, family = poisson,
+#                   data = lme4::cbpp, family = poisson,
 #                   # this next line is only to keep the example small in size!
 #                   chains = 2, cores = 2, seed = 12345, iter = 2000)
 # saveRDS(fitrs, "rsafit.rds")
+
+#### brms and rstanarm tests #################################################
 
 if (requireNamespace("brms")) {
   context("brmsfit plots")
@@ -275,7 +276,7 @@ if (requireNamespace("brms")) {
     expect_silent(print(interact_plot(bfit, pred = "log_Base4_c", modx = "Trt",
                   interval = TRUE)))
     expect_is(make_predictions(bfit, pred = "log_Base4_c", modx = "Trt",
-                               interval = TRUE, estimate = "median"), 
+                               interval = TRUE, estimate = "median"),
                                "predictions")
   })
 }
@@ -283,15 +284,14 @@ if (requireNamespace("brms")) {
 if (requireNamespace("rstanarm") & requireNamespace("lme4")) {
   context("stanreg plots")
   rsfit <- readRDS("rsafit.rds")
-  cbpp2 <- lme4::cbpp
+  library(lme4)
+  data(cbpp)
   test_that("stanreg objects are supported", {
-    expect_silent(print(effect_plot(rsfit, pred = "size", interval = TRUE)))
+    expect_warning(print(effect_plot(rsfit, pred = "size", interval = TRUE)))
     expect_silent(print(interact_plot(rsfit, pred = "size",
-      modx = "as.numeric(period)", interval = TRUE)))
-    expect_silent(print(interact_plot(rsfit, pred = "size",
-      modx = "as.numeric(period)", interval = TRUE)))
-    expect_is(make_predictions(rsfit, pred = "size", interval = TRUE, 
-      estimate = "median"))
+      modx = "period", interval = TRUE, data = cbpp)))
+    expect_is(make_predictions(rsfit, pred = "size", interval = TRUE,
+      estimate = "median", data = cbpp), "predictions")
   })
 }
 
@@ -328,7 +328,7 @@ test_that("effect_plot: rug plots work", {
                                  pred = Murder,
                                  centered = "HSGrad",
                                  rug = TRUE,
-                                 rug_sides = "lb"))
+                                 rug.sides = "lb"))
   expect_silent(print(p))
 })
 
@@ -382,7 +382,9 @@ test_that("johnson_neyman control.fdr argument works", {
 
 context("cat_plot")
 
-mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
+if (requireNamespace("lme4", quietly = TRUE)) {
+  mv <- lmer(Anger ~ Gender*mode + btype +  (1 | item), data = VerbAgg)
+}
 library(ggplot2)
 diamond <- diamonds
 diamond <- diamond[diamond$color != "D",]
@@ -675,4 +677,4 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 }
 
 options(device = device)
-dev.off()
+# dev.off()
