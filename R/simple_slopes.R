@@ -898,3 +898,67 @@ print.sim_slopes <- function(x, ...) {
 
 }
 
+#### alternate output formats ################################################
+
+#' @export tidy.sim_slopes
+#' @rdname glance.summ
+
+tidy.sim_slopes <- function(x, conf.int = FALSE, conf.level = .95, ...) {
+
+  cols <- c("estimate", "std.err", "statistic", "p.value", "modx", "modx.value",
+            "mod2", "mod2.value")
+  num_coefs <- ifelse(is.list(x$slopes),
+                      yes = length(x$slopes) * nrow(x$slopes[[1]]),
+                      no = nrow(x$slopes))
+  base <- as.data.frame(matrix(rep(NA, times = num_coefs * length(cols)),
+                               ncol = length(cols)))
+  names(base) <- cols
+
+  atts <- attributes(x)
+  any_mod2 <- !is.null(atts$mod2)
+  if (any_mod2 == FALSE) {
+    all_slopes <- x$slopes
+  } else {
+    all_slopes <- do.call("rbind", x$slopes)
+  }
+
+  base$modx <- atts$modx
+  base$modx.value <- all_slopes[,1]
+  base$estimate <- all_slopes[,"Est."]
+  base$std.err <- all_slopes[,"S.E."]
+  base$p.value <- all_slopes[,"p"]
+  base$statistic <- all_slopes[, grep("val.", colnames(all_slopes), value = T)]
+  want_labs <- unlist(make_ci_labs(conf.level))
+  if (all(want_labs %in% colnames(all_slopes))) {
+    base$conf.low <- all_slopes[,make_ci_labs(conf.level)[[1]]]
+    base$conf.high <- all_slopes[,make_ci_labs(conf.level)[[2]]]
+  } else {
+    alpha <- (1 - conf.level) / 2
+    crit_t <- if (class(x$mods[[1]]) == "lm") {
+      abs(qt(alpha, df = df.residual(x$mods[[1]])))
+    } else {
+      abs(qnorm(alpha))
+    }
+    base$conf.low <- base$estimate - (crit_t * base$std.err)
+    base$conf.high <- base$estimate + (crit_t * base$std.err)
+  }
+
+  if (any_mod2 == TRUE) {
+    base$mod2 <- atts$mod2
+    base$mod2.value <- unlist(lapply(atts$mod2vals, function(y) {
+      rep(y, nrow(x$slopes[[1]]))
+    }))
+  }
+
+  base$term <- paste(base$modx, "=",
+                     if (is.character(base$modx.value)) {
+                       base$modx.value
+                     } else {
+                       round(base$modx.value, getOption("jtools-digits", 2))
+                     }
+                    )
+
+  return(base)
+
+}
+
