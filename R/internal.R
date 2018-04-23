@@ -542,11 +542,13 @@ print_mod_fit <- function(stats) {
 
 ## Print line about standard errors
 
-print_se_info <- function(robust, use_cluster, ols = FALSE) {
+print_se_info <- function(robust, use_cluster, manual = NULL, ...) {
 
   if (identical(FALSE, robust)) {
 
-    cat(italic("Standard errors:",  ifelse(ols, "OLS", "MLE")), "\n", sep = "")
+    cat(italic("Standard errors:",  ifelse(is.null(manual),
+                                           no = manual, yes = "MLE")),
+        "\n", sep = "")
 
   } else {
 
