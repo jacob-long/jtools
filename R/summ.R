@@ -114,7 +114,7 @@ j_summ <- summ
 #' @param model.info Toggles printing of basic information on sample size,
 #'   name of DV, and number of predictors.
 #'
-#' @param model.fit Toggles printing of R-squared and adjusted R-squared.
+#' @param model.fit Toggles printing of model fit statistics.
 #'
 #' @param model.check Toggles whether to perform Breusch-Pagan test for
 #'  heteroskedasticity
@@ -333,11 +333,7 @@ summ.lm <- function(
 
   # VIFs
   if (vifs == TRUE) {
-    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
-      tvifs <- rep(NA, 1)
-    } else {
-      tvifs <- rep(NA, length(ivs))
-    }
+    tvifs <- rep(NA, length(ivs))
     the_vifs <- unname(vif(model))
     if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
     tvifs[-1] <- the_vifs
@@ -483,7 +479,7 @@ print.summ.lm <- function(x, ...) {
         "\n\n", sep = "")
   }
 
-  print_se_info(x$robust, x$use_cluster, ols = TRUE)
+  print_se_info(x$robust, x$use_cluster, manual = "OLS")
 
   print(ctable)
 
@@ -687,12 +683,10 @@ summ.glm <- function(
 
   # VIFs
   if (vifs == TRUE) {
-    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
-      tvifs <- rep(NA, 1)
-    } else {
-      tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(vif(model))
-    }
+    tvifs <- rep(NA, length(ivs))
+    the_vifs <- unname(vif(model))
+    if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
+    tvifs[-1] <- the_vifs
     params[["VIF"]] <- tvifs
   }
 
@@ -807,9 +801,9 @@ print.summ.glm <- function(x, ...) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
       type <- "Linear regression"
     } else {
-      type <- paste("Generalized linear model\n",
+      type <- paste("Generalized linear model\n ",
                     italic("Family:"),
-                    as.character(x$lmFamily[1]), "\n",
+                    as.character(x$lmFamily[1]), "\n ",
                     italic("Link function:"),
                     as.character(x$lmFamily[2]), sep = " ")
     }
@@ -1076,11 +1070,7 @@ summ.svyglm <- function(
 
   # VIFs
   if (vifs == TRUE) {
-    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
-      tvifs <- rep(NA, 1)
-    } else {
-      tvifs <- rep(NA, length(ivs))
-    }
+    tvifs <- rep(NA, length(ivs))
     the_vifs <- unname(vif(model))
     if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
     tvifs[-1] <- the_vifs
@@ -1456,7 +1446,6 @@ summ.merMod <- function(
   if ("vifs" %in% names(dots) && dots$vifs == TRUE) {
     warning("VIFs are not supported for mixed models.")
   }
-
 
   # Get random effects variances argument
   re.variance <- match.arg(re.variance, c("sd", "var"), several.ok = FALSE)
