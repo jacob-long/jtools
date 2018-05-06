@@ -139,7 +139,7 @@ test_that("interact_plot accepts user-specified values and labels", {
 })
 
 test_that("interact_plot terciles modxval/mod2val works", {
-  expect_silent(p <- interact_plot(model = fit,
+  expect_message(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               mod2 = HSGrad,
@@ -150,7 +150,7 @@ test_that("interact_plot terciles modxval/mod2val works", {
 })
 
 test_that("interact_plot linearity.check works", {
-  expect_silent(p <- interact_plot(model = fit,
+  expect_message(p <- interact_plot(model = fit,
                               pred = Murder,
                               modx = Illiteracy,
                               modxvals = "terciles",
