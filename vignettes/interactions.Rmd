@@ -27,28 +27,31 @@ require at least one variable to be continuous. A separate vignette describes
 `cat_plot`, which handles the plotting of interactions in which all the focal
 predictors are categorical variables. 
 
-## Plotting interactions
-
 First, we use example data from `state.x77` that is built into R. Let's look 
 at the interaction model output with `summ` as a starting point.
 
 ```{r}
-fiti <- lm(Income ~ Illiteracy * Murder, data = as.data.frame(state.x77))
+states <- as.data.frame(state.x77)
+fiti <- lm(Income ~ Illiteracy * Murder, data = states)
 summ(fiti)
 ```
 
-So we see a significant main effect of `Murder` on `Income` in the presence of 
-a significant interaction between `Murder` and `Illiteracy`. The positive 
-estimate for `Illiteracy` does not differ significantly from zero. With that 
-said, you shouldn't focus too much on the main effects of terms included in 
-the interaction.
+Our interaction term is significant, suggesting some more probing is warranted
+to see what's going on. It's worth recalling that you shouldn't focus too much
+on the main effects of terms included in the interaction since they are 
+conditional on the other variable(s) in the interaction being held constant
+at 0.
 
 Note that if you would like to see the output if the input variables were 
 mean-centered and/or standardized, `summ` can do that for you.
 
 ```{r}
-summ(fiti, scale = TRUE)
+summ(fiti, center = TRUE)
 ```
+
+`scale = TRUE` instead of `center = TRUE` would scale the predictors.
+
+# Plotting interactions
 
 A versatile and sometimes the most interpretable method for 
 understanding interaction effects is via plotting. `jtools` provides 
@@ -62,17 +65,18 @@ interact_plot(fiti, pred = "Illiteracy", modx = "Murder")
 Keep in mind that the default behavior of `interact_plot` is to mean-center 
 all variables not involved in the interaction so that the predicted values are 
 more easily interpreted. You can disable that by adding `centered = "none"`.
+You can choose specific variables by providing their names in a vector to
+the `centered` argument.
 
-By default, with a continuous moderator you get three lines---1 standard 
+By default, with a continuous moderator you get three lines --- 1 standard 
 deviation above and below the mean and the mean itself. If you specify 
 `modxvals = "plus-minus"`, the mean of the moderator is not plotted, just the
-two +/- SD lines. 
+two +/- SD lines. You may also choose `"terciles"` to split the data into 
+three equal-sized groups  --- representing the upper, middle, and lower thirds
+of the distribution of the moderator --- and get the line that represents the
+median of the moderator within each of those groups.
 
-```{r}
-interact_plot(fiti, pred = "Illiteracy", modx = "Murder", modxvals = "plus-minus")
-```
-
-However, if your moderator is **a factor**, each level will be plotted and you 
+If your moderator is **a factor**, each level will be plotted and you 
 should leave `modxvals = NULL`, the default.
 
 ```{r}
@@ -80,7 +84,16 @@ fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species")
 ```
 
-### Plotting observed data
+If you want, you can specify a subset of a factor's levels via the `modxvals`
+argument:
+
+```{r}
+interact_plot(fitiris, pred = "Petal.Width", modx = "Species",
+              modxvals = c("versicolor", "virginica"))
+```
+
+
+## Plotting observed data
 
 If you want to see the individual data points plotted to better understand how 
 the fitted lines related to the observed data, you can use the 
@@ -96,7 +109,24 @@ shaded depending on the level of the mdoerator variable.
 It can be very enlightening, too, for categorical moderators.
 
 ```{r}
-interact_plot(fitiris, pred = "Petal.Width", modx = "Species", plot.points = TRUE)
+interact_plot(fitiris, pred = "Petal.Width", modx = "Species",
+              plot.points = TRUE)
+```
+
+Where many points are slightly overlapping as they do here, it can be useful
+to apply a random "jitter" to move them slightly to stop the overlap. Use
+the `jitter` argument to do this. If you provide a single number it will 
+apply a jitter of proportional magnitude both sideways and up and down. If
+you provide a vector length 2, then the first is assumed to refer to the 
+left/right jitter and the second to the up/down jitter.
+
+If you would like to better differentiate the points with factor moderators,
+you can use `point.shape = TRUE` to give a different shape to each point.
+This can be especially helpful for black and white publications.
+
+```{r}
+interact_plot(fitiris, pred = "Petal.Width", modx = "Species",
+              plot.points = TRUE, jitter = 0.1, point.shape = TRUE)
 ```
 
 If your original data are weighted, then the points will be sized based on the
@@ -104,7 +134,7 @@ weight. For the purposes of our example, we'll weight the same model we've been
 using with the population of each state.
 
 ```{r}
-fiti <- lm(Income ~ Illiteracy * Murder, data = as.data.frame(state.x77),
+fiti <- lm(Income ~ Illiteracy * Murder, data = states,
            weights = Population)
 interact_plot(fiti, pred = "Illiteracy", modx = "Murder", plot.points = TRUE)
 ```
@@ -113,7 +143,7 @@ For those working with weighted data, it can be hard to use a scatterplot to
 explore the data unless there is some way to account for the weights. Using
 size is a nice middle ground.
 
-### Confidence bands
+## Confidence bands
 
 Another way to get a sense of the precision of the estimates is by plotting 
 confidence bands. To get started, just set `interval = TRUE`. To decide how 
@@ -121,10 +151,115 @@ wide the confidence interval should be, express the percentile as a number,
 e.g., `int.width = 0.8` corresponds to an 80% interval.
 
 ```{r}
-interact_plot(fiti, pred = "Illiteracy", modx = "Murder", interval = TRUE, int.width = 0.8)
+interact_plot(fiti, pred = "Illiteracy", modx = "Murder", interval = TRUE,
+              int.width = 0.8)
 ```
 
-### Other options
+You can also use the `robust` argument to plot confidence intervals based on
+robust standard error calculations.
+
+## Check linearity assumption
+
+A basic assumption of linear regression is that the relationship between the
+predictors and response variable is linear. When you have an interaction effect,
+you add the assumption that relationship between your predictor and response
+is linear regardless of the level of the moderator.
+
+To show a striking example of how this can work, we'll generate two simple
+datasets to replicate Hainmueller et al. (2017). 
+ 
+The first has a focal predictor $X$ that is normally distributed with mean 3
+and standard deviation 1. It then has a dichotomous moderator $W$ that is
+Bernoulli distributed with mean probability 0.5. We also generate a normally
+distributed error term with standard deviation 4.
+
+```{r}
+set.seed(99)
+x <- rnorm(n = 200, mean = 3, sd = 1)
+err <- rnorm(n = 200, mean = 0, sd = 4)
+w <- rbinom(n = 200, size = 1, prob = 0.5)
+
+y_1 <- 5 - 4*x - 9*w + 3*w*x + err
+```
+
+We fit a linear regression model with an interaction between x and w.
+
+```{r}
+model_1 <- lm(y_1 ~ x * w)
+summ(model_1)
+```
+
+In the following plot, we use `linearity.check = TRUE` argument to split the 
+data by the level of the moderator $W$ and plot predicted lines (black) and
+a loess line (red) within each group. The predicted lines come from the full
+data set. The loess line looks only at the subset of data in each pane and 
+will be curved if the relationship is nonlinear. What we're looking for
+is whether the red loess line is straight like the predicted line.
+
+```{r}
+interact_plot(model_1, pred = "x", modx = "w", linearity.check = TRUE, 
+              plot.points = TRUE)
+```
+
+In this case, it is. That means the assumption is satisfied.
+
+Now we generate similar data, but this time the linearity assumption will be
+violated. $X_2$ will now be uniformly distributed across the range of -3 to 3.
+The true relationship between `y_2` and $X_2$ (`x_2`) is non-linear. 
+
+```{r}
+x_2 <- runif(n = 200, min = -3, max = 3)
+y_2 <- 2.5 - x_2^2 - 5*w + 2*w*(x_2^2) + err
+data_2 <- as.data.frame(cbind(x_2, y_2, w))
+
+model_2 <- lm(y_2 ~ x_2 * w, data = data_2)
+summ(model_2)
+```
+
+The regression output would lead us to believe there is no interaction.
+
+Let's do the linearity check:
+
+```{r}
+interact_plot(model_2, pred = "x_2", modx = "w", linearity.check = TRUE, 
+              plot.points = TRUE)
+```
+
+This is a striking example of the assumption being violated. At both levels
+of $W$, the relationship between $X_2$ and the response is non-linear. 
+There really is an interaction, but it's a non-linear one.
+
+You could try to fit this true model with the polynomial term like this:
+
+```{r}
+model_3 <- lm(y_2 ~ poly(x_2, 2) * w, data = data_2)
+summ(model_3)
+```
+
+`interact_plot` can plot these kinds of effects, too. Just provide the 
+untransformed predictor's name (in this case, `x_2`) and also include the
+data in the `data` argument. If you don't include the data, the function will
+try to find the data you used but it will warn you about it and it could cause
+problems under some circumstances.
+
+```{r}
+interact_plot(model_3, pred = "x_2", modx = "w", data = data_2)
+```
+
+Look familiar? Let's do the linearity.check, which in this case is more like
+a non-linearity check:
+
+```{r}
+interact_plot(model_3, pred = "x_2", modx = "w", data = data_2,
+              linearity.check = TRUE, plot.points = TRUE)
+```
+
+The red loess line almost perfectly overlaps the black predicted line, 
+indicating the assumption is satisfied. As a note of warning, in practice
+the lines will rarely overlap so neatly and you will have to make more
+difficult judgment calls.
+
+## Other options
 
 There are a number of other options not mentioned, many relating to the 
 appearance.
@@ -147,7 +282,7 @@ other `ggplot2` object. For example, using the `theme_apa` function from
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species") + theme_apa()
 ```
 
-## Simple slopes analysis and Johnson-Neyman intervals
+# Simple slopes analysis and Johnson-Neyman intervals
 
 Simple slopes analysis gives researchers a way to express the interaction 
 effect in terms that are easy to understand to those who know how to interpret
@@ -178,13 +313,9 @@ focal predictor.
 * For categorical/binary moderators, it will find the slope of the focal
 predictor at each level of the moderator.
 
-In its most basic use case, `sim_slopes` needs three arguments: a linear model 
-(with support for `svyglm` models), the name of the focal predictor in 
-quotations as the argument for `pred =`, and the name of the moderator in 
-quotations as the argument for `modx =`. Let's go through an example.
-
-Don't sweat the change in the significance of the lower-order focal
-variables---they  aren't directly interpretable, anyway.
+In its most basic use case, `sim_slopes` needs three arguments: a regression
+model, the name of the focal predictor as the argument for `pred =`, and the
+name of the moderator as the argument for `modx =`. Let's go through an example.
 
 Now let's do the most basic simple slopes analysis:
 
@@ -208,6 +339,10 @@ sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10),
            johnson_neyman = FALSE)
 ```
 
+Bear in mind that these estimates are managed by refitting the models. If the
+model took a long time to fit the first time, expect a long run time for
+`sim_slopes`.
+
 ### Johnson-Neyman intervals
 
 Did you notice how I was adding the argument `johnson_neyman = FALSE` above? 
@@ -227,19 +362,21 @@ literally, you'll get the hang of it.
 sim_slopes(fiti, pred = Illiteracy, modx = Murder, johnson_neyman = TRUE)
 ```
 
-So in the example above, we can see that the Johnson-Neyman interval and the 
+In the example above, we can see that the Johnson-Neyman interval and the 
 simple slopes analysis agree---they always will. The benefit of the J-N 
 interval is it will tell you exactly where the predictor's slope becomes
-significant/insignificant. You can also call the `johnson_neyman` function 
+significant/insignificant. 
+
+You can also call the `johnson_neyman` function 
 directly if you want to do something like tweak the alpha level. The 
-`johnson_neyman` function will also create a plot by default---you can get them
-by setting `jnplot = TRUE` with `sim_slopes`.
+`johnson_neyman` function will also create a plot by default --- you can get 
+them by setting `jnplot = TRUE` with `sim_slopes`.
 
 ```{r}
 johnson_neyman(fiti, pred = Illiteracy, modx = Murder, alpha = 0.01)
 ```
 
-One note on Johnson-Neyman plots: Once again, it is easy to misinterpret the 
+*A note on Johnson-Neyman plots*: Once again, it is easy to misinterpret the 
 meaning. Notice that the y-axis is the **conditional slope** of the predictor.
 The plot shows you where the conditional slope differs significantly from zero.
 In the plot above, we see that from the point Murder (the moderator) = 9.12 and
@@ -256,7 +393,7 @@ the outcome variable except when Murder is higher than 9.12. You wouldn't
 interpret the lower boundary because your dataset doesn't contain any values 
 near it.
 
-#### False discovery rate adjustment
+### False discovery rate adjustment
 
 A recent publication (Esarey & Sumner, 2017) explored ways to calculate the
 Johnson-Neyman interval that properly manages the Type I and II error rates.
@@ -290,16 +427,17 @@ output reports the adjusted test statistic, which is 2.33, not much different
 than the (approximately) 2 that would be used otherwise. In other cases it may
 be quite a bit larger.
 
-### Additional options
+## Additional options
 
-#### Conditional intercepts
+### Conditional intercepts
 
 Sometimes it is informative to know the conditional intercepts in addition to 
 the slopes. It might be interesting to you that individuals low on the 
 moderator have a positive slope and individuals high on it don't, but that 
 doesn't mean that individuals low on the moderator will have higher values of 
 the dependent variable. You would only know that if you know the conditional 
-intercept.
+intercept. Plotting is an easy way to notice this, but you can do it with
+the console output as well.
 
 You can print the conditional intercepts with the `cond.int = TRUE` argument.
 
@@ -313,46 +451,33 @@ negative when `Murder` is high, the conditional intercept is also high when
 high-`Murder` observations will tend towards being equal on `Income` to 
 observations with lower values of `Murder`.
 
-#### Robust standard errors
+### Robust standard errors
 
 Certain models require heteroskedasticity-robust standard errors. To be 
 consistent with the reporting of heteroskedasticity-robust standard errors 
 offered by `summ`, `sim_slopes` will do the same with the use of the
-`robust = TRUE` option so you can consistently report standard errors across
+`robust` option so you can consistently report standard errors across
 models.
 
 ```{r}
-sim_slopes(fiti, pred = Illiteracy, modx = Murder, robust = TRUE)
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, robust = "HC3")
 ```
 
 These data are a relatively rare case in which the robust standard errors are
 even more efficient than typical OLS standard errors. Note that you must have 
 the `sandwich` package installed to use this feature.
 
-#### Centering and standardizing variables
+### Centering variables
 
-By default, all non-focal variables are mean-centered. You can additionally
-specify that the focal predictors are centered with `centered = "all"`. You 
+By default, all non-focal variables are mean-centered. You 
 may also request that no variables be centered with `centered = "none"`. You 
 may also request specific variables to center by providing a vector of quoted 
-variable names---no others will be centered in that case.
+variable names --- no others will be centered in that case.
 
 Note that the moderator is centered around the specified values. Factor 
 variables are ignored in the centering process.
 
-You can standardize the variables as well using the `scale = TRUE` 
-argument.
-
-```{r}
-sim_slopes(fiti, pred = Illiteracy, modx = Murder, scale = TRUE, 
-           centered = "all")
-```
-
-Standardization is only meaningful if applied to the focal predictors. If you 
-use `scale = TRUE` when `centered = NULL`, the output won't change since 
-the scale of the other predictors has no direct effect on the others.
-
-## Do simple slopes and plotting with one function
+# Do simple slopes and plotting with one function
 
 You won't have to use these functions long before you may find yourself using
 both of them for each model you want to explore. To streamline the process,
@@ -374,12 +499,8 @@ probe_interaction(regmodel, pred = growth, modx = avg.ed, cond.int = TRUE,
 Note in the above example that you can provide arguments that only apply to one
 function and they will be used appropriately. On the other hand, you cannot
 apply their overlapping functions selectively. That is, you can't have one 
-`scale = TRUE` and the other `scale = FALSE`. If you want that 
+`centered = "all"` and the other `centered = "none"`. If you want that 
 level of control, just call each function separately.
-
-Also, the above example comes from the survey package as a means to show that,
-yes, these tools can be used with `svyglm` objects, though should only be 
-applied to linear models.
 
 It returns an object with each of the two functions' return objects:
 
@@ -389,7 +510,12 @@ out <- probe_interaction(regmodel, pred = growth, modx = avg.ed,
 names(out)
 ```
 
-## 3-way interactions
+Also, the above example comes from the survey package as a means to show that,
+yes, these tools can be used with `svyglm` objects. It is also tested with
+`glm`, `merMod`, and `rq` models, though you should always do your homework
+to decide whether these procedures are appropriate in those cases.
+
+# 3-way interactions
 
 If 2-way interactions can be hard to grasp by looking at regular regression 
 output, then 3-way interactions are outright inscrutable. The aforementioned 
@@ -404,15 +530,14 @@ check whether the predictor has a significant slope.
 
 ```{r}
 fita3 <- lm(rating ~ privileges * critical * learning, data = attitude)
-probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges)
+probe_interaction(fita3, pred = critical, modx = learning, mod2 = privileges,
+                  alpha = .1)
 ```
 
 You can change the labels for each plot via the `mod2.labels` argument.
 
-`interact_plot` has a bit more flexibility here than `sim_slopes`, allowing
-for factor moderators with greater than 2 levels. And don't forget that you can
-use `theme_apa` to format for publications or just to make more economical
-use of space.
+And don't forget that you can use `theme_apa` to format for publications or
+just to make more economical use of space.
 
 ```{r}
 mtcars$cyl <- factor(mtcars$cyl,
@@ -421,7 +546,6 @@ fitc3 <- lm(mpg ~ hp * wt * cyl, data = mtcars)
 interact_plot(fitc3, pred = hp, modx = wt, mod2 = cyl) + 
   theme_apa(legend.pos = "bottomright")
 ```
-
 
 You can get Johnson-Neyman plots for 3-way interactions as well, but keep in
 mind what I mentioned earlier in this section about the J-N technique for 3-way
@@ -439,10 +563,10 @@ Johnson-Neyman interval values so it wasn't plotted. The more levels of the
 second moderator you want to plot, the more likely that the resulting plot
 will be unwieldy and hard to read. You can resize your window to help, though.
 
-## Generalized linear models, mixed models, et al.
+# Generalized linear models, mixed models, et al.
 
 `interact_plot` is designed to be as general as possible and has been tested
-with `glm`, `svyglm`, and `merMod` models. When dealing with generalized
+with `glm`, `svyglm`, `merMod`, and `rq` models. When dealing with generalized
 linear models, it can be immensely useful to get a look at the predicted 
 values on their response scale (e.g., the probability scale for logit models).
 
@@ -483,7 +607,7 @@ Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:
 Determining and controlling the false positive rate. *Comparative Political
 Studies*, 1–33. [https://doi.org/10.1177/0010414017730080](https://doi.org/10.1177/0010414017730080)
 
-Hainmueller, J., Mummolo, J., & Xu, Y. (2016). How much should we trust 
+Hainmueller, J., Mummolo, J., & Xu, Y. (2017). How much should we trust 
 estimates from multiplicative interaction models? Simple tools to improve
 empirical practice. *SSRN Electronic Journal*. 
 [https://doi.org/10.2139/ssrn.2739221](https://doi.org/10.2139/ssrn.2739221)
