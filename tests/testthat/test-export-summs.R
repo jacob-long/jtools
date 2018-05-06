@@ -269,13 +269,14 @@ test_that("inner_ci_level works", {
 })
 
 test_that("plot.distributions works", {
-  expect_silent(print(plot_coefs(fit, plot.distributions = TRUE)))
-  expect_silent(print(plot_coefs(fit, fitw, plot.distributions = TRUE)))
+  expect_message(print(plot_coefs(fit, plot.distributions = TRUE)))
+  expect_silent(print(plot_summs(fit, plot.distributions = TRUE, scale = TRUE)))
+  expect_message(print(plot_coefs(fit, fitw, plot.distributions = TRUE)))
   expect_silent(print(plot_coefs(pmod, plot.distributions = TRUE)))
   expect_warning(print(plot_coefs(pmod, plot.distributions = TRUE, exp = TRUE)))
   expect_message(print(plot_coefs(fit, fitw, plot.distributions = TRUE,
                                   inner_ci_level = .9)))
-  expect_silent(print(plot_coefs(fit, plot.distributions = TRUE,
+  expect_silent(print(plot_summs(fit, plot.distributions = TRUE, scale = TRUE,
                                   inner_ci_level = .9)))
 })
 
