@@ -76,6 +76,7 @@ The default model summary statistics reporting follows this logic:
 \item summ.merMod = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
                           `R2 (fixed)` = "r.squared.fixed",
                           `R2 (total)` = "r.squared")}
+\item summ.rq = \code{c(N = "nobs", tau = "tau", R1 = "r.1", AIC = "AIC", BIC = "BIC")}
 }
 
 Be sure to look at the \code{\link[=summ]{summ()}} documentation for more on the calculation
@@ -110,7 +111,7 @@ cells sufficiently narrow.
 \item \code{"[{conf.low}, {conf.high}]"}, which gives the confidence
 interval in the standard bracket notation. You could also explicitly
 write the confidence level, e.g.,
-\code{"95\\\% CI [{conf.low}, {conf.high}]"}.
+\code{"CI [{conf.low}, {conf.high}]"}.
 }
 
 For \code{coefs}, the argument is slightly different than what is default

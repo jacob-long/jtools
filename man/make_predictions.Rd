@@ -14,7 +14,7 @@ make_predictions(model, ...)
   robust = FALSE, cluster = NULL, vcov = NULL, set.offset = 1,
   pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
   int.type = c("confidence", "prediction"), preds.per.level = 100,
-  force.cat = FALSE, ...)
+  force.cat = FALSE, facet.modx = linearity.check, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -96,16 +96,11 @@ the references for more details on the intuition behind this. It is
 recommended that you also set \code{plot.points = TRUE} and use
 \code{modxvals = "terciles"} with this option.}
 
-\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
-errors instead of conventional SEs. These are also known as Huber-White
-standard errors. There are several options provided by
-\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
-\code{"HC4m"}, \code{"HC5"}.
-
-Default is \code{FALSE}.
-
-This requires the \code{sandwich} package to compute the
-standard errors.}
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
 
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
@@ -149,6 +144,9 @@ models larger numbers may better capture the curvature.}
 \item{force.cat}{If \code{TRUE}, treats numeric predictor as categorical. This
 can be helpful when you have 0/1 dummy variables that you don't want to
 plot as if intermediate values are possible.}
+
+\item{facet.modx}{Create separate panels for each level of the moderator?
+Default is FALSE, except when \code{linearity.check} is TRUE.}
 }
 \description{
 This is an alternate interface to the underlying tools that
@@ -160,4 +158,3 @@ predicted data.
 \seealso{
 Other plotting tools: \code{\link{plot_predictions}}
 }
-\concept{plotting tools}

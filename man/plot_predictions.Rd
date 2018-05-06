@@ -5,14 +5,17 @@
 \title{Plot predicted effects from make_predictions}
 \usage{
 plot_predictions(predictions, pred = NULL, modx = NULL, mod2 = NULL,
-  resp = NULL, data = NULL, geom = c("dot", "line", "bar", "boxplot"),
+  resp = NULL, data = NULL, geom = c("point", "line", "bar", "boxplot"),
   plot.points = FALSE, interval = TRUE, predvals = NULL,
   modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
-  x.label = NULL, y.label = NULL, pred.labels = NULL,
-  modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
-  legend.main = NULL, color.class = NULL, line.thickness = 1.1,
-  vary.lty = NULL, jitter = 0.1, weights = NULL, rug = FALSE,
-  rug_sides = "b", ...)
+  facet.modx = FALSE, x.label = NULL, y.label = NULL,
+  pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
+  main.title = NULL, legend.main = NULL, color.class = NULL,
+  line.thickness = 1.1, vary.lty = NULL, jitter = 0, weights = NULL,
+  rug = FALSE, rug.sides = "b", force.cat = FALSE, point.shape = FALSE,
+  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
+  interval.geom = c("errorbar", "linerange"), pred.point.size = 3.5,
+  point.size = 1, ...)
 }
 \arguments{
 \item{predictions}{Either the output from \code{\link[=make_predictions]{make_predictions()}} (an object
@@ -98,6 +101,9 @@ the references for more details on the intuition behind this. It is
 recommended that you also set \code{plot.points = TRUE} and use
 \code{modxvals = "terciles"} with this option.}
 
+\item{facet.modx}{Create separate panels for each level of the moderator?
+Default is FALSE, except when \code{linearity.check} is TRUE.}
+
 \item{x.label}{A character object specifying the desired x-axis label. If
 \code{NULL}, the variable name is used.}
 
@@ -127,11 +133,9 @@ for the plot. If \code{NULL}, no main title is used.}
 appears above the legend. If \code{NULL}, the name of the moderating
 variable is used.}
 
-\item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
-Alternately, you may provide a vector of color values in any format
-accepted by \code{ggplot2}.}
+\item{color.class}{See \link{jtools_colors} for details on the types of arguments
+accepted. Default is "CUD Bright" for factor
+moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
@@ -145,9 +149,10 @@ via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When ther
 other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
-values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering. If the argument is a vector with two values,
-then the first is assumed to be the jitter for width and the second the
+values or cause other visual issues. Default is 0, but try various
+small values (e.g., 0.1) and increase as needed if your points are
+overlapping too much. If the argument is a vector with two values,
+then the first is assumed to be the jitter for width and the second
 for the height.}
 
 \item{weights}{If the data are weighted, provide a vector of weights here.
@@ -158,10 +163,46 @@ to show the distribution of the predictor (top/bottom) and/or
 response variable (left/right) in the original data. Default is
 FALSE.}
 
-\item{rug_sides}{On which sides should rug plots appear? Default is "b",
+\item{rug.sides}{On which sides should rug plots appear? Default is "b",
 meaning bottom. "t" and/or "b" show the distribution of the predictor
 while "l" and/or "r" show the distribution of the response. "bl" is
 a good option to show both the predictor and response.}
+
+\item{force.cat}{Force the predictor to be treated as if it is a factor,
+even if it isn't? Default is FALSE. Set to TRUE if you'd like to generate
+a type of plot normally reserved for categorical variables. This can be
+helpful for numeric variables that have a small number of unique values,
+for instance.}
+
+\item{point.shape}{For plotted points---either of observed data or predicted
+values with the "point" or "line" geoms---should the shape of the points
+vary by the values of the factor? This is especially useful if you aim to
+be black and white printing- or colorblind-friendly.}
+
+\item{geom.alpha}{What should the alpha aesthetic be for the plotted
+lines/bars? Default is NULL, which means it is set depending on the value
+of \code{geom} and \code{plot.points}.}
+
+\item{dodge.width}{What should the \code{width} argument to
+\code{\link[ggplot2:position_dodge]{ggplot2::position_dodge()}} be? Default is NULL, which means it is set
+depending on the value of \code{geom}.}
+
+\item{errorbar.width}{How wide should the error bars be? Default is NULL,
+meaning it is set depending on the value \code{geom}. Ignored if \code{interval}
+is FALSE.}
+
+\item{interval.geom}{For categorical by categorical interactions.
+One of "errorbar" or "linerange". If the former,
+\code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}} is used. If the latter,
+\code{\link[ggplot2:geom_linerange]{ggplot2::geom_linerange()}} is used.}
+
+\item{pred.point.size}{If TRUE and \code{geom} is \code{"point"} or \code{"line"},
+sets the size of the predicted points. Default is 3.5.
+Note the distinction from \code{point.size}, which refers to the
+observed data points.}
+
+\item{point.size}{What size should be used for observed data when
+\code{plot.points} is TRUE? Default is 2.}
 
 \item{...}{Ignored.}
 }
@@ -196,4 +237,3 @@ are:
 \seealso{
 Other plotting tools: \code{\link{make_predictions}}
 }
-\concept{plotting tools}

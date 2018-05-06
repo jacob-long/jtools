@@ -9,7 +9,8 @@
   centered = "all", data = NULL, plot.points = FALSE, interval = TRUE,
   int.width = 0.95, estimate = "mean", linearity.check = FALSE,
   set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-  mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE, ...)
+  mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE,
+  facet.modx = linearity.check, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -116,12 +117,12 @@ models larger numbers may better capture the curvature.}
 can be helpful when you have 0/1 dummy variables that you don't want to
 plot as if intermediate values are possible.}
 
+\item{facet.modx}{Create separate panels for each level of the moderator?
+Default is FALSE, except when \code{linearity.check} is TRUE.}
+
 \item{...}{Ignored.}
 }
 \description{
-Make predictions for brmsfit models
-}
-\details{
-This method adds support for \code{plot_predictions}, \code{interact_plot},
-\code{cat_plot}, and \code{effect_plot} for models fit with \code{brms}.
+This method adds support for \code{plot_predictions},
+\code{interact_plot}, \code{cat_plot}, and \code{effect_plot} for models fit with \code{brms}.
 }

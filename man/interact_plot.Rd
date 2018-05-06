@@ -8,11 +8,12 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   mod2vals = NULL, centered = "all", data = NULL, plot.points = FALSE,
   interval = FALSE, int.type = c("confidence", "prediction"),
   int.width = 0.95, outcome.scale = "response", linearity.check = FALSE,
-  robust = FALSE, cluster = NULL, vcov = NULL, set.offset = 1,
-  x.label = NULL, y.label = NULL, pred.labels = NULL,
+  facet.modx = FALSE, robust = FALSE, cluster = NULL, vcov = NULL,
+  set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
   legend.main = NULL, color.class = NULL, line.thickness = 1.1,
-  vary.lty = TRUE, jitter = 0.1, rug = FALSE, rug_sides = "b")
+  vary.lty = TRUE, point.size = 2, point.shape = FALSE, jitter = 0,
+  rug = FALSE, rug.sides = "b")
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -92,16 +93,14 @@ the references for more details on the intuition behind this. It is
 recommended that you also set \code{plot.points = TRUE} and use
 \code{modxvals = "terciles"} with this option.}
 
-\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
-errors instead of conventional SEs. These are also known as Huber-White
-standard errors. There are several options provided by
-\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
-\code{"HC4m"}, \code{"HC5"}.
+\item{facet.modx}{Create separate panels for each level of the moderator?
+Default is FALSE, except when \code{linearity.check} is TRUE.}
 
-Default is \code{FALSE}.
-
-This requires the \code{sandwich} package to compute the
-standard errors.}
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
 
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
@@ -146,11 +145,9 @@ for the plot. If \code{NULL}, no main title is used.}
 appears above the legend. If \code{NULL}, the name of the moderating
 variable is used.}
 
-\item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
-Alternately, you may provide a vector of color values in any format
-accepted by \code{ggplot2}.}
+\item{color.class}{See \link{jtools_colors} for details on the types of arguments
+accepted. Default is "CUD Bright" for factor
+moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
@@ -158,14 +155,23 @@ ggplot's default is 1.}
 \item{vary.lty}{Should the resulting plot have different shapes for each
 line in addition to colors? Defaults to \code{TRUE}.}
 
+\item{point.size}{What size should be used for observed data when
+\code{plot.points} is TRUE? Default is 2.}
+
+\item{point.shape}{For plotted points---either of observed data or predicted
+values with the "point" or "line" geoms---should the shape of the points
+vary by the values of the factor? This is especially useful if you aim to
+be black and white printing- or colorblind-friendly.}
+
 \item{jitter}{How much should \code{plot.points} observed values be "jittered"
 via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
 other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
-values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering. If the argument is a vector with two values,
-then the first is assumed to be the jitter for width and the second the
+values or cause other visual issues. Default is 0, but try various
+small values (e.g., 0.1) and increase as needed if your points are
+overlapping too much. If the argument is a vector with two values,
+then the first is assumed to be the jitter for width and the second
 for the height.}
 
 \item{rug}{Show a rug plot in the margins? This uses \code{\link[ggplot2:geom_rug]{ggplot2::geom_rug()}}
@@ -173,7 +179,7 @@ to show the distribution of the predictor (top/bottom) and/or
 response variable (left/right) in the original data. Default is
 FALSE.}
 
-\item{rug_sides}{On which sides should rug plots appear? Default is "b",
+\item{rug.sides}{On which sides should rug plots appear? Default is "b",
 meaning bottom. "t" and/or "b" show the distribution of the predictor
 while "l" and/or "r" show the distribution of the response. "bl" is
 a good option to show both the predictor and response.}
@@ -197,7 +203,8 @@ task.
 
 This function supports nonlinear and generalized linear models and by
 default will plot them on their original scale
-(\code{outcome.scale = "response"``). To plot them on the linear scale, use "link" for}outcome.scale`.
+(\code{outcome.scale = "response"}). To plot them on the linear scale,
+use "link" for \code{outcome.scale}.
 
 While mixed effects models from \code{lme4} are supported, only the fixed
 effects are plotted. \code{lme4} does not provide confidence intervals,
@@ -209,7 +216,8 @@ put its name in quotes or backticks in the argument.
 \emph{Details on how observed data are split in multi-pane plots}:
 
 If you set \code{plot.points = TRUE} and request a multi-pane (facetted) plot
-either with a second moderator or \code{linearity.check = TRUE}, the observed
+either with a second moderator, \code{linearity.check = TRUE}, or
+\code{facet.modx = TRUE}, the observed
 data are split into as many groups as there  are panes and plotted
 separately. If the moderator is a factor, then the way this happens will
 be very intuitive since it's obvious which values go in which pane. The
@@ -251,10 +259,8 @@ with the \code{data} argument.
 # Using a fitted lm model
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
-fit <- lm(Income ~ HSGrad + Murder * Illiteracy,
-  data = states)
-interact_plot(model = fit, pred = Murder,
-  modx = Illiteracy)
+fit <- lm(Income ~ HSGrad + Murder * Illiteracy, data = states)
+interact_plot(model = fit, pred = Murder, modx = Illiteracy)
 
 # Using interval feature
 fit <- lm(accel ~ mag * dist, data = attenu)
@@ -262,10 +268,8 @@ interact_plot(fit, pred = mag, modx = dist, interval = TRUE,
   int.type = "confidence", int.width = .8)
 
 # Using second moderator
-fit <- lm(Income ~ HSGrad * Murder * Illiteracy,
-  data = states)
-interact_plot(model = fit, pred = Murder,
-  modx = Illiteracy, mod2 = HSGrad)
+fit <- lm(Income ~ HSGrad * Murder * Illiteracy, data = states)
+interact_plot(model = fit, pred = Murder, modx = Illiteracy, mod2 = HSGrad)
 
 # With svyglm
 library(survey)
@@ -319,4 +323,3 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{interaction tools}

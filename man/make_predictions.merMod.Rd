@@ -11,7 +11,7 @@
   linearity.check = FALSE, set.offset = 1, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, int.type = c("confidence",
   "prediction"), preds.per.level = 100, boot = FALSE, sims = 100,
-  progress = "txt", force.cat = FALSE, ...)
+  progress = "txt", force.cat = FALSE, facet.modx = linearity.check, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -127,8 +127,8 @@ models larger numbers may better capture the curvature.}
 
 \item{boot}{Use \code{\link[lme4:bootMer]{lme4::bootMer()}} to generate confidence intervals instead
 of estimating fixed effects variance with variance-covariance matrices?
-Default is FALSE but this is probably more defensible for publication-level
-output. See Details for a little bit more information.}
+Default is FALSE but this is probably more defensible for
+publication-level output. See Details for a little bit more information.}
 
 \item{sims}{How many bootstrap simulations should be used? Default is 100,
 but should usually be much higher. Just be aware that runtime may be
@@ -143,10 +143,15 @@ suppress the progress bar.}
 can be helpful when you have 0/1 dummy variables that you don't want to
 plot as if intermediate values are possible.}
 
+\item{facet.modx}{Create separate panels for each level of the moderator?
+Default is FALSE, except when \code{linearity.check} is TRUE.}
+
 \item{...}{Extra arguments passed to \code{\link[lme4:bootMer]{lme4::bootMer()}} if \code{boot} is TRUE.}
 }
 \description{
-Generate predicted data for merMod models
+This function produces predicted data for merMod models,
+including confidence intervals calculated via one of two methods if
+requested.
 }
 \details{
 The ability to bootstrap the variances is not available through

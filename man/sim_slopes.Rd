@@ -74,16 +74,11 @@ is \code{FALSE}.}
 \item{jnalpha}{What should the alpha level be for the Johnson-Neyman
 interval? Default is .05, which corresponds to a 95\% confidence interval.}
 
-\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
-errors instead of conventional SEs. These are also known as Huber-White
-standard errors. There are several options provided by
-\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
-\code{"HC4m"}, \code{"HC5"}.
-
-Default is \code{FALSE}.
-
-This requires the \code{sandwich} package to compute the
-standard errors.}
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
@@ -186,4 +181,3 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{interaction tools}

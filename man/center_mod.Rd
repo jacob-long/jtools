@@ -104,4 +104,3 @@ Other standardization, scaling, and centering tools: \code{\link{center}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{standardization, scaling, and centering tools}

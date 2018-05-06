@@ -106,5 +106,3 @@ Other survey tools: \code{\link{pf_sv_test}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{\pkg{survey} package extensions}
-\concept{survey tools}

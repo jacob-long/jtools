@@ -78,11 +78,15 @@ standard errors are used.}
 \item{model.info}{Toggles printing of basic information on sample size,
 name of DV, and number of predictors.}
 
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
+\item{model.fit}{Toggles printing of model fit statistics.}
 
 \item{model.check}{Toggles whether to perform Breusch-Pagan test for
 heteroskedasticity
 and print number of high-leverage observations. See details for more info.}
+
+\item{which.cols}{Developmental feature. By providing columns by name,
+you can add/remove/reorder requested columns in the output. Not fully
+supported, for now.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}

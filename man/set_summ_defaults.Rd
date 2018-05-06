@@ -18,7 +18,7 @@ number.}
 \item{model.info}{Toggles printing of basic information on sample size,
 name of DV, and number of predictors.}
 
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
+\item{model.fit}{Toggles printing of model fit statistics.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}.}
@@ -43,6 +43,11 @@ to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
 factors (VIF). Default is \code{FALSE}.}
+
+\item{conf.method}{Argument passed to \code{\link[lme4:confint.merMod]{lme4::confint.merMod()}}. Default
+is \code{"Wald"}, but \code{"profile"} or \code{"boot"} are better when accuracy is a
+priority. Be aware that both of the alternate methods are sometimes very
+time-consuming.}
 }
 \description{
 This function is convenience wrapper for manually setting

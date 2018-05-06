@@ -9,12 +9,13 @@ cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
   modxvals = NULL, mod2vals = NULL, interval = TRUE,
   plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
   centered = "all", int.type = c("confidence", "prediction"),
-  int.width = 0.95, geom.alpha = NULL, dodge.width = NULL,
-  errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
-  outcome.scale = "response", robust = FALSE, cluster = NULL,
-  vcov = NULL, pred.labels = NULL, modx.labels = NULL,
+  int.width = 0.95, line.thickness = 1, point.size = 1,
+  pred.point.size = 3.5, jitter = 0.1, geom.alpha = NULL,
+  dodge.width = NULL, errorbar.width = NULL, interval.geom = c("errorbar",
+  "linerange"), outcome.scale = "response", robust = FALSE,
+  cluster = NULL, vcov = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
-  main.title = NULL, legend.main = NULL, color.class = "Set2")
+  main.title = NULL, legend.main = NULL, color.class = "CUD Bright")
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -111,6 +112,27 @@ error? The default, .95, corresponds to roughly 1.96 standard errors and
 a .05 alpha level for values outside the range. In other words, for a
 confidence interval, .95 is analogous to a 95\% confidence interval.}
 
+\item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
+ggplot's default is 1.}
+
+\item{point.size}{What size should be used for observed data when
+\code{plot.points} is TRUE? Default is 2.}
+
+\item{pred.point.size}{If TRUE and \code{geom} is \code{"point"} or \code{"line"},
+sets the size of the predicted points. Default is 3.5.
+Note the distinction from \code{point.size}, which refers to the
+observed data points.}
+
+\item{jitter}{How much should \code{plot.points} observed values be "jittered"
+via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
+other, jittering moves them a small amount to keep them from
+totally overlapping. In some cases, though, it can add confusion since
+it may make points appear to be outside the boundaries of observed
+values or cause other visual issues. Default is 0.1, but increase as
+needed if your points are overlapping too much or set to 0 for no jitter.
+If the argument is a vector with two values, then the first is assumed to
+be the jitter for width and the second for the height.}
+
 \item{geom.alpha}{What should the alpha aesthetic be for the plotted
 lines/bars? Default is NULL, which means it is set depending on the value
 of \code{geom} and \code{plot.points}.}
@@ -135,16 +157,11 @@ default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
 
-\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
-errors instead of conventional SEs. These are also known as Huber-White
-standard errors. There are several options provided by
-\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
-\code{"HC4m"}, \code{"HC5"}.
-
-Default is \code{FALSE}.
-
-This requires the \code{sandwich} package to compute the
-standard errors.}
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
 
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
@@ -230,17 +247,9 @@ the original data separately to the \code{data} argument.
 Offsets are partially supported by this function with important
 limitations. First of all, only a single offset per model is supported.
 Second, it is best in general to specify offsets with the offset argument
-of the model fitting function rather than in the formula. If it is
-specified in the formula with a svyglm, this function will stop with an
-error message.
-
-It is also advised not to do any transformations to the offset other than
-the common log transformation. If you apply a log transform, this function
-will deal with it sensibly. So if your offset is a logged count, the
-exposure you set will be the non-logged version, which is much easeir to
-wrap one's head around. For any other transformation you may apply, or
-if you apply no transformation at all, the exposures used will be the
-post-tranformation number (which is by default 1).
+of the model fitting function rather than in the formula. You are much
+more likely to have success if you provide the data used to fit the model
+with the \code{data} argument.
 }
 \examples{
 
@@ -274,4 +283,3 @@ Other interaction tools: \code{\link{interact_plot}},
   \code{\link{johnson_neyman}},
   \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
 }
-\concept{interaction tools}

@@ -129,4 +129,3 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{interaction tools}

@@ -9,8 +9,8 @@ effect_plot(model, pred, centered = "all", plot.points = FALSE,
   int.width = 0.95, outcome.scale = "response", robust = FALSE,
   cluster = NULL, vcov = NULL, set.offset = 1, x.label = NULL,
   y.label = NULL, pred.labels = NULL, main.title = NULL,
-  color.class = NULL, line.thickness = 1.1, jitter = 0.1, rug = FALSE,
-  rug_sides = "b")
+  color.class = NULL, line.thickness = 1.1, point.size = 2, jitter = 0,
+  rug = FALSE, rug.sides = "b")
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -58,16 +58,11 @@ default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
 
-\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
-errors instead of conventional SEs. These are also known as Huber-White
-standard errors. There are several options provided by
-\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
-\code{"HC4m"}, \code{"HC5"}.
-
-Default is \code{FALSE}.
-
-This requires the \code{sandwich} package to compute the
-standard errors.}
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
 
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
@@ -96,23 +91,25 @@ a 2-level factor or a continuous variable with only 2 values. If
 \item{main.title}{A character object that will be used as an overall title
 for the plot. If \code{NULL}, no main title is used.}
 
-\item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
-Alternately, you may provide a vector of color values in any format
-accepted by \code{ggplot2}.}
+\item{color.class}{See \link{jtools_colors} for details on the types of arguments
+accepted. Default is "CUD Bright" for factor
+moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
+
+\item{point.size}{What size should be used for observed data when
+\code{plot.points} is TRUE? Default is 2.}
 
 \item{jitter}{How much should \code{plot.points} observed values be "jittered"
 via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
 other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
-values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering. If the argument is a vector with two values,
-then the first is assumed to be the jitter for width and the second the
+values or cause other visual issues. Default is 0, but try various
+small values (e.g., 0.1) and increase as needed if your points are
+overlapping too much. If the argument is a vector with two values,
+then the first is assumed to be the jitter for width and the second
 for the height.}
 
 \item{rug}{Show a rug plot in the margins? This uses \code{\link[ggplot2:geom_rug]{ggplot2::geom_rug()}}
@@ -120,7 +117,7 @@ to show the distribution of the predictor (top/bottom) and/or
 response variable (left/right) in the original data. Default is
 FALSE.}
 
-\item{rug_sides}{On which sides should rug plots appear? Default is "b",
+\item{rug.sides}{On which sides should rug plots appear? Default is "b",
 meaning bottom. "t" and/or "b" show the distribution of the predictor
 while "l" and/or "r" show the distribution of the response. "bl" is
 a good option to show both the predictor and response.}

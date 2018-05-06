@@ -28,7 +28,7 @@ desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
 \item{se}{One of "nid", "rank", "iid", "ker", or "boot". "nid" is default.
-See \code{\link[quantreg:summary.qr]{quantreg::summary.qr()}} documentation for more about these options.}
+See \code{\link[quantreg:summary.rq]{quantreg::summary.rq()}} documentation for more about these options.}
 
 \item{boot.sims}{If \code{se = "boot"}, the number of bootstrap replications to
 perform. This is passed as the \code{R} argument to \code{boot.rq}}
@@ -76,12 +76,10 @@ supported, for now.}
 types of models.}
 }
 \description{
-Quantile regression summaries with options
-}
-\details{
 \code{summ} prints output for a regression model in a fashion
 similar to \code{summary}, but formatted differently with more options.
-
+}
+\details{
 This method implements most of the things I think most users would
 asking \code{summary.rq} for. \code{hs}, \code{U}, and \code{gamma} are ignored.
 
