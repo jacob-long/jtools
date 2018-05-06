@@ -723,6 +723,7 @@ getLL <- function(object) {
 #### Quantile regression helpers ##############################################
 
 # Get R1 (Koenker & Machado, 1999)
+#' @importFrom stats model.response
 R1 <- function(model) {
   rho_1 <- model$rho
   null_resids <- model.frame(model)[[1]] - quantile(model.frame(model)[[1]],
@@ -900,9 +901,11 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
 ### cut2 ######################################################################
 
 ## Taken from Hmisc package to avoid importing for a minor feature
+## Added "levels.median"
 #' @importFrom stats approx
 #'
-cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE, digits,
+cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE,
+                 levels.median = FALSE, digits,
                  minmax = TRUE, oneval = TRUE, onlycuts = FALSE) {
   method <- 1
   x.unique <- sort(unique(c(x[!is.na(x)], if (!missing(cuts)) cuts)))
@@ -1027,6 +1030,9 @@ cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE, digits,
   if (levels.mean) {
     means <- tapply(x, y, function(w) mean(w, na.rm = TRUE))
     levels(y) <- format(means)
+  } else if (levels.median) {
+    medians <- tapply(x, y, function(w) median(w, na.rm = TRUE))
+    levels(y) <- format(medians)
   }
   attr(y, "class") <- "factor"
   # if (length(xlab))
