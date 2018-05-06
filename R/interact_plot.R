@@ -122,11 +122,9 @@
 #'   appears above the legend. If \code{NULL}, the name of the moderating
 #'   variable is used.
 #'
-#' @param color.class Any palette argument accepted by
-#'   \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
+#' @param color.class See [jtools_colors] for details on the types of arguments
+#'    accepted. Default is "CUD Bright" for factor
 #'    moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
-#'    Alternately, you may provide a vector of color values in any format
-#'    accepted by `ggplot2`.
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
@@ -697,7 +695,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   robust = FALSE, cluster = NULL, vcov = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, set.offset = 1, x.label = NULL,
   y.label = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "Set2") {
+  color.class = "CUD Bright") {
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(deparse(substitute(pred)))

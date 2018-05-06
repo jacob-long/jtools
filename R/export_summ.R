@@ -371,9 +371,8 @@ export_summs <- function(...,
 #'   in the plot, provide them as a vector. This argument is overridden by
 #'   `coefs` if both are provided. By default, the intercept term is omitted.
 #'   To include the intercept term, just set omit.coefs to NULL.
-#' @param color.class A color class understood by
-#'   [ggplot2::scale_colour_brewer()] for differentiating multiple models.
-#'   Not used if only one model is plotted. Default: 'Set2'
+#' @param color.class See [jtools_colors] for more on your color options.
+#'   Default: 'CUD Bright'
 #' @param plot.distributions Instead of just plotting the ranges, you may
 #'   plot normal distributions representing the width of each estimate. Note
 #'   that these are completely theoretical and not based on a bootstrapping
@@ -434,7 +433,7 @@ export_summs <- function(...,
 
 plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
-                       color.class = "Set2", plot.distributions = FALSE,
+                       color.class = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
                        point.shape = TRUE) {
 
@@ -459,7 +458,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   args <- as.list(c(the_summs, ci_level = ci_level,
             model.names = list(model.names), coefs = list(coefs),
             omit.coefs = list(omit.coefs),
-            inner_ci_level = inner_ci_level, color.class = color.class,
+            inner_ci_level = inner_ci_level, color.class = list(color.class),
             plot.distributions = plot.distributions,
             rescale.distributions = rescale.distributions, exp = exp,
             point.shape = point.shape, ex_args))
@@ -476,7 +475,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        model.names = NULL, coefs = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
-                       color.class = "Set2", plot.distributions = FALSE,
+                       color.class = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
                        exp = FALSE, point.shape = TRUE) {
 
@@ -558,6 +557,13 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 
   p <- ggplot(data = tidies)
 
+  # Checking if user provided the colors his/herself
+  if (length(color.class) == 1 | length(color.class) != n_models) {
+    colors <- get_colors(color.class, n_models)
+  } else {
+    colors <- color.class
+  }
+
   # "dodge height" determined by presence of distribution plots
   dh <- as.numeric(!plot.distributions) * 0.5
   # Plot distribution layer first so it is beneath the pointrange
@@ -571,7 +577,10 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                           aes(x = est, y = curve,
                               group = interaction(term, model), fill = model),
                           alpha = 0.7, show.legend = FALSE) +
-    scale_fill_brewer(palette = color.class, limits = rev(levels(tidies$model)))
+    scale_fill_manual(name = legend.title,
+                      values = get_colors(color.class, n_models),
+                      breaks = rev(levels(tidies$model)),
+                      limits = rev(levels(tidies$model)))
   }
 
   # Plot the inner CI using linerange first, so the point can overlap it
@@ -611,9 +620,11 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 
   p <- p +
     geom_vline(xintercept = 1 - !exp, linetype = 2, size = .25) +
-    scale_colour_brewer(palette = color.class,
-     limits = rev(levels(tidies$model))) +
-    scale_y_discrete(limits = rev(levels(tidies$term))) +
+    scale_colour_manual(values = colors,
+     limits = rev(levels(tidies$model)),
+     breaks = rev(levels(tidies$model)),
+     labels = rev(levels(tidies$model)),
+     name = legend.title) +
     scale_shape_manual(limits = rev(levels(tidies$model)),
       values = shapes) +
     theme_apa(legend.pos = "right", legend.font.size = 9,

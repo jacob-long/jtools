@@ -206,7 +206,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   if (is.factor(d[[modx]])) {
     facmod <- TRUE
     if (is.null(color.class)) {
-      color.class <- "Set2"
+      color.class <- "CUD Bright"
     }
   } else {
     facmod <- FALSE
@@ -239,25 +239,11 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     mod2vals2 <- unique(pm[[mod2]])
   }
 
-  # Get palette from RColorBrewer myself so I can use darker values
-  if (length(color.class) == 1) {
-    if (facmod == FALSE) {
-      colors <- RColorBrewer::brewer.pal((length(modxvals2) + 1), color.class)
-      colors <- colors[-1]
-    } else {
-      if (length(modxvals2) == 2) {
-        num_colors <- 3
-      } else {
-        num_colors <- length(modxvals2)
-      }
-      colors <- RColorBrewer::brewer.pal(num_colors, color.class)
-      colors <- colors[seq_along(modxvals2)]
-    }
+  # Get manually defined colors from whichever source requested
+  if (length(color.class) == 1 | length(color.class) >= length(modxvals2)) {
+    colors <- suppressWarnings(get_colors(color.class, length(modxvals2)))
   } else { # Allow manually defined colors
-    colors <- color.class
-    if (length(colors) != length(modxvals2)) {
-      stop("Manually defined colors must be of same length as modxvals.")
-    }
+    stop("Manually defined colors must be of same length as modxvals.")
   }
 
   # Manually set linetypes
@@ -591,8 +577,8 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
    modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
    point.shape = FALSE, vary.lty = FALSE,  pred.labels = NULL,
    modx.labels = NULL, mod2.labels = NULL, x.label = NULL, y.label = NULL,
-   main.title = NULL, legend.main = NULL, color.class = "Set2", wts = NULL,
-   resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL,
+   main.title = NULL, legend.main = NULL, color.class = "CUD Bright",
+   wts = NULL, resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL,
    errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
    line.thickness = 1.1, point.size = 1, pred.point.size = 3.5) {
 
@@ -656,22 +642,9 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
     d[[pred]] <- factor(d[[pred]], levels = pred.levels, labels = pred.labels)
   }
 
-  # Sequential palettes get different treatment
-  sequentials <-
-    c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges", "OrRd",
-      "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu",
-      "YlOrBr", "YlOrRd")
-
   # Checking if user provided the colors his/herself
   if (length(color.class) == 1 | length(color.class) != length(modx.labels)) {
-    # Get palette from RColorBrewer myself so I can use darker values
-    if (color.class %in% sequentials) {
-      colors <- RColorBrewer::brewer.pal((length(modx.labels) + 1), color.class)
-      colors <- rev(colors)[-1]
-    } else {
-      suppressWarnings(
-        colors <- RColorBrewer::brewer.pal(length(modx.labels), color.class))
-    }
+    colors <- suppressWarnings(get_colors(color.class, length(modx.labels)))
   } else {
     colors <- color.class
   }
