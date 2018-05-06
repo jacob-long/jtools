@@ -614,10 +614,9 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 
   # To set the shape aesthetic, I prefer the points that can be filled. But
   # there are only 6 such shapes, so I need to check how many models there are.
-  if (n_models < 7 & point.shape == TRUE) {
-    shapes <- 21:(21 + n_models)
-  } else if (point.shape == TRUE) {
-    shapes <- 1:n_models
+  if (point.shape == TRUE) {
+    oshapes <- c(21:25, 15:18, 3, 4, 8)
+    shapes <- oshapes[seq_len(n_models)]
   } else if (point.shape == FALSE) {
     shapes <- rep(21, times = n_models)
   }
