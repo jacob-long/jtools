@@ -9,11 +9,12 @@
 #'   \item \code{\link{summ.glm}}
 #'   \item \code{\link{summ.svyglm}}
 #'   \item \code{\link{summ.merMod}}
+#'   \item \code{\link{summ.rq}}
 #'
 #' }
 #'
-#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
-#'   \code{\link[lme4]{merMod}} object.
+#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},
+#'   \code{\link[lme4]{merMod}}, \code{\link[quantreg]{rq}} object.
 #' @param ... Other arguments to be passed to the model.specific function.
 #'
 #'
@@ -744,6 +745,7 @@ summ.glm <- function(
     names(cis) <- labs
     params[["exp(Est.)"]] <- ecoefs
     params[names(cis)] <- cis
+    if ("confint" %nin% names(the_call)) {confint <- TRUE}
 
   } else {
 
@@ -1922,7 +1924,7 @@ summs <- function(models, ...) {
                                                   dep_names)]
       if (!is.null(extra_args)) {
         extra_args <- lapply(extra_args, function(x) {
-          if (length(x) > 1) {return(x[i])} else {return(x)}
+          if (length(x) > 1) {return(x[[i]])} else {return(x)}
         })
       }
 
