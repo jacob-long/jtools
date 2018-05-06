@@ -390,6 +390,9 @@ export_summs <- function(...,
 #' @param point.shape When using multiple models, should each model's point
 #'   estimates use a different point shape to visually differentiate each
 #'   model from the others? Default is TRUE.
+#' @param legend.title What should the title for the legend be? Default is
+#'   "Model", but you can specify it here since it is rather difficult to
+#'   change later via `ggplot2`'s typical methods.
 #' @return A ggplot object.
 #' @details A note on the distinction between `plot_summs` and `plot_coefs`:
 #'   `plot_summs` only accepts models supported by [summ()] and allows users
@@ -435,7 +438,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        color.class = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
-                       point.shape = TRUE) {
+                       point.shape = TRUE, legend.title = "Model") {
 
   # Capture arguments
   dots <- list(...)
@@ -461,7 +464,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
             inner_ci_level = inner_ci_level, color.class = list(color.class),
             plot.distributions = plot.distributions,
             rescale.distributions = rescale.distributions, exp = exp,
-            point.shape = point.shape, ex_args))
+            point.shape = point.shape, legend.title = legend.title, ex_args))
 
   do.call("plot_coefs", args = args)
 
@@ -477,7 +480,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
                        color.class = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
-                       exp = FALSE, point.shape = TRUE) {
+                       exp = FALSE, point.shape = TRUE,
+                       legend.title = "Model") {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
@@ -625,10 +629,12 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
      breaks = rev(levels(tidies$model)),
      labels = rev(levels(tidies$model)),
      name = legend.title) +
+    scale_y_discrete(limits = rev(levels(tidies$term)),
+                     name = legend.title) +
     scale_shape_manual(limits = rev(levels(tidies$model)),
-      values = shapes) +
+      values = shapes, name = legend.title) +
     theme_apa(legend.pos = "right", legend.font.size = 9,
-              remove.x.gridlines = FALSE) +
+              remove.x.gridlines = FALSE, legend.use.title = TRUE) +
     theme(axis.title.y = element_blank(),
           axis.text.y = element_text(size = 10)) +
     xlab(ifelse(exp, no = "Estimate", yes = "exp(Estimate)"))
