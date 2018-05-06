@@ -137,9 +137,10 @@
 #'    other, jittering moves them a small amount to keep them from
 #'    totally overlapping. In some cases, though, it can add confusion since
 #'    it may make points appear to be outside the boundaries of observed
-#'    values or cause other visual issues. Default is 0.1, but set to 0 if
-#'    you want no jittering. If the argument is a vector with two values,
-#'    then the first is assumed to be the jitter for width and the second the
+#'    values or cause other visual issues. Default is 0, but try various
+#'    small values (e.g., 0.1) and increase as needed if your points are
+#'    overlapping too much. If the argument is a vector with two values,
+#'    then the first is assumed to be the jitter for width and the second
 #'    for the height.
 #'
 #' @param rug Show a rug plot in the margins? This uses [ggplot2::geom_rug()]
@@ -153,10 +154,20 @@
 #'    a good option to show both the predictor and response.
 #'
 #' @param point.size What size should be used for observed data when
-#'   `plot.points` is TRUE? Default is 1, `ggplot2`'s default.
+#'   `plot.points` is TRUE? Default is 2.
 #'
 #' @param facet.modx Create separate panels for each level of the moderator?
 #'   Default is FALSE, except when `linearity.check` is TRUE.
+#'
+#' @param robust Should robust standard errors be used to find confidence
+#'   intervals for supported models? Default is FALSE, but you should specify
+#'   the type of sandwich standard errors if you'd like to use them (i.e.,
+#'   `"HC0"`, `"HC1"`, and so on). If `TRUE`, defaults to `"HC3"` standard
+#'   errors.
+#'
+#' @param cluster For clustered standard errors, provide the column name of
+#'   the cluster variable in the input data frame (as a string). Alternately,
+#'   provide a vector of clusters.
 #'
 #' @inheritParams cat_plot
 #'
@@ -169,7 +180,7 @@
 #'
 #'   This function supports nonlinear and generalized linear models and by
 #'   default will plot them on their original scale
-#'   (`outcome.scale = "response"``). To plot them on the linear scale,
+#'   (`outcome.scale = "response"`). To plot them on the linear scale,
 #'   use "link" for `outcome.scale`.
 #'
 #'   While mixed effects models from \code{lme4} are supported, only the fixed
@@ -307,8 +318,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE,
-                          point.size = 1, point.shape = FALSE,
-                          jitter = 0.1, rug = FALSE, rug.sides = "b") {
+                          point.size = 2, point.shape = FALSE,
+                          jitter = 0, rug = FALSE, rug.sides = "b") {
 
   # Evaluate the modx, mod2, pred args
   # This is getting nasty due to my decision to use NSE
@@ -475,8 +486,8 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
-                        point.size = 1,
-                        jitter = 0.1, rug = FALSE, rug.sides = "b") {
+                        point.size = 2,
+                        jitter = 0, rug = FALSE, rug.sides = "b") {
 
   # Evaluate the pred arg
   pred <- as.character(deparse(substitute(pred)))
@@ -620,6 +631,16 @@ print.effect_plot <- function(x, ...) {
 #'  Note the distinction from `point.size`, which refers to the
 #'  observed data points.
 #'
+#' @param jitter How much should `plot.points` observed values be "jittered"
+#'    via [ggplot2::position_jitter()]? When there are many points near each
+#'    other, jittering moves them a small amount to keep them from
+#'    totally overlapping. In some cases, though, it can add confusion since
+#'    it may make points appear to be outside the boundaries of observed
+#'    values or cause other visual issues. Default is 0.1, but increase as
+#'    needed if your points are overlapping too much or set to 0 for no jitter.
+#'    If the argument is a vector with two values, then the first is assumed to
+#'    be the jitter for width and the second for the height.
+#'
 #' @inheritParams interact_plot
 #'
 #' @details This function provides a means for plotting conditional effects
@@ -694,7 +715,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
   point.shape = FALSE, vary.lty = FALSE, centered = "all",
   int.type = c("confidence", "prediction"), int.width = .95,
-  line.thickness = 1.1, point.size = 1, pred.point.size = 3.5,
+  line.thickness = 1, point.size = 1, pred.point.size = 3.5, jitter = 0.1,
   geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
   interval.geom = c("errorbar", "linerange"), outcome.scale = "response",
   robust = FALSE, cluster = NULL, vcov = NULL, pred.labels = NULL,
@@ -755,6 +776,6 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
            geom.alpha = geom.alpha, dodge.width = dodge.width,
            errorbar.width = errorbar.width, interval.geom = interval.geom,
            point.size = point.size, line.thickness = line.thickness,
-           pred.point.size = pred.point.size)
+           pred.point.size = pred.point.size, jitter = jitter)
 
 }

@@ -45,6 +45,12 @@
 #' @param weights If the data are weighted, provide a vector of weights here.
 #'   This is only used if `plot.points = TRUE` and `data` is not NULL.
 #'
+#' @param force.cat Force the predictor to be treated as if it is a factor,
+#'   even if it isn't? Default is FALSE. Set to TRUE if you'd like to generate
+#'   a type of plot normally reserved for categorical variables. This can be
+#'   helpful for numeric variables that have a small number of unique values,
+#'   for instance.
+#'
 #' @param ... Ignored.
 #'
 #' @inheritParams interact_plot
@@ -82,7 +88,7 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   predvals = NULL, modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
   facet.modx = FALSE, x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL, legend.main = NULL,
-  color.class = NULL, line.thickness = 1.1, vary.lty = NULL, jitter = 0.1,
+  color.class = NULL, line.thickness = 1.1, vary.lty = NULL, jitter = 0,
   weights = NULL, rug = FALSE, rug.sides = "b", force.cat = FALSE,
   point.shape = FALSE, geom.alpha = NULL, dodge.width = NULL,
   errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
@@ -195,9 +201,9 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   data = NULL, plot.points = FALSE, interval = FALSE, linearity.check = FALSE,
   x.label = NULL, y.label = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, main.title = NULL, legend.main = NULL, color.class = NULL,
-  line.thickness = 1.1, vary.lty = TRUE, jitter = 0.1, modxvals2 = NULL,
+  line.thickness = 1.1, vary.lty = TRUE, jitter = 0, modxvals2 = NULL,
   mod2vals2 = NULL, wts = NULL, rug = FALSE, rug.sides = "b",
-  point.shape = FALSE, point.size = 1, facet.modx = FALSE) {
+  point.shape = FALSE, point.size = 2, facet.modx = FALSE) {
 
   d <- data
   pm <- predictions

@@ -375,14 +375,19 @@ make_predictions.svyglm <-
 #### merMod method ##########################################################
 
 #' @title Generate predicted data for merMod models
+#'
+#' @description This function produces predicted data for merMod models,
+#'   including confidence intervals calculated via one of two methods if
+#'   requested.
+#'
 #' @inheritParams make_predictions
 #' @param add.re.variance Experimental. Adds variance specific to the
 #'   *random* effects in the model. Often overwhelms the fixed effects
 #'   variances and makes the plot uninterpretable.
 #' @param boot Use [lme4::bootMer()] to generate confidence intervals instead
 #'   of estimating fixed effects variance with variance-covariance matrices?
-#'   Default is FALSE but this is probably more defensible for publication-level
-#'   output. See Details for a little bit more information.
+#'   Default is FALSE but this is probably more defensible for
+#'   publication-level output. See Details for a little bit more information.
 #' @param sims How many bootstrap simulations should be used? Default is 100,
 #'   but should usually be much higher. Just be aware that runtime may be
 #'   considerable.
@@ -591,8 +596,9 @@ make_predictions.merMod <-
 #### stanreg method ##########################################################
 
 #' @title Make predictions for stanreg models
-#' @details This method adds support for `plot_predictions`, `interact_plot`,
-#'  `cat_plot`, and `effect_plot` for models fit with `rstanarm`.
+#' @description This method adds support for `plot_predictions`,
+#'  `interact_plot`, `cat_plot`, and `effect_plot` for models fit with
+#'  `rstanarm`.
 #' @inheritParams make_predictions
 #' @param estimate Should estimates be based on mean or median simulation?
 #'  Default is "mean".
@@ -732,8 +738,10 @@ make_predictions.stanreg <-
 #### brmsfit method ##########################################################
 
 #' @title Make predictions for brmsfit models
-#' @details This method adds support for `plot_predictions`, `interact_plot`,
-#'  `cat_plot`, and `effect_plot` for models fit with `brms`.
+#'
+#' @description This method adds support for `plot_predictions`,
+#'  `interact_plot`, `cat_plot`, and `effect_plot` for models fit with `brms`.
+#'
 #' @inheritParams make_predictions
 #' @param estimate Should estimates be based on mean or median simulation?
 #'  Default is "mean".
