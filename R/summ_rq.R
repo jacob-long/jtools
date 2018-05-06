@@ -1,13 +1,13 @@
 #' @title Quantile regression summaries with options
 #'
-#' @details \code{summ} prints output for a regression model in a fashion
+#' @description \code{summ} prints output for a regression model in a fashion
 #'  similar to \code{summary}, but formatted differently with more options.
 #'
 #' @param model A `rq` model. At this time, `rqs` models (multiple `tau`
 #'  parameters) are not supported.
 #'
 #' @param se One of "nid", "rank", "iid", "ker", or "boot". "nid" is default.
-#'  See [quantreg::summary.qr()] documentation for more about these options.
+#'  See [quantreg::summary.rq()] documentation for more about these options.
 #'
 #' @param boot.sims If `se = "boot"`, the number of bootstrap replications to
 #'  perform. This is passed as the `R` argument to `boot.rq`
