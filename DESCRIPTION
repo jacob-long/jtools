@@ -29,13 +29,14 @@ Suggests:
   RColorBrewer,
   sandwich,
   stats4,
-  survey,
   weights,
     knitr,
     rmarkdown,
     testthat
 Enhances: brms,
-  rstanarm
+  rstanarm,
+  quantreg,
+  survey
 RoxygenNote: 6.0.1.9000
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
