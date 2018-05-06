@@ -281,7 +281,7 @@ auto_mod_vals <-
       group_name <- paste0("mod", x_or_2)
       d[[group_name]] <- cut2(d[[modx]], g = 3, levels.median = TRUE)
       modxvals2 <- as.numeric(levels(d[[group_name]]))
-      msg_wrap("Medians of each tercile are ",
+      msg_wrap("Medians of each tercile of ", modx, " are ",
                paste(modxvals2, collapse = ", "))
 
       if (mod2 == FALSE) {
