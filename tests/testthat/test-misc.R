@@ -489,10 +489,12 @@ test_that("cat_plot handles offsets", {
   expect_silent(print(p))
 })
 
+if (requireNamespace("survey")) {
 test_that("cat_plot handles svyglm", {
   expect_silent(p <- cat_plot(regmodel, pred = both))
   expect_silent(print(p))
 })
+}
 
 test_that("cat_plot handles merMod", {
   expect_silent(p <- cat_plot(mv, pred = mode, modx = Gender, interval = FALSE))
