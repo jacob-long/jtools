@@ -182,7 +182,8 @@
 #'   \emph{Details on how observed data are split in multi-pane plots}:
 #'
 #'   If you set `plot.points = TRUE` and request a multi-pane (facetted) plot
-#'   either with a second moderator or `linearity.check = TRUE`, the observed
+#'   either with a second moderator, `linearity.check = TRUE`, or
+#'   `facet.modx = TRUE`, the observed
 #'   data are split into as many groups as there  are panes and plotted
 #'   separately. If the moderator is a factor, then the way this happens will
 #'   be very intuitive since it's obvious which values go in which pane. The
@@ -325,6 +326,9 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
   # Defining "global variables" for CRAN
   modxvals2 <- mod2vals2 <- resp <- NULL
 
+  # Change facet.modx to TRUE if linearity.check is TRUE
+  if (linearity.check == TRUE) {facet.modx <- TRUE}
+
   pred_out <- make_predictions(model = model, pred = pred,
                                modx = modx,
                                modxvals = modxvals, mod2 = mod2,
@@ -337,7 +341,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                                robust = robust, cluster = cluster,
                                vcov = vcov, set.offset = set.offset,
                                modx.labels = modx.labels,
-                               mod2.labels = mod2.labels)
+                               mod2.labels = mod2.labels,
+                               facet.modx = facet.modx)
 
   # These are the variables created in the helper functions
   meta <- attributes(pred_out)

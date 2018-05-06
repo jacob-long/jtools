@@ -60,7 +60,7 @@ make_predictions.default <-
            robust = FALSE, cluster = NULL, vcov = NULL, set.offset = 1,
            pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
            int.type = c("confidence", "prediction"), preds.per.level = 100,
-           force.cat = FALSE, ...) {
+           force.cat = FALSE, facet.modx = linearity.check, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -93,7 +93,7 @@ make_predictions.default <-
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
                        predvals = predvals, pred.labels = pred.labels,
-                       force.cat = force.cat)
+                       force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -208,7 +208,7 @@ make_predictions.default <-
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
                    modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                   force.cat = force.cat)
+                   force.cat = force.cat, facet.modx = facet.modx)
   class(out) <- "predictions"
 
   return(out)
@@ -227,7 +227,7 @@ make_predictions.svyglm <-
     outcome.scale = "response", linearity.check = FALSE, set.offset = 1,
     pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
     int.type = c("confidence","prediction"), preds.per.level = 100,
-    force.cat = FALSE, ...) {
+    force.cat = FALSE, facet.modx = linearity.check, ...) {
 
   design <- model$survey.design
   # assign("design", design, pos = parent.frame())
@@ -274,7 +274,7 @@ make_predictions.svyglm <-
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
                        predvals = predvals, pred.labels = pred.labels,
-                       force.cat = force.cat)
+                       force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -365,7 +365,7 @@ make_predictions.svyglm <-
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
                    modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                   force.cat = force.cat)
+                   force.cat = force.cat, facet.modx = facet.modx)
   class(out) <- "predictions"
 
   return(out)
@@ -411,7 +411,7 @@ make_predictions.merMod <-
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
            mod2.labels = NULL, int.type = c("confidence", "prediction"),
            preds.per.level = 100, boot = FALSE, sims = 100, progress = "txt",
-           force.cat = FALSE, ...) {
+           force.cat = FALSE, facet.modx = linearity.check, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -435,7 +435,7 @@ make_predictions.merMod <-
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
                        predvals = predvals, pred.labels = pred.labels,
-                       force.cat = force.cat)
+                       force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -580,7 +580,7 @@ make_predictions.merMod <-
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
                    modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                   force.cat = force.cat)
+                   force.cat = force.cat, facet.modx = facet.modx)
   class(out) <- "predictions"
 
   return(out)
@@ -604,7 +604,8 @@ make_predictions.stanreg <-
            plot.points = FALSE, interval = TRUE,
            int.width = .95, estimate = "mean", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-           mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE, ...) {
+           mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE,
+           facet.modx = linearity.check, ...) {
 
     # Avoid CRAN barking
     d <- facvars <- wts <- wname <- NULL
@@ -628,7 +629,7 @@ make_predictions.stanreg <-
                          facvars = facvars, centered = centered,
                          preds.per.level = preds.per.level,
                          predvals = predvals, pred.labels = pred.labels,
-                         force.cat = force.cat)
+                         force.cat = force.cat, facet.modx = facet.modx)
 
     pm <- prepped$pm
     d <- prepped$d
@@ -721,7 +722,7 @@ make_predictions.stanreg <-
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
                    modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                   force.cat = force.cat)
+                   force.cat = force.cat, facet.modx = facet.modx)
   class(out) <- "predictions"
 
   return(out)
@@ -744,7 +745,8 @@ make_predictions.brmsfit <-
            plot.points = FALSE, interval = TRUE,
            int.width = .95, estimate = "mean", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-           mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE, ...) {
+           mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE,
+           facet.modx = linearity.check, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -768,7 +770,7 @@ make_predictions.brmsfit <-
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
                        predvals = predvals, pred.labels = pred.labels,
-                       force.cat = force.cat)
+                       force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -861,7 +863,7 @@ make_predictions.brmsfit <-
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
                    modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                   force.cat = force.cat)
+                   force.cat = force.cat, facet.modx = facet.modx)
   class(out) <- "predictions"
 
   return(out)
@@ -879,7 +881,8 @@ make_predictions.rq <-
            linearity.check = FALSE, set.offset = 1,
            pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
            int.type = c("confidence", "prediction"), preds.per.level = 100,
-           force.cat = FALSE, se = c("nid", "iid", "ker"), ...) {
+           force.cat = FALSE, se = c("nid", "iid", "ker"),
+           facet.modx = linearity.check, ...) {
 
   # Avoid CRAN barking
   d <- facvars <- wts <- wname <- NULL
@@ -910,7 +913,7 @@ make_predictions.rq <-
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
                        predvals = predvals, pred.labels = pred.labels,
-                       force.cat = force.cat)
+                       force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
   d <- prepped$d
@@ -990,7 +993,7 @@ make_predictions.rq <-
                    pred = pred, modx = modx, mod2 = mod2, resp = resp,
                    linearity.check = linearity.check, weights = wts,
                    modxvals2 = modxvals2, mod2vals2 = mod2vals2,
-                   force.cat = force.cat)
+                   force.cat = force.cat, facet.modx = facet.modx)
   class(out) <- "predictions"
 
   return(out)
