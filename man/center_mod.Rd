@@ -74,12 +74,14 @@ fitw <- lm(formula = Murder ~ Income * Illiteracy,
 fitw_center <- center_mod(fitw)
 
 # With svyglm
+if (requireNamespace("survey")) {
 library(survey)
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
                     data = apistrat, fpc =~ fpc)
 regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 regmodel_center <- center_mod(regmodel)
+}
 
 }
 \references{

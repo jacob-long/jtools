@@ -109,12 +109,14 @@ scale_lm <- scale_mod
 #' fitw_scale <- scale_mod(fitw, center = TRUE, binary.input = "0/1")
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
 #' regmodel_scale <- scale_mod(regmodel)
 #' regmodel_scale <- scale_mod(regmodel, binary.input = "0/1")
+#' }
 #'
 #' @importFrom stats weighted.mean as.formula getCall formula
 #' @importFrom stats model.matrix model.weights
@@ -427,12 +429,14 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 #' fitw_center <- center_mod(fitw)
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                     data = apistrat, fpc =~ fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #' regmodel_center <- center_mod(regmodel)
+#' }
 #'
 #' @export center_mod
 #' @aliases center_lm

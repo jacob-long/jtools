@@ -98,12 +98,14 @@ fitw_scale <- scale_mod(fitw)
 fitw_scale <- scale_mod(fitw, center = TRUE, binary.input = "0/1")
 
 # With svyglm
+if (requireNamespace("survey")) {
 library(survey)
 data(api)
 dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 regmodel <- svyglm(api00~ell*meals,design=dstrat)
 regmodel_scale <- scale_mod(regmodel)
 regmodel_scale <- scale_mod(regmodel, binary.input = "0/1")
+}
 
 }
 \references{
