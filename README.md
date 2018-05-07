@@ -1,6 +1,7 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-jtools
-======
+
+# jtools
 
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version-ago/jtools)](https://cran.r-project.org/package=jtools)
 [![GitHub
@@ -25,22 +26,27 @@ throughout.
 **Note**: This is beta software. Bugs are possible, both in terms of
 code-breaking errors and more pernicious errors of mistaken computation.
 
-Installation
-------------
+## Installation
 
 For the most stable version, simply install from CRAN.
 
-    install.packages("jtools")
+``` r
+install.packages("jtools")
+```
 
 If you want the latest features and bug fixes then you can download from
 Github. To do that you will need to have `devtools` installed if you
 don’t already:
 
-    install.packages("devtools")
+``` r
+install.packages("devtools")
+```
 
 Then install the package from Github.
 
-    devtools::install_github("jacob-long/jtools")
+``` r
+devtools::install_github("jacob-long/jtools")
+```
 
 You should also check out the
 [`dev`](https://github.com/jacob-long/jtools/tree/dev) branch of this
@@ -48,8 +54,7 @@ repository for the latest and greatest changes, but also the latest and
 greatest bugs. To see what features are on the roadmap, check the issues
 section of the repository, especially the “enhancement” tag.
 
-Usage
------
+## Usage
 
 Here’s a synopsis of the current functions in the package:
 
@@ -62,8 +67,10 @@ and reporting of robust standard errors via the `sandwich` package.
 
 Basic use:
 
-    fit <- lm(mpg ~ hp + wt, data = mtcars)
-    summ(fit)
+``` r
+fit <- lm(mpg ~ hp + wt, data = mtcars)
+summ(fit)
+```
 
     #> MODEL INFO:
     #> Observations: 32
@@ -92,10 +99,12 @@ You can also get variance inflation factors (VIFs) and
 partial/semipartial (AKA part) correlations. Partial correlations are
 only available for OLS models. You may also substitute confidence
 intervals in place of standard errors and you can choose whether to show
-p values.
+p
+values.
 
-    summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE,
-         pvals = FALSE)
+``` r
+summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = FALSE)
+```
 
     #> MODEL INFO:
     #> Observations: 32
@@ -117,9 +126,11 @@ p values.
 
 Cluster-robust standard errors:
 
-    data("PetersenCL", package = "sandwich")
-    fit2 <- lm(y ~ x, data = PetersenCL)
-    summ(fit2, robust = "HC3", cluster = "firm")
+``` r
+data("PetersenCL", package = "sandwich")
+fit2 <- lm(y ~ x, data = PetersenCL)
+summ(fit2, robust = "HC3", cluster = "firm")
+```
 
     #> MODEL INFO:
     #> Observations: 5000
@@ -146,199 +157,401 @@ First, for tabular output, `export_summs` is an interface to the
 standardization. It also concatenates multiple models into a single
 table.
 
-    fit <- lm(mpg ~ hp + wt, data = mtcars)
-    fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
-    fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
-    export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE,
-                 note = "")
+``` r
+fit <- lm(mpg ~ hp + wt, data = mtcars)
+fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
+fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
+coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
+                "Displacement" = "disp", "Rear axle ratio" = "drat",
+                "Constant" = "(Intercept)")
+export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
+```
 
-<table class="huxtable" style="border-collapse: collapse; width: 50%; margin-left: auto; margin-right: auto;">
+<table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto;">
+
 <col style="width: NA;">
+
 <col style="width: NA;">
+
 <col style="width: NA;">
+
 <col style="width: NA;">
+
 <tr>
+
 <td style="vertical-align: top; text-align: center; white-space: nowrap; border-width:0.8pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 </td>
+
 <td style="vertical-align: top; text-align: center; white-space: nowrap; border-width:0.8pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-Model 1
+
+Model
+1
+
 </td>
+
 <td style="vertical-align: top; text-align: center; white-space: nowrap; border-width:0.8pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-Model 2
+
+Model
+2
+
 </td>
+
 <td style="vertical-align: top; text-align: center; white-space: nowrap; border-width:0.8pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-Model 3
+
+Model
+3
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-(Intercept)
+
+Horsepower
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-0.00   
+
+\-0.36
+\*\* 
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-0.00  
+
+\-0.35
+\* 
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-0.00  
+
+\-0.40
+\*\*
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-(0.08)   
-</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-(0.08)  
-</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-(0.08)  
-</td>
-</tr>
-<tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-hp
-</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.36 \*\* 
-</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.35 \* 
-</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.40 \*\*
-</td>
-</tr>
-<tr>
-<td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-</td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.10)   
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.13)  
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.13)  
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-wt
+
+Weight
+(tons)
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.63 \*\*\*
+
+\-0.63
+\*\*\*
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.62 \*\*
+
+\-0.62
+\*\*
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.56 \*\*
+
+\-0.56
+\*\*
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.10)   
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.17)  
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.18)  
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-disp
+
+Displacement
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
        
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
--0.02  
+
+\-0.02   
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-0.08  
+
+0.08   
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
        
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.21)  
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.22)  
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-drat
+
+Rear axle
+ratio
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
        
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
       
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-0.16  
+
+0.16   
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 </td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
        
+
 </td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
       
+
 </td>
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 (0.12)  
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+Constant
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+0.00    
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+0.00   
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+0.00   
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+(0.08)   
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+(0.08)  
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.4pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
+(0.08)  
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 N
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 32       
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 32      
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 32      
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="vertical-align: top; text-align: left; white-space: nowrap; border-width:0pt 0pt 0.8pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-R 2
+
+R2
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.8pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 0.83    
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.8pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 0.83   
+
 </td>
+
 <td style="vertical-align: top; text-align: right; white-space: nowrap; border-width:0pt 0pt 0.8pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
+
 0.84   
+
 </td>
+
 </tr>
+
 <tr>
+
 <td colspan="4" style="vertical-align: top; text-align: left; white-space: normal; border-width:0pt 0pt 0pt 0pt; border-style: solid; border-top-color: NA;  border-right-color: NA;  border-bottom-color: NA;  border-left-color: NA; padding: 4pt 4pt 4pt 4pt; ">
-\*\*\* p &lt; 0.001; \*\* p &lt; 0.01; \* p &lt; 0.05.
+
+\*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05.
+
 </td>
+
 </tr>
+
 </table>
+
 In RMarkdown documents, using `export_summs` and the chunk option
 `results = 'asis'` will give you nice-looking tables in HTML and PDF
 output. Using the `to.word = TRUE` argument will create a Microsoft Word
@@ -351,24 +564,25 @@ made some slight changes to `ggplot2` geoms to make everything look
 nice; and like with `export_summs`, you can still get your scaled models
 and robust standard errors.
 
-    plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", 
-        coefs = c("Horsepower" = "hp", "Weight (tons)" = "wt", 
-            "Displacement" = "disp", "Rear axle ratio" = "drat"))
+``` r
+coef_names <- coef_names[1:4] # Dropping intercept for plots
+plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", coefs = coef_names)
+```
 
-![](tools/README-unnamed-chunk-7-1.png)
+![](tools/README-unnamed-chunk-7-1.png)<!-- -->
 
 And since you get a `ggplot` object in return, you can tweak and theme
 as you wish.
 
 Another way to visualize the uncertainty of your coefficients is via the
-`plot.distributions` argument.
+`plot.distributions`
+argument.
 
-    plot_summs(fit_c, scale = TRUE, robust = "HC3", 
-        coefs = c("Horsepower" = "hp", "Weight (tons)" = "wt", 
-            "Displacement" = "disp", "Rear axle ratio" = "drat"),
-        plot.distributions = TRUE)
+``` r
+plot_summs(fit_c, scale = TRUE, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
+```
 
-![](tools/README-unnamed-chunk-8-1.png)
+![](tools/README-unnamed-chunk-8-1.png)<!-- -->
 
 These show the 95% interval width of a normal distribution for each
 estimate.
@@ -405,8 +619,10 @@ interval and tell you the predictor’s slope at specified values of the
 moderator; by default either both values of binary predictors or the
 mean and the mean +/- one standard deviation for continuous moderators.
 
-    fiti <- lm(mpg ~ hp * wt, data = mtcars)
-    sim_slopes(fiti, pred = hp, modx = wt, jnplot = TRUE)
+``` r
+fiti <- lm(mpg ~ hp * wt, data = mtcars)
+sim_slopes(fiti, pred = hp, modx = wt, jnplot = TRUE)
+```
 
     #> JOHNSON-NEYMAN INTERVAL 
     #> 
@@ -415,7 +631,7 @@ mean and the mean +/- one standard deviation for continuous moderators.
     #> 
     #> Note: The range of observed values of wt is [1.51, 5.42]
 
-![](tools/README-j-n-plot-1.png)
+![](tools/README-j-n-plot-1.png)<!-- -->
 
     #> SIMPLE SLOPES ANALYSIS 
     #> 
@@ -444,23 +660,29 @@ a similar interface to the aforementioned `sim_slopes` function. Users
 can customize the appearance with familiar `ggplot2` commands. It
 supports several customizations, like confidence intervals.
 
-    interact_plot(fiti, pred = hp, modx = wt, interval = TRUE)
+``` r
+interact_plot(fiti, pred = hp, modx = wt, interval = TRUE)
+```
 
-![](tools/README-interact_plot_continuous-1.png)
+![](tools/README-interact_plot_continuous-1.png)<!-- -->
 
 You can also plot the observed data for comparison:
 
-    interact_plot(fiti, pred = hp, modx = wt, plot.points = TRUE)
+``` r
+interact_plot(fiti, pred = hp, modx = wt, plot.points = TRUE)
+```
 
-![](tools/README-interact_plot_continuous_points-1.png)
+![](tools/README-interact_plot_continuous_points-1.png)<!-- -->
 
 The function also supports categorical moderators—plotting observed data
 in these cases can reveal striking patterns.
 
-    fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
-    interact_plot(fitiris, pred = Petal.Width, modx = Species, plot.points = TRUE)
+``` r
+fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
+interact_plot(fitiris, pred = Petal.Width, modx = Species, plot.points = TRUE)
+```
 
-![](tools/README-interact_plot_factor-1.png)
+![](tools/README-interact_plot_factor-1.png)<!-- -->
 
 You may also combine the plotting and simple slopes functions by using
 `probe_interaction`, which calls both functions simultaneously.
@@ -471,19 +693,19 @@ Categorical by categorical interactions can be investigated using the
 
 There are several other things that might interest you.
 
--   `effect_plot`: Plot predicted lines from regression models without
+  - `effect_plot`: Plot predicted lines from regression models without
     interactions
--   `gscale`: Scale and/or mean-center data, including `svydesign`
+  - `gscale`: Scale and/or mean-center data, including `svydesign`
     objects
--   `scale_mod` and `center_mod`: Re-fit models with scaled and/or
+  - `scale_mod` and `center_mod`: Re-fit models with scaled and/or
     mean-centered data
--   `wgttest` and `pf_sv_test`, which are combined in `weights_tests`:
+  - `wgttest` and `pf_sv_test`, which are combined in `weights_tests`:
     Test the ignorability of sample weights in regression models
--   `svycor`: Generate correlation matrices from `svydesign` objects
--   `theme_apa`: A mostly APA-compliant `ggplot2` theme
--   `add_gridlines` and `drop_gridlines`: `ggplot2` theme-changing
+  - `svycor`: Generate correlation matrices from `svydesign` objects
+  - `theme_apa`: A mostly APA-compliant `ggplot2` theme
+  - `add_gridlines` and `drop_gridlines`: `ggplot2` theme-changing
     convenience functions
--   `make_predictions` and `plot_predictions`: a direct interface to the
+  - `make_predictions` and `plot_predictions`: a direct interface to the
     internals of `interact_plot`, `cat_plot`, and `effect_plot` with
     some added options
 
@@ -491,8 +713,7 @@ Details on the arguments can be accessed via the R documentation
 (`?functionname`). There are now vignettes documenting just about
 everything you can do as well.
 
-Contributing
-------------
+## Contributing
 
 I’m happy to receive bug reports, suggestions, questions, and (most of
 all) contributions to fix problems and add features. I prefer you use
@@ -503,8 +724,7 @@ Please note that this project is released with a [Contributor Code of
 Conduct](CONDUCT.md). By participating in this project you agree to
 abide by its terms.
 
-License
--------
+## License
 
 The source code of this package is licensed under the [MIT
 License](http://opensource.org/licenses/mit-license.php).

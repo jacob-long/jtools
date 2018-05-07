@@ -1,5 +1,5 @@
 ---
-output: md_document
+output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -90,8 +90,7 @@ models. You may also substitute confidence intervals in place of standard
 errors and you can choose whether to show p values.
 
 ```{r}
-summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE,
-     pvals = FALSE)
+summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = FALSE)
 ```
 
 Cluster-robust standard errors:
@@ -115,8 +114,10 @@ concatenates multiple models into a single table.
 fit <- lm(mpg ~ hp + wt, data = mtcars)
 fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
 fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
-export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE,
-             note = "")
+coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
+                "Displacement" = "disp", "Rear axle ratio" = "drat",
+                "Constant" = "(Intercept)")
+export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
 ```
 ```{r echo = FALSE, results = 'asis', warning = FALSE, eval = T}
 # huxtable doesn't render right for the github_document, seems to thinks it's
@@ -124,8 +125,11 @@ export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE,
 fit <- lm(mpg ~ hp + wt, data = mtcars)
 fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
 fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
-e <- export_summs(fit, fit_b, fit_c, scale = TRUE,
- scale.response = TRUE)
+coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
+                "Displacement" = "disp", "Rear axle ratio" = "drat",
+                "Constant" = "(Intercept)")
+e <- export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE,
+                  coefs = coef_names)
 huxtable::print_html(e)
 ```
 
@@ -142,9 +146,8 @@ look nice; and like with `export_summs`, you can still get your scaled
 models and robust standard errors.
 
 ```{r}
-plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", 
-	coefs = c("Horsepower" = "hp", "Weight (tons)" = "wt", 
-		"Displacement" = "disp", "Rear axle ratio" = "drat"))
+coef_names <- coef_names[1:4] # Dropping intercept for plots
+plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", coefs = coef_names)
 ```
 
 And since you get a `ggplot` object in return, you can tweak and theme as
@@ -154,10 +157,7 @@ Another way to visualize the uncertainty of your coefficients is via the
 `plot.distributions` argument.
 
 ```{r}
-plot_summs(fit_c, scale = TRUE, robust = "HC3", 
-	coefs = c("Horsepower" = "hp", "Weight (tons)" = "wt", 
-		"Displacement" = "disp", "Rear axle ratio" = "drat"),
-	plot.distributions = TRUE)
+plot_summs(fit_c, scale = TRUE, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
 ```
 
 These show the 95% interval width of a normal distribution for each estimate.
