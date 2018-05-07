@@ -569,7 +569,7 @@ coef_names <- coef_names[1:4] # Dropping intercept for plots
 plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", coefs = coef_names)
 ```
 
-![](tools/README-unnamed-chunk-7-1.png)<!-- -->
+![](man/figures/unnamed-chunk-7-1.png)<!-- -->
 
 And since you get a `ggplot` object in return, you can tweak and theme
 as you wish.
@@ -582,7 +582,7 @@ argument.
 plot_summs(fit_c, scale = TRUE, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
 ```
 
-![](tools/README-unnamed-chunk-8-1.png)<!-- -->
+![](man/figures/unnamed-chunk-8-1.png)<!-- -->
 
 These show the 95% interval width of a normal distribution for each
 estimate.
@@ -631,7 +631,7 @@ sim_slopes(fiti, pred = hp, modx = wt, jnplot = TRUE)
     #> 
     #> Note: The range of observed values of wt is [1.51, 5.42]
 
-![](tools/README-j-n-plot-1.png)<!-- -->
+![](man/figures/j-n-plot-1.png)<!-- -->
 
     #> SIMPLE SLOPES ANALYSIS 
     #> 
@@ -664,7 +664,7 @@ supports several customizations, like confidence intervals.
 interact_plot(fiti, pred = hp, modx = wt, interval = TRUE)
 ```
 
-![](tools/README-interact_plot_continuous-1.png)<!-- -->
+![](man/figures/interact_plot_continuous-1.png)<!-- -->
 
 You can also plot the observed data for comparison:
 
@@ -672,7 +672,7 @@ You can also plot the observed data for comparison:
 interact_plot(fiti, pred = hp, modx = wt, plot.points = TRUE)
 ```
 
-![](tools/README-interact_plot_continuous_points-1.png)<!-- -->
+![](man/figures/interact_plot_continuous_points-1.png)<!-- -->
 
 The function also supports categorical moderators—plotting observed data
 in these cases can reveal striking patterns.
@@ -682,7 +682,7 @@ fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
 interact_plot(fitiris, pred = Petal.Width, modx = Species, plot.points = TRUE)
 ```
 
-![](tools/README-interact_plot_factor-1.png)<!-- -->
+![](man/figures/interact_plot_factor-1.png)<!-- -->
 
 You may also combine the plotting and simple slopes functions by using
 `probe_interaction`, which calls both functions simultaneously.

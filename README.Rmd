@@ -8,7 +8,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = FALSE,
   comment = "#>",
-  fig.path = "tools/README-",
+  fig.path = "man/figures/",
   fig.width = 6.5,
   fig.height = 4
 )
