@@ -3,8 +3,8 @@ bibentry(
   title = "jtools: Analysis and Presentation of Social Scientific Data",
   author =  person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
                     role = c("aut", "cre")),
-  year = "2017",
-  note = "R package version 0.9.3",
+  year = "2018",
+  note = "R package version 1.0.0",
   url = "https://cran.r-project.org/package=jtools",
-  key = "jtools-package"
+  key = "jtools"
 )
