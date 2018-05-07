@@ -64,6 +64,12 @@ distribution of the `pred` variable and (optionally) the dependent variable.
 See the documentation for `interact_plot` and `effect_plot` and the 
 `rug`/`rug.sides` arguments.
 
+**Facet by the `modx` variable**: Some prefer to visualize the predicted lines
+on separate panes, so that is now an option available via the `facet.modx` 
+argument. You can also use `plot.points` with this, though the division into
+groups is not straightforward is the moderator isn't a factor. See the 
+documentation for more on how that is done.
+
 ### `make_predictions` and `plot_predictions`: New tools for advanced plotting 
 
 To let users have some more flexibility, `jtools` now lets users directly 
@@ -140,6 +146,14 @@ estimator directly to `robust`. For now, if `robust = TRUE`, it defaults to
 `robust = "HC3"`. `robust = FALSE` is still fine for using OLS/MLE standard
 errors.
 
+Whereas `summ.glm`, `summ.svyglm`, and `summ.merMod` previously offered an
+`odds.ratio` argument, that has been renamed to `exp` (short for exponentiate)
+to better express the quantity.
+
+`vifs` now works when there are factor variables in the model.
+
+One of the first issues 
+
 Like the rest of R, when `summ` rounded your output, items rounded exactly to
 zero would be treated as, well, zero. But this can be misleading if the 
 original value was actually negative. For instance, if `digits = 2` and a 
@@ -151,7 +165,10 @@ now changed it so the zero-rounded value retains its sign.
 `summ.merMod` now calculates pseudo-R^2 much, much faster. For only modestly
 complex models, the speed-up is roughly 50x faster. Because of how much faster
 it now is and how much less frequently it throws errors or prints cryptic 
-messages, it is now calculated by default. 
+messages, it is now calculated by default. The confidence interval calculation
+is now "Wald" for these models (see `confint.merMod` for details) rather than
+"profile", which for many models can take a very long time and sometimes does
+not work at all. This can be toggled with the `conf.method` argument.
 
 `summ.glm`/`summ.svyglm` now will calculate pseudo-R^2 for quasibinomial and
 quasipoisson families using the value obtained from refitting them as
@@ -204,8 +221,8 @@ using `summ` on them.
 
 Another new option is `point.shape`, similar to the model plotting functions.
 This is most useful for when you are planning to distribute your output in
-grayscale or to colorblind audiences (though there are some other ways to 
-accommodate the colorblind).
+grayscale or to colorblind audiences (although the new default color scheme is
+meant to be colorblind friendly, it is always best to use another visual cue).
 
 The coolest is the new `plot.distributions` argument, which if TRUE will plot
 normal distributions to even better convey the uncertainty. Of course, you
@@ -220,6 +237,17 @@ hacked together a few tweaks to make `brmsfit` and `stanreg` models work with
 You'll also notice vertical gridlines on the plots, which I think/hope will
 be useful. They are easily removable (see `drop_x_gridlines()`) with ggplot2's
 built-in theming options.
+
+### `export_summs`
+
+Changes here are not too major. Like `plot_summs`, you can now provide
+unsupported model types to `export_summs` and they are just passed through
+to `huxreg`. You can also provide different arguments to `summ` on a per-model
+basis in the way described under the `plot_summs` heading above.
+
+There are some tweaks to the model info (provided by `glance`). Most prominent
+is for `merMod` models, for which there is now a separate N for each grouping
+factor.
 
 ### `theme_apa` plus new functions `add_gridlines`, `drop_gridlines`
 
@@ -240,6 +268,13 @@ more general functions.
 
 `weights_tests` --- `wgttest` and `pf_sv_test` --- now handle missing data
 in a more sensible and consistent way.
+
+### Colors
+
+There is a new default qualitative palette, based on Color Universal Design 
+(designed to  be readable by the colorblind) that looks great to all. There are
+several other new palette choices as well. These are all documented at 
+`?jtools_colors`
 
 ### Other stuff
 
