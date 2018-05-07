@@ -169,12 +169,14 @@ effect_plot(fit, pred = mag, interval = TRUE,
   int.type = "confidence", int.width = .8, data = attenu) # note data arg.
 
 # With svyglm
+if (requireNamespace("survey")) {
 library(survey)
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
                     data = apistrat, fpc = ~fpc)
 regmodel <- svyglm(api00 ~ ell + meals, design = dstrat)
 effect_plot(regmodel, pred = ell, interval = TRUE)
+}
 
 # With lme4
 \dontrun{

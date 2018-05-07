@@ -283,12 +283,14 @@
 #' interact_plot(model = fit, pred = Murder, modx = Illiteracy, mod2 = HSGrad)
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                     data = apistrat, fpc = ~fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #' interact_plot(regmodel, pred = ell, modx = meals)
+#' }
 #'
 #' # With lme4
 #' \dontrun{
@@ -455,12 +457,14 @@ print.interact_plot <- function(x, ...) {
 #'   int.type = "confidence", int.width = .8, data = attenu) # note data arg.
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                     data = apistrat, fpc = ~fpc)
 #' regmodel <- svyglm(api00 ~ ell + meals, design = dstrat)
 #' effect_plot(regmodel, pred = ell, interval = TRUE)
+#' }
 #'
 #' # With lme4
 #' \dontrun{
