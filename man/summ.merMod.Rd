@@ -5,11 +5,17 @@
 \alias{j_summ.merMod}
 \title{Mixed effects regression summaries with options}
 \usage{
-\method{summ}{merMod}(model, scale = FALSE, confint = FALSE,
-  ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  model.info = TRUE, model.fit = TRUE, r.squared = FALSE, pvals = NULL,
-  n.sd = 1, center = FALSE, scale.response = FALSE, odds.ratio = FALSE,
-  t.df = NULL, ...)
+\method{summ}{merMod}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
+  digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
+  pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE),
+  re.variance = getOption("summ-re.variance", c("sd", "var")),
+  which.cols = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
@@ -24,19 +30,20 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
+\item{conf.method}{Argument passed to \code{\link[lme4:confint.merMod]{lme4::confint.merMod()}}. Default
+is \code{"Wald"}, but \code{"profile"} or \code{"boot"} are better when accuracy is a
+priority. Be aware that both of the alternate methods are sometimes very
+time-consuming.}
+
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
 digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{model.info}{Toggles printing of basic information on sample size,
-name of DV, and number of predictors.}
-
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
-
 \item{r.squared}{Calculate an r-squared model fit statistic? Default is
-\code{FALSE} because it seems to have convergence problems too often.}
+\code{TRUE}, but if it has errors or takes a long time to calculate you
+may want to consider setting to FALSE.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
@@ -48,16 +55,35 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
+\item{transform.response}{Should scaling/centering apply to response
+variable? Default is \code{FALSE}.}
 
-\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+\item{data}{If you provide the data used to fit the model here, that data
+frame is used to re-fit the model (if \code{scale} is \code{TRUE})
+instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
+of the model. This is particularly useful if you have variable
+transformations or polynomial terms specified in the formula.}
+
+\item{exp}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
 
 \item{t.df}{For \code{lmerMod} models only. User may set the degrees of
 freedom used in conducting t-tests. See details for options.}
+
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of model fit statistics.}
+
+\item{re.variance}{Should random effects variances be expressed in
+standard deviations or variances? Default, to be consistent with previous
+versions of \code{jtools}, is \code{"sd"}. Use \code{"var"} to get the variance instead.}
+
+\item{which.cols}{Developmental feature. By providing columns by name,
+you can add/remove/reorder requested columns in the output. Not fully
+supported, for now.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
@@ -67,6 +93,10 @@ If saved, users can access most of the items that are returned in
 the output (and without rounding).
 
 \item{coeftable}{The outputted table of variables and coefficients}
+\item{rcoeftable}{The secondary table with the grouping variables and
+random coefficients.}
+\item{gvars}{The tertiary table with the grouping variables, numbers of
+groups, and ICCs.}
 \item{model}{The model for which statistics are displayed. This would be
 most useful in cases in which \code{scale = TRUE}.}
 
@@ -110,7 +140,10 @@ By default, this function follows \code{lme4}'s lead and does not report
 the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
 installed, however, p values are reported using the Kenward-Roger
 d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
-set to something other than \code{NULL}.
+set to something other than \code{NULL}. In publications,
+you should cite the
+Kenward & Roger (1997) piece as well as either this package or
+\pkg{pbkrtest} package to explain how the p values were calculated.
 
 See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
 If you're looking for a simple test with no extra packages installed,
@@ -129,20 +162,36 @@ is used. If \code{t.df = "residual"}, then the residual d.f. is used
 without a message. If the user prefers to use some other method to
 determine the d.f., then any number provided as the argument will be
 used.
+
+\strong{About pseudo-R^2}
+
+There is no one way to calculate R^2 for mixed models or nonlinear
+models. Many caution against interpreting or even using such
+approximations outside of OLS regression. With that said, this package
+reports one version for your benefit, though you should of course
+understand that it is not an unambiguous measure of model fit.
+
+This package calculates R^2 for mixed models using an adapted version
+of \code{\link[piecewiseSEM]{sem.model.fits}} from the \pkg{piecewiseSEM}
+package. This is an implementation of the Nakagawa & Schielzeth (2013)
+procedure with refinements by Johnson (2014). If you choose to report
+the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
+to explain how the calculation was done.
 }
 \examples{
+if (requireNamespace("lme4")) {
+  library(lme4, quietly = TRUE)
+  data(sleepstudy)
+  mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-library(lme4, quietly = TRUE)
-data(sleepstudy)
-mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+  summ(mv) # Note lack of p values if you don't have pbkrtest
 
-summ(mv) # Note lack of p values if you don't have pbkrtest
+  # Without pbkrtest, you'll get message about Type 1 errors
+  summ(mv, pvals = TRUE)
 
-# Without pbkrtest, you'll get message about Type 1 errors
-summ(mv, pvals = TRUE)
-
-# To suppress message, manually specify t.df argument
-summ(mv, t.df = "residual")
+  # To suppress message, manually specify t.df argument
+  summ(mv, t.df = "residual")
+}
 
 \dontrun{
  # Confidence intervals may be better alternative in absence of pbkrtest
@@ -153,33 +202,33 @@ summ(mv, t.df = "residual")
 \references{
 Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth’s
 $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
-Evolution}, \emph{5}, 944–946. https://doi.org/10.1111/2041-210X.12225
+Evolution}, \emph{5}, 944–946. \url{https://doi.org/10.1111/2041-210X.12225}
 
 Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
 effects from restricted maximum likelihood. \emph{Biometrics},
 \emph{53}, 983.
-https://doi.org/10.2307/2533558
+\url{https://doi.org/10.2307/2533558}
 
 Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
-https://doi.org/10.3758/s13428-016-0809-y
+\url{https://doi.org/10.3758/s13428-016-0809-y}
 
 Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
 obtaining $R^2$ from generalized linear mixed-effects models.
 \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
-https://doi.org/10.1111/j.2041-210x.2012.00261.x
+\url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
 }
 \seealso{
-\code{\link{scale_lm}} can simply perform the standardization if
+\code{\link{scale_mod}} can simply perform the standardization if
 preferred.
 
 \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
-\code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
+\code{\link[pbkrtest:get_ddf_Lb]{pbkrtest::get_ddf_Lb()}} gets the Kenward-Roger degrees of
 freedom if you have \pkg{pbkrtest} installed.
 
-A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
+A tweaked version of \code{\link[piecewiseSEM:sem.model.fits]{piecewiseSEM::sem.model.fits()}} is used to
 generate the pseudo-R-squared estimates for linear models.
 }
 \author{

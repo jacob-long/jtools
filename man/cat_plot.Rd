@@ -4,19 +4,26 @@
 \alias{cat_plot}
 \title{Plot interaction effects between categorical predictors.}
 \usage{
-cat_plot(model, pred, modx = NULL, mod2 = NULL, geom = c("dot", "line",
-  "bar", "boxplot"), interval = TRUE, plot.points = FALSE,
-  point.shape = FALSE, vary.lty = FALSE, centered = NULL,
-  int.type = c("confidence", "prediction"), int.width = 0.95,
-  outcome.scale = "response", set.offset = 1, x.label = NULL,
-  y.label = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "Set2")
+cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
+  geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
+  modxvals = NULL, mod2vals = NULL, interval = TRUE,
+  plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
+  centered = "all", int.type = c("confidence", "prediction"),
+  int.width = 0.95, line.thickness = 1, point.size = 1,
+  pred.point.size = 3.5, jitter = 0.1, geom.alpha = NULL,
+  dodge.width = NULL, errorbar.width = NULL, interval.geom = c("errorbar",
+  "linerange"), outcome.scale = "response", robust = FALSE,
+  cluster = NULL, vcov = NULL, pred.labels = NULL, modx.labels = NULL,
+  mod2.labels = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
+  main.title = NULL, legend.main = NULL, color.class = "CUD Bright", ...)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. It should
-contain the interaction of interest. Models from other classes may work as
-well but are not officially supported.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+\code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
+\code{stanreg} models.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
 \item{pred}{A categorical predictor variable that will appear on the x-axis.}
 
@@ -24,13 +31,20 @@ well but are not officially supported.}
 
 \item{mod2}{For three-way interactions, the second categorical moderator.}
 
+\item{data}{Optional, default is NULL. You may provide the data used to
+fit the model. This can be a better way to get mean values for centering
+and can be crucial for models with variable transformations in the formula
+(e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
+see a warning if the function detects problems that would likely be
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
+
 \item{geom}{What type of plot should this be? There are several options
 here since the best way to visualize categorical interactions varies by
 context. Here are the options:
 \itemize{
-\item \code{"dot"}: The default. Simply plot the point estimates. You may want to
-use
-\code{point.shape = TRUE} with this and you should also consider
+\item \code{"point"}: The default. Simply plot the point estimates. You may want to
+use \code{point.shape = TRUE} with this and you should also consider
 \code{interval = TRUE} to visualize uncertainty.
 \item \code{"line"}: This connects observations across levels of the \code{pred}
 variable with a line. This is a good option when the \code{pred} variable
@@ -48,8 +62,29 @@ sets). \strong{However}, it is important to note the boxplots are not based
 on the model whatsoever.
 }}
 
+\item{predvals}{Which values of the predictor should be included in the
+plot? By default, all levels are included.}
+
+\item{modxvals}{For which values of the moderator should lines be plotted?
+Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
+deviation from the mean as well as the mean itself are used for continuous
+moderators. If \code{"plus-minus"}, plots lines when the moderator is at
++/- 1 standard deviation without the mean. You may also choose \code{"terciles"}
+to split the data into equally-sized groups and choose the point at the
+mean of each of those groups.
+
+If the moderator is a factor variable and \code{modxvals} is
+\code{NULL}, each level of the factor is included. You may specify
+any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
+as there is more than 1. The levels will be plotted in the order you
+provide them, so this can be used to reorder levels as well.}
+
+\item{mod2vals}{For which values of the second moderator should the plot be
+facetted by? That is, there will be a separate plot for each level of this
+moderator. Defaults are the same as \code{modxvals}.}
+
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
-intervals. Not supported for \code{merMod} models.}
+intervals.}
 
 \item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
 scatterplot on top of the interaction lines. Note that if
@@ -65,10 +100,11 @@ be black and white printing- or colorblind-friendly.}
 line in addition to colors? Defaults to \code{TRUE}.}
 
 \item{centered}{A vector of quoted variable names that are to be
-mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-not \code{NULL}, only the user-specified predictors are centered. User can
-also use "none" or "all" arguments. The response variable is not centered
-unless specified directly.}
+mean-centered. If \code{"all"}, all non-focal predictors are centered. You
+may instead pass a character vector of variables to center. User can
+also use "none" to base all predictions on variables set at 0.
+The response variable, \code{pred}, \code{modx}, and \code{mod2} variables are never
+centered.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or
 "prediction". Default is confidence interval.}
@@ -78,6 +114,44 @@ error? The default, .95, corresponds to roughly 1.96 standard errors and
 a .05 alpha level for values outside the range. In other words, for a
 confidence interval, .95 is analogous to a 95\% confidence interval.}
 
+\item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
+ggplot's default is 1.}
+
+\item{point.size}{What size should be used for observed data when
+\code{plot.points} is TRUE? Default is 2.}
+
+\item{pred.point.size}{If TRUE and \code{geom} is \code{"point"} or \code{"line"},
+sets the size of the predicted points. Default is 3.5.
+Note the distinction from \code{point.size}, which refers to the
+observed data points.}
+
+\item{jitter}{How much should \code{plot.points} observed values be "jittered"
+via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
+other, jittering moves them a small amount to keep them from
+totally overlapping. In some cases, though, it can add confusion since
+it may make points appear to be outside the boundaries of observed
+values or cause other visual issues. Default is 0.1, but increase as
+needed if your points are overlapping too much or set to 0 for no jitter.
+If the argument is a vector with two values, then the first is assumed to
+be the jitter for width and the second for the height.}
+
+\item{geom.alpha}{What should the alpha aesthetic be for the plotted
+lines/bars? Default is NULL, which means it is set depending on the value
+of \code{geom} and \code{plot.points}.}
+
+\item{dodge.width}{What should the \code{width} argument to
+\code{\link[ggplot2:position_dodge]{ggplot2::position_dodge()}} be? Default is NULL, which means it is set
+depending on the value of \code{geom}.}
+
+\item{errorbar.width}{How wide should the error bars be? Default is NULL,
+meaning it is set depending on the value \code{geom}. Ignored if \code{interval}
+is FALSE.}
+
+\item{interval.geom}{For categorical by categorical interactions.
+One of "errorbar" or "linerange". If the former,
+\code{\link[ggplot2:geom_errorbar]{ggplot2::geom_errorbar()}} is used. If the latter,
+\code{\link[ggplot2:geom_linerange]{ggplot2::geom_linerange()}} is used.}
+
 \item{outcome.scale}{For nonlinear models (i.e., GLMs), should the outcome
 variable be plotted on the link scale (e.g., log odds for logit models) or
 the original scale (e.g., predicted probabilities for logit models)? The
@@ -85,7 +159,38 @@ default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
 
-\item{set.offset}{For models with an offset (e.g., Poisson models), sets a
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
+
+\item{cluster}{For clustered standard errors, provide the column name of
+the cluster variable in the input data frame (as a string). Alternately,
+provide a vector of clusters.}
+
+\item{vcov}{Optional. You may supply the variance-covariance matrix of the
+coefficients yourself. This is useful if you are using some method for
+robust standard error calculation not supported by the \pkg{sandwich}
+package.}
+
+\item{pred.labels}{A character vector of equal length to the number of
+factor levels of the predictor (or number specified in \code{predvals}). If
+\code{NULL}, the default, the factor labels are used.}
+
+\item{modx.labels}{A character vector of labels for each level of the
+moderator values, provided in the same order as the \code{modxvals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{mod2.labels}{A character vector of labels for each level of the 2nd
+moderator values, provided in the same order as the \code{mod2vals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{set.offset}{For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}
@@ -104,9 +209,11 @@ appears above the legend. If \code{NULL}, the name of the moderating
 variable is used.}
 
 \item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2" for factor
-moderators. You may also simply supply a vector of colors accepted by
+\code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2".
+You may also simply supply a vector of colors accepted by
 \code{ggplot2} and of equal length to the number of moderator levels.}
+
+\item{...}{extra arguments passed to \code{make_predictions}}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
@@ -136,24 +243,17 @@ effects are plotted. \code{lme4} does not provide confidence intervals,
 so they are not supported with this function either.
 
 Note: to use transformed predictors, e.g., \code{log(variable)},
-put its name in quotes or backticks in the argument.
+provide only the variable name to \code{pred}, \code{modx}, or \code{mod2} and supply
+the original data separately to the \code{data} argument.
 
 \emph{Info about offsets:}
 
 Offsets are partially supported by this function with important
 limitations. First of all, only a single offset per model is supported.
 Second, it is best in general to specify offsets with the offset argument
-of the model fitting function rather than in the formula. If it is
-specified in the formula with a svyglm, this function will stop with an
-error message.
-
-It is also advised not to do any transformations to the offset other than
-the common log transformation. If you apply a log transform, this function
-will deal with it sensibly. So if your offset is a logged count, the
-exposure you set will be the non-logged version, which is much easeir to
-wrap one's head around. For any other transformation you may apply, or
-if you apply no transformation at all, the exposures used will be the
-post-tranformation number (which is by default 1).
+of the model fitting function rather than in the formula. You are much
+more likely to have success if you provide the data used to fit the model
+with the \code{data} argument.
 }
 \examples{
 
@@ -167,10 +267,13 @@ cat_plot(fit, pred = color, modx = cut, interval = TRUE)
 mpg2 <- mpg
 mpg2$auto <- "auto"
 mpg2$auto[mpg2$trans \%in\% c("manual(m5)", "manual(m6)")] <- "manual"
+mpg2$auto <- factor(mpg2$auto)
 mpg2$fwd <- "2wd"
 mpg2$fwd[mpg2$drv == "4"] <- "4wd"
+mpg2$fwd <- factor(mpg2$fwd)
 ## Drop the two cars with 5 cylinders (rest are 4, 6, or 8)
 mpg2 <- mpg2[mpg2$cyl != "5",]
+mpg2$cyl <- factor(mpg2$cyl)
 ## Fit the model
 fit3 <- lm(cty ~ cyl * fwd * auto, data = mpg2)
 
@@ -184,4 +287,3 @@ Other interaction tools: \code{\link{interact_plot}},
   \code{\link{johnson_neyman}},
   \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
 }
-\concept{interaction tools}

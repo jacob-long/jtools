@@ -6,10 +6,16 @@
 \title{Plot Regression Summaries}
 \usage{
 plot_summs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = "(Intercept)", color.class = "Set2")
+  omit.coefs = "(Intercept)", inner_ci_level = NULL,
+  color.class = "CUD Bright", plot.distributions = FALSE,
+  rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
+  legend.title = "Model")
 
-plot_coefs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = "(Intercept)", color.class = "Set2")
+plot_coefs(..., ci_level = 0.95, inner_ci_level = NULL,
+  model.names = NULL, coefs = NULL, omit.coefs = c("(Intercept)",
+  "Intercept"), color.class = "CUD Bright", plot.distributions = FALSE,
+  rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
+  legend.title = "Model")
 }
 \arguments{
 \item{...}{regression model(s).}
@@ -30,9 +36,36 @@ in the plot, provide them as a vector. This argument is overridden by
 \code{coefs} if both are provided. By default, the intercept term is omitted.
 To include the intercept term, just set omit.coefs to NULL.}
 
-\item{color.class}{A color class understood by
-\code{\link[ggplot2:scale_colour_brewer]{ggplot2::scale_colour_brewer()}} for differentiating multiple models.
-Not used if only one model is plotted. Default: 'Set2'}
+\item{inner_ci_level}{Plot a thicker line representing some narrower span
+than \code{ci_level}. Default is NULL, but good options are .9, .8, or .5.}
+
+\item{color.class}{See \link{jtools_colors} for more on your color options.
+Default: 'CUD Bright'}
+
+\item{plot.distributions}{Instead of just plotting the ranges, you may
+plot normal distributions representing the width of each estimate. Note
+that these are completely theoretical and not based on a bootstrapping
+or MCMC procedure, even if the source model was fit that way. Default is
+FALSE.}
+
+\item{rescale.distributions}{If \code{plot.distributions} is TRUE, the default
+behavior is to plot each normal density curve on the same scale. If some
+of the uncertainty intervals are much wider/narrower than others, that
+means the wide ones will have such a low height that you won't be able
+to see the curve. If you set this parameter to TRUE, each curve will
+have the same maximum height regardless of their width.}
+
+\item{exp}{If TRUE, all coefficients are exponentiated (e.g., transforms
+logit coefficents from log odds scale to odds). The reference line is
+also moved to 1 instead of 0.}
+
+\item{point.shape}{When using multiple models, should each model's point
+estimates use a different point shape to visually differentiate each
+model from the others? Default is TRUE.}
+
+\item{legend.title}{What should the title for the legend be? Default is
+"Model", but you can specify it here since it is rather difficult to
+change later via \code{ggplot2}'s typical methods.}
 }
 \value{
 A ggplot object.

@@ -3,10 +3,6 @@
 #' \code{sim_slopes} conducts a simple slopes analysis for the purposes of
 #' understanding two- and three-way interaction effects in linear regression.
 #'
-#' @param model A regression model of type \code{lm} or
-#'    \code{\link[survey]{svyglm}}.
-#'    It should contain the interaction of interest.
-#'
 #' @param pred The predictor variable involved in the interaction.
 #'
 #' @param modx The moderator variable involved in the interaction.
@@ -37,16 +33,12 @@
 #'   moderator. Defaults are the same as \code{modxvals}.
 #'
 #' @param centered A vector of quoted variable names that are to be
-#'   mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-#'   not \code{NULL}, only the user-specified predictors are centered. User
-#'   can also use "none" or "all" arguments. The response variable is not
-#'   centered unless specified directly.
-#'
-#' @param scale Logical. Would you like to standardize the variables
-#'   that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-#'   scale variables specified by the \code{centered} argument. Note that
-#'   non-focal predictors are centered when \code{centered = NULL}, its
-#'   default.
+#'   mean-centered. If `"all"`, all non-focal predictors as well as
+#'   the `pred` variable are centered. You
+#'   may instead pass a character vector of variables to center. User can
+#'   also use "none" to base all predictions on variables set at 0.
+#'   The response variable, `modx`, and `mod2` variables are never
+#'   centered.
 #'
 #' @param cond.int Should conditional intercepts be printed in addition to the
 #'   slopes? Default is \code{FALSE}.
@@ -61,25 +53,11 @@
 #' @param jnalpha What should the alpha level be for the Johnson-Neyman
 #'   interval? Default is .05, which corresponds to a 95\% confidence interval.
 #'
-#' @param robust Logical. If \code{TRUE}, computes heteroskedasticity-robust
-#'   standard errors.
-#'
-#' @param robust.type Type of heteroskedasticity-robust standard errors to use
-#'   if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
-#'   options.
-#'
 #' @param digits An integer specifying the number of digits past the decimal to
 #'   report in the output. Default is 2. You can change the default number of
 #'   digits for all jtools functions with
 #'   \code{options("jtools-digits" = digits)} where digits is the desired
 #'   number.
-#'
-#' @param n.sd How many standard deviations should be used if \code{scale
-#'   = TRUE}? Default is 1, but some prefer 2.
-#'
-#' @param standardize Deprecated. Equivalent to `scale`. Please change your
-#'  scripts to use `scale` instead as this argument will be removed in the
-#'  future.
 #'
 #' @param ... Arguments passed to \code{\link{johnson_neyman}}.
 #'
@@ -90,16 +68,10 @@
 #'
 #'   For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 #'
-#'   The function accepts a \code{lm} object and uses it to recompute models
-#'   with the moderating variable set to the levels requested.
-#'   \code{\link[survey]{svyglm}} objects are also accepted, though users
-#'   should be cautioned against using simple slopes analysis with non-linear
-#'   models (\code{svyglm} also estimates linear models).
-#'
-#'   Factor moderators are coerced to a 0/1 numeric variable and are not
-#'   centered, even when requested in arguments. To avoid this, modify your
-#'   data to change the factor to a binary numeric variable. Factors with more
-#'   than 2 levels trigger an error.
+#'   The function is tested with `lm`, `glm`, `svyglm`, and `merMod` inputs.
+#'   Others may work as well, but are not tested. In all but the linear model
+#'   case, be aware that not all the assumptions applied to simple slopes
+#'   analysis apply.
 #'
 #' @return
 #'
@@ -118,6 +90,9 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @inheritParams interact_plot
+#' @inheritParams summ.lm
+#'
 #' @family interaction tools
 #'
 #' @seealso \code{\link{interact_plot}} accepts similar syntax and will plot the
@@ -126,8 +101,7 @@
 #'   \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of
 #'       differences and provides Johnson-Neyman intervals.
 #'
-#'   \code{\link[pequod]{simpleSlope}} performs a similar analysis and can
-#'        also analyze a second moderator.
+#'   \code{\link[pequod]{simpleSlope}} performs a similar analysis.
 #'
 #' @references
 #'
@@ -144,10 +118,11 @@
 #'
 #' # Using a fitted model as formula input
 #' fiti <- lm(Income ~ Frost + Murder * Illiteracy,
-#'   data=as.data.frame(state.x77))
+#'   data = as.data.frame(state.x77))
 #' sim_slopes(model = fiti, pred = Murder, modx = Illiteracy)
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
@@ -158,17 +133,18 @@
 #' # 3-way with survey and factor input
 #' regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 #' sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
+#' }
 #'
-#' @importFrom stats coef coefficients lm predict sd update getCall vcov
+#' @importFrom stats coef coefficients lm predict sd update getCall vcov relevel
 #' @export
 #'
 
 sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
-                       mod2vals = NULL, centered = NULL, scale = FALSE,
+                       mod2vals = NULL, centered = "all", data = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
-                       jnalpha = .05, robust = FALSE, robust.type = "HC3",
+                       jnalpha = .05, robust = FALSE,
                        digits = getOption("jtools-digits", default = 2),
-                       n.sd = 1, standardize = NULL, ...) {
+                       confint = FALSE, ci.width = .95, cluster = NULL, ...) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -180,29 +156,39 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     mod2vals2 <- NULL
   }
 
-  # Check for deprecated argument
-  if (!is.null(standardize)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- standardize
+  # Capture extra arguments
+  dots <- list(...)
+  if (length(dots) > 0) { # See if there were any extra args
+    # Check for deprecated arguments
+    ss_dep_check("sim_slopes", dots)
+
+    # Get j_n args from dots
+    if (johnson_neyman == TRUE) {
+      jn_arg_names <- names(formals("johnson_neyman"))
+      if (any(names(dots) %in% jn_arg_names)) {
+        jn_args <- list()
+        for (n in names(dots)[which(names(dots) %in% jn_arg_names)]) {
+          jn_args[[n]] <- dots[[n]]
+        }
+      }
+    }
+
+    if ("robust.type" %in% names(dots)) {
+      warn_wrap("The robust.type argument is deprecated. Please specify the
+       type as the value for the 'robust' argument instead.", call. = FALSE)
+      robust <- dots$robust.type
+    }
   }
 
   # Create object to return
   ss <- list()
 
-  # Check arguments
-  if (!is.numeric(digits)) { # digits
-    stop("The digits argument must be an integer.")
-  }
   ss <- structure(ss, digits = digits)
 
   if (!is.null(modxvals) && !is.vector(modxvals)) {
     stop("The modxvals argument must be a vector of at least length 2 if it is",
          " used.")
   }
-
-  # Save data from model object
-  d <- model.frame(model)
 
   # Is it a svyglm?
   if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
@@ -227,6 +213,25 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   } else {
 
     survey <- FALSE
+    # Duplicating the dataframe so it can be manipulated as needed
+    if (is.null(data)) {
+      d <- model.frame(model)
+      # Check to see if model.frame names match formula names
+      varnames <- names(d)
+      # Drop weights and offsets
+      varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
+      if (any(varnames %nin% all.vars(formula(model)))) {
+
+        warn_wrap("Variable transformations in the model formula
+                  detected. Trying to use ", as.character(getCall(model)$data),
+                  " from global environment instead. This could cause incorrect
+                  results if ", as.character(getCall(model)$data), " has been
+                  altered since the model was fit. You can manually provide the
+                  data to the \"data =\" argument.", call. = FALSE)
+      }
+    } else {
+      d <- data
+    }
     design <- NULL
 
     fvars <- as.character(attributes(terms(model))$variables)
@@ -243,6 +248,15 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   }
 
+  # Check for factor predictor
+  if (is.factor(d[[pred]])) {
+    # I could assume the factor is properly ordered, but that's too risky
+    stop(wrap_str("Focal predictor (\"pred\") cannot be a factor. Either
+          use it as modx, convert it to a numeric dummy variable
+          or use the cat_plot function for factor by factor interaction
+          plots."))
+  }
+
   # weights?
   if (survey == FALSE && ("(weights)" %in% names(d) |
                           !is.null(getCall(model)$weights))) {
@@ -251,7 +265,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     if (any(colnames(d) == "(weights)")) {
       colnames(d)[which(colnames(d) == "(weights)")] <- wname
     }
-    wts <- d[,wname]
+    wts <- d[[wname]]
 
   } else {
 
@@ -265,7 +279,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (!is.null(model.offset(model.frame(model)))) {
 
     off <- TRUE
-    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare varname
+    offname <- as.character(getCall(model)$offset[-1]) # subset gives bare name
 
     # Getting/setting offset name depending on whether it was specified in
     # argument or formula
@@ -292,7 +306,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                                     as.character(formula(model)), perl = TRUE))
       if (grepl("log(", offterm, fixed = TRUE)) {
 
-        d[,offname] <- exp(d[,offname])
+        d[[offname]] <- exp(d[[offname]])
 
       }
 
@@ -300,7 +314,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     # Exponentiate offset if it was logged
     if ("log" %in% as.character(getCall(model)$offset)) {
-      d[,offname] <- exp(d[,offname])
+      d[[offname]] <- exp(d[[offname]])
     }
 
   } else {
@@ -328,12 +342,11 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     facvars[!(facvars %in% c(pred, resp, modx, mod2, wname, offname))]
 
   # Use utility function shared by all interaction functions
-  c_out <- center_vals(d = d, weights = wts, facvars = facvars,
+  c_out <- center_ss(d = d, weights = wts, facvars = facvars,
               fvars = fvars, pred = pred,
               resp = resp, modx = modx, survey = survey,
               design = design, mod2 = mod2, wname = wname,
-              offname = offname, centered = centered,
-              scale = scale, n.sd = n.sd)
+              offname = offname, centered = centered)
 
   design <- c_out$design
   d <- c_out$d
@@ -346,18 +359,13 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                         modx.labels = NULL, any.mod2 = !is.null(mod2),
                         sims = TRUE)
 
-  # Dealing with two-level factors
-  if (is.factor(d[,modx]) && length(levels(d[,modx])) != 2) {
-
-    stop("Factor moderators can only have 2 levels.")
-
-  } else if (is.factor(d[,modx]) & length(unique(d[,modx])) == 2) {
-
-    d[,modx] <- as.numeric(d[,modx]) - 1
-
+  if (is.factor(d[[modx]]) & johnson_neyman == TRUE) {
+        warn_wrap("Johnson-Neyman intervals are not available for factor
+                   moderators.", call. = FALSE)
+        johnson_neyman <- FALSE
   }
 
-  # Now specify def or not
+  # Now specify def or not (for labeling w/ print method)
   if (is.character(modxvals) | is.null(modxvals)) {
 
     ss <- structure(ss, def = TRUE)
@@ -368,20 +376,28 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   }
 
+  # Don't want def = TRUE for factors even though they are character
+  if (is.factor(d[[modx]])) {ss <- structure(ss, def = FALSE)}
+
   if (!is.null(mod2)) {
 
-    mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
-                          modx.labels = NULL, any.mod2 = !is.null(mod2),
-                          is.mod2 = TRUE, sims = TRUE)
+    if (!is.factor(d[[mod2]])) {
+      mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
+                            modx.labels = NULL, any.mod2 = !is.null(mod2),
+                            sims = TRUE)
+    } else {
 
-    # Dealing with two-level factors
-    if (is.factor(d[,mod2]) && length(levels(d[,mod2])) != 2) {
-
-      stop("Factor moderators can only have 2 levels.")
-
-    } else if (is.factor(d[,mod2]) & length(unique(d[,mod2])) == 2) {
-
-      d[,mod2] <- as.numeric(d[,mod2]) - 1
+      if (is.null(mod2vals)) {
+        mod2vals2 <- levels(d[[mod2]])
+      } else {
+        if (all(mod2vals %in% levels(d[[mod2]]))) {
+          mod2vals2 <- mod2vals
+        } else {
+          warn_wrap("mod2vals argument must include only levels of the
+                    factor. Using all factor levels instead.", call. = FALSE)
+          mod2vals2 <- levels(d[[mod2]])
+        }
+      }
 
     }
 
@@ -396,21 +412,39 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     }
 
+    # Don't want def = TRUE for factors even though they are character
+    if (is.factor(d[[mod2]])) {ss <- structure(ss, def2 = FALSE)}
+
   }
 
-  # Need to make a matrix filled with NAs to store values from looped model-making
-  holdvals <- rep(NA, length(modxvals2)*4)
-  retmat <- matrix(holdvals, nrow=length(modxvals2))
+#### Fit models ##############################################################
 
-  # Create another matrix to hold intercepts (no left-hand column needed)
-  retmati <- retmat
+  # Since output columns are conditional, I call summ here to see what they will
+  # be. I set vifs = FALSE to make sure it isn't fit due to user options.
+  # Need proper name for test statistic
+  tcol <- try(colnames(summary(model)$coefficients)[3], silent = TRUE)
+  if (class(tcol) != "try-error") {
+    tcol <- gsub("value", "val.", tcol)
+    which.cols <- c("Est.", "S.E.", unlist(make_ci_labs(ci.width)), tcol, "p")
+  } else {
+    which.cols <- NULL
+  }
+  the_col_names <- colnames(summ(model, confint = TRUE, ci.width = ci.width,
+                              vifs = FALSE, which.cols = which.cols)$coeftable)
+
+  # Need to make a matrix filled with NAs to store values from looped
+  # model-making
+  holdvals <- rep(NA, length(modxvals2) * (length(the_col_names) + 1))
+  retmat <- matrix(holdvals, nrow = length(modxvals2))
 
   # Create a list to hold Johnson-Neyman objects
   jns <- list()
 
   # Value labels
-  colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
-  colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+  colnames(retmat) <- c(paste("Value of ", modx, sep = ""), the_col_names)
+
+  # Create another matrix to hold intercepts (no left-hand column needed)
+  retmati <- retmat
 
   mod2val_len <- length(mod2vals2)
   if (mod2val_len == 0) {mod2val_len <- 1}
@@ -434,58 +468,49 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     # We don't want to do the J-N interval with the 1st moderator adjusted,
     # so we do it here. Requires an extra model fit.
 
+    # Creating extra "copy" of model frame to change for model update
     if (survey == FALSE) {
-
-      # Creating extra "copy" of model frame to change for model update
       dt <- d
-
-      if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
-
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-      }
-
-      # Creating the model
-      newmod <- update(model, data = dt)
-
-      # Getting SEs, robust or otherwise
-      if (robust == TRUE) {
-
-        # For J-N
-        covmat <- sandwich::vcovHC(newmod, type = robust.type)
-
-      } else {
-
-        # For J-N
-        covmat <- vcov(newmod)
-
-      }
-
-    } else if (survey == TRUE) {
-
+    } else {
       # Create new design to modify
       designt <- design
 
       # Create new df to modify
       dt <- d
+    }
 
-      if (!is.null(mod2)) {
+    if (!is.null(mod2)) { # We *do* need to adjust the 2nd moderator for J-N
 
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
+      # The moderator value-adjusted variable
+      if (!is.factor(dt[[mod2]])) {
+        dt[[mod2]] <- dt[[mod2]] - mod2vals2[j]
+      } else {
+        dt[[mod2]] <- relevel(dt[[mod2]], ref = mod2vals2[j])
       }
 
-      # Update design
-      designt$variables <- dt
+    }
 
+    # Update design
+    if (survey == TRUE) {
+      designt$variables <- dt
       # Update model
       ## Have to do all this to avoid adding survey to dependencies
       call <- getCall(model)
       call$design <- designt
       call[[1]] <- survey::svyglm
       newmod <- eval(call)
+    } else {
+      # Creating the model
+      newmod <- update(model, data = dt)
+    }
+
+    # Getting SEs, robust or otherwise
+    if (robust != FALSE) {
+
+      # For J-N
+      covmat <- do_robust(newmod, robust, cluster, dt)$vcov
+
+    } else {
 
       # For J-N
       covmat <- vcov(newmod)
@@ -494,90 +519,50 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     if (robust == FALSE) {covmat <- NULL}
 
-    jn <- tryCatch(johnson_neyman(newmod, pred = pred, modx = modx,
-                                  vmat = covmat, plot = jnplot,
-                                  alpha = jnalpha, digits = digits, ...),
-                   error = function(e) {return("No values")},
-                   warning = function(w) {return("No values")})
+    if (johnson_neyman == TRUE) {
+      args <- list(newmod, pred = pred, modx = modx, vmat = covmat,
+                         plot = jnplot, alpha = jnalpha, digits = digits)
+      if (exists("jn_args")) {args <- as.list(c(args, jn_args))}
+      jn <- do.call("johnson_neyman", args)
+    } else {
+
+      jn <- NULL
+
+    }
 
     if (j != 0) {
         jns[[j]] <- jn
     }
 
   # Looping so any amount of moderator values can be used
-  for (i in seq_len(length(modxvals2))) {
+  for (i in seq_along(modxvals2)) {
 
-    # Update works differently for svyglm objects, so needs to be done separately
-    if (survey == FALSE) {
+    dt <- d
 
-      # Creating extra "copy" of model frame to change for model update
-      dt <- d
+    # Create new design to modify
+    if (survey == TRUE) {designt <- design}
+
+    # The moderator value-adjusted variable
+    if (!is.factor(dt[[modx]])) {
+      dt[[modx]] <- dt[[modx]] - modxvals2[i]
+    } else {
+      dt[[modx]] <- relevel(dt[[modx]], ref = modxvals2[i])
+    }
+
+    if (!is.null(mod2)) {
 
       # The moderator value-adjusted variable
-      dt[,modx] <- dt[,modx] - modxvals2[i]
-
-      if (!is.null(mod2)) {
-
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-
-      }
-
-      # Creating the model
-      newmod <- update(model, data = dt)
-
-      # Getting SEs, robust or otherwise
-      if (robust == TRUE) {
-
-        # Use j_summ to get the coefficients
-        sum <- jtools::j_summ(newmod, robust = T, robust.type = robust.type,
-                              model.fit = F)
-        summat <- sum$coeftable
-
-        slopep <- summat[pred,c("Est.","S.E.","p")]
-        intp <- summat["(Intercept)",c("Est.","S.E.","p")]
-
-        retmat[i,1] <- modxvals2[i]
-        retmat[i,2:4] <- slopep[]
-
-        retmati[i,1] <- modxvals2[i]
-        retmati[i,2:4] <- intp[]
-
+      if (!is.factor(dt[[mod2]])) {
+        dt[[mod2]] <- dt[[mod2]] - mod2vals2[j]
       } else {
-
-        sum <- jtools::j_summ(newmod, model.fit = F)
-        summat <- sum$coeftable
-
-        slopep <- summat[pred,c("Est.","S.E.","p")]
-        intp <- summat["(Intercept)",c("Est.","S.E.","p")]
-
-        retmat[i,1] <- modxvals2[i]
-        retmat[i,2:4] <- slopep[]
-
-        retmati[i,1] <- modxvals2[i]
-        retmati[i,2:4] <- intp[]
-
+        dt[[mod2]] <- relevel(dt[[mod2]], ref = mod2vals2[j])
       }
 
-    } else if (survey == TRUE) {
 
-      # Create new design to modify
-      designt <- design
+    }
 
-      # Create new df to modify
-      dt <- d
-
-      # Set the moderator at the given value
-      dt[,modx] <- dt[,modx] - modxvals2[i]
-
-      if (!is.null(mod2)) {
-
-        # The moderator value-adjusted variable
-        dt[,mod2] <- dt[,mod2] - mod2vals2[j]
-
-      }
-
+    # Creating the model
+    if (survey == TRUE) {
       # Update design
       designt$variables <- dt
 
@@ -587,23 +572,44 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       call$design <- designt
       call[[1]] <- survey::svyglm
       newmod <- eval(call)
+    } else {
+      newmod <- update(model, data = dt)
+    }
 
-      # Get the coefs
-      sum <- j_summ(newmod, model.fit = F)
-      summat <- sum$coeftable
+    # Need proper name for test statistic
+    tcol <- try(colnames(summary(newmod)$coefficients)[3], silent = TRUE)
+    if (class(tcol) != "try-error") {
+      tcol <- gsub("value", "val.", tcol)
+      which.cols <- c("Est.", "S.E.", unlist(make_ci_labs(ci.width)), tcol, "p")
+    } else {
+      which.cols <- NULL
+    }
+    # Getting SEs, robust or otherwise
+    if (robust == TRUE) {
 
-      slopep <- summat[pred,c("Est.","S.E.","p")]
-      intp <- summat["(Intercept)",c("Est.","S.E.","p")]
+      # Use j_summ to get the coefficients
+      sum <- summ(newmod, robust = robust, model.fit = FALSE,
+                  confint = TRUE, ci.width = ci.width, vifs = FALSE,
+                  cluster = cluster, which.cols = which.cols)
 
-      retmat[i,1] <- modxvals2[i]
-      retmat[i,2:4] <- slopep[]
+    } else {
 
-      retmati[i,1] <- modxvals2[i]
-      retmati[i,2:4] <- intp[]
+      sum <- summ(newmod, model.fit = FALSE, confint = TRUE,
+                  ci.width = ci.width, vifs = FALSE, which.cols = which.cols)
 
     }
 
-    mods[[i + (j - 1)*modxval_len]] <- newmod
+    summat <- sum$coeftable
+    slopep <- summat[pred, ]
+    intp <- summat["(Intercept)", ]
+
+    retmat[i,1] <- modxvals2[i]
+    retmat[i,2:ncol(retmat)] <- slopep[]
+
+    retmati[i,1] <- modxvals2[i]
+    retmati[i,2:ncol(retmat)] <- intp[]
+
+    mods[[i + (j - 1) * modxval_len]] <- newmod
 
   }
 
@@ -613,15 +619,17 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       imats[[j]] <- retmati
 
       # Now reset the return matrices
-      holdvals <- rep(NA, length(modxvals2)*4)
-      retmat <- matrix(holdvals, nrow=length(modxvals2))
+      holdvals <- rep(NA, length(modxvals2) * ncol(retmat))
+      retmat <- matrix(holdvals, nrow = length(modxvals2))
 
       # Create another matrix to hold intercepts (no left-hand column needed)
       retmati <- retmat
 
       # Value labels
-      colnames(retmat) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
-      colnames(retmati) <- c(paste("Value of ", modx, sep = ""), "Est.", "S.E.", "p")
+      colnames(retmat) <-
+        c(paste("Value of ", modx, sep = ""), names(slopep))
+      colnames(retmati) <-
+        c(paste("Value of ", modx, sep = ""), names(slopep))
 
     }
 
@@ -630,7 +638,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     ss <- structure(ss, modxvals = modxvals2, robust = robust,
                     cond.int = cond.int, johnson_neyman = johnson_neyman,
-                    jnplot = jnplot, jns = jns)
+                    jnplot = jnplot, jns = jns, confint = confint,
+                    ci.width = ci.width)
 
     ss$mods <- mods
     ss$jn <- jns
@@ -656,18 +665,18 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     plots <- as.list(rep(NA, length(mod2vals)))
     the_legend <- NULL
 
-    for (j in 1:length(jns)) {
+    for (j in seq_along(jns)) {
 
     # Tell user we can't plot if they don't have cowplot installed
-    if (jnplot == TRUE && !is.null(mod2) &&
+    if (jnplot == TRUE & !is.null(mod2) &
       !requireNamespace("cowplot", quietly = TRUE)) {
 
-      msg <- "To plot Johnson-Neyman plots for 3-way interactions,
-      you need the cowplot package."
+      msg <- wrap_str("To plot Johnson-Neyman plots for 3-way interactions,
+                       you need the cowplot package.")
       warning(msg)
       jnplot <- FALSE # No more attempts at plotting
 
-    } else if (jnplot == TRUE && !is.null(mod2)) {
+    } else if (jnplot == TRUE & !is.null(mod2)) {
 
       if (is.null(the_legend)) {
         # We save the legend the first time around to use w/ cowplot
@@ -689,6 +698,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
       # Add a label for cowplot
       mod2lab <- names(mod2vals2)[j]
+      if (is.null(mod2lab)) {mod2lab <- mod2vals2[j]}
       jns[[j]]$plot <-
         jns[[j]]$plot + ggplot2::ggtitle(paste(mod2, "=", mod2lab)) +
         ggplot2::theme(plot.title = ggplot2::element_text(size = 11))
@@ -736,12 +746,11 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 }
 
 
-
-#######################################################################
-#  PRINT METHOD                                                       #
-#######################################################################
+#### PRINT METHOD ############################################################
 
 #' @export
+#' @importFrom cli cat_rule rule
+#' @importFrom crayon red bold
 
 print.sim_slopes <- function(x, ...) {
 
@@ -765,24 +774,31 @@ print.sim_slopes <- function(x, ...) {
     if (!is.null(x$mod2)) {
 
       m <- NULL
-      m$slopes <- ss$slopes[[j]]
-      m$ints <- ss$ints[[j]]
+      m$slopes <- as.data.frame(ss$slopes[[j]], stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$slopes <-
+          m$slopes[names(m$slopes) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
+      m$ints <- as.data.frame(ss$ints[[j]], stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$ints <- m$ints[names(m$ints) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
 
-      x$mod2vals <- round(x$mod2vals, x$digits)
+      if (class(x$mod2vals) != "character") {
+        x$mod2vals <- format(x$mod2vals, nsmall = x$digits, digits = 0)
+      }
 
       # Printing output to make it clear where each batch of second moderator
       # slopes begins
       if (x$def2 == FALSE) {
-        cat("############################################################\n")
-        cat("While", x$mod2, "(2nd moderator)", "=", x$mod2vals[j], "\n")
-        cat("############################################################\n\n")
+        cat(rule(center = paste0("While ", x$mod2, " (2nd moderator) ",
+                               "= ", x$mod2vals[j]), line = "bar8"), "\n\n")
       } else {
         # If the user went with default +/- SD or used a factor variable,
         # we use the labels
-        cat("############################################################\n")
-        cat("While ", x$mod2, " (2nd moderator)", " = ", x$mod2vals[j], " (",
-            names(x$mod2vals)[j], ")", "\n", sep = "")
-        cat("############################################################\n\n")
+        cat(rule(center = paste0("While ", x$mod2, " (2nd moderator)", " = ",
+                 x$mod2vals[j], " (", names(x$mod2vals)[j], ")"),
+                 line = "bar8"), "\n\n")
       }
 
 
@@ -796,6 +812,16 @@ print.sim_slopes <- function(x, ...) {
 
     } else {
       m <- ss
+      m <- NULL
+      m$slopes <- as.data.frame(ss$slopes, stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$slopes <-
+          m$slopes[names(m$slopes) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
+      m$ints <- as.data.frame(ss$ints, stringsAsFactors = FALSE)
+      if (x$confint == FALSE) {
+        m$ints <- m$ints[names(m$ints) %nin% unlist(make_ci_labs(x$ci.width))]
+      }
 
       if (x$johnson_neyman == TRUE) {
         print(x$jns[[j]])
@@ -804,39 +830,61 @@ print.sim_slopes <- function(x, ...) {
     }
 
     # Clearly label simple slopes
-    cat("SIMPLE SLOPES ANALYSIS\n\n")
+    cat(bold(underline("SIMPLE SLOPES ANALYSIS")), "\n\n")
 
-    for (i in seq_len(length(x$modxvals))) {
+    for (i in seq_along(x$modxvals)) {
 
-      # Use the labels for the automatic +/- 1 SD, factors
+      if (class(x$modxvals) != "character") {
+        x$modxvals <- format(x$modxvals, nsmall = x$digits, digits = 0)
+      }
+
+      # Use the labels for the automatic +/- 1 SD
       if (x$def == TRUE) {
 
-        cat("Slope of ", x$pred, " when ", x$modx, " = ",
-            round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
-            ": \n", sep = "")
-        print(round(m$slopes[i,2:4], x$digits))
+        slopes <-
+          as.data.frame(lapply(m$slopes[i,2:ncol(m$slopes)], as.numeric),
+            check.names = FALSE)
+
+        cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
+            x$modxvals[i], " (", names(x$modxvals)[i], ")",
+            ": \n")))
+        print(format(slopes, nsmall = x$digits, digits = 0),
+              row.names = FALSE)
 
         # Print conditional intercept
         if (x$cond.int == TRUE) {
-          cat("Conditional intercept"," when ", x$modx, " = ",
-              round(x$modxvals[i],x$digits), " (", names(x$modxvals)[i], ")",
-              ": \n", sep = "")
-          print(round(m$ints[i,2:4], x$digits))
+
+          ints <- as.data.frame(lapply(m$ints[i,2:ncol(m$slopes)], as.numeric),
+                    check.names = FALSE)
+
+          cat(italic(paste0("Conditional intercept"," when ", x$modx, " = ",
+              x$modxvals[i], " (", names(x$modxvals)[i], ")",
+              ": \n")))
+          print(format(ints, nsmall = x$digits, digits = 0),
+                row.names = FALSE)
           cat("\n")
         } else {cat("\n")}
 
       } else { # otherwise don't use labels
 
-        cat("Slope of ", x$pred, " when ", x$modx, " = ",
-            round(x$modxvals[i],x$digits),
-            ": \n", sep = "")
-        print(round(m$slopes[i,2:4], x$digits))
+        slopes <-
+          as.data.frame(lapply(m$slopes[i, 2:ncol(m$slopes)], as.numeric),
+            check.names = FALSE)
+
+        cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
+            x$modxvals[i],
+            ": \n")))
+        print(format(slopes, nsmall = x$digits, digits = 0), row.names = FALSE)
 
         # Print conditional intercept
         if (x$cond.int == TRUE) {
-          cat("Conditional intercept", " when ", x$modx, " = ",
-              round(x$modxvals[i],x$digits), ": \n", sep = "")
-          print(round(m$ints[i,2:4], x$digits))
+
+          ints <- as.data.frame(lapply(m$ints[i, 2:ncol(m$slopes)], as.numeric),
+                    check.names = FALSE)
+
+          cat(italic(paste0("Conditional intercept", " when ", x$modx, " = ",
+              x$modxvals[i], ": \n")))
+          print(format(ints, nsmall = x$digits, digits = 0), row.names = FALSE)
           cat("\n")
         } else {cat("\n")}
 
@@ -849,3 +897,68 @@ print.sim_slopes <- function(x, ...) {
   }
 
 }
+
+#### alternate output formats ################################################
+
+#' @export tidy.sim_slopes
+#' @rdname glance.summ
+
+tidy.sim_slopes <- function(x, conf.int = FALSE, conf.level = .95, ...) {
+
+  cols <- c("estimate", "std.err", "statistic", "p.value", "modx", "modx.value",
+            "mod2", "mod2.value")
+  num_coefs <- ifelse(is.list(x$slopes),
+                      yes = length(x$slopes) * nrow(x$slopes[[1]]),
+                      no = nrow(x$slopes))
+  base <- as.data.frame(matrix(rep(NA, times = num_coefs * length(cols)),
+                               ncol = length(cols)))
+  names(base) <- cols
+
+  atts <- attributes(x)
+  any_mod2 <- !is.null(atts$mod2)
+  if (any_mod2 == FALSE) {
+    all_slopes <- x$slopes
+  } else {
+    all_slopes <- do.call("rbind", x$slopes)
+  }
+
+  base$modx <- atts$modx
+  base$modx.value <- all_slopes[,1]
+  base$estimate <- all_slopes[,"Est."]
+  base$std.err <- all_slopes[,"S.E."]
+  base$p.value <- all_slopes[,"p"]
+  base$statistic <- all_slopes[, grep("val.", colnames(all_slopes), value = T)]
+  want_labs <- unlist(make_ci_labs(conf.level))
+  if (all(want_labs %in% colnames(all_slopes))) {
+    base$conf.low <- all_slopes[,make_ci_labs(conf.level)[[1]]]
+    base$conf.high <- all_slopes[,make_ci_labs(conf.level)[[2]]]
+  } else {
+    alpha <- (1 - conf.level) / 2
+    crit_t <- if (class(x$mods[[1]]) == "lm") {
+      abs(qt(alpha, df = df.residual(x$mods[[1]])))
+    } else {
+      abs(qnorm(alpha))
+    }
+    base$conf.low <- base$estimate - (crit_t * base$std.err)
+    base$conf.high <- base$estimate + (crit_t * base$std.err)
+  }
+
+  if (any_mod2 == TRUE) {
+    base$mod2 <- atts$mod2
+    base$mod2.value <- unlist(lapply(atts$mod2vals, function(y) {
+      rep(y, nrow(x$slopes[[1]]))
+    }))
+  }
+
+  base$term <- paste(base$modx, "=",
+                     if (is.character(base$modx.value)) {
+                       base$modx.value
+                     } else {
+                       round(base$modx.value, getOption("jtools-digits", 2))
+                     }
+                    )
+
+  return(base)
+
+}
+

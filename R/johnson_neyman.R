@@ -4,8 +4,11 @@
 #' understanding where simple slopes are significant in the context of
 #' interactions in multiple linear regression.
 #'
-#' @param model A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
-#'    It should contain the interaction of interest.
+#' @param model A regression model. It is tested with `lm`, `glm`, and
+#'    `svyglm` objects, but others may work as well. It should contain the
+#'     interaction of interest. Be aware that just because the computations
+#'     work, this does not necessarily mean the procedure is appropriate for
+#'     the type of model you have.
 #'
 #' @param pred The predictor variable involved in the interaction.
 #'
@@ -155,25 +158,34 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   ## Hard to predict which order lm() will have the predictors in
   ### First, have to handle the weirdness of merMods
   if (inherits(model, "merMod")) {
-    intterm1 <- paste(pred, ":", modx, sep = "") # first possible ordering
-    intterm1tf <- any(intterm1 %in% names(lme4::fixef(model))) # is it in the coef names?
-    intterm2 <- paste(modx, ":", pred, sep = "") # second possible ordering
-    intterm2tf <- any(intterm2 %in% names(lme4::fixef(model))) # is it in the coef names?
+    # first possible ordering
+    intterm1 <- paste(pred, ":", modx, sep = "")
+    # is it in the coef names?
+    intterm1tf <- any(intterm1 %in% names(lme4::fixef(model)))
+    # second possible ordering
+    intterm2 <- paste(modx, ":", pred, sep = "")
+    # is it in the coef names?
+    intterm2tf <- any(intterm2 %in% names(lme4::fixef(model)))
 
     # Taking care of other business, creating coefs object for later
     coefs <- lme4::fixef(model)
   } else {
-    intterm1 <- paste(pred, ":", modx, sep = "") # first possible ordering
-    intterm1tf <- any(intterm1 %in% names(coef(model))) # is it in the coef names?
-    intterm2 <- paste(modx, ":", pred, sep = "") # second possible ordering
-    intterm2tf <- any(intterm2 %in% names(coef(model))) # is it in the coef names?
+    # first possible ordering
+    intterm1 <- paste(pred, ":", modx, sep = "")
+    # is it in the coef names?
+    intterm1tf <- any(intterm1 %in% names(coef(model)))
+    # second possible ordering
+    intterm2 <- paste(modx, ":", pred, sep = "")
+    # is it in the coef names?
+    intterm2tf <- any(intterm2 %in% names(coef(model)))
 
     # Taking care of other business, creating coefs object for later
     coefs <- coef(model)
   }
 
   ## Now we know which of the two is found in the coefficents
-  inttermstf <- c(intterm1tf, intterm2tf) # Using this to get the index of the TRUE one
+  # Using this to get the index of the TRUE one
+  inttermstf <- c(intterm1tf, intterm2tf)
   intterms <- c(intterm1, intterm2) # Both names, want to keep one
   intterm <- intterms[which(inttermstf)] # Keep the index that is TRUE
 
@@ -223,7 +235,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     ## Get the minimum p values used in the adjustment
     ps <- 2 * pmin(pt(ts, df = df), (1 - pt(ts, df = df)))
     ## Multipliers
-    multipliers <- 1:length(marginal_effects) / length(marginal_effects)
+    multipliers <- seq_along(marginal_effects) / length(marginal_effects)
     ## Order the pvals
     ps_o <- order(ps)
 
@@ -312,7 +324,8 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   }
 
 
-  # As long as the above didn't error, let's solve the quadratic with this function
+  # As long as the above didn't error, let's solve the quadratic with
+  # this function
   quadsolve <- function(a,b,c, disc) {
     # first return value
     x1 <- (-b + sqrt(disc)) / (2 * a)
@@ -381,7 +394,8 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   out <- structure(out, modrange = modrangeo)
 
   # Need to check whether sig vals are within or outside bounds
-  sigs <- which((cbs$Lower < 0 & cbs$Upper < 0) | (cbs$Lower > 0 & cbs$Upper > 0))
+  sigs <- which((cbs$Lower < 0 & cbs$Upper < 0) |
+                  (cbs$Lower > 0 & cbs$Upper > 0))
 
   # Going to split cbands values into significant and insignificant pieces
   insigs <- setdiff(1:1000, sigs)
@@ -487,14 +501,16 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     if (out$bounds[1] < modrange[1]) {
       # warning("The lower bound is outside the range of the plotted data")
     } else if (all_sig == FALSE) {
-      plot <- plot + ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[1]),
+      plot <- plot +
+        ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[1]),
                                          linetype = 2, color = "#00BFC4")
     }
 
     if (out$bounds[2] > modrange[2]) {
       # warning("The upper bound is outside the range of the plotted data")
     } else if (all_sig == FALSE) {
-      plot <- plot + ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[2]),
+      plot <- plot +
+        ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[2]),
                                          linetype = 2, color = "#00BFC4")
     }
 
@@ -523,6 +539,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
 }
 
 #' @export
+#' @importFrom crayon bold inverse underline
 
 print.johnson_neyman <- function(x, ...) {
 
@@ -530,33 +547,32 @@ print.johnson_neyman <- function(x, ...) {
 
   # Describe whether sig values are inside/outside the interval
   if (atts$inside == FALSE) {
-    inout <- "OUTSIDE"
+    inout <- inverse("OUTSIDE")
   } else {
-    inout <- "INSIDE"
+    inout <- inverse("INSIDE")
   }
 
-  x$bounds <- round(x$bounds, atts$digits)
-  atts$modrange <- round(atts$modrange, atts$digits)
+  b_format <- num_print(x$bounds, atts$digits)
+  m_range <- num_print(atts$modrange, atts$digits)
   alpha <- gsub("0\\.", "\\.", as.character(atts$alpha))
   pmsg <- paste("p <", alpha)
 
   # Print the output
-  cat("JOHNSON-NEYMAN INTERVAL\n\n")
+  cat(bold(underline("JOHNSON-NEYMAN INTERVAL")), "\n\n")
   if (all(is.finite(x$bounds))) {
-    cat("The slope of", atts$pred, "is", pmsg, "when", atts$modx,
-        "is", inout, "this interval:\n")
-    cat("[", round(x$bounds[1], atts$digits), ", ",
-        round(x$bounds[2], atts$digits), "]\n", sep = "")
-    cat("Note: The range of observed values of ", atts$modx,
-        " is [", round(atts$modrange[1], atts$digits), ", ",
-        round(atts$modrange[2], atts$digits), "]\n\n", sep = "")
+    cat_wrap("When ", atts$modx, " is ", inout, " the interval [",
+             b_format[1], ", ", b_format[2], "], the slope of ", atts$pred,
+             " is ", pmsg, ".", brk = "\n\n")
+    cat_wrap(italic("Note: The range of observed values of", atts$modx,
+        "is "), "[", m_range[1], ", ", m_range[2], "]", brk = "\n\n")
   } else {
-    cat("The Johnson-Neyman interval could not be found.",
-        "\nIs your interaction term significant?\n\n")
+    cat_wrap("The Johnson-Neyman interval could not be found.
+        Is the p value for your interaction term below
+        the specified alpha?", brk = "\n\n")
   }
   if (atts$control.fdr == TRUE) {
     cat("Interval calculated using false discovery rate adjusted",
-        "t =", round(x$t_value, atts$digits),
+        "t =", num_print(x$t_value, atts$digits),
         "\n\n")
   }
 

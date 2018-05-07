@@ -35,3 +35,5 @@ jtools\.sublime-project
 jtools\.sublime-workspace
 
 docs/
+
+tests/testthat/Rplots\.pdf

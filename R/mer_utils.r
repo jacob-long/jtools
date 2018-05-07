@@ -1,22 +1,26 @@
 
-# Stolen from sjstats so I don't have to list it as import
+# Taken from sjstats so I don't have to list it as import
 
 icc <- function(fit, obj.name) {
   # check if suggested package is available
   if (!requireNamespace("lme4", quietly = TRUE)) {
-    stop("Package `lme4` needed for this function to work. Please install it.", call. = FALSE)
+    stop("Package `lme4` needed for this function to work. Please install it.",
+         call. = FALSE)
   }
 
   # get family
   fitfam <- stats::family(fit)$family
   # is neg. binomial? Dropped sjstats' internal function in favor of regexp
-  # is_negbin <- sjmisc::str_contains(fitfam, "Negative Binomial", ignore.case = TRUE)
+  # is_negbin <-
+  # sjmisc::str_contains(fitfam, "Negative Binomial", ignore.case = TRUE)
   is_negbin <- grepl(ignore.case = TRUE, pattern = "Negative Binomial",
                      x = fitfam)
 
   # random effects variances
   # for details on tau and sigma, see
-  # Aguinis H, Gottfredson RK, Culpepper SA2013. Best-Practice Recommendations for Estimating Cross-Level Interaction Effects Using Multilevel Modeling. Journal of Management 39(6): 1490–1528. doi:10.1177/0149206313478188.
+  # Aguinis H, Gottfredson RK, Culpepper SA2013. Best-Practice Recommendations
+  # for Estimating Cross-Level Interaction Effects Using Multilevel Modeling.
+  # Journal of Management 39(6): 1490–1528. doi:10.1177/0149206313478188.
   reva <- lme4::VarCorr(fit)
   # retrieve only intercepts
   vars <- lapply(reva, function(x) x[[1]])
@@ -51,7 +55,8 @@ icc <- function(fit, obj.name) {
     r <- lme4::getME(fit, "glmer.nb.theta")
     ri.icc <-
       (exp(tau.00) - 1) /
-      ((exp(total_var) - 1) + (exp(total_var) / r) + exp(-beta - (total_var / 2)))
+      ((exp(total_var) - 1) + (exp(total_var) / r)
+       + exp(-beta - (total_var / 2)))
   } else {
     # random intercept icc
     ri.icc <- tau.00 / total_var
@@ -59,7 +64,8 @@ icc <- function(fit, obj.name) {
 
   # get random slope random intercep correlations
   # do we have any rnd slopes?
-  has_rnd_slope <- unlist(lapply(reva, function(x) dim(attr(x, "correlation"))[1] > 1))
+  has_rnd_slope <-
+    unlist(lapply(reva, function(x) dim(attr(x, "correlation"))[1] > 1))
   tau.01 <- rho.01 <- NULL
 
   # get rnd slopes
@@ -70,7 +76,8 @@ icc <- function(fit, obj.name) {
     # get standard deviations, multiplied
     std_ <- lapply(rnd_slope, function(x) prod(attr(x, "stddev")))
     # bind to matrix
-    tau.01 <- apply(as.matrix(cbind(unlist(cor_), unlist(std_))), MARGIN = 1, FUN = prod)
+    tau.01 <- apply(as.matrix(cbind(unlist(cor_), unlist(std_))),
+                    MARGIN = 1, FUN = prod)
     rho.01 <- unlist(cor_)
   }
 
@@ -82,7 +89,9 @@ icc <- function(fit, obj.name) {
   attr(ri.icc, "family") <- stats::family(fit)$family
   attr(ri.icc, "link") <- stats::family(fit)$link
   attr(ri.icc, "formula") <- stats::formula(fit)
-  attr(ri.icc, "model") <- ifelse(inherits(fit, "glmerMod"), "Generalized linear mixed model", "Linear mixed model")
+  attr(ri.icc, "model") <- ifelse(inherits(fit, "glmerMod"),
+                                  "Generalized linear mixed model",
+                                  "Linear mixed model")
   attr(ri.icc, "tau.00") <- tau.00
   attr(ri.icc, "tau.01") <- tau.01
   attr(ri.icc, "rho.01") <- rho.01
@@ -97,231 +106,614 @@ icc <- function(fit, obj.name) {
 
 }
 
-##################################################################
-# GLMM r-squared -- lifted from MuMIN package to avoid dependency
-##################################################################
-
-`r.squaredGLMM` <-
-  function(x)
-    UseMethod("r.squaredGLMM")
-
-`r.squaredGLMM.default` <-
-  function(x) .NotYetImplemented()
-
-##' @importFrom stats var
-
-# `r.squaredGLMM.lme` <-
-#   function(x) {
-#     VarFx <- var(fitted(x, level = 0L))
-#     mmRE <- model.matrix(x$modelStruct$reStruct,
-#                          data = x$data[rownames(x$fitted), , drop = FALSE])
-#     n <- nrow(mmRE)
-#
-#     sigma2 <- x$sigma^2
-#     reStruct <- x$modelStruct$reStruct
-#     if((m <- length(reStruct)) > 1L) {
-#       nams <- names(reStruct)
-#       for(i in seq.int(m))
-#         attr(reStruct[[i]], "Dimnames")[[2L]] <-
-#           paste(nams[[i]], attr(reStruct[[i]], "Dimnames")[[2L]], sep = ".")
-#     }
-#
-#     varRe <- sum(sapply(reStruct, function(z) {
-#       sig <- nlme::pdMatrix(z) * sigma2
-#       mm1 <-  mmRE[, rownames(sig), drop = FALSE]
-#       #sum(diag(mm1 %*% sig %*% t(mm1))) / n
-#       sum(matmultdiag(mm1 %*% sig, ty = mm1)) / n
-#     }))
-#
-#     varTot <- sum(VarFx, varRe)
-#     res <- c(VarFx, varTot) / (varTot + sigma2)
-#     names(res) <- c("R2m", "R2c")
-#     res
-#   }
-
-#' @importFrom stats update.formula
-
-## extracts random effect formula. e.g:
-## ~ ... + (a | ...) + (b + c | ...) --> ~ a + b + c
-ranform <- function (form) {
-  ans <- update.formula(reformulate(vapply(lapply(.findbars(form),
-                                                  "[[", 2L), deparse, "")), ~ . + 1)
-  environment(ans) <- environment(form)
-  ans
-}
-
-`.findbars` <- function (term) {
-  if (is.name(term) || !is.language(term))
-    return(NULL)
-  if (term[[1L]] == as.name("("))
-    return(.findbars(term[[2L]]))
-  if (!is.call(term))
-    stop("term must be of class call")
-  if (term[[1L]] == as.name("|"))
-    return(term)
-  if (length(term) == 2L)
-    return(.findbars(term[[2L]]))
-  c(.findbars(term[[2L]]), .findbars(term[[3L]]))
-}
-
-matmultdiag <-
-  function(x, y, ty = t(y)) {
-    if(ncol(x) != ncol(ty)) stop('non-conformable arguments')
-    if(nrow(x) != nrow(ty)) stop('result is not a square matrix')
-    return(rowSums(x * ty))
+get_re_tables_mer <- function(model, re.variance, groups, ngroups, iccs) {
+  ## Make a table summarizing grouping vars
+  gvmat <- matrix(ncol = 3, nrow = length(ngroups))
+  colnames(gvmat) <- c("Group","# groups","ICC")
+  for (i in seq_len(length(ngroups))) {
+    gvmat[i,1] <- groups[i]
+    gvmat[i,2] <- ngroups[i]
+    gvmat[i,3] <- iccs[i]
   }
 
-#' @importFrom stats var nobs
+  ## Make table explaining random coefs
+  rcmat <- as.data.frame(lme4::VarCorr(model))
+  rcmat <- rcmat[is.na(rcmat$var2),]
+  re_variance <- switch(re.variance, sd = "sdcor", var = "vcov")
+  re_var_lab <- switch(re.variance, sd = "Std. Dev.", var = "Var.")
+  rcmat <- rcmat[, names(rcmat) %in% c("grp", "var1", re_variance)]
+  rcmat <- as.matrix(rcmat)
+  colnames(rcmat) <- c("Group", "Parameter", re_var_lab)
+  attr(rcmat, "variance") <- re_var_lab
 
-`r.squaredGLMM.merMod` <-
-  function(x) {
-    fam <- family(x)
-    useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
-    ## for poisson(log) and binomial(*), update 'x' to include individual-level
-    ## variance (1 | 1:nobs(x)):
-    if (useObsLevVar && !any(sapply(x@flist, nlevels) == nobs(x))) {
-      cl <- get_call(x)
-      frm <- formula(x)
-      nRowData <- eval(call("eval", as.expression(call("NROW", cl$formula[[2L]])),
-                            envir = cl$data), envir = environment(frm),
-                       enclos = parent.frame())
-      fl <- length(frm)
-      frx <- . ~ . + 1
-      frx[[3L]][[3L]] <- call("(", call("|", 1, call("gl", nRowData, 1)))
-      cl$formula <- update.formula(frm, frx)
-      x <- tryCatch(eval(cl, envir = environment(frm), enclos = parent.frame()),
-                    error = function(e) {
-                      cry(conditionCall(e), conditionMessage(e), warn = TRUE)
-                      cry(cl, "fitting model with the observation-level random effect term failed. Add the term manually")
-                    })
-      message("The result is correct only if all data used by the model ",
-              "has not changed since model was fitted.", domain = "R-MuMIn")
-    }
+  return(list(gvmat = gvmat, rcmat = rcmat))
+}
 
+##########################################################################
+# GLMM r-squared -- adapted from piecewiseSEM package
+##########################################################################
 
-    mmAll <- model.matrix(ranform(formula(x)), data = model.frame(x))
-    ##Note: Argument 'contrasts' can only be specified for fixed effects
-    ##contrasts.arg = eval(cl$contrasts, envir = environment(formula(x))))
+### piecewisesem implementation
+#' @importFrom stats var
 
-    vc <- lme4::VarCorr(x)
+pR2_merMod <- function(model) {
 
-    n <- nrow(mmAll)
-    fx <- lme4::fixef(x) # fixed effect estimates
-    fxpred <- as.vector(model.matrix(x) %*% fx)
+  ret <- list()
 
-    if (useObsLevVar) {
-      vname <- names(x@flist)[sapply(x@flist, nlevels) == n][1L]
-      varResid <- vc[[vname]][1L]
-      beta0 <- mean(fxpred)
-      vc <- vc[names(vc) != vname]
+  # Get R2 for class == merMod
+  if (any(class(model) %in% c("lmerMod", "merModLmerTest"))) {
+
+    # Get variance of fixed effects by multiplying coefficients by design matrix
+    varF <- var(as.vector(lme4::fixef(model) %*% t(model@pp$X)))
+
+    # Check to see if random slopes are present as fixed effects
+    random.slopes <- if ("list" %in% class(lme4::ranef(model))) {
+
+      unique(as.vector(sapply(lme4::ranef(model), colnames)))
+
     } else {
-      varResid <- attr(vc, "sc")^2
-      beta0 <- NULL
+
+      colnames(lme4::ranef(model))
+
     }
 
-    if(!all(unlist(sapply(vc, rownames), use.names = FALSE) %in% colnames(mmAll)))
-      stop("random term names do not match those in model matrix. \n",
-           "Have 'options(contrasts)' changed since the model was fitted?")
+    # Separate observation variance from variance of random effects
+    n.obs <- names(
+      unlist(
+        lapply(
+          lme4::ranef(model), nrow))[!unlist(lapply(lme4::ranef(model), nrow)) ==
+                                       nrow(model@pp$X)]
+      )
 
-    varRe <- if(length(vc) == 0L) 0L else
-      sum(sapply(vc, function(sig) {
-        mm1 <-  mmAll[, rownames(sig), drop = FALSE]
-        # sum(matmult(mm1 %*% sig, t(mm1), diag.only = TRUE)) / n
-        sum(matmultdiag(mm1 %*% sig, ty = mm1)) / n
-        #sum(diag(mm1 %*% sig %*% t(mm1))) / n
-      }))
+    # Get variance of random effects
+    varRand <- sum(
 
-    #varRe0 <- if(length(vc) == 0L) 0L else
-    #          sum(sapply(vc, function(sig) sig[[1]]))
+      sapply(lme4::VarCorr(model)[n.obs], function(Sigma) {
 
-    .rsqGLMM(fam = family(x), varFx = var(fxpred), varRe = varRe,
-             varResid = varResid, beta0 = beta0)
-  }
+        X <- model.matrix(model)
 
-# #' @importFrom stats var
+        Z <- X[, rownames(Sigma), drop = FALSE]
 
-# `r.squaredGLMM.glmmML` <-
-#   function(x) {
-#     if(is.null(x$x))
-#       stop("glmmML must be fitted with 'x = TRUE'")
-#
-#     fam <- family(x)
-#     useObsLevVar <- (fam$family == "poisson" && fam$link == "log") || fam$family == "binomial"
-#     if(useObsLevVar) {
-#       cry(, "cannot calculate 'unit variance' in glmmML")
-#     }
-#     fxpred <- as.vector(x$x %*% coef(x))
-#     .rsqGLMM(family(x), varFx = var(fxpred), varRe = x$sigma^2, varResid = NULL,
-#              beta0 = mean(fxpred))
-#   }
+        Z.m <- Z %*% Sigma
 
-# #' @importFrom stats var model.response model.frame df.residual
+        sum(diag(crossprod(Z.m, Z))) / nrow(X)
 
-# `r.squaredGLMM.lm` <-
-#   function(x) {
-#     fam <- family(x)
-#     .rsqGLMM(fam,
-#              varFx = var(as.vector(model.matrix(x) %*% coef(x))),
-#              #varFx = var(fitted(x)),
-#              varRe = 0,
-#              varResid = sum(if(is.null(x$weights)) resid(x)^2 else
-#                resid(x)^2 * x$weights) / df.residual(x),
-#              beta0 = if(fam$family == "poisson" && fam$link == "log")
-#                log(mean(model.response(model.frame(x)))) else
-#                  NULL
-#     )
-#   }
+      } )
 
-`.rsqGLMM` <-
-  function (fam, varFx, varRe, varResid, beta0) {
-    varDistr <- switch(paste(fam$family, fam$link, sep = "."),
-                       gaussian.identity = 0,
-                       binomial.logit = 3.28986813369645,
-                       binomial.probit = 1,
-                       poisson.log = {
-                         expBeta0 <- exp(beta0)
-                         if (expBeta0 < 6) cry(sys.call(-1L), "exp(beta0) of %0.1f is too close to zero, estimate may be unreliable \n",
-                                               expBeta0, warn = TRUE)
-                         log1p(1 / expBeta0)
-                       },
-                       poisson.sqrt = 0.25,
-                       cry(sys.call(-1L), "do not know how to calculate variance for this family/link combination")
     )
 
-    #print(c(Sf = varFx, Sl = varRe, Se = varResid, Sd = varDistr))
-    #  total.var <- [Sf + Sl] + [Se + Sd]
-    varTot <- sum(varFx, varRe)
-    res <- c(varFx, varTot) / (varTot + varDistr + varResid)
-    names(res) <- c("R2m", "R2c")
-    res
+    # Get residual variance
+    varResid <- attr(lme4::VarCorr(model), "sc")^2
+
+    # Calculate R2 values
+    ret$Marginal <- varF / (varF + varRand + varResid)
+
+    ret$Conditional <- (varF + varRand) / (varF + varRand + varResid)
+
   }
 
-`cry` <-
-  function(Call = NA, Message, ..., warn = FALSE, domain = paste0("R-", .packageName)) {
-    if (is.character(Call)) {
-      Call <- call(Call[1L], sys.call(-1L)[[1L]])
-    } else if(is.numeric(Call)) {
-      Call <- sys.call(Call - 1L)
-    } else if(!is.call(Call)) Call <- sys.call(-1L)
-    if(warn) warning(simpleWarning(gettextf(Message, ..., domain = domain), Call)) else
-      stop(simpleError(gettextf(Message, ..., domain = domain), Call))
-  }
+  # Get R2 for class == "glmerMod"
+  if (any(class(model) %in% c("glmerMod"))) {
 
-`get_call` <- function(x) {
-  rval <-
-    if(isS4(x)) {
-      if(any(i <- (sln <- c("call", "CALL", "Call")) %in% methods::slotNames(x)))
-        methods::slot(x, sln[i][1L]) else
-          if(!is.null(attr(x, "call")))
-            attr(x, "call") else NULL
+    # Classify model family
+    ret$Family <- summary(model)$family
+
+    # Classify link function
+    ret$Link <- summary(model)$link
+
+    # Get variance of fixed effects by multiplying coefficients by
+    # design matrix
+    varF <- var(as.vector(lme4::fixef(model) %*% t(model@pp$X)))
+
+    # Check to see if random slopes are present as fixed effects
+    random.slopes <- if ("list" %in% class(lme4::ranef(model))) {
+
+      unique(as.vector(sapply(lme4::ranef(model), colnames)))
+
     } else {
-      if(!is.atomic(x) && (i <- match("call", names(x), nomatch = 0L)) != 0L) {
-        x[[i]]
-      } else if(!is.null(attr(x, "call"))) {
-        attr(x, "call")
-      } else
-        NULL
+
+        colnames(lme4::ranef(model))
+
     }
-  if(is.null(rval)) stats::getCall(x) else rval
+
+    # Separate observation variance from variance of random effects
+    n.obs <- names(
+      unlist(
+        lapply(
+          lme4::ranef(model), nrow)
+        )[!unlist(lapply(lme4::ranef(model), nrow)) == nrow(model@pp$X)]
+      )
+
+    # Get variance of random effects
+    varRand <- sum(
+
+      sapply(lme4::VarCorr(model)[n.obs], function(Sigma) {
+
+        X <- model.matrix(model)
+
+        Z <- X[, rownames(Sigma), drop = FALSE]
+
+        Z.m <- Z %*% Sigma
+
+        sum(diag(crossprod(Z.m, Z))) / nrow(X)
+
+      } )
+
+    )
+
+    # Get overdispersion variance
+    obs <- names(
+      unlist(
+        lapply(
+          lme4::ranef(model), nrow))[unlist(
+            lapply(lme4::ranef(model), nrow)) == nrow(model@pp$X)]
+      )
+
+    if (length(obs) == 0) {
+
+      varDisp <- 0
+
+    } else {
+
+      varDisp <-  sum(
+
+        sapply(lme4::VarCorr(model)[obs], function(Sigma) {
+
+          X <- model.matrix(model)
+
+          Z <- X[, rownames(Sigma)]
+
+          Z.m <- Z %*% Sigma
+
+          sum(diag(crossprod(Z.m, Z))) / nrow(X)
+
+        } )
+
+      )
+
+    }
+
+    # Get distribution-specific variance
+    if (ret$Family == "binomial") {
+
+      if (ret$Link == "logit") {
+
+      varDist <- (pi^2)/3
+
+      } else if (ret$Link == "probit") {
+
+        varDist <- 1
+
+      } else {
+
+        warning(paste("Model link '", summary(model)$link,
+                      "' is not yet supported for the ",
+                      summary(model)$family, "distribution"))
+
+        varDist <- NA
+
+      }
+
+    } else if (ret$Family == "poisson" | grepl("Negative Binomial", ret$Family)) {
+
+      # Generate null model (intercept and random effects only,
+      # no fixed effects)
+      null.model <-
+        update(model, formula = paste(". ~ ", get.random.formula(model, "~1")))
+
+      # Get the fixed effects of the null model
+      null.fixef <- as.numeric(lme4::fixef(null.model))
+
+      if (ret$Link == "log") {varDist <- log(1 + 1/exp(null.fixef))}
+
+    } else if (ret$Link == "sqrt") {
+
+      varDist <- 0.25
+
+    } else {
+
+      warning(paste("Model link '", summary(model)$link,
+                    "' is not yet supported for the ",
+                    summary(model)$family, "distribution"))
+
+      varDist <- NA
+
+    }
+
+    # Calculate R2 values
+    ret$Marginal <- varF / (varF + varRand + varDisp + varDist)
+
+    ret$Conditional <- (varF + varRand) / (varF + varRand + varDisp + varDist)
+
+  }
+
+  # Return results
+  return(ret)
+
 }
 
+get.random.formula <- function(model, rhs) {
+
+  if (class(rhs) == "formula") {rhs <- Reduce(paste, deparse(rhs))}
+
+  # Get random formula from model
+  random.formula <- if (any(class(model) %in% c("lmerMod", "merModLmerTest",
+                                                "glmerMod", "glmmTMB"))) {
+
+        paste("(", lme4::findbars(formula(model)), ")", collapse = " + ")
+
+  }
+
+  # Get random structure(s)
+  random.structure <- if (any(class(model) %in% c("lmerMod", "merModLmerTest",
+                                                  "glmerMod", "glmmTMB"))) {
+
+      ran.ef.splt <- strsplit(random.formula, "\\+.")[[1]]
+
+      sapply(ran.ef.splt[sapply(ran.ef.splt, function(x) grepl("\\|", x))],
+
+             function(x)
+
+               gsub(" ", "", gsub(".*\\|(.*)\\)", "\\1", x))
+
+      )
+
+  }
+
+  random.structure <- unname(random.structure[!duplicated(random.structure)])
+
+  # Get random slopes in the model list, otherwise return vector of
+  # terms to drop
+  random.slopes <- if (any(class(model) %in% c("glmerMod", "merModLmerTest",
+                                               "glmmTMB"))) {
+
+    ran.ef <- ifelse(any(class(lme4::ranef(model)) != "list"),
+                     list(lme4::ranef(model)),
+                     lme4::ranef(model))
+
+    as.vector(sapply(ran.ef, function(x) colnames(x)))
+
+  }
+
+  random.slopes <- unname(random.slopes[!duplicated(random.slopes) &
+                          random.slopes != "(Intercept)"])
+
+  # Define new random slopes
+  new.random.slopes <- random.slopes[which(random.slopes %in%
+                                             unlist(strsplit(rhs, ".\\+.")))]
+
+  if (length(new.random.slopes) == 0) {
+    new.random.slopes <- 1
+  } else {
+    new.random.slopes <- paste0(new.random.slopes, collapse = " + ")
+  }
+
+  # Replace random slopes if any variables in model formula appear in
+  # random slopes
+  if (length(random.slopes) != 0) {
+
+    if (any(class(model) %in% c("glmerMod", "merModLmerTest", "glmmTMB"))) {
+
+        paste(
+          sapply(random.structure, function(x)
+            paste("(", new.random.slopes, " | ", x, ")") ),
+          collapse = " + ")
+
+    }
+
+  } else if (length(random.slopes) == 0) {
+
+    if (is.list(random.structure)) {
+
+      eval(parse(text = gsub("*\\~(.*)", paste0("~ ", new.random.slopes, "))"),
+                             random.formula)))
+
+    } else {
+
+      random.formula
+    }
+
+  }
+
+}
+
+
+#### merMod prediction #######################################################
+
+#' @importFrom stats vcov model.frame terms delete.response na.omit
+predict_mer <- function(model, newdata = NULL, use_re_var = FALSE,
+                        se.fit = TRUE, dispersion = NULL, terms = NULL,
+                        allow.new.levels = TRUE,
+                        type = c("link", "response", "terms"),
+                        na.action = na.pass, re.form = NULL,
+                        boot = FALSE, sims = 100, prog_arg = "none", ...) {
+
+  if (is.null(newdata) && is.null(re.form)) {
+    ## raw predict() call, just return fitted values
+    ##   (inverse-link if appropriate)
+    if (lme4::isLMM(model) || lme4::isNLMM(model)) {
+      ## make sure we do *NOT* have NAs in fitted object
+      fit <- na.omit(fitted(model))
+    } else { ## inverse-link
+      fit <-  switch(type, response = model@resp$mu, ## == fitted(object),
+                     link = model@resp$eta)
+      if (is.null(nm <- rownames(model.frame(model)))) {
+        nm <- seq_along(fit)
+      }
+      names(fit) <- nm
+    }
+    fit.na.action <- NULL
+
+    # Need this for SEs
+    X <- lme4::getME(model, "X")
+    X.col.dropped <- attr(X, "col.dropped")
+
+    ## flow jumps to end for na.predict
+  } else { ## newdata and/or re.form
+
+    fit.na.action <- attr(model@frame, "na.action")  ## original NA action
+
+    nobs <- if (is.null(newdata)) nrow(model@frame) else nrow(newdata)
+    fit <- rep(0,nobs)
+
+    X <- lme4::getME(model, "X")
+    X.col.dropped <- attr(X, "col.dropped")
+    ## modified from predict.glm ...
+    if (is.null(newdata)) {
+      ## Use original model 'X' matrix and offset
+      ## orig. offset: will be zero if there are no matches ...
+      offset <- model.offset(model.frame(model))
+      if (is.null(offset)) offset <- 0
+    } else {  ## new data specified
+      ## evaluate new fixed effect
+      RHS <- formula(substitute(~R,
+                                list(R = RHSForm(formula(model,
+                                                         fixed.only = TRUE)))))
+      Terms <- terms(model, fixed.only = TRUE)
+      mf <- model.frame(model, fixed.only = TRUE)
+      isFac <- vapply(mf, is.factor, FUN.VALUE = TRUE)
+      ## ignore response variable
+      isFac[attr(Terms,"response")] <- FALSE
+      orig_levs <- if (length(isFac) == 0) NULL else lapply(mf[isFac], levels)
+
+      mfnew <- suppressWarnings(
+        model.frame(delete.response(Terms), newdata,
+                    na.action = na.action, xlev = orig_levs))
+
+      X <- model.matrix(RHS, data = mfnew,
+                        contrasts.arg = attr(X,"contrasts"))
+      ## hack to remove unused interaction levels?
+      ## X <- X[,colnames(X0)]
+
+      offset <- 0 # rep(0, nrow(X))
+      tt <- terms(model)
+      if (!is.null(off.num <- attr(tt, "offset"))) {
+        for (i in off.num)
+          offset <- offset + eval(attr(tt,"variables")[[i + 1]], newdata)
+      }
+      fit.na.action <- attr(mfnew, "na.action")
+      ## only need to drop if new data specified ...
+      if (is.numeric(X.col.dropped) && length(X.col.dropped) > 0) {
+        X <- X[, -X.col.dropped, drop = FALSE]
+      }
+
+      fit <- drop(X %*% lme4::fixef(model))
+      fit <- fit + offset
+
+    }
+
+  }  ## newdata/newparams/re.form
+
+  if (se.fit == TRUE & boot == FALSE) {
+    .vcov <- as.matrix(vcov(model))
+    fit.ses <- sqrt(diag(X %*% .vcov %*% t(X)))
+
+    if (lme4::isGLMM(model)) {
+      switch(type, response = {
+        fit.ses <- fit.ses * abs(family(model)$mu.eta(fit))
+        fit <- model@resp$family$linkinv(fit)
+      }, link = , terms = )
+    } else {
+      fit.ses <- fit.ses * abs(family(model)$mu.eta(fit))
+    }
+
+    re_vcov <- lme4::VarCorr(model)
+    # Sum each random intercept variance
+    re_variances <- sum(sapply(re_vcov, function(x) {x[1]}))
+
+    if (use_re_var == TRUE) {
+      fit.ses <- fit.ses + re_variances
+    }
+
+  } else if (se.fit == TRUE & boot == TRUE) {
+
+    bootfun <- function(model) {
+      drop( X  %*% lme4::fixef(model) )
+    }
+
+    bo <- lme4::bootMer(model, FUN = bootfun, nsim = sims,
+                        .progress = prog_arg, ...)
+    fit <- bo$t
+
+    if (lme4::isGLMM(model)) {
+      switch(type, response = {
+        fit <- model@resp$family$linkinv(fit)
+      }, link = , terms = )
+    }
+
+  }
+
+  type <- type[1]
+  if (!noReForm(re.form)) {
+    if (is.null(re.form))
+      re.form <- reOnly(formula(model)) # RE formula only
+    rfd <- if (is.null(newdata)) {model@frame} else {newdata}
+    newRE <- mkNewReTrms(model, rfd, re.form, na.action = na.action,
+                         allow.new.levels = allow.new.levels)
+    REvals <- base::drop(methods::as(newRE$b %*% newRE$Zt, "matrix"))
+    fit <- fit + REvals
+  }
+
+  if (se.fit == FALSE & lme4::isGLMM(model)) {
+    switch(type, response = {
+      fit <- model@resp$family$linkinv(fit)
+    }, link = , terms = )
+  }
+
+  if (se.fit == TRUE & boot == FALSE) {
+    return(list(fit = fit, se.fit = fit.ses))
+  } else if (se.fit == TRUE & boot == TRUE) {
+    return(list(fit = fit))
+  } else {
+    return(fit)
+  }
+
+
+}
+
+# ### Add random effects to df ################################################
+#
+# add_ranefs <- function(model, data = NULL) {
+#
+#   the_res <- lme4::ranef(model)
+#
+#   for (i in seq_along(the_res)) {
+#
+#     grp_var <- names(the_res)[i]
+#
+#     for (j in seq_along(the_res[[grp_var]])) {
+#
+#       # Name of the predictor with random effect
+#       ran_var <- names(the_res[[grp_var]])[j]
+#       # Name of the column to be added to original data
+#       new_var <- paste0(grp_var, "_", ran_var)
+#       # If it's the intercept, give it a syntactically valid name
+#       new_var <- gsub("(Intercept)", "intercept", new_var, fixed = TRUE)
+#
+#       # Create 1-column data frame with the random effects
+#       grps_plus_effects <- the_res[[grp_var]][, j, drop = FALSE]
+#       # Add the rownames --- the value of the grouping var
+#       grps_plus_effects[grp_var] <- rownames(grps_plus_effects)
+#
+#       # Going to coerce grouping factor to character in both DFs
+#       temp_dat <- data
+#       temp_dat[[grp_var]] <- as.character(temp_dat[[grp_var]])
+#
+#       # Match the ranefs to observations by inner joining
+#       new_dat <- merge(temp_dat, grps_plus_effects, by = grp_var)
+#       # Keep just the new column, and keep it separate
+#       new_col <- new_dat[names(new_dat) %nin% names(temp_dat)]
+#       # Append new column to original data frame with pre-specified var name
+#       data[[new_var]] <- unlist(new_col)
+#
+#     }
+#
+#   }
+#
+#   return(data)
+#
+# }
+#
+
+### Lifted from lme4 ########################################################
+
+noReForm <- function(re.form) {
+  (!is.null(re.form) && !methods::is(re.form, "formula") && is.na(re.form)) ||
+  (methods::is(re.form, "formula") && length(re.form) == 2 &&
+     identical(re.form[[2]], 0))
+}
+
+reOnly <- function(f, response = FALSE) {
+  response <- if (response && length(f) == 3) { f[[2]] } else { NULL }
+  reformulate(paste0("(", vapply(lme4::findbars(f), safeDeparse,
+                                 ""), ")"), response = response)
+}
+
+safeDeparse <- function (x, collapse = " ") {
+  paste(deparse(x, 500L), collapse = collapse)
+}
+
+mkNewReTrms <- function(object, newdata, re.form = NULL, na.action = na.pass,
+                         allow.new.levels = FALSE) {
+
+  # # Fix CRAN complaint, I think
+  # Lind <- NULL
+  #
+  # if (is.null(newdata)) {
+  #   rfd <- mfnew <- model.frame(object)
+  # }
+  # else {
+  #   mfnew <- model.frame(delete.response(terms(object, fixed.only = TRUE)),
+  #                        newdata, na.action = na.action)
+  #   old <- FALSE
+  #   if (old) {
+  #     rfd <- na.action(newdata)
+  #     if (is.null(attr(rfd, "na.action")))
+  #       attr(rfd, "na.action") <- na.action
+  #   }
+  #   else {
+  #     newdata.NA <- newdata
+  #     if (!is.null(fixed.na.action <- attr(mfnew, "na.action"))) {
+  #       newdata.NA <- newdata.NA[-fixed.na.action, ]
+  #     }
+  #     tt <- delete.response(terms(object, random.only = TRUE))
+  #     rfd <- model.frame(tt, newdata.NA, na.action = na.pass)
+  #     if (!is.null(fixed.na.action))
+  #       attr(rfd, "na.action") <- fixed.na.action
+  #   }
+  # }
+  # if (inherits(re.form, "formula")) {
+  #   if (length(fit.na.action <- attr(mfnew, "na.action")) >
+  #       0) {
+  #     newdata <- newdata[-fit.na.action, ]
+  #   }
+  #   ReTrms <- lme4::mkReTrms(lme4::findbars(re.form[[2]]), rfd)
+  #   ReTrms <- within(ReTrms, Lambdat@x <- unname(lme4::getME(object,
+  #                                                      "theta")[Lind]))
+  #   if (!allow.new.levels && any(vapply(ReTrms$flist, anyNA,
+  #                                       NA)))
+  #     stop("NAs are not allowed in prediction data", " for grouping variables unless allow.new.levels is TRUE")
+  #   ns.re <- names(re <- lme4::ranef(object))
+  #   nRnms <- names(Rcnms <- ReTrms$cnms)
+  #   if (!all(nRnms %in% ns.re))
+  #     stop("grouping factors specified in re.form that were not present in original model")
+  #   new_levels <- lapply(ReTrms$flist, function(x) levels(factor(x)))
+  #   re_x <- Map(function(r, n) levelfun(r, n, allow.new.levels = allow.new.levels),
+  #               re[names(new_levels)], new_levels)
+  #   re_new <- lapply(seq_along(nRnms), function(i) {
+  #     rname <- nRnms[i]
+  #     if (!all(Rcnms[[i]] %in% names(re[[rname]])))
+  #       stop("random effects specified in re.form that were not present in original model")
+  #     re_x[[rname]][, Rcnms[[i]]]
+  #   })
+  #   re_new <- unlist(lapply(re_new, t))
+  # }
+  # Zt <- ReTrms$Zt
+  # attr(Zt, "na.action") <- attr(re_new, "na.action") <- attr(mfnew,
+  #                                                            "na.action")
+  # list(Zt = Zt, b = re_new, Lambdat = ReTrms$Lambdat)
+}
+
+levelfun <- function(x, nl.n, allow.new.levels = FALSE) {
+  # if (!all(nl.n %in% rownames(x))) {
+  #   if (!allow.new.levels)
+  #     stop("new levels detected in newdata")
+  #   newx <- as.data.frame(
+  #     matrix(0, nrow = length(nl.n), ncol = ncol(x),
+  #            dimnames = list(nl.n, names(x)))
+  #     )
+  #   newx[rownames(x), ] <- x
+  #   x <- newx
+  # }
+  # if (!all(r.inn <- rownames(x) %in% nl.n)) {
+  #   x <- x[r.inn, , drop = FALSE]
+  # }
+  # return(x)
+}
+
+RHSForm <- function (form, as.form = FALSE) {
+  rhsf <- form[[length(form)]]
+  if (as.form)
+    reformulate(deparse(rhsf))
+  else rhsf
+}

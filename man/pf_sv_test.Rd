@@ -4,13 +4,14 @@
 \alias{pf_sv_test}
 \title{Test whether sampling weights are needed}
 \usage{
-pf_sv_test(model, data, weights, sims = 1000,
+pf_sv_test(model, data = NULL, weights, sims = 1000,
   digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The fitted model, without weights}
 
-\item{data}{The data frame with the data fed to the fitted model and the weights}
+\item{data}{The data frame with the data fed to the fitted model and the
+weights}
 
 \item{weights}{The name of the weights column in \code{model}'s data frame
 or a vector of weights equal in length to the number of observations
@@ -47,11 +48,13 @@ large bias in the unweighted regression.
 
 # Note: This is a contrived example to show how the function works,
 # not a case with actual sammpling weights from a survey vendor
-states <- as.data.frame(state.x77)
-set.seed(100)
-states$wts <- runif(50, 0, 3)
-fit <- lm(Murder ~ Illiteracy + Frost, data = states)
-pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
+if (requireNamespace("boot")) {
+  states <- as.data.frame(state.x77)
+  set.seed(100)
+  states$wts <- runif(50, 0, 3)
+  fit <- lm(Murder ~ Illiteracy + Frost, data = states)
+  pf_sv_test(model = fit, data = states, weights = wts, sims = 100)
+}
 
 }
 \references{
@@ -64,4 +67,3 @@ Other survey tools: \code{\link{svycor}},
   \code{\link{svysd}}, \code{\link{weights_tests}},
   \code{\link{wgttest}}
 }
-\concept{survey tools}

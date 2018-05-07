@@ -10,23 +10,33 @@ reference:
     - summ.glm
     - summ.svyglm
     - summ.merMod
+    - summ.rq
+    - set_summ_defaults
     - export_summs
     - plot_summs
     - plot_coefs
     - effect_plot
     - j_summ
- - title: Understanding and visualizing interaction effects
+ - title: Probing and visualizing interaction effects
    contents:
     - interact_plot
     - sim_slopes
     - probe_interaction
     - johnson_neyman
     - cat_plot
+    - make_predictions
+    - make_predictions.merMod
+    - make_predictions.rq
+    - make_predictions.brmsfit
+    - make_predictions.stanreg
+    - plot_predictions
  - title: Data centering and scaling tools
    contents:
     - gscale
-    - scale_lm
-    - center_lm
+    - scale_mod
+    - center_mod
+    - standardize
+    - center
  - title: Survey data tools
    contents:
     - svycor
@@ -34,9 +44,19 @@ reference:
     - weights_tests
     - wgttest
     - pf_sv_test
- - title: Miscellaneous
+ - title: Theming
    contents:
     - theme_apa
+    - add_gridlines
+    - add_x_gridlines
+    - add_y_gridlines
+    - drop_gridlines
+    - drop_x_gridlines
+    - drop_y_gridlines
+ - title: Miscellaneous
+   contents:
+    - jtools_colors
+    - tidy.summ
 
 
 navbar:

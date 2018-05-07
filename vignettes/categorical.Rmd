@@ -32,16 +32,17 @@ If one or more are continuous, use `interact_plot`.
 ## Simple two-way interaction
 
 First, let's prep some data. I'm going to make some slight changes to the
-`mpg` dataset from `ggplot2` for didactic purposes.
+`mpg` dataset from `ggplot2` for didactic purposes to drop a few factor
+levels that have almost no values (e.g., there are 5 cylinder engines?).
 
 ```{r}
 library(ggplot2)
 mpg2 <- mpg
 mpg2$cyl <- factor(mpg2$cyl)
-mpg2$auto <- "auto"
+mpg2["auto"] <- "auto"
 mpg2$auto[mpg2$trans %in% c("manual(m5)", "manual(m6)")] <- "manual"
 mpg2$auto <- factor(mpg2$auto)
-mpg2$fwd <- "2wd"
+mpg2["fwd"] <- "2wd"
 mpg2$fwd[mpg2$drv == "4"] <- "4wd"
 mpg2$fwd <- factor(mpg2$fwd)
 ## Drop the two cars with 5 cylinders (rest are 4, 6, or 8)
@@ -54,13 +55,19 @@ So basically what we're looking at here is an interaction between number of
 cylinders in the engine of some cars and whether the car has all-wheel drive or
 two-wheel drive. The DV is fuel mileage in the city.
 
+Here's summary output for our model:
+
+```{r}
+summ(fit3)
+```
+
 Let's see what happens using all the default arguments:
 
 ```{r}
 cat_plot(fit3, pred = cyl, modx = fwd)
 ```
 
-This is with `geom = "dot"`. We can see a main effect of `cyl` and maybe
+This is with `geom = "point"`. We can see a main effect of `cyl` and maybe
 something is going on with the interaction as well, since the different 
 between `2wd` and `4wd` seems to decrease as `cyl` gets higher.
 
@@ -100,8 +107,10 @@ You may also choose any color palette from `RColorBrewer`:
 
 ```{r}
 cat_plot(fit3, pred = cyl, modx = fwd, geom = "line", point.shape = TRUE,
-         color.class = "Set1")
+         color.class = "Set2")
 ```
+
+Use `?jtools_colors` for more on your color options.
 
 ## Bar/dynamite plots
 

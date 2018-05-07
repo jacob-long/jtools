@@ -9,8 +9,11 @@ johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05, plot = TRUE,
   digits = getOption("jtools-digits", 2))
 }
 \arguments{
-\item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
-It should contain the interaction of interest.}
+\item{model}{A regression model. It is tested with \code{lm}, \code{glm}, and
+\code{svyglm} objects, but others may work as well. It should contain the
+interaction of interest. Be aware that just because the computations
+work, this does not necessarily mean the procedure is appropriate for
+the type of model you have.}
 
 \item{pred}{The predictor variable involved in the interaction.}
 
@@ -126,4 +129,3 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{interaction tools}

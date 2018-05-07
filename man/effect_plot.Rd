@@ -4,51 +4,54 @@
 \alias{effect_plot}
 \title{Plot simple effects in regression models}
 \usage{
-effect_plot(model, pred, centered = NULL, scale = FALSE, n.sd = 1,
-  plot.points = FALSE, interval = FALSE, int.type = c("confidence",
-  "prediction"), int.width = 0.95, outcome.scale = "response",
-  set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
-  main.title = NULL, color.class = NULL, line.thickness = 1.1,
-  jitter = 0.1, standardize = NULL)
+effect_plot(model, pred, centered = "all", plot.points = FALSE,
+  interval = FALSE, data = NULL, int.type = c("confidence", "prediction"),
+  int.width = 0.95, outcome.scale = "response", robust = FALSE,
+  cluster = NULL, vcov = NULL, set.offset = 1, x.label = NULL,
+  y.label = NULL, pred.labels = NULL, main.title = NULL,
+  color.class = NULL, line.thickness = 1.1, point.size = 2, jitter = 0,
+  rug = FALSE, rug.sides = "b", ...)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \code{\link[lme4]{merMod}}. Models from
-other classes may work as well but are not officially supported.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+\code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
+\code{stanreg} models.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
-\item{pred}{The name of the predictor variable you want on the x-axis.}
+\item{pred}{The name of the predictor variable involved
+in the interaction. This can be a bare name or string.}
 
 \item{centered}{A vector of quoted variable names that are to be
-mean-centered.
-If \code{NULL}, all non-focal predictors are centered. If not \code{NULL},
-only the user-specified predictors are centered. User can also use "none"
-or "all" arguments. The response variable is not centered unless specified
-directly.}
+mean-centered. If \code{"all"}, all non-focal predictors are centered. You
+may instead pass a character vector of variables to center. User can
+also use "none" to base all predictions on variables set at 0.
+The response variable, \code{pred}, \code{modx}, and \code{mod2} variables are never
+centered.}
 
-\item{scale}{Logical. Would you like to standardize the variables
-that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-standardize variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its
-default.}
-
-\item{n.sd}{How many standard deviations should be used if \code{scale
-= TRUE}? Default is 1, but some prefer 2.}
-
-\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as a
-scatterplot on top of the interaction lines.}
+\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as
+a scatterplot on top of the interaction lines. The color of the dots will
+be based on their moderator value.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
-intervals
-the line using \code{\link[ggplot2]{geom_ribbon}}. Not supported for
-\code{merMod} models.}
+intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
+
+\item{data}{Optional, default is NULL. You may provide the data used to
+fit the model. This can be a better way to get mean values for centering
+and can be crucial for models with variable transformations in the formula
+(e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
+see a warning if the function detects problems that would likely be
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
 
 \item{int.type}{Type of interval to plot. Options are "confidence" or
 "prediction". Default is confidence interval.}
 
-\item{int.width}{How large should the interval be, relative to the standard error?
-The default, .95, corresponds to roughly 1.96 standard errors and a .05 alpha
-level for values outside the range. In other words, for a confidence interval,
-.95 is analogous to a 95\% confidence interval.}
+\item{int.width}{How large should the interval be, relative to the standard
+error? The default, .95, corresponds to roughly 1.96 standard errors and
+a .05 alpha level for values outside the range. In other words, for a
+confidence interval, .95 is analogous to a 95\% confidence interval.}
 
 \item{outcome.scale}{For nonlinear models (i.e., GLMs), should the outcome
 variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -57,41 +60,71 @@ default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
 
-\item{set.offset}{For models with an offset (e.g., Poisson models), sets a
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
+
+\item{cluster}{For clustered standard errors, provide the column name of
+the cluster variable in the input data frame (as a string). Alternately,
+provide a vector of clusters.}
+
+\item{vcov}{Optional. You may supply the variance-covariance matrix of the
+coefficients yourself. This is useful if you are using some method for
+robust standard error calculation not supported by the \pkg{sandwich}
+package.}
+
+\item{set.offset}{For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
-proportion.}
+proportion. See details for more about offset support.}
 
-\item{x.label}{A character object specifying the desired x-axis label.
-If \code{NULL}, the variable name is used.}
+\item{x.label}{A character object specifying the desired x-axis label. If
+\code{NULL}, the variable name is used.}
 
-\item{y.label}{A character object specifying the desired x-axis label.
-If \code{NULL}, the variable name is used.}
+\item{y.label}{A character object specifying the desired x-axis label. If
+\code{NULL}, the variable name is used.}
 
 \item{pred.labels}{A character vector of 2 labels for the predictor if it is
-a 2-level factor or a continuous variable with only 2 values. If \code{NULL},
-the default, the factor labels are used.}
+a 2-level factor or a continuous variable with only 2 values. If
+\code{NULL}, the default, the factor labels are used.}
 
-\item{main.title}{A character object that will be used as an overall title for the
-plot. If \code{NULL}, no main title is used.}
+\item{main.title}{A character object that will be used as an overall title
+for the plot. If \code{NULL}, no main title is used.}
 
-\item{color.class}{Any palette argument accepted by
-\code{\link[ggplot2]{scale_colour_brewer}}.}
+\item{color.class}{See \link{jtools_colors} for details on the types of arguments
+accepted. Default is "CUD Bright" for factor
+moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
+
+\item{point.size}{What size should be used for observed data when
+\code{plot.points} is TRUE? Default is 2.}
 
 \item{jitter}{How much should \code{plot.points} observed values be "jittered"
 via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
 other, jittering moves them a small amount to keep them from
 totally overlapping. In some cases, though, it can add confusion since
 it may make points appear to be outside the boundaries of observed
-values or cause other visual issues. Default is 0.1, but set to 0 if
-you want no jittering.}
+values or cause other visual issues. Default is 0, but try various
+small values (e.g., 0.1) and increase as needed if your points are
+overlapping too much. If the argument is a vector with two values,
+then the first is assumed to be the jitter for width and the second
+for the height.}
 
-\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
-scripts to use \code{scale} instead as this argument will be removed in the
-future.}
+\item{rug}{Show a rug plot in the margins? This uses \code{\link[ggplot2:geom_rug]{ggplot2::geom_rug()}}
+to show the distribution of the predictor (top/bottom) and/or
+response variable (left/right) in the original data. Default is
+FALSE.}
+
+\item{rug.sides}{On which sides should rug plots appear? Default is "b",
+meaning bottom. "t" and/or "b" show the distribution of the predictor
+while "l" and/or "r" show the distribution of the response. "bl" is
+a good option to show both the predictor and response.}
+
+\item{...}{extra arguments passed to \code{make_predictions}}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
@@ -110,7 +143,7 @@ package \code{ggplot2} installed to benefit from these plotting functions.
 By default, all numeric predictors other than the one specified in the
 \code{pred} argument are mean-centered, which usually produces more
 intuitive plots. This only affects the y-axis in linear models, but
-maybe especially important/influential in non-linear/generalized linear
+may be especially important/influential in non-linear/generalized linear
 models.
 
 This function supports nonlinear and generalized linear models and by
@@ -121,8 +154,10 @@ While mixed effects models from \code{lme4} are supported, only the fixed
 effects are plotted. \code{lme4} does not provide confidence intervals,
 so they are not supported with this function either.
 
-Note: to use transformed predictors, e.g., \code{log(variable)},
-put its name in quotes or backticks in the argument.
+Note: to use transformed predictors, e.g., \code{log(x)}, or polynomials,
+e.g., \code{poly(x, 2)}, provide the raw variable name (\code{x}) to the \code{pred =}
+argument. You will need to input the data frame used to fit the model with
+the \code{data =} argument.
 }
 \examples{
 # Using a fitted lm model
@@ -132,18 +167,20 @@ fit <- lm(Income ~ HSGrad + Murder,
   data = states)
 effect_plot(model = fit, pred = Murder)
 
-# Using interval feature
-fit <- lm(accel ~ mag + dist, data = attenu)
+# Using polynomial predictor, plus intervals
+fit <- lm(accel ~ poly(mag,3) + dist, data = attenu)
 effect_plot(fit, pred = mag, interval = TRUE,
-  int.type = "confidence", int.width = .8)
+  int.type = "confidence", int.width = .8, data = attenu) # note data arg.
 
 # With svyglm
+if (requireNamespace("survey")) {
 library(survey)
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
                     data = apistrat, fpc = ~fpc)
 regmodel <- svyglm(api00 ~ ell + meals, design = dstrat)
 effect_plot(regmodel, pred = ell, interval = TRUE)
+}
 
 # With lme4
 \dontrun{
