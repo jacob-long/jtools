@@ -19,7 +19,7 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
 \item{model}{A regression model. The function is tested with \code{lm},
 \code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
 \code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
-\code{\link[rstanarm]{stanreg}} models.
+\code{stanreg} models.
 Models from other classes may work as well but are not officially
 supported. The model should include the interaction of interest.}
 
