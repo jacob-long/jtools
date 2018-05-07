@@ -26,6 +26,7 @@ reference:
     - cat_plot
     - make_predictions
     - make_predictions.merMod
+    - make_predictions.rq
     - make_predictions.brmsfit
     - make_predictions.stanreg
     - plot_predictions
