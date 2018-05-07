@@ -397,14 +397,14 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
       # using alpha for same effect with continuous vars
       # set alpha argument dependent on whether this is a plot facetted by
       # the moderator
-      alpha_arg <- ifelse(facet.modx, yes = c(1, 1), no = c(0.25, 1))
+      alpha_arg <- if (facet.modx) {c(1, 1)} else {c(0.25, 1)}
       p <- p + geom_point(data = d,
                           aes_string(x = pred_g, y = resp_g, alpha = modx_g,
                                      size = "the_weights"),
                           colour = pp_color, inherit.aes = FALSE,
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
-                          show.legend = FALSE) +
+                          show.legend = FALSE, size = point.size) +
         scale_alpha_continuous(range = alpha_arg, guide = "none")
     }
 
