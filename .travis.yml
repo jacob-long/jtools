@@ -10,6 +10,11 @@ r:
   - devel
   - oldrel
 
+addons:
+  apt:
+    packages:
+      - libnlopt-dev
+
 r_packages:
   - covr
 
