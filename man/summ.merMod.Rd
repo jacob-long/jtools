@@ -93,6 +93,10 @@ If saved, users can access most of the items that are returned in
 the output (and without rounding).
 
 \item{coeftable}{The outputted table of variables and coefficients}
+\item{rcoeftable}{The secondary table with the grouping variables and
+random coefficients.}
+\item{gvars}{The tertiary table with the grouping variables, numbers of
+groups, and ICCs.}
 \item{model}{The model for which statistics are displayed. This would be
 most useful in cases in which \code{scale = TRUE}.}
 
@@ -198,33 +202,33 @@ if (requireNamespace("lme4")) {
 \references{
 Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth’s
 $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
-Evolution}, \emph{5}, 944–946. https://doi.org/10.1111/2041-210X.12225
+Evolution}, \emph{5}, 944–946. \url{https://doi.org/10.1111/2041-210X.12225}
 
 Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
 effects from restricted maximum likelihood. \emph{Biometrics},
 \emph{53}, 983.
-https://doi.org/10.2307/2533558
+\url{https://doi.org/10.2307/2533558}
 
 Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
-https://doi.org/10.3758/s13428-016-0809-y
+\url{https://doi.org/10.3758/s13428-016-0809-y}
 
 Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
 obtaining $R^2$ from generalized linear mixed-effects models.
 \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
-https://doi.org/10.1111/j.2041-210x.2012.00261.x
+\url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
 }
 \seealso{
-\code{\link{scale_lm}} can simply perform the standardization if
+\code{\link{scale_mod}} can simply perform the standardization if
 preferred.
 
 \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
-\code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
+\code{\link[pbkrtest:get_ddf_Lb]{pbkrtest::get_ddf_Lb()}} gets the Kenward-Roger degrees of
 freedom if you have \pkg{pbkrtest} installed.
 
-A tweaked version of \code{\link[piecewiseSEM]{sem.model.fits}} is used to
+A tweaked version of \code{\link[piecewiseSEM:sem.model.fits]{piecewiseSEM::sem.model.fits()}} is used to
 generate the pseudo-R-squared estimates for linear models.
 }
 \author{

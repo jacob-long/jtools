@@ -14,10 +14,7 @@
   progress = "txt", force.cat = FALSE, facet.modx = linearity.check, ...)
 }
 \arguments{
-\item{model}{A regression model. The function is tested with \code{lm},
-\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
-Models from other classes may work as well but are not officially
-supported. The model should include the interaction of interest.}
+\item{model}{A \code{merMod} model.}
 
 \item{pred}{The name of the predictor variable involved
 in the interaction. This must be a string.}

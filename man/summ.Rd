@@ -10,7 +10,7 @@ summ(model, ...)
 \item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},
 \code{\link[lme4]{merMod}}, \code{\link[quantreg]{rq}} object.}
 
-\item{...}{Other arguments to be passed to the model.specific function.}
+\item{...}{Other arguments to be passed to the model-specific function.}
 }
 \description{
 To get specific documentation, choose the appropriate link to the

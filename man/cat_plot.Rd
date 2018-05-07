@@ -15,11 +15,13 @@ cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
   "linerange"), outcome.scale = "response", robust = FALSE,
   cluster = NULL, vcov = NULL, pred.labels = NULL, modx.labels = NULL,
   mod2.labels = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
-  main.title = NULL, legend.main = NULL, color.class = "CUD Bright")
+  main.title = NULL, legend.main = NULL, color.class = "CUD Bright", ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
-\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+\code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+\code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
+\code{\link[rstanarm]{stanreg}} models.
 Models from other classes may work as well but are not officially
 supported. The model should include the interaction of interest.}
 
@@ -210,6 +212,8 @@ variable is used.}
 \code{\link[ggplot2]{scale_colour_brewer}}. Default is "Set2".
 You may also simply supply a vector of colors accepted by
 \code{ggplot2} and of equal length to the number of moderator levels.}
+
+\item{...}{extra arguments passed to \code{make_predictions}}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated

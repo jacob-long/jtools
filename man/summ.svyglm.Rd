@@ -91,7 +91,7 @@ console:
 \item The sample size
 \item The name of the outcome variable
 \item The (Pseudo-)R-squared value and AIC.
-\item A table with regression coefficients, standard errors, t-values, and
+\item A table with regression coefficients, standard errors, t values, and
 p values.
 }
 

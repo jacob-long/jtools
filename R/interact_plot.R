@@ -5,7 +5,9 @@
 #'  \code{ggplot2} rather than base graphics, which some similar functions use.
 #'
 #' @param model A regression model. The function is tested with \code{lm},
-#'   \code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+#'   \code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+#'   \code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
+#'   \code{\link[rstanarm]{stanreg}} models.
 #'   Models from other classes may work as well but are not officially
 #'   supported. The model should include the interaction of interest.
 #'
@@ -169,6 +171,8 @@
 #'   the cluster variable in the input data frame (as a string). Alternately,
 #'   provide a vector of clusters.
 #'
+#' @param ... extra arguments passed to `make_predictions`
+#'
 #' @inheritParams cat_plot
 #'
 #' @details This function provides a means for plotting conditional effects
@@ -321,7 +325,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE,
                           point.size = 2, point.shape = FALSE,
-                          jitter = 0, rug = FALSE, rug.sides = "b") {
+                          jitter = 0, rug = FALSE, rug.sides = "b", ...) {
 
   # Evaluate the modx, mod2, pred args
   # This is getting nasty due to my decision to use NSE
@@ -355,7 +359,7 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                                vcov = vcov, set.offset = set.offset,
                                modx.labels = modx.labels,
                                mod2.labels = mod2.labels,
-                               facet.modx = facet.modx)
+                               facet.modx = facet.modx, ...)
 
   # These are the variables created in the helper functions
   meta <- attributes(pred_out)
@@ -491,7 +495,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
                         point.size = 2,
-                        jitter = 0, rug = FALSE, rug.sides = "b") {
+                        jitter = 0, rug = FALSE, rug.sides = "b", ...) {
 
   # Evaluate the pred arg
   pred <- as.character(deparse(substitute(pred)))
@@ -512,7 +516,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                                robust = robust, cluster = cluster,
                                vcov = vcov, set.offset = set.offset,
                                modx.labels = NULL,
-                               mod2.labels = NULL)
+                               mod2.labels = NULL, ...)
 
   # These are the variables created in the helper functions
   meta <- attributes(pred_out)
@@ -725,7 +729,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   robust = FALSE, cluster = NULL, vcov = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, set.offset = 1, x.label = NULL,
   y.label = NULL, main.title = NULL, legend.main = NULL,
-  color.class = "CUD Bright") {
+  color.class = "CUD Bright", ...) {
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(deparse(substitute(pred)))
@@ -757,7 +761,7 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
     linearity.check = FALSE, robust = robust, cluster = cluster, vcov = vcov,
     set.offset = set.offset, modx.labels = modx.labels,
     mod2.labels = mod2.labels, predvals = predvals, pred.labels = pred.labels,
-    force.cat = TRUE)
+    force.cat = TRUE, ...)
 
   # These are the variables created in the helper functions
   meta <- attributes(pred_out)

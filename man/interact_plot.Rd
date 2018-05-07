@@ -13,11 +13,13 @@ interact_plot(model, pred, modx, modxvals = NULL, mod2 = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL,
   legend.main = NULL, color.class = NULL, line.thickness = 1.1,
   vary.lty = TRUE, point.size = 2, point.shape = FALSE, jitter = 0,
-  rug = FALSE, rug.sides = "b")
+  rug = FALSE, rug.sides = "b", ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
-\code{glm}, \code{\link[survey]{svyglm}}, and \code{\link[lme4]{merMod}}.
+\code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+\code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
+\code{\link[rstanarm]{stanreg}} models.
 Models from other classes may work as well but are not officially
 supported. The model should include the interaction of interest.}
 
@@ -183,6 +185,8 @@ FALSE.}
 meaning bottom. "t" and/or "b" show the distribution of the predictor
 while "l" and/or "r" show the distribution of the response. "bl" is
 a good option to show both the predictor and response.}
+
+\item{...}{extra arguments passed to \code{make_predictions}}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated

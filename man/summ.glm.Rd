@@ -106,8 +106,8 @@ console:
 \itemize{
 \item The sample size
 \item The name of the outcome variable
-\item The (Pseudo-)R-squared value and AIC/BIC.
-\item A table with regression coefficients, standard errors, t-values, and
+\item The chi-squared test, (Pseudo-)R-squared value and AIC/BIC.
+\item A table with regression coefficients, standard errors, z values, and
 p values.
 }
 

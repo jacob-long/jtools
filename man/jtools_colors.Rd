@@ -44,7 +44,7 @@ one of the many names R understands (e.g., "red"; use \code{colors()} to
 see all of those options).
 }
 \references{
-Paul Tol's site is what is used to derive 4 of the 5 \code{jtools}-specific
+Paul Tol's site is what is used to derive 4 of the 6 \code{jtools}-specific
 palettes: \url{https://personal.sron.nl/~pault/}
 
 Okabe and Ito's palette inspired "CUD Bright", though "CUD Bright" is not

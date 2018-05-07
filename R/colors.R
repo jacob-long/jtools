@@ -41,7 +41,7 @@
 #'
 #' @references
 #'
-#' Paul Tol's site is what is used to derive 4 of the 5 `jtools`-specific
+#' Paul Tol's site is what is used to derive 4 of the 6 `jtools`-specific
 #' palettes: \url{https://personal.sron.nl/~pault/}
 #'
 #' Okabe and Ito's palette inspired "CUD Bright", though "CUD Bright" is not

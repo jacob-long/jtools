@@ -381,6 +381,7 @@ make_predictions.svyglm <-
 #'   requested.
 #'
 #' @inheritParams make_predictions
+#' @param model A `merMod` model.
 #' @param add.re.variance Experimental. Adds variance specific to the
 #'   *random* effects in the model. Often overwhelms the fixed effects
 #'   variances and makes the plot uninterpretable.
@@ -600,6 +601,7 @@ make_predictions.merMod <-
 #'  `interact_plot`, `cat_plot`, and `effect_plot` for models fit with
 #'  `rstanarm`.
 #' @inheritParams make_predictions
+#' @param model A `stanreg` model.
 #' @param estimate Should estimates be based on mean or median simulation?
 #'  Default is "mean".
 #' @export
@@ -743,6 +745,7 @@ make_predictions.stanreg <-
 #'  `interact_plot`, `cat_plot`, and `effect_plot` for models fit with `brms`.
 #'
 #' @inheritParams make_predictions
+#' @param model A `brmsfit` model.
 #' @param estimate Should estimates be based on mean or median simulation?
 #'  Default is "mean".
 #' @export
@@ -880,6 +883,15 @@ make_predictions.brmsfit <-
 
 #### Quantile regression ######################################################
 
+#' @title Make predictions for quantile regression models
+#'
+#' @description This method adds support for `plot_predictions`,
+#'  `interact_plot`, `cat_plot`, and `effect_plot` for models fit with `rq`.
+#'
+#' @inheritParams make_predictions
+#' @param model A `rq` model.
+#' @param se One of `"nid"`, `"iid"`, `"ker"`, standard error options defined
+#'   by `summary.rq`.
 #' @export
 
 make_predictions.rq <-
