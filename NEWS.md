@@ -1,4 +1,4 @@
-# jtools 1.0.0.9000
+# jtools 1.0.0
 
 ## Major release
 
