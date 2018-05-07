@@ -20,23 +20,23 @@ Imports: ggplot2,
 Suggests:
   boot,
   broom,
+  brms,
   cowplot,
   ggstance,
   huxtable (>= 3.0.0),
   lme4,
   methods,
   pbkrtest,
+  quantreg,
   RColorBrewer,
+  rstanarm,
   sandwich,
   stats4,
+  survey,
   weights,
     knitr,
     rmarkdown,
     testthat
-Enhances: brms,
-  rstanarm,
-  quantreg,
-  survey
-RoxygenNote: 6.0.1.9000
+RoxygenNote: 6.0.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
