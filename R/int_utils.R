@@ -63,6 +63,7 @@
 #'                   mod2 = Frost, mod2vals = "plus-minus")
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
@@ -78,6 +79,7 @@
 #' # Can try different configurations of 1st vs 2nd mod
 #' probe_interaction(model = regmodel3, pred = ell, modx = sch.wide,
 #'                   mod2 = meals)
+#' }
 #'
 #' @export
 
