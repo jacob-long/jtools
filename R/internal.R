@@ -93,6 +93,19 @@ reg_match <- function(pattern, text, ignore.case = FALSE, perl = FALSE,
 
 }
 
+# Get levels if they exist, otherwise unique
+ulevels <- function(x) {
+  if (!is.null(levels(x))) {
+    return(levels(x))
+  } else {
+    if (!is.numeric(x)) {
+      return(unique(x))
+    } else {
+      return(sort(unique(x)))
+    }
+  }
+}
+
 #### summ helpers ############################################################
 
 ## Automates the adding of the significance stars to the output
