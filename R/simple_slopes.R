@@ -59,7 +59,8 @@
 #'   \code{options("jtools-digits" = digits)} where digits is the desired
 #'   number.
 #'
-#' @param ... Arguments passed to \code{\link{johnson_neyman}}.
+#' @param ... Arguments passed to \code{\link{johnson_neyman}} and
+#'   `summ`.
 #'
 #' @details This allows the user to perform a simple slopes analysis for the
 #'   purpose of probing interaction effects in a linear regression. Two- and
@@ -144,7 +145,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE,
                        digits = getOption("jtools-digits", default = 2),
-                       confint = FALSE, ci.width = .95, cluster = NULL, ...) {
+                       pvals = TRUE, confint = FALSE, ci.width = .95,
+                       cluster = NULL, ...) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -425,12 +427,14 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   tcol <- try(colnames(summary(model)$coefficients)[3], silent = TRUE)
   if (class(tcol) != "try-error") {
     tcol <- gsub("value", "val.", tcol)
-    which.cols <- c("Est.", "S.E.", unlist(make_ci_labs(ci.width)), tcol, "p")
+    which.cols <- c("Est.", "S.E.", unlist(make_ci_labs(ci.width)), tcol)
+    if (pvals == TRUE) {which.cols <- c(which.cols, "p")}
   } else {
     which.cols <- NULL
   }
   the_col_names <- colnames(summ(model, confint = TRUE, ci.width = ci.width,
-                              vifs = FALSE, which.cols = which.cols)$coeftable)
+                              vifs = FALSE, which.cols = which.cols,
+                              pvals = pvals, ...)$coeftable)
 
   # Need to make a matrix filled with NAs to store values from looped
   # model-making
@@ -590,16 +594,19 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       # Use j_summ to get the coefficients
       sum <- summ(newmod, robust = robust, model.fit = FALSE,
                   confint = TRUE, ci.width = ci.width, vifs = FALSE,
-                  cluster = cluster, which.cols = which.cols)
+                  cluster = cluster, which.cols = which.cols, pvals = pvals,
+                  ...)
 
     } else {
 
       sum <- summ(newmod, model.fit = FALSE, confint = TRUE,
-                  ci.width = ci.width, vifs = FALSE, which.cols = which.cols)
+                  ci.width = ci.width, vifs = FALSE,
+                  which.cols = which.cols, pvals = pvals, ...)
 
     }
 
     summat <- sum$coeftable
+    if (pvals == FALSE) {summat <- summat[,colnames(summat) %nin% "p"]}
     slopep <- summat[pred, ]
     intp <- summat["(Intercept)", ]
 

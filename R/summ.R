@@ -1458,10 +1458,19 @@ summ.merMod <- function(
   # If pbkrtest is installed, using the Kenward-Roger approximation
   if (requireNamespace("pbkrtest", quietly = TRUE)) {
 
-    if (is.null(pvals)) {
+    if (is.null(pvals) & length(residuals(model)) <= 5000) {
 
       pvals <- TRUE
       pbkr <- TRUE
+
+    } else if (is.null(pvals) & length(residuals(model)) > 5000) {
+
+      pvals <- FALSE
+      pbkr <- FALSE
+      msg_wrap("Although the pbkrtest package is installed, pvals were not
+               calculated with it by default because the sample size is large
+               and the computation may have taken a very long time. You can
+               force p value calculation by setting pvals = TRUE.")
 
     } else if (pvals == TRUE) {
 

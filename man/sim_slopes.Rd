@@ -7,8 +7,8 @@
 sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   mod2vals = NULL, centered = "all", data = NULL, cond.int = FALSE,
   johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
-  digits = getOption("jtools-digits", default = 2), confint = FALSE,
-  ci.width = 0.95, cluster = NULL, ...)
+  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
+  confint = FALSE, ci.width = 0.95, cluster = NULL, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -88,6 +88,9 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
+\item{pvals}{Show p values and significance stars? If \code{FALSE}, these
+are not printed. Default is \code{TRUE}.}
+
 \item{confint}{Show confidence intervals instead of standard errors? Default
 is \code{FALSE}.}
 
@@ -99,7 +102,8 @@ to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
 
-\item{...}{Arguments passed to \code{\link{johnson_neyman}}.}
+\item{...}{Arguments passed to \code{\link{johnson_neyman}} and
+\code{summ}.}
 }
 \value{
 \item{slopes}{A table of coefficients for the focal predictor at each
