@@ -12,3 +12,4 @@
 ^download_count.R$
 ^misc$
 ^\.vscode$
+^revdep$
