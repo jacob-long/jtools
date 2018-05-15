@@ -6,6 +6,8 @@ cache: packages
 latex: false
 
 r:
+  - 3.2
+  - oldrel
   - release
   - devel
 
