@@ -112,8 +112,8 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE) {
     # cudb2 <- c("#ff3200", "#5ec1ff", "#009E73", "#fc82be", "#0072B2", "#ffa00a",
     #          "#F0E442", "#999999")
 
-    cudb <- c("#49b7fc", "#ff4100", "#33dc78", "#fc82be",  "#ffaa0a", "#0072B2",
-              "#F0E442", "#999999")
+    cudb <- c("#49b7fc", "#ff7b00", "#17d898", "#ff0083", "#0015ff", "#e5d200",
+              "#999999")
 
     rainbow_col <- function(x) {
       r_num <- .472 - .567*x + 4.05*(x^2)
