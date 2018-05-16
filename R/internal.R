@@ -43,12 +43,12 @@ cat_wrap <- function(..., brk = "") {
 orange <- crayon::make_style("orange")
 
 # Like cat_wrap but for warnings
-warn_wrap <- function(..., call. = TRUE, brk = "\n") {
+warn_wrap <- function(..., call. = FALSE, brk = "\n") {
   warning(orange(wrap_str(...)), brk, call. = call.)
 }
 
 # Like cat_wrap but for errors
-stop_wrap <- function(..., call. = TRUE, brk = "\n") {
+stop_wrap <- function(..., call. = FALSE, brk = "\n") {
   stop(red(wrap_str(...)), brk, call. = call.)
 }
 
