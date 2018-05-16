@@ -377,6 +377,8 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     wts <- const * wts
     # Append weights to data
     d[["the_weights"]] <- wts
+    # Maybe ^ isn't needed
+    point.size <- wts
 
     if (is.factor(d[[modx]])) {
       # Create shape aesthetic argument
@@ -385,7 +387,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
 
       p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                colour = modx_g,
-                                               size = "the_weights",
+                                               # size = "the_weights",
                                                shape = shape_arg),
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
@@ -399,17 +401,20 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
       # the moderator
       alpha_arg <- if (facet.modx) {c(1, 1)} else {c(0.25, 1)}
       p <- p + geom_point(data = d,
-                          aes_string(x = pred_g, y = resp_g, alpha = modx_g,
-                                     size = "the_weights"),
+                          aes_string(x = pred_g, y = resp_g, alpha = modx_g),
                           colour = pp_color, inherit.aes = FALSE,
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
                           show.legend = FALSE, size = point.size) +
         scale_alpha_continuous(range = alpha_arg, guide = "none")
+        # Add size aesthetic to avoid giant points
+        # scale_size_continuous(
+        #   range = c(0.5, 5),
+        #   guide = "none"
+        #                       )
+
     }
 
-    # Add size aesthetic to avoid giant points
-    p <- p + scale_size_continuous(range = c(0.5, 5), guide = "none")
 
   }
 
@@ -536,15 +541,18 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
     wts <- const * wts
     # Append weights to data
     d[["the_weights"]] <- wts
+    point.size <- wts
+
     p <- p + geom_point(data = d,
                         aes_string(x = pred_g, y = resp_g,
                          size = "the_weights"),
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
-                        inherit.aes = FALSE, show.legend = FALSE)
+                        inherit.aes = FALSE, show.legend = FALSE,
+                        size = point.size)
     # Add size aesthetic to avoid giant points
     # p <- p + scale_size(range = c(0.3, 4))
-    p <- p + scale_size_identity()
+    # p <- p + scale_size_identity()
 
   }
 
