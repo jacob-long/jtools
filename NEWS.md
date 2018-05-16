@@ -114,6 +114,11 @@ no option for Johnson-Neyman intervals in these cases. You can use the
 significance of the interaction term(s) for inference about whether the slopes
 differ at each level of the factor when the moderator is a factor.
 
+You may now also pass arguments to `summ`, which is used internally to calculate
+standard errors, p values, etc. This is particularly useful if you are using
+a `merMod` model for which the `pbkrtest`-based p value calculation is too 
+time-consuming.
+
 ### `gscale`
 
 The interface has been changed slightly, with the actual numbers always provided
@@ -152,7 +157,10 @@ to better express the quantity.
 
 `vifs` now works when there are factor variables in the model.
 
-One of the first issues 
+One of the first bugs `summ` ever had occurred when the function was given
+a rank-deficient model. It is not straightforward to detect, especially since
+I need to make a space for an almost empty row in the outputted table. At long
+last, this release can handle such models gracefully.
 
 Like the rest of R, when `summ` rounded your output, items rounded exactly to
 zero would be treated as, well, zero. But this can be misleading if the 
