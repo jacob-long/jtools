@@ -685,8 +685,36 @@ pR2 <- function(object) {
 
   dv <- names(frame)[1]
   form <- as.formula(paste(paste0("`", dv, "`", "~ 1")))
-  objectNull <- j_update(object, formula = form, weights = .weights,
-                         offset = .offset, data = frame)
+  # Create new environment
+  e <- new.env()
+  # Add everything from the model's data to this environment
+  lapply(names(frame), function(x, env, f) {env[[x]] <- f[[x]]}, env = e,
+         f = frame)
+  # Add the offset to the environment
+  e$`.offset` <- .offset
+  # Add the weights to the environment
+  e$`.weights` <- .weights
+  # Add the environment to the formula
+  environment(form) <- e
+
+  # Get the model's original call
+  call <- getCall(object)
+  # Replace that call's formula with this new one that includes the modified
+  # environment. Then set the `data` arg of the call to NULL so it looks only
+  # in the new, modified environment
+  call$formula <- form
+  call$data <- NULL
+  # Conditionally add the names of the offset and weights args
+  if (!is.null(.offset)) {
+    call$offset <- quote(.offset)
+  }
+  if (!is.null(.weights)) {
+    call$weights <- quote(.weights)
+  }
+  # Update the model
+  objectNull <- eval(call)
+  # objectNull <- j_update(object, formula = form, weights = .weights,
+  #                        offset = .offset, data = frame)
 
   llhNull <- getLL(objectNull)
   n <- dim(object$model)[1]
@@ -910,6 +938,8 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
 
   eval(call, env, call.env)
 }
+
+
 
 ### cut2 ######################################################################
 
