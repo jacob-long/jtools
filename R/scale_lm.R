@@ -230,22 +230,32 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   form <- as.formula(formc)
 
+  # Create new environment
   e <- new.env()
+  # Add everything from the model's data to this environment
   lapply(names(mf), function(x, env, f) {env[[x]] <- f[[x]]}, env = e, f = mf)
+  # Add the offset to the environment
   e$the_offset <- the_offset
+  # Add the weights to the environment
   e$the_weights <- the_weights
+  # Add the environment to the formula
   environment(form) <- e
 
+  # Get the model's original call
   call <- getCall(model)
+  # Replace that call's formula with this new one that includes the modified
+  # environment. Then set the `data` arg of the call to NULL so it looks only
+  # in the new, modified environment
   call$formula <- form
   call$data <- NULL
+  # Conditionally add the names of the offset and weights args
   if (!is.null(the_offset)) {
     call$offset <- quote(the_offset)
   }
   if (!is.null(the_weights)) {
     call$weights <- quote(the_weights)
   }
-
+  # Update the model
   new <- eval(call)
 
   return(new)
