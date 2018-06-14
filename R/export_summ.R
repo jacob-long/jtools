@@ -393,6 +393,15 @@ export_summs <- function(...,
 #' @param legend.title What should the title for the legend be? Default is
 #'   "Model", but you can specify it here since it is rather difficult to
 #'   change later via `ggplot2`'s typical methods.
+#' @param groups If you would like to have facets (i.e., separate panes) for
+#'   different groups of coefficients, you can specifiy those groups with a
+#'   list here. See details for more on how to do this.
+#' @param facet.rows The number of rows in the facet grid (the `nrow` argument
+#'   to [ggplot2::facet_wrap()]).
+#' @param facet.cols The number of columns in the facet grid (the `nrow`
+#'   argument to [ggplot2::facet_wrap()]).
+#' @param facet.label.pos Where to put the facet labels. One of "top" (the
+#'   default), "bottom", "left", or "right".
 #' @return A ggplot object.
 #' @details A note on the distinction between `plot_summs` and `plot_coefs`:
 #'   `plot_summs` only accepts models supported by [summ()] and allows users
@@ -409,6 +418,13 @@ export_summs <- function(...,
 #'   the plot refer to them as "Horsepower" and "Miles/gallon", I'd provide
 #'   the argument like this:
 #'   \code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
+#'
+#'   To use the `groups` argument, provide a (preferably named) list of
+#'   character vectors. If I want separate panes with "Frost" and "Illiteracy"
+#'   in one and "Population" and "Area" in the other, I'd make a list like
+#'   this:
+#'
+#'   `list(pane_1 = c("Frost", "Illiteracy"), pane_2 = c("Population", "Area"))`
 #'
 #' @examples
 #' states <- as.data.frame(state.x77)
@@ -438,7 +454,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        color.class = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
-                       point.shape = TRUE, legend.title = "Model") {
+                       point.shape = TRUE, legend.title = "Model",
+                       groups = NULL, facet.rows = NULL, facet.cols = NULL,
+                       facet.label.pos = "top") {
 
   # Capture arguments
   dots <- list(...)
@@ -464,7 +482,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
             inner_ci_level = inner_ci_level, color.class = list(color.class),
             plot.distributions = plot.distributions,
             rescale.distributions = rescale.distributions, exp = exp,
-            point.shape = point.shape, legend.title = legend.title, ex_args))
+            point.shape = point.shape, legend.title = legend.title,
+            groups = groups, facet.rows = facet.rows, facet.cols = facet.cols,
+            facet.label.pos = facet.label.pos, ex_args))
 
   do.call("plot_coefs", args = args)
 
@@ -481,7 +501,9 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        color.class = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
                        exp = FALSE, point.shape = TRUE,
-                       legend.title = "Model") {
+                       legend.title = "Model", groups = NULL,
+                       facet.rows = NULL, facet.cols = NULL,
+                       facet.label.pos = "top") {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
@@ -559,7 +581,30 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     tidies[exp_cols] <- exp(tidies[exp_cols])
   }
 
+  # Put a factor in the model for facetting purposes
+  if (!is.null(groups)) {
+    tidies$group <- NA
+    for (g in seq_len(length(groups))) {
+      if (is.null(names(groups)) || names(groups)[g] == "") {
+        tidies$group[tidies$term %in% groups[[g]]] <- as.character(g)
+      } else {
+        tidies$group[tidies$term %in% groups[[g]]] <- names(groups)[g]
+      }
+    }
+    if (plot.distributions == TRUE) {
+      warn_wrap("Distributions cannot be plotted when groups are used.")
+    }
+  }
+
   p <- ggplot(data = tidies)
+
+  if (!is.null(groups)) {
+    if (is.null(facet.rows) & is.null(facet.cols)) {
+      facet.cols <- 1
+    }
+    p <- p + facet_wrap(group ~ ., nrow = facet.rows, ncol = facet.cols,
+                        scales = "free_y", strip.position = facet.label.pos)
+  }
 
   # Checking if user provided the colors his/herself
   if (length(color.class) == 1 | length(color.class) != n_models) {
@@ -628,8 +673,6 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
      breaks = rev(levels(tidies$model)),
      labels = rev(levels(tidies$model)),
      name = legend.title) +
-    scale_y_discrete(limits = rev(levels(tidies$term)),
-                     name = legend.title) +
     scale_shape_manual(limits = rev(levels(tidies$model)),
       values = shapes, name = legend.title) +
     theme_apa(legend.pos = "right", legend.font.size = 9,
@@ -643,6 +686,9 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   if (plot.distributions == TRUE) {
     yrange <- ggplot_build(p)$layout$panel_ranges[[1]]$y.range
     xrange <- ggplot_build(p)$layout$panel_ranges[[1]]$x.range
+
+    p <- p + scale_y_discrete(limits = rev(levels(tidies$term)),
+                          name = legend.title)
 
     if (yrange[2] <= (length(unique(tidies$term)) + 0.8)) {
       upper_y <- length(unique(tidies$term)) + 0.8
@@ -732,7 +778,8 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   # only line up when they are reversed here and in the limits arg of
   # scale_colour_brewer...no clue why that has to be the case
   tidies$model <- factor(tidies$model, levels = rev(model.names))
-  tidies$term <- factor(tidies$term, levels = coefs, labels = names(coefs))
+  tidies$term <- factor(tidies$term, levels = rev(coefs),
+                        labels = rev(names(coefs)))
 
   if (all(c("upper", "lower") %in% names(tidies)) &
       "conf.high" %nin% names(tidies)) {

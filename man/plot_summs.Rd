@@ -9,13 +9,15 @@ plot_summs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
   omit.coefs = "(Intercept)", inner_ci_level = NULL,
   color.class = "CUD Bright", plot.distributions = FALSE,
   rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
-  legend.title = "Model")
+  legend.title = "Model", groups = NULL, facet.rows = NULL,
+  facet.cols = NULL, facet.label.pos = "top")
 
 plot_coefs(..., ci_level = 0.95, inner_ci_level = NULL,
   model.names = NULL, coefs = NULL, omit.coefs = c("(Intercept)",
   "Intercept"), color.class = "CUD Bright", plot.distributions = FALSE,
   rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
-  legend.title = "Model")
+  legend.title = "Model", groups = NULL, facet.rows = NULL,
+  facet.cols = NULL, facet.label.pos = "top")
 }
 \arguments{
 \item{...}{regression model(s).}
@@ -66,6 +68,19 @@ model from the others? Default is TRUE.}
 \item{legend.title}{What should the title for the legend be? Default is
 "Model", but you can specify it here since it is rather difficult to
 change later via \code{ggplot2}'s typical methods.}
+
+\item{groups}{If you would like to have facets (i.e., separate panes) for
+different groups of coefficients, you can specifiy those groups with a
+list here. See details for more on how to do this.}
+
+\item{facet.rows}{The number of rows in the facet grid (the \code{nrow} argument
+to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}).}
+
+\item{facet.cols}{The number of columns in the facet grid (the \code{nrow}
+argument to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}).}
+
+\item{facet.label.pos}{Where to put the facet labels. One of "top" (the
+default), "bottom", "left", or "right".}
 }
 \value{
 A ggplot object.
@@ -90,6 +105,13 @@ include only the coefficients for the \code{hp} and \code{mpg} but have
 the plot refer to them as "Horsepower" and "Miles/gallon", I'd provide
 the argument like this:
 \code{c("Horsepower" = "hp", "Miles/gallon" = "mpg")}
+
+To use the \code{groups} argument, provide a (preferably named) list of
+character vectors. If I want separate panes with "Frost" and "Illiteracy"
+in one and "Population" and "Area" in the other, I'd make a list like
+this:
+
+\code{list(pane_1 = c("Frost", "Illiteracy"), pane_2 = c("Population", "Area"))}
 }
 \examples{
 states <- as.data.frame(state.x77)
