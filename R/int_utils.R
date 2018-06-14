@@ -256,25 +256,25 @@ auto_mod_vals <-
     # Default to +/- 1 SD unless modx is factor
     if (is.null(modxvals) & length(unique(d[[modx]])) > 2) {
 
-      modxvals2 <- c(modmean + modsd,
+      modxvals2 <- c(modmean - modsd,
                      modmean,
-                     modmean - modsd)
+                     modmean + modsd)
       if (mod2 == FALSE) {
-        names(modxvals2) <- c("+ 1 SD", "Mean", "- 1 SD")
+        names(modxvals2) <- c("- 1 SD", "Mean", "+ 1 SD")
       } else {
-        names(modxvals2) <- c(paste("Mean of", modx, "+ 1 SD"),
+        names(modxvals2) <- c(paste("Mean of", modx, "- 1 SD"),
                               paste("Mean of", modx),
-                              paste("Mean of", modx, "- 1 SD"))
+                              paste("Mean of", modx, "+ 1 SD"))
       }
 
     } else if (!is.null(modxvals) && modxvals == "plus-minus") { # No mean
 
-      modxvals2 <- c(modmean + modsd, modmean - modsd)
+      modxvals2 <- c(modmean - modsd, modmean + modsd)
       if (mod2 == FALSE) {
-        names(modxvals2) <- c("+ 1 SD", "- 1 SD")
+        names(modxvals2) <- c("- 1 SD", "+ 1 SD")
       } else {
-        names(modxvals2) <- c(paste("Mean of", modx, "+ 1 SD"),
-                              paste("Mean of", modx, "- 1 SD"))
+        names(modxvals2) <- c(paste("Mean of", modx, "- 1 SD"),
+                              paste("Mean of", modx, "+ 1 SD"))
       }
 
     } else if (!is.null(modxvals) && modxvals == "terciles") {
@@ -315,6 +315,15 @@ auto_mod_vals <-
 
       }
 
+    }
+
+    if (!is.null(modx.labels)) {
+      if (length(modx.labels) == length(modxvals2)) {
+        names(modxvals2) <- modx.labels
+      } else {
+        warn_wrap("modx.labels or mod2.labels argument is not the same length
+                  as the number of moderator values used. It will be ignored.")
+      }
     }
 
     return(modxvals2)
