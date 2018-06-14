@@ -378,6 +378,21 @@ test_that("johnson_neyman control.fdr argument works", {
                                  control.fdr = TRUE), "johnson_neyman")
 })
 
+test_that("johnson_neyman critical.t argument works", {
+  expect_s3_class(johnson_neyman(fit, pred = Murder, modx = Illiteracy,
+                                 critical.t = 2.1), "johnson_neyman")
+})
+
+test_that("johnson_neyman color arguments work", {
+  expect_silent(johnson_neyman(fit, pred = Murder, modx = Illiteracy,
+                               sig.color = "black", insig.color = "grey")$plot)
+})
+
+test_that("johnson_neyman mod.range argument works", {
+  expect_silent(johnson_neyman(fit, pred = Murder, modx = Illiteracy,
+                               mod.range = c(1, 2))$plot)
+})
+
 ### cat_plot ##################################################################
 
 context("cat_plot")

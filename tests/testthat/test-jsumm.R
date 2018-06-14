@@ -157,8 +157,19 @@ if (requireNamespace("lme4")) {
 
   test_that("jsumm: merMod dropping pvals works", {
     expect_is(s <- summ(mv, pvals = FALSE), "summ.merMod")
-    expect_output(print(summ(mv, pvals = FALSE)))
+    expect_output(print(s))
     expect_is(s <- summ(gm, pvals = FALSE), "summ.merMod")
+    expect_output(print(s))
+  })
+
+  test_that("summ: all merMod p-value calculation options work", {
+    expect_is(s <- summ(mv, t.df = "s"), "summ.merMod")
+    expect_output(print(s))
+    expect_is(s <- summ(mv, t.df = "k-r"), "summ.merMod")
+    expect_output(print(s))
+    expect_is(s <- summ(mv, t.df = "resid"), "summ.merMod")
+    expect_output(print(s))
+    expect_is(s <- summ(mv, t.df = 1), "summ.merMod")
     expect_output(print(s))
   })
 

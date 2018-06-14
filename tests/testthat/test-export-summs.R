@@ -243,6 +243,13 @@ test_that("plot_summs can omit coefficients", {
   expect_silent(print(p))
 })
 
+test_that("plot_summs can facet", {
+  expect_is(p <- plot_summs(fit, fit2, fitw,
+                            coefs = c("HSGrad", "Murder"),
+                            groups = list(c("HSGrad"), c("Murder"))), "ggplot")
+  expect_silent(print(p))
+})
+
 context("plot_coefs")
 
 test_that("plot_coefs works", {
