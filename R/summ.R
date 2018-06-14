@@ -1319,9 +1319,18 @@ print.summ.svyglm <- function(x, ...) {
 #'
 #'  You have some options to customize the output in this regard with the
 #'  \code{t.df} argument. If \code{NULL}, the default, the
-#'  degrees of freedom used depends on whether the user has \pkg{pbkrtest}
-#'  installed. If installed, the Kenward-Roger approximation is used. If not,
-#'  and user sets \code{pvals = TRUE}, then the residual degrees of freedom
+#'  degrees of freedom used depends on whether the user has
+#'  \pkg{lmerTest} or \pkg{pbkrtest} installed. If `lmerTest` is installed,
+#'  the degrees of freedom for each coefficient are calculated using the
+#'  Satterthwaite method and the p values calculated accordingly.
+#'  If only `pbkrtest` is installed or `t.df` is `"k-r"`, the Kenward-Roger
+#'  approximation of the standard errors and degrees of freedom for each
+#'  coefficient is used. Note that Kenward-Roger standard errors can take
+#'  longer to calculate and may cause R to crash with models fit to large
+#'  (roughly greater than 5000 rows) datasets.
+#'
+#'  If neither is installed and the user sets
+#'  \code{pvals = TRUE}, then the residual degrees of freedom
 #'  is used. If \code{t.df = "residual"}, then the residual d.f. is used
 #'  without a message. If the user prefers to use some other method to
 #'  determine the d.f., then any number provided as the argument will be
@@ -1375,18 +1384,19 @@ print.summ.svyglm <- function(x, ...) {
 #'   data(sleepstudy)
 #'   mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 #'
-#'   summ(mv) # Note lack of p values if you don't have pbkrtest
+#'   summ(mv) # Note lack of p values if you don't have lmerTest/pbkrtest
 #'
-#'   # Without pbkrtest, you'll get message about Type 1 errors
+#'   # Without lmerTest/pbkrtest, you'll get message about Type 1 errors
 #'   summ(mv, pvals = TRUE)
 #'
 #'   # To suppress message, manually specify t.df argument
 #'   summ(mv, t.df = "residual")
-#' }
 #'
-#' \dontrun{
-#'  # Confidence intervals may be better alternative in absence of pbkrtest
-#'  summ(mv, confint = TRUE)
+#'   # Confidence intervals may be better alternative to p values
+#'   summ(mv, confint = TRUE)
+#'   # Use conf.method to get profile intervals (may be slow to run)
+#'   # summ(mv, confint = TRUE, conf.method = "profile")
+#'
 #' }
 #'
 #' @references
@@ -1400,6 +1410,11 @@ print.summ.svyglm <- function(x, ...) {
 #'  \emph{53}, 983.
 #'  \url{https://doi.org/10.2307/2533558}
 #'
+#' Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017). lmerTest
+#'  package: Tests in linear mixed effects models.
+#'  *Journal of Statistical Software*, *82*.
+#'  \url{https://doi.org/10.18637/jss.v082.i13}
+#'
 #' Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 #'  in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
 #'  \url{https://doi.org/10.3758/s13428-016-0809-y}
@@ -1408,8 +1423,6 @@ print.summ.svyglm <- function(x, ...) {
 #'  obtaining $R^2$ from generalized linear mixed-effects models.
 #'  \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
 #'  \url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
-#'
-#'
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
@@ -1465,37 +1478,53 @@ summ.merMod <- function(
 
   # Get random effects variances argument
   re.variance <- match.arg(re.variance, c("sd", "var"), several.ok = FALSE)
-  # If pbkrtest is installed, using the Kenward-Roger approximation
-  if (requireNamespace("pbkrtest", quietly = TRUE)) {
 
-    if (is.null(pvals) & length(residuals(model)) <= 5000) {
-
+  # Setting defaults
+  manual_df <- FALSE
+  pbkr <- FALSE
+  satt <- FALSE
+  if (is.null(pvals)) {
+    if (is.null(t.df)) {
+      if (requireNamespace("lmerTest", quietly = TRUE) |
+          requireNamespace("pbkrtest", quietly = TRUE)) {
+        pvals <- TRUE
+      } else {
+        pvals <- FALSE
+      }
+    } else {
       pvals <- TRUE
-      pbkr <- TRUE
+    }
+  }
 
-    } else if (is.null(pvals) & length(residuals(model)) > 5000) {
-
-      pvals <- FALSE
-      pbkr <- FALSE
-      msg_wrap("Although the pbkrtest package is installed, pvals were not
-               calculated with it by default because the sample size is large
-               and the computation may have taken a very long time. You can
-               force p value calculation by setting pvals = TRUE.")
-
-    } else if (pvals == TRUE) {
-
-      pbkr <- TRUE
-
-    } else if (pvals == FALSE) {
-
-      pbkr <- FALSE
+  if (pvals == TRUE) {
+    if (is.null(t.df)) {
+      if (requireNamespace("lmerTest", quietly = TRUE)) {
+        satt <- TRUE
+      } else if (requireNamespace("pbkrtest", quietly = TRUE)) {
+        pbkr <- TRUE
+      }
+    } else {
+      if (t.df %in% c("s", "satterthwaite", "Satterthwaite")) {
+        if (requireNamespace("lmerTest", quietly = TRUE)) {
+          satt <- TRUE
+        } else {
+          stop_wrap("You have requested Satterthwaite p values but you do
+                    not have the lmerTest package installed.")
+        }
+      } else if (t.df %in% c("k-r", "kenward-roger", "Kenward-Roger")) {
+        if (requireNamespace("pbkrtest", quietly = TRUE)) {
+          pbkr <- TRUE
+        } else {
+          stop_wrap("You have requested Kenward-Roger p values but you do
+                    not have the pbkrtest package installed.")
+        }
+      } else if (is.numeric(t.df) | t.df %in% c("resid", "residual")) {
+        manual_df <- TRUE
+      } else {
+        stop_wrap("t.df argument not understood.")
+      }
 
     }
-
-  } else {
-
-    pbkr <- FALSE
-
   }
 
   if (lme4::isGLMM(model)) {
@@ -1505,9 +1534,6 @@ summ.merMod <- function(
       pvals <- TRUE
 
     }
-
-    # Using pbkr as a stand-in for whether to calculate t-vals myself
-    pbkr <- FALSE
 
   }
 
@@ -1593,51 +1619,65 @@ summ.merMod <- function(
   tcol <- colnames(sum$coefficients)[3]
   tcol <- gsub("value", "val.", tcol)
 
-  params[c("Est.", "S.E.", tcol)] <- list(coefs, ses, ts)
+  dfs <- NULL
+  p_calc <- NULL
 
   # lmerMod doesn't have p values, so
   if (!sum$isLmer) {
     ps <- sum$coefficients[,4]
     params[["p"]] <- ps
   } else {
-    # Use Kenward-Roger if available
-    if (pbkr == FALSE & is.null(t.df)) { # If not, do it like any lm
+    if (satt == TRUE) {
 
-      df <- n - length(ivs) - 1
+      all_coefs <- get_all_sat(model)
+      ts <- all_coefs[,"t value"]
+      ses <- all_coefs[,"Std. Error"]
+      dfs <- all_coefs[, "df"]
+      params[["d.f."]] <- dfs
+      ps <- all_coefs[, "Pr(>|t|)"]
+      p_calc <- "s"
 
-    } else if (pbkr == TRUE & is.null(t.df)) {
+    } else if (pbkr == TRUE) {
 
       t0 <- Sys.time()
-      df <- pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
+      # df <- pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
+      ses <- get_se_kr(model)
+      # New t values with adjusted covariance matrix
+      ts <- coefs[!is.na(coefs)] / ses
+      dfs <- get_df_kr(model)
+      params[["d.f."]] <- dfs
+      ps <- pt(abs(ts), lower.tail = F, dfs)
       t1 <- Sys.time()
 
-      if ((t1 - t0) > 5 & !getOption("pbkr_warned", FALSE)) {
-        message("If summ is taking too long to run, try setting\n",
-                "pvals = FALSE or t.df = 'residual' (or some number).")
+      if ((t1 - t0) > 10 & !getOption("pbkr_warned", FALSE)) {
+        msg_wrap("If summ is taking too long to run, try setting pvals = FALSE,
+                 t.df = 's' if you have the lmerTest package, or
+                 t.df = 'residual' (or some number).")
         options("pbkr_warned" = TRUE)
       }
 
-    } else if (!is.null(t.df)) {
+      p_calc <- "k-r"
+
+    } else if (manual_df == TRUE) {
 
       if (is.numeric(t.df)) {
         df <- t.df
+        p_calc <- "manual"
       } else if (t.df %in% c("residual","resid")) {
         df <- n - length(ivs) - 1
+        p_calc <- "residual"
       }
 
+      ps <- pt(abs(ts), lower.tail = F, df)
+
+
     }
 
-    vec <- rep(NA, times = length(ts))
-    for (i in seq_len(length(ts))) {
-      p <- pt(abs(ts[i]), lower.tail = F, df)
-      p <- p*2
-      vec[i] <- p
-    }
-
-    ps <- vec
-    params[["p"]] <- ps
+    if (exists("ps")) {params[["p"]] <- ps}
 
   }
+
+  params[c("Est.", "S.E.", tcol)] <- list(coefs, ses, ts)
 
   if (confint == TRUE | exp == TRUE) {
 
@@ -1679,7 +1719,8 @@ summ.merMod <- function(
   which.cols <- which_columns(which.cols = which.cols, confint = confint,
                               ci.labs = make_ci_labs(ci.width), vifs = FALSE,
                               pvals = pvals, t.col = tcol,
-                              exp = exp)
+                              exp = exp,
+                              others = if (is.null(dfs)) {NULL} else {"d.f."})
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Dealing with random effects
@@ -1698,7 +1739,7 @@ summ.merMod <- function(
                  vcnames = names(iccs), dv = names(model.frame(model)[1]),
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 df = df, pbkr = pbkr, r.squared = r.squared,
+                 df = df, p_calc = p_calc, r.squared = r.squared,
                  failed.rsq = failed.rsq, test.stat = tcol,
                  standardize.response = transform.response,
                  exp = exp,
@@ -1760,33 +1801,34 @@ print.summ.merMod <- function(x, ...) {
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
-    if (x$pbkr == FALSE & is.null(x$t.df)) {
+    if (x$p_calc == "residual") {
 
-      cat(italic$cyan("\nNote: p values calculated based on residual d.f. ="),
-          x$df, "\n")
+      cat(italic$cyan("\nNote: p values calculated based on residual d.f. =",
+          x$df, "\n"))
 
-      message("Using p values with lmer based on residual d.f. may inflate\n",
-              "the Type I error rate in many common study designs. \n",
-              "Install package \"pbkrtest\" to get more accurate p values.")
-
-    } else if (x$pbkr == TRUE & is.null(x$t.df)) {
-
-      cat(italic("\np values calculated using Kenward-Roger d.f. ="),
-          round(x$df, x$digits), "\n")
-
-    } else if (!is.null(x$t.df)) {
-
-      if (x$t.df %in% c("residual", "resid")) {
-
-        cat(italic("\nNote: p values calculated based on residual d.f. ="),
-            x$df, "\n")
-
-      } else {
-
-        cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
-            x$df, "\n")
-
+      if (is.null(x$t.df)) {
+        msg_wrap("Using p values with lmer based on residual d.f. may inflate
+                the Type I error rate in many common study designs.
+                Install package \"lmerTest\" and/or \"pbkrtest\" to get more
+                accurate p values.", brk = "\n")
       }
+
+    } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
+
+      cat("\n")
+      cat_wrap(italic$cyan("p values calculated using Kenward-Roger standard
+                           errors and d.f."), brk = "\n")
+
+    } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
+
+      cat("\n")
+      cat_wrap(italic$cyan("p values calculated using Satterthwaite
+                      d.f."), brk = "\n")
+
+    } else if (x$p_calc == "manual") {
+
+      cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
+          x$df, "\n")
 
     }
 

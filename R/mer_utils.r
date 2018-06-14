@@ -417,6 +417,43 @@ get.random.formula <- function(model, rhs) {
 
 }
 
+#### lmer p values ###########################################################
+
+get_df_kr <- function(model) {
+  L <- diag(rep(1, length(lme4::fixef(model))))
+  L <- as.data.frame(L)
+  dfs <- sapply(L, pbkrtest::get_Lb_ddf, object = model)
+  names(dfs) <- names(lme4::fixef(model))
+  return(dfs)
+}
+
+# get_df_all_kr <- function(model) {
+#   pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
+# }
+
+get_se_kr <- function(model) {
+  vcov_adj <- pbkrtest::vcovAdj(model)
+
+  fes <- lme4::fixef(model)
+  len <- length(fes)
+  Lmat <- diag(len)
+
+  qform <- function(x, A) sum(x * (A %*% x))
+
+  ses <- sapply(1:len, function(.x) {
+    sqrt(qform(Lmat[.x, ], as.matrix(vcov_adj)))
+    })
+  names(ses) <- names(fes)
+
+  return(ses)
+}
+
+get_all_sat <- function(model) {
+  new_mod <- lmerTest::as_lmerModLmerTest(model)
+  coefs <- summary(new_mod)$coefficients
+  return(coefs)
+}
+
 
 #### merMod prediction #######################################################
 

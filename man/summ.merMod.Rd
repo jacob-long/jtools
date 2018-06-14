@@ -155,9 +155,18 @@ still imperfect.
 
 You have some options to customize the output in this regard with the
 \code{t.df} argument. If \code{NULL}, the default, the
-degrees of freedom used depends on whether the user has \pkg{pbkrtest}
-installed. If installed, the Kenward-Roger approximation is used. If not,
-and user sets \code{pvals = TRUE}, then the residual degrees of freedom
+degrees of freedom used depends on whether the user has
+\pkg{lmerTest} or \pkg{pbkrtest} installed. If \code{lmerTest} is installed,
+the degrees of freedom for each coefficient are calculated using the
+Satterthwaite method and the p values calculated accordingly.
+If only \code{pbkrtest} is installed or \code{t.df} is \code{"k-r"}, the Kenward-Roger
+approximation of the standard errors and degrees of freedom for each
+coefficient is used. Note that Kenward-Roger standard errors can take
+longer to calculate and may cause R to crash with models fit to large
+(roughly greater than 5000 rows) datasets.
+
+If neither is installed and the user sets
+\code{pvals = TRUE}, then the residual degrees of freedom
 is used. If \code{t.df = "residual"}, then the residual d.f. is used
 without a message. If the user prefers to use some other method to
 determine the d.f., then any number provided as the argument will be
@@ -184,18 +193,19 @@ if (requireNamespace("lme4")) {
   data(sleepstudy)
   mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
-  summ(mv) # Note lack of p values if you don't have pbkrtest
+  summ(mv) # Note lack of p values if you don't have lmerTest/pbkrtest
 
-  # Without pbkrtest, you'll get message about Type 1 errors
+  # Without lmerTest/pbkrtest, you'll get message about Type 1 errors
   summ(mv, pvals = TRUE)
 
   # To suppress message, manually specify t.df argument
   summ(mv, t.df = "residual")
-}
 
-\dontrun{
- # Confidence intervals may be better alternative in absence of pbkrtest
- summ(mv, confint = TRUE)
+  # Confidence intervals may be better alternative to p values
+  summ(mv, confint = TRUE)
+  # Use conf.method to get profile intervals (may be slow to run)
+  # summ(mv, confint = TRUE, conf.method = "profile")
+
 }
 
 }
@@ -208,6 +218,11 @@ Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
 effects from restricted maximum likelihood. \emph{Biometrics},
 \emph{53}, 983.
 \url{https://doi.org/10.2307/2533558}
+
+Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017). lmerTest
+package: Tests in linear mixed effects models.
+\emph{Journal of Statistical Software}, \emph{82}.
+\url{https://doi.org/10.18637/jss.v082.i13}
 
 Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
