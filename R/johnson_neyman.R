@@ -46,6 +46,27 @@
 #'   \code{options("jtools-digits" = digits)} where digits is the desired
 #'   number.
 #'
+#' @param critical.t If you want to provide the critical test statistic instead
+#'  relying on a normal or *t* approximation, or the `control.fdr` calculation,
+#'  you can give that value here. This allows you to use other methods for
+#'  calculating it.
+#'
+#' @param sig.color Sets the color for areas of the Johnson-Neyman plot where
+#'  the slope of the moderator is significant at the specified level. `"black"`
+#'  can be a good choice for greyscale publishing.
+#'
+#' @param insig.color Sets the color for areas of the Johnson-Neyman plot where
+#'  the slope of the moderator is insignificant at the specified level. `"grey"`
+#'  can be a good choice for greyscale publishing.
+#'
+#' @param mod.range The range of values of the moderator (the x-axis) to plot.
+#'  By default, this goes from one standard deviation below the observed range
+#'  to one standard deviation above the observed range and the observed range
+#'  is highlighted on the plot. You could instead choose to provide the
+#'  actual observed minimum and maximum, in which case the range of the
+#'  observed data is not highlighted in the plot. Provide the range as a vector,
+#'  e.g., `c(0, 10)`.
+#'
 #' @details
 #'
 #'  The interpretation of the values given by this function is important and not
@@ -94,9 +115,9 @@
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
-#'  regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
-#'  Research}, \emph{40}(3), 373-400.
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+#'  multilevel regression: Inferential and graphical techniques.
+#'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'  \url{http://doi.org/10.1207/s15327906mbr4003_5}
 #'
 #' Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:
@@ -124,7 +145,9 @@
 johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
                            plot = TRUE, control.fdr = FALSE,
                            line.thickness = 0.5, df = "residual",
-                           digits = getOption("jtools-digits", 2)) {
+                           digits = getOption("jtools-digits", 2),
+                           critical.t = NULL, sig.color = "#00BFC4",
+                           insig.color = "#F8766D", mod.range = NULL) {
 
   # Parse unquoted variable names
   predt <- as.character(substitute(pred))
@@ -193,8 +216,14 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
   modrange <- range(model.frame(model)[,modx])
   modrangeo <- range(model.frame(model)[,modx]) # for use later
   modsd <- sd(model.frame(model)[,modx]) # let's expand outside observed range
-  modrange[1] <- modrange[1] - modsd
-  modrange[2] <- modrange[2] + modsd
+  if (is.null(mod.range)) {
+    modrange[1] <- modrange[1] - modsd
+    modrange[2] <- modrange[2] + modsd
+  } else {modrange <- mod.range}
+
+  if (modrange[1] >= modrangeo[1] & modrange[2] <= modrangeo[2]) {
+    no_range_line <- TRUE
+  } else {no_range_line <- FALSE}
 
   alpha <- alpha / 2
 
@@ -284,6 +313,10 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     # Actual predictor coefficient (gamma_1)
     y1 <- coef(model)[pred]
 
+  }
+
+  if (!is.null(critical.t)) {
+    tcrit <- critical.t
   }
 
   # Now we use this info to construct a quadratic equation
@@ -481,29 +514,35 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
                                       fill = cbso2[,"Significance"]),
                          alpha = 0.2) +
 
-    ggplot2::scale_fill_manual(values = c("Significant" = "#00BFC4",
-                                          "Insignificant" = "#F8766D"),
+    ggplot2::scale_fill_manual(values = c("Significant" = sig.color,
+                                          "Insignificant" = insig.color),
                                labels = c("n.s.", pmsg),
                                breaks = c("Insignificant","Significant"),
                                drop = FALSE,
                                guide = ggplot2::guide_legend(order = 2)) +
 
-    ggplot2::geom_hline(ggplot2::aes(yintercept = 0)) +
+    ggplot2::geom_hline(ggplot2::aes(yintercept = 0))
 
-    ggplot2::geom_segment(ggplot2::aes(x = modrangeo[1], xend = modrangeo[2],
+  if (no_range_line == FALSE) {
+
+    plot <- plot +
+      ggplot2::geom_segment(ggplot2::aes(x = modrangeo[1], xend = modrangeo[2],
                                        y = 0, yend = 0,
                                        linetype = "Range of\nobserved\ndata"),
-                          lineend = "square", size = 1.25) +
+                          lineend = "square", size = 1.25)
+  }
 
     # Adding this scale allows me to have consistent ordering
-    ggplot2::scale_linetype_discrete(guide = ggplot2::guide_legend(order = 1))
+    plot <-
+      plot +
+      ggplot2::scale_linetype_discrete(guide = ggplot2::guide_legend(order = 1))
 
     if (out$bounds[1] < modrange[1]) {
       # warning("The lower bound is outside the range of the plotted data")
     } else if (all_sig == FALSE) {
       plot <- plot +
         ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[1]),
-                                         linetype = 2, color = "#00BFC4")
+                                         linetype = 2, color = sig.color)
     }
 
     if (out$bounds[2] > modrange[2]) {
@@ -511,14 +550,14 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     } else if (all_sig == FALSE) {
       plot <- plot +
         ggplot2::geom_vline(ggplot2::aes(xintercept = out$bounds[2]),
-                                         linetype = 2, color = "#00BFC4")
+                                         linetype = 2, color = sig.color)
     }
 
     plot <- plot + ggplot2::xlim(range(cbs[,modx])) +
       ggplot2::labs(title = "Johnson-Neyman plot", x = modx, y = predl) +
 
-      ggplot2::scale_color_manual(values = c("Significant" = "#00BFC4",
-                                           "Insignificant" = "#F8766D"),
+      ggplot2::scale_color_manual(values = c("Significant" = sig.color,
+                                           "Insignificant" = insig.color),
                                 guide = "none") +
       theme_apa(legend.pos = "right", legend.font.size = 10) +
 
