@@ -757,6 +757,16 @@ summ.glm <- function(
 
   }
 
+  ## TODO: finish margins implementation
+  # if (margins == TRUE) {
+  #   margs <- rep(NA, times = length(ivs))
+  #   names(margs) <- ivs
+  #   the_margs <- summary(margins::margins(model))
+  #   which_coefs <- which(ivs %in% the_margs$factor)
+  #   margs[which_coefs] <- the_margs$AME
+  #   params[["A.M.E."]] <- margs
+  # }
+
   # Put things together
   which.cols <- which_columns(which.cols = which.cols, confint = confint,
                               ci.labs = make_ci_labs(ci.width), vifs = vifs,
