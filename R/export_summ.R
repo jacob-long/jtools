@@ -684,11 +684,16 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # Plotting distributions often causes distributions to poke out above top
   # of plotting area so I need to set manually
   if (plot.distributions == TRUE) {
-    yrange <- ggplot_build(p)$layout$panel_ranges[[1]]$y.range
-    xrange <- ggplot_build(p)$layout$panel_ranges[[1]]$x.range
 
     p <- p + scale_y_discrete(limits = rev(levels(tidies$term)),
                           name = legend.title)
+
+    yrange <- ggplot_build(p)$layout$panel_params[[1]]$y.range
+    xrange <- ggplot_build(p)$layout$panel_params[[1]]$x.range
+    if (is.null(yrange) & is.null(xrange)) { # ggplot 2.2.x compatibility
+      yrange <- ggplot_build(p)$layout$panel_ranges[[1]]$y.range
+      xrange <- ggplot_build(p)$layout$panel_ranges[[1]]$x.range
+    }
 
     if (yrange[2] <= (length(unique(tidies$term)) + 0.8)) {
       upper_y <- length(unique(tidies$term)) + 0.8
