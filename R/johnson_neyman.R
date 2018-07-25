@@ -67,6 +67,8 @@
 #'  observed data is not highlighted in the plot. Provide the range as a vector,
 #'  e.g., `c(0, 10)`.
 #'
+#' @param title The plot title. `"Johnson-Neyman plot"` by default.
+#'
 #' @details
 #'
 #'  The interpretation of the values given by this function is important and not
@@ -147,7 +149,8 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
                            line.thickness = 0.5, df = "residual",
                            digits = getOption("jtools-digits", 2),
                            critical.t = NULL, sig.color = "#00BFC4",
-                           insig.color = "#F8766D", mod.range = NULL) {
+                           insig.color = "#F8766D", mod.range = NULL,
+                           title = "Johnson-Neyman plot") {
 
   # Parse unquoted variable names
   predt <- as.character(substitute(pred))
@@ -554,7 +557,7 @@ johnson_neyman <- function(model, pred, modx, vmat = NULL, alpha = 0.05,
     }
 
     plot <- plot + ggplot2::xlim(range(cbs[,modx])) +
-      ggplot2::labs(title = "Johnson-Neyman plot", x = modx, y = predl) +
+      ggplot2::labs(title = title, x = modx, y = predl) +
 
       ggplot2::scale_color_manual(values = c("Significant" = sig.color,
                                            "Insignificant" = insig.color),
