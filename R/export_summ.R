@@ -676,7 +676,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     scale_shape_manual(limits = rev(levels(tidies$model)),
       values = shapes, name = legend.title) +
     theme_apa(legend.pos = "right", legend.font.size = 9,
-              remove.x.gridlines = FALSE, legend.use.title = TRUE) +
+              remove.x.gridlines = FALSE, legend.use.title = TRUE,
+              facet.title.size = 10) +
     theme(axis.title.y = element_blank(),
           axis.text.y = element_text(size = 10)) +
     xlab(ifelse(exp, no = "Estimate", yes = "exp(Estimate)"))
