@@ -378,7 +378,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     # Append weights to data
     d[["the_weights"]] <- wts
     # Maybe ^ isn't needed
-    point.size <- wts
+    # point.size <- wts
 
     if (is.factor(d[[modx]])) {
       # Create shape aesthetic argument
@@ -387,7 +387,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
 
       p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                colour = modx_g,
-                                               # size = "the_weights",
+                                               size = "the_weights",
                                                shape = shape_arg),
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
@@ -474,7 +474,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                                    breaks = names(ltypes),
                                    na.value = "blank")
     # Need some extra width to show the linetype pattern fully
-    p <- p + theme(legend.key.width = grid::unit(2, "lines"))
+    p <- p + theme(legend.key.width = grid::unit(3, "lines"))
   }
 
   # Give the plot the user-specified title if there is one
