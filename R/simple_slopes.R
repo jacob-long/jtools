@@ -146,7 +146,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
                        jnalpha = .05, robust = FALSE,
                        digits = getOption("jtools-digits", default = 2),
                        pvals = TRUE, confint = FALSE, ci.width = .95,
-                       cluster = NULL, ...) {
+                       cluster = NULL, modx.labels = NULL, mod2.labels = NULL,
+                       ...) {
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -358,8 +359,8 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 ### Getting moderator values ##################################################
 
   modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
-                        modx.labels = NULL, any.mod2 = !is.null(mod2),
-                        sims = TRUE)
+                        modx.labels = modx.labels,
+                        any.mod2 = !is.null(mod2), sims = TRUE)
 
   if (is.factor(d[[modx]]) & johnson_neyman == TRUE) {
         warn_wrap("Johnson-Neyman intervals are not available for factor
@@ -385,7 +386,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
     if (!is.factor(d[[mod2]])) {
       mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
-                            modx.labels = NULL, any.mod2 = !is.null(mod2),
+                            modx.labels = mod2.labels, any.mod2 = !is.null(mod2),
                             sims = TRUE)
     } else {
 
@@ -706,8 +707,9 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
       # Add a label for cowplot
       mod2lab <- names(mod2vals2)[j]
       if (is.null(mod2lab)) {mod2lab <- mod2vals2[j]}
+      if (is.null(mod2.labels)) {mod2lab <- paste(mod2, "=", mod2lab)}
       jns[[j]]$plot <-
-        jns[[j]]$plot + ggplot2::ggtitle(paste(mod2, "=", mod2lab)) +
+        jns[[j]]$plot + ggplot2::ggtitle(mod2lab) +
         ggplot2::theme(plot.title = ggplot2::element_text(size = 11))
 
       # Add the plot to the plot list at whatever the current end is
