@@ -912,18 +912,24 @@ print.sim_slopes <- function(x, ...) {
 #' @export tidy.sim_slopes
 #' @rdname glance.summ
 
-tidy.sim_slopes <- function(x, conf.int = FALSE, conf.level = .95, ...) {
+tidy.sim_slopes <- function(x, conf.level = .95, ...) {
 
-  cols <- c("estimate", "std.err", "statistic", "p.value", "modx", "modx.value",
-            "mod2", "mod2.value")
+  cols <- c("estimate", "std.error", "statistic", "p.value", "modx",
+            "modx.value", "mod2", "mod2.value")
+  # Figure out how many rows the data frame will be
   num_coefs <- ifelse(is.list(x$slopes),
                       yes = length(x$slopes) * nrow(x$slopes[[1]]),
                       no = nrow(x$slopes))
+  # Create NA-filled data frame
   base <- as.data.frame(matrix(rep(NA, times = num_coefs * length(cols)),
                                ncol = length(cols)))
+  # Name the columns
   names(base) <- cols
 
+  # Get the attributes from the sim_slopes object
   atts <- attributes(x)
+
+  # Is there a second moderator?
   any_mod2 <- !is.null(atts$mod2)
   if (any_mod2 == FALSE) {
     all_slopes <- x$slopes
@@ -931,43 +937,230 @@ tidy.sim_slopes <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     all_slopes <- do.call("rbind", x$slopes)
   }
 
+  # Include the moderator name (probably not best to include this redundant info)
   base$modx <- atts$modx
+
+  # Move the table of values to the data frame
   base$modx.value <- all_slopes[,1]
   base$estimate <- all_slopes[,"Est."]
-  base$std.err <- all_slopes[,"S.E."]
+  base$std.error <- all_slopes[,"S.E."]
   base$p.value <- all_slopes[,"p"]
   base$statistic <- all_slopes[, grep("val.", colnames(all_slopes), value = T)]
+
+  # Handle CIs
+  ## These are the requested CI labels
   want_labs <- unlist(make_ci_labs(conf.level))
+  ## Check if those are already calculated
   if (all(want_labs %in% colnames(all_slopes))) {
     base$conf.low <- all_slopes[,make_ci_labs(conf.level)[[1]]]
     base$conf.high <- all_slopes[,make_ci_labs(conf.level)[[2]]]
-  } else {
+  } else { # If not, calculate them
     alpha <- (1 - conf.level) / 2
     crit_t <- if (class(x$mods[[1]]) == "lm") {
       abs(qt(alpha, df = df.residual(x$mods[[1]])))
     } else {
       abs(qnorm(alpha))
     }
-    base$conf.low <- base$estimate - (crit_t * base$std.err)
-    base$conf.high <- base$estimate + (crit_t * base$std.err)
+    base$conf.low <- base$estimate - (crit_t * base$std.error)
+    base$conf.high <- base$estimate + (crit_t * base$std.error)
   }
 
+  # Create unique term labels for each value of the moderator
+  base$term <- paste(base$modx, "=",
+                     if (is.character(base$modx.value)) {
+                       base$modx.value
+                     } else {
+                       num_print(base$modx.value, attr(x, "digits"))
+                     }
+                    )
+
+  # Do the same for moderator 2 if any
   if (any_mod2 == TRUE) {
     base$mod2 <- atts$mod2
     base$mod2.value <- unlist(lapply(atts$mod2vals, function(y) {
       rep(y, nrow(x$slopes[[1]]))
     }))
+
+    base$mod2.term <- paste(base$mod2, "=",
+                       if (is.character(base$mod2.value)) {
+                         base$mod2.value
+                       } else {
+                         num_print(base$mod2.value, attr(x, "digits"))
+                       }
+    )
   }
 
-  base$term <- paste(base$modx, "=",
-                     if (is.character(base$modx.value)) {
-                       base$modx.value
-                     } else {
-                       round(base$modx.value, getOption("jtools-digits", 2))
-                     }
-                    )
+  attr(base, "pred") <- atts$pred
 
   return(base)
 
 }
 
+#' @export glance.sim_slopes
+#' @rdname glance.summ
+
+glance.sim_slopes <- function(x, ...) {
+  data.frame(N = length(residuals(x$mods[[1]])))
+}
+
+#' @export
+
+nobs.sim_slopes <- function(x, ...) {
+  length(residuals(x$mods[[1]]))
+}
+
+#' @export as_huxtable.sim_slopes
+#' @rdname as_huxtable
+#' @title Create tabular output for simple slopes analysis
+#' @description This function converts a `sim_slopes` object into a
+#' `huxtable` object, making it suitable for use in external documents.
+#' @param x The [sim_slopes()] object.
+#' @param format The method for sharing the slope and associated uncertainty.
+#'  Default is `"{estimate} ({std.error})"`. See the instructions for the
+#'  `error_format` argument of [export_summs()] for more on your
+#'  options.
+#' @param sig.levels A named vector in which the values are potential p value
+#'  thresholds and the names are significance markers (e.g., "*") for when
+#'  p values are below the threshold. Default is
+#'  \code{c(`***` = .001, `**` = .01, `*` = .05, `#` = .1)}.
+#' @param digits How many digits should the outputted table round to? Default
+#'  is 2.
+#'
+#' @details
+#'
+#' For more on what you can do with a `huxtable`, see
+#' [huxtable::`huxtable-package`]
+
+as_huxtable.sim_slopes <-  function(x, format = "{estimate} ({std.error})",
+  sig.levels = c(`***` = .001, `**` = .01, `*` = .05, `#` = .1),
+  digits = getOption("jtools-digits", 2), conf.level = .95, ...) {
+
+  df <- tidy.sim_slopes(x, conf.level = conf.level)
+  make_table(df = df, format = format, sig.levels = sig.levels, digits = digits)
+
+}
+
+# Worker function for as_huxtable
+
+make_table <- function(df, format = "{estimate} ({std.error})",
+                       sig.levels = c(`***` = .001, `**` = .01, `*` = .05,
+                                      `#` = .1),
+                       digits = getOption("jtools-digits", 2)) {
+
+  # Quick function to create asterisks
+  return_asterisk <- function(x, levels) {
+    if (is.null(levels)) {return("")}
+    levels <- sort(levels)
+    for (i in seq_len(length(levels))) {
+      if (x < levels[i]) {return(names(levels)[i])}
+    }
+    return("")
+  }
+
+  # Vectorize it
+  return_asterisks <- function(x, levels = c(`***` = .001, `**` = .01,
+                                             `*` = .05, `#` = .1)) {
+    sapply(x, return_asterisk, levels = levels)
+  }
+
+  # Append the asterisks to the format
+  format <- paste0(format, "{return_asterisks(p.value, levels = sig.levels)}")
+
+  # Create new DF with the minimal information
+  df2 <- data.frame(
+    # Moderator value
+    modx.value = df$modx.value,
+    # Formatted slope
+    slope = glue::glue_data(.x = df, format),
+    # 2nd moderator value (gets dropped later)
+    mod2.value = df$mod2.value
+  )
+
+  # Get the predictor variable name
+  pred.name <- attr(df, "pred")
+  # Add "slope of"
+  pred.name <- paste("Slope of", pred.name)
+
+  # Get moderator name
+  modx.name <- df$modx[1]
+  # Add "value of"
+  modx.name <- paste("Value of", modx.name)
+  # Change df2 colname to modx.name
+  names(df2)[1] <- modx.name
+
+  # Create huxtable sans moderator 2 column
+  tab <- huxtable::as_hux(df2[names(df2) %nin% "mod2.value"])
+  # Align the huxtable left
+  tab <- huxtable::set_align(tab, value = "left")
+
+  # 3-way interaction handling
+  if (any(!is.na(df2$mod2.value))) {
+    # Get each unique value of the 2nd moderator
+    mod2s <- unique(df2$mod2.value)
+    # Save the number of those
+    num_mod2 <- length(mod2s)
+    # Get the number of moderator values per 2nd moderator values
+    vals_per_mod2 <- length(df2$mod2.value)/num_mod2
+
+    # Iterate through 2nd moderator values
+    for (i in 0:(num_mod2 - 1)) {
+      # Generate label
+      lab <- paste(df$mod2[1], "=", mod2s[i + 1])
+      # Get the row I'll be inserting to; it's *2 because there are two row
+      # insertions each time.
+      row <- (i * vals_per_mod2) + i * 2
+
+      # Insert row with 2nd moderator label
+      tab <- huxtable::insert_row(tab, c(lab, NA), after = row)
+      # Make that row cell span both columns
+      tab <- huxtable::set_colspan(tab, row + 1, 1, 2)
+      # Align the row to the left
+      tab <- huxtable::set_align(tab, row + 1, 1, "left")
+
+      # Insert row with column labels
+      tab <- huxtable::insert_row(tab, c(modx.name, pred.name), after = row + 1)
+      # Put border below that row
+      tab <- huxtable::set_bottom_border(tab, row + 2, 1:2, 1)
+
+      # Now need to format just the top row...
+      # Italicize the font
+      tab <- huxtable::set_italic(tab, row + 1, 1, TRUE)
+      # Put a border above that row
+      tab <- huxtable::set_top_border(tab, row + 1, 1:2, 1)
+    }
+
+  } else { # If no second moderator
+    # Add row of column labels
+    tab <- huxtable::insert_row(tab, c(modx.name, pred.name))
+    # Put a line below the column labels
+    tab <- huxtable::set_bottom_border(tab, 1, 1:2, 1)
+  }
+
+  # Format the numbers
+  tab <- huxtable::set_number_format(tab, value = digits)
+  # Drop the huxtable colnames
+  colnames(tab) <- NULL
+
+  tab
+
+}
+
+#' @export
+#' @title Plot coefficients from simple slopes analysis
+#' @description This creates a coefficient plot to visually summarize the
+#' results of simple slopes analysis.
+#' @param x A [jtools::sim_slopes()] object.
+#' @param ... arguments passed to [jtools::plot_coefs()]
+
+plot.sim_slopes <- function(x, ...) {
+  # Get the plot and add better x-axis label
+  p <- plot_coefs(x, ...) + ggplot2::xlab(paste("Slope of", attr(x, "pred")))
+
+  # If there's a second moderator, format as appropriate
+  if (!is.null(attr(x, "mod2"))) {
+    p <- p + ggplot2::facet_wrap(mod2.term ~ ., ncol = 1, scales = "free_y",
+                                 strip.position = "top")
+  }
+
+  p
+}

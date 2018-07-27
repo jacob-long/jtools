@@ -8,7 +8,8 @@ sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
   mod2vals = NULL, centered = "all", data = NULL, cond.int = FALSE,
   johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
   digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  confint = FALSE, ci.width = 0.95, cluster = NULL, ...)
+  confint = FALSE, ci.width = 0.95, cluster = NULL, modx.labels = NULL,
+  mod2.labels = NULL, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -101,6 +102,18 @@ to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
+
+\item{modx.labels}{A character vector of labels for each level of the
+moderator values, provided in the same order as the \code{modxvals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{mod2.labels}{A character vector of labels for each level of the 2nd
+moderator values, provided in the same order as the \code{mod2vals}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
 
 \item{...}{Arguments passed to \code{\link{johnson_neyman}} and
 \code{summ}.}

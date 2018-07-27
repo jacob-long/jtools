@@ -164,6 +164,26 @@ test_that("interact_plot linearity.check works", {
   expect_silent(print(p))
 })
 
+if (requireNamespace("huxtable") && requireNamespace("broom")) {
+  test_that("as_huxtable.sim_slopes works", {
+    ss3 <- sim_slopes(model = fit, pred = Murder, modx = Illiteracy,
+                      mod2 = HSGrad)
+    ss <- sim_slopes(model = fit, pred = Murder, modx = Illiteracy)
+    expect_is(as_huxtable.sim_slopes(ss3), "huxtable")
+    expect_is(as_huxtable.sim_slopes(ss), "huxtable")
+  })
+}
+
+if (requireNamespace("ggstance") && requireNamespace("broom")) {
+  test_that("plot.sim_slopes works", {
+    ss3 <- sim_slopes(model = fit, pred = Murder, modx = Illiteracy,
+                      mod2 = HSGrad)
+    ss <- sim_slopes(model = fit, pred = Murder, modx = Illiteracy)
+    expect_is(plot(ss3), "ggplot")
+    expect_is(plot(ss), "ggplot")
+  })
+}
+
 context("interactions svyglm")
 
 if (requireNamespace("survey")) {
