@@ -869,8 +869,11 @@ get_dist_curves <- function(tidies, order, models, rescale.distributions) {
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   if (class(x)[1] != "summ.rq") {
-    base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level,
-                        ...)
+    # Hacky fix for spurious broom warnings with merMod
+    suppressWarnings({
+      base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level,
+                          ...)
+    })
   } else {
     dots <- list(...)
     dots <- dots[names(dots) %in% c(names(formals("rq")),
@@ -902,11 +905,11 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   if ("p" %in% colnames(x$coeftable)) {
 
-    base$p.value[!is.na(base$statistic)] <- x$coeftable[,"p"]
+    base[["p.value"]][!is.na(base$statistic)] <- x$coeftable[,"p"]
 
   } else if (!("p.value" %in% names(base))) {
 
-    base$p.value <- NA
+    base[["p.value"]] <- NA
 
   }
 
