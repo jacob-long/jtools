@@ -71,7 +71,8 @@ The default model summary statistics reporting follows this logic:
 
 \itemize{
 \item summ.lm = \code{c(N = "nobs", R2 = "r.squared")},
-\item summ.glm = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC")},
+\item summ.glm = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
+                       `Pseudo R2` = "pseudo.r.squared")},
 \item summ.svyglm = \code{c(N = "nobs", R2 = "r.squared")},
 \item summ.merMod = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
                           `R2 (fixed)` = "r.squared.fixed",

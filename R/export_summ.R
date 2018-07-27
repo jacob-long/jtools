@@ -53,7 +53,8 @@
 #'
 #'   \itemize{
 #'     \item summ.lm = `c(N = "nobs", R2 = "r.squared")`,
-#'     \item summ.glm = `c(N = "nobs", AIC = "AIC", BIC = "BIC")`,
+#'     \item summ.glm = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
+#'                        `Pseudo R2` = "pseudo.r.squared")},
 #'     \item summ.svyglm = `c(N = "nobs", R2 = "r.squared")`,
 #'     \item summ.merMod = \code{c(N = "nobs", AIC = "AIC", BIC = "BIC",
 #'                           `R2 (fixed)` = "r.squared.fixed",
@@ -237,7 +238,8 @@ export_summs <- function(...,
       # If a summ object, get its default statistics
       statistics <- switch(mod_type,
              summ.lm = c(N = "nobs", R2 = "r.squared"),
-             summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC"),
+             summ.glm = c(N = "nobs", AIC = "AIC", BIC = "BIC",
+                          `Pseudo R2` = "pseudo.r.squared"),
              summ.svyglm = c(N = "nobs", R2 = "r.squared"),
              summ.rq = c(N = "nobs", tau = "tau", R1 = "r.1",
                          AIC = "AIC", BIC = "BIC"),
@@ -996,6 +998,8 @@ glance.summ.lm <- function(x, ...) {
 glance.summ.glm <- function(x, ...) {
 
   base <- broom::glance(x$model)
+  base["pseudo.r.squared"] <- attr(x, "rsq")
+  base["pseudo.r.squared.mcfadden"] <- attr(x, "rsqmc")
   return(base)
 
 }
@@ -1030,6 +1034,8 @@ glance.summ.svyglm <- function(x, ...) {
   } else {
 
     base$r.squared <- NA
+    base["pseudo.r.squared"] <- attr(x, "rsq")
+    base["pseudo.r.squared.mcfadden"] <- attr(x, "rsqmc")
 
   }
 
