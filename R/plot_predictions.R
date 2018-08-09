@@ -314,7 +314,8 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                          alpha = 1/5, show.legend = FALSE,
                          inherit.aes = FALSE)
 
-    p <- p + scale_fill_manual(values = colors, breaks = names(colors))
+    p <- p + scale_fill_manual(name = legend.main, values = colors,
+                               breaks = names(colors))
   }
 
   # If third mod, facet by third mod
@@ -373,28 +374,43 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
     # Transform weights so they have mean = 1
     const <- length(wts)/sum(wts) # scaling constant
     # make the range of values larger, but only if there are non-1 weights
-    const <- const * ((1 * !all(wts == 1)) + point.size)
-    wts <- const * wts
+    no_wts <- all(wts == 1)
+    # const <- const * ((1 * !all(wts == 1)) + point.size)
+    wts <- (const * point.size) * wts
     # Append weights to data
     d[["the_weights"]] <- wts
-    # Maybe ^ isn't needed
-    # point.size <- wts
 
     if (is.factor(d[[modx]])) {
       # Create shape aesthetic argument
       shape_arg <- if (point.shape == TRUE) {modx_g} else {NULL}
       shape_guide <- if (point.shape == TRUE) {TRUE} else {FALSE}
 
+      if (no_wts) {
       p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                colour = modx_g,
-                                               size = "the_weights",
                                                shape = shape_arg),
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
-                          inherit.aes = TRUE, show.legend = shape_guide,
+                          inherit.aes = FALSE,
+                          show.legend = shape_guide,
                           size = point.size) +
         scale_shape_discrete(name = legend.main, breaks = names(colors),
                              na.value = "blank")
+      } else {
+        p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
+                                                 colour = modx_g,
+                                                 size = "the_weights"
+,                                                 shape = shape_arg),
+                            position = position_jitter(width = jitter[1],
+                                                       height = jitter[2]),
+                            inherit.aes = TRUE,
+                            show.legend = shape_guide) +
+          scale_shape_discrete(name = legend.main, breaks = names(colors),
+                               na.value = "blank") +
+          # guides(shape = guide_legend(override.aes = list(size = point.size))) +
+          scale_size_identity(guide = "none")
+      }
+
     } else if (!is.factor(d[[modx]])) {
       # using alpha for same effect with continuous vars
       # set alpha argument dependent on whether this is a plot facetted by
@@ -405,13 +421,13 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
                           colour = pp_color, inherit.aes = FALSE,
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
-                          show.legend = FALSE, size = point.size) +
-        scale_alpha_continuous(range = alpha_arg, guide = "none")
+                          show.legend = FALSE,
+                          size = point.size) +
+        scale_alpha_continuous(range = alpha_arg, guide = "none") +
         # Add size aesthetic to avoid giant points
-        # scale_size_continuous(
-        #   range = c(0.5, 5),
-        #   guide = "none"
-        #                       )
+        scale_size_continuous(
+          guide = "none"
+        )
 
     }
 
