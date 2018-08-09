@@ -7,7 +7,8 @@
 johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05, plot = TRUE,
   control.fdr = FALSE, line.thickness = 0.5, df = "residual",
   digits = getOption("jtools-digits", 2), critical.t = NULL,
-  sig.color = "#00BFC4", insig.color = "#F8766D", mod.range = NULL)
+  sig.color = "#00BFC4", insig.color = "#F8766D", mod.range = NULL,
+  title = "Johnson-Neyman plot")
 }
 \arguments{
 \item{model}{A regression model. It is tested with \code{lm}, \code{glm}, and
@@ -72,6 +73,8 @@ is highlighted on the plot. You could instead choose to provide the
 actual observed minimum and maximum, in which case the range of the
 observed data is not highlighted in the plot. Provide the range as a vector,
 e.g., \code{c(0, 10)}.}
+
+\item{title}{The plot title. \code{"Johnson-Neyman plot"} by default.}
 }
 \value{
 \item{bounds}{The two numbers that make up the interval.}
