@@ -1005,15 +1005,16 @@ glance.sim_slopes <- function(x, ...) {
 
 #' @export
 
-nobs.sim_slopes <- function(x, ...) {
-  length(residuals(x$mods[[1]]))
+nobs.sim_slopes <- function(object, ...) {
+  length(residuals(object$mods[[1]]))
 }
 
-#' @export as_huxtable.sim_slopes
-#' @rdname as_huxtable
+
 #' @title Create tabular output for simple slopes analysis
+#'
 #' @description This function converts a `sim_slopes` object into a
 #' `huxtable` object, making it suitable for use in external documents.
+#'
 #' @param x The [sim_slopes()] object.
 #' @param format The method for sharing the slope and associated uncertainty.
 #'  Default is `"{estimate} ({std.error})"`. See the instructions for the
@@ -1025,11 +1026,16 @@ nobs.sim_slopes <- function(x, ...) {
 #'  \code{c(`***` = .001, `**` = .01, `*` = .05, `#` = .1)}.
 #' @param digits How many digits should the outputted table round to? Default
 #'  is 2.
+#' @param conf.level How wide the confidence interval should be, if it
+#'  is used. .95 (95\% interval) is the default.
+#' @param ... Ignored.
 #'
 #' @details
 #'
-#' For more on what you can do with a `huxtable`, see
-#' [huxtable::`huxtable-package`]
+#' For more on what you can do with a `huxtable`, see \pkg{huxtable}.
+#'
+#' @export as_huxtable.sim_slopes
+#' @rdname as_huxtable.sim_slopes
 
 as_huxtable.sim_slopes <-  function(x, format = "{estimate} ({std.error})",
   sig.levels = c(`***` = .001, `**` = .01, `*` = .05, `#` = .1),

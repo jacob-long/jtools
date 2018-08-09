@@ -23,12 +23,16 @@ p values are below the threshold. Default is
 
 \item{digits}{How many digits should the outputted table round to? Default
 is 2.}
+
+\item{conf.level}{How wide the confidence interval should be, if it
+is used. .95 (95\% interval) is the default.}
+
+\item{...}{Ignored.}
 }
 \description{
 This function converts a \code{sim_slopes} object into a
 \code{huxtable} object, making it suitable for use in external documents.
 }
 \details{
-For more on what you can do with a \code{huxtable}, see
-\link[huxtable:`huxtable-package`]{huxtable::\code{huxtable-package}}
+For more on what you can do with a \code{huxtable}, see \pkg{huxtable}.
 }

@@ -7,6 +7,7 @@
 \alias{glance.summ.svyglm}
 \alias{glance.summ.merMod}
 \alias{tidy.sim_slopes}
+\alias{glance.sim_slopes}
 \alias{glance.summ.rq}
 \title{Broom extensions for summ objects}
 \usage{
@@ -20,7 +21,9 @@ glance.summ.svyglm(x, ...)
 
 glance.summ.merMod(x, ...)
 
-tidy.sim_slopes(x, conf.int = FALSE, conf.level = 0.95, ...)
+tidy.sim_slopes(x, conf.level = 0.95, ...)
+
+glance.sim_slopes(x, ...)
 
 glance.summ.rq(x, ...)
 }
