@@ -550,6 +550,16 @@ print_mod_info <- function(missing, n, dv, type) {
   cat(italic("Type:"), type, "\n\n")
 }
 
+## Take model info and save as list
+
+mod_info_list <- function(missing, n, dv, type) {
+  out <- list(dv = dv, n = n, type = type)
+  if (!is.null(missing) && missing != 0) {
+    out$missing <- missing
+  }
+  return(out)
+}
+
 ## Print model fit info
 
 print_mod_fit <- function(stats) {
@@ -580,6 +590,32 @@ print_se_info <- function(robust, use_cluster, manual = NULL, ...) {
     } else if (use_cluster == TRUE) {
 
       cat(" Cluster-robust, ", italic("type = "), robust, "\n", sep = "")
+
+    }
+
+  }
+
+}
+
+## Save SE info as string
+
+get_se_info <- function(robust, use_cluster, manual = NULL, ...) {
+
+  if (identical(FALSE, robust)) {
+
+    ifelse(is.null(manual), no = manual, yes = "MLE")
+
+  } else {
+
+    if (robust == TRUE) {robust <- "HC3"}
+
+    if (use_cluster == FALSE) {
+
+      paste0("Robust, type = ", robust)
+
+    } else if (use_cluster == TRUE) {
+
+      paste0("Cluster-robust, type = ", robust)
 
     }
 
