@@ -926,7 +926,7 @@ split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
     }
 
     # Add Inf to both ends to encompass all values outside the cut points
-    cut_points <- c(-Inf, quantile(d[[modx]], cut_points), Inf)
+    cut_points <- c(-Inf, quantile(d[[modx]], cut_points, na.rm = TRUE), Inf)
 
     # Create variable storing this info as a factor
     d["modx_group"] <- cut(d[[modx]], cut_points,
@@ -958,7 +958,8 @@ split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
 
       }
 
-      cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2), Inf)
+      cut_points2 <- c(-Inf, quantile(d[[mod2]], cut_points2, na.rm = TRUE),
+                       Inf)
 
       d["mod2_group"] <- cut(d[[mod2]], cut_points2,
                           labels = names(sort(mod2vals2)))
