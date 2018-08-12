@@ -677,6 +677,46 @@ mod_rank <- function(model) {
   return(preds + int)
 }
 
+hux_theme <- function(table, align_body = "right", caption = NULL,
+                      use_colnames = TRUE, width = .2) {
+  # table <- huxtable::theme_striped(table, header_row = FALSE,
+  #                                  header_col = FALSE)
+  table <- huxtable::set_background_color(table, huxtable::odds,
+                                          huxtable::everywhere,
+                                          grDevices::grey(0.9))
+  if (use_colnames == TRUE) {
+    table <- huxtable::add_colnames(table)
+    table <- huxtable::set_bold(table, row = 1, col = 1:ncol(table),
+                                value = TRUE)
+    table <- huxtable::set_align(table, row = 1, col = 1:ncol(table), "center")
+    table <- huxtable::set_bottom_border(table, row = 1, col = 1:ncol(table), 1)
+  }
+
+  body_rows <- (1 + use_colnames):nrow(table)
+  table <- huxtable::set_bold(table, row = body_rows, col = 1, value = TRUE)
+  table <- huxtable::set_align(table, row = body_rows, col = 2:ncol(table),
+                               align_body)
+  table <- huxtable::set_align(table, row = body_rows, col = 1, "left")
+
+  if (!is.null(caption)) {
+    table <- huxtable::insert_row(table,
+                                  c(caption, rep(NA, times = ncol(table) - 1)),
+                                  after = 0)
+    table <- huxtable::set_colspan(table, row = 1, col = 1, ncol(table))
+    table <- huxtable::set_background_color(table, 1, huxtable::everywhere,
+                                            "white")
+    table <- huxtable::set_bold(table, row = 1, col = 1:ncol(table),
+                                value = TRUE)
+    table <- huxtable::set_align(table, row = 1, col = 1:ncol(table), "center")
+    table <- huxtable::set_bottom_border(table, row = 1, col = 1:ncol(table), 1)
+  }
+
+  table <- huxtable::set_position(table, "left")
+  # table <- huxtable::set_width(table, width)
+
+  return(table)
+}
+
 ### pseudo-R2 ################################################################
 
 ## This is taken from pscl package, I don't want to list it as import for
