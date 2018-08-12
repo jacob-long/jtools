@@ -1159,7 +1159,7 @@ make_table <- function(df, format = "{estimate} ({std.error})",
   }
 
   # Format the numbers
-  tab <- huxtable::set_number_format(tab, value = digits)
+  # tab <- huxtable::set_number_format(tab, value = digits)
   # Drop the huxtable colnames
   colnames(tab) <- NULL
 
