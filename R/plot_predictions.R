@@ -386,16 +386,16 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
       shape_guide <- if (point.shape == TRUE) {TRUE} else {FALSE}
 
       if (no_wts) {
-      p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
-                                               colour = modx_g,
-                                               shape = shape_arg),
-                          position = position_jitter(width = jitter[1],
-                                                     height = jitter[2]),
-                          inherit.aes = FALSE,
-                          show.legend = shape_guide,
-                          size = point.size) +
-        scale_shape_discrete(name = legend.main, breaks = names(colors),
-                             na.value = "blank")
+        p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
+                                                 colour = modx_g,
+                                                 shape = shape_arg),
+                            position = position_jitter(width = jitter[1],
+                                                       height = jitter[2]),
+                            inherit.aes = FALSE,
+                            show.legend = shape_guide,
+                            size = point.size) +
+          scale_shape_discrete(name = legend.main, breaks = names(colors),
+                               na.value = "blank")
       } else {
         p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
                                                  colour = modx_g,
@@ -417,15 +417,15 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
       # the moderator
       alpha_arg <- if (facet.modx) {c(1, 1)} else {c(0.25, 1)}
       p <- p + geom_point(data = d,
-                          aes_string(x = pred_g, y = resp_g, alpha = modx_g),
+                          aes_string(x = pred_g, y = resp_g, alpha = modx_g,
+                                     size = "the_weights"),
                           colour = pp_color, inherit.aes = FALSE,
                           position = position_jitter(width = jitter[1],
                                                      height = jitter[2]),
-                          show.legend = FALSE,
-                          size = point.size) +
+                          show.legend = FALSE) +
         scale_alpha_continuous(range = alpha_arg, guide = "none") +
         # Add size aesthetic to avoid giant points
-        scale_size_continuous(
+        scale_size_identity(
           guide = "none"
         )
 
@@ -714,7 +714,11 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
     dodge.width <- if (geom %in% c("bar", "point", "boxplot")) {0.9} else {0}
   }
   if (is.null(errorbar.width)) {
-    errorbar.width <- if (geom %in% c("bar", "point")) {0.9} else {0.5}
+    errorbar.width <- if (geom == "point") {
+      0.9
+    } else if (geom == "bar") {
+      0.75
+    } else {0.5}
   }
 
   if (!is.null(modx)) {
@@ -776,7 +780,7 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
     # Transform weights so they have mean = 1
     const <- length(wts) / sum(wts) # scaling constant
     # make the range of values larger, but only if there are non-1 weights
-    const <- const * (1 * all(wts == 1) + point.size)
+    const <- const * (1 * all(wts == 1) * point.size)
     wts <- const * wts
     # Append weights to data
     d[,"the_weights"] <- wts
