@@ -1,3 +1,58 @@
+# jtools 1.1.0
+
+This release was initally intended to be a bugfix release, but enough other
+things came up to make it a minor release.
+
+## Bug fixes
+* Suppressed a number of warning messages caused by a `broom` update 
+when using `export_summs` and `plot_coefs`.
+* Fixed an error with `plot_coefs` arising from the latest update to `ggplot2`.
+* Fixed a new bug introduced in 1.0.0 wherein the points of weighted data
+were not being sized according to their weight.
+* Fixed an issue with pseudo-R^2 calculation in non-interactive use. [#34]
+* Pseudo-R^2 is now included in the `export_summs` output for `glm` models.
+[#36]
+* `interact_plot` no longer errors if there are missing observations in 
+the original data and quantiles are requested.
+
+## New features
+* For `summ.merMod`, the default p-value calculation is now via the 
+Satterthwaite method if you have `lmerTest` installed. The old default,
+Kenward-Roger, is used by request or when `pbkrtest` is installed but not
+`lmerTest`. It now calculates a different degrees of freedom for each 
+predictor and also calculates a variance-covariance matrix for the model,
+meaning the standard errors are adjusted as well. It is not the default
+largely because the computation takes too long for too many models.
+* `johnson_neyman` now allows you to specify your own critical *t* value
+if you are using some alternate method to calculate it. 
+* `johnson_neyman` now allows you to specify the range of moderator values
+you want to plot as well as setting a title. 
+* Users may now label values in `sim_slopes` in a way similar to 
+`interact_plot`. [#35]
+* Users may provide their own labels for preset moderator values with
+`interact_plot` (e.g., when `modx.values = "plus-minus"`). [#31]
+* `plot_coefs`/`plot_summs` now supports facetting the coefficients
+based on user-specified groupings. See `?plot_summs` for details.
+* All `summ` variants now have pretty output in RMarkdown documents if you 
+have the `huxtable` package installed. This can be disabled with the chunk
+option `render = 'normal_print'`.
+
+## Interface changes
+* All interaction functions now use `modx.values`, `mod2.values`, and 
+`pred.values` in place of `modxvals`, `mod2vals`, and `predvals`. Don't
+go running to change your code, though; those old argument names will 
+still work, but these new ones are clearer and preferred in new code.
+
+## New functions
+* There is now a `plot` method for `sim_slopes` objects. Just save
+your `sim_slopes` call to an object and call the `plot` function on that
+object to see what happens. Basically, it's `plot_coefs` for `sim_slopes`.
+* For those who have `huxtable` installed, you can now call `as_huxtable`
+on a `sim_slopes` object to get a publication-style table. The interface
+is comparable to `export_summs`.
+
+
+
 # jtools 1.0.0
 
 ## Major release
