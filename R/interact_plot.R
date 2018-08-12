@@ -20,7 +20,7 @@
 #' @param mod2 Optional. The name of the second moderator
 #'  variable involved in the interaction. This can be a bare name or string.
 #'
-#' @param modxvals For which values of the moderator should lines be plotted?
+#' @param modx.values For which values of the moderator should lines be plotted?
 #'   Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 #'   deviation from the mean as well as the mean itself are used for continuous
 #'   moderators. If \code{"plus-minus"}, plots lines when the moderator is at
@@ -28,15 +28,16 @@
 #'   to split the data into equally-sized groups and choose the point at the
 #'   mean of each of those groups.
 #'
-#'   If the moderator is a factor variable and \code{modxvals} is
+#'   If the moderator is a factor variable and \code{modx.values} is
 #'   \code{NULL}, each level of the factor is included. You may specify
 #'   any subset of the factor levels (e.g., `c("Level 1", "Level 3")`) as long
 #'   as there is more than 1. The levels will be plotted in the order you
 #'   provide them, so this can be used to reorder levels as well.
 #'
-#' @param mod2vals For which values of the second moderator should the plot be
+#' @param mod2.values For which values of the second moderator should the plot
+#'   be
 #'   facetted by? That is, there will be a separate plot for each level of this
-#'   moderator. Defaults are the same as \code{modxvals}.
+#'   moderator. Defaults are the same as \code{modx.values}.
 #'
 #' @param centered A vector of quoted variable names that are to be
 #'   mean-centered. If `"all"`, all non-focal predictors are centered. You
@@ -81,7 +82,7 @@
 #'   linear through the span of the moderator. See Hainmueller et al. (2016) in
 #'   the references for more details on the intuition behind this. It is
 #'   recommended that you also set `plot.points = TRUE` and use
-#'   `modxvals = "terciles"` with this option.
+#'   `modx.values = "terciles"` with this option.
 #'
 #' @inheritParams summ.lm
 #'
@@ -106,15 +107,15 @@
 #'   \code{NULL}, the default, the factor labels are used.
 #'
 #' @param modx.labels A character vector of labels for each level of the
-#'   moderator values, provided in the same order as the \code{modxvals}
+#'   moderator values, provided in the same order as the \code{modx.values}
 #'   argument. If \code{NULL}, the values themselves are used as labels unless
-#'   \code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+#'   \code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 #'   are used.
 #'
 #' @param mod2.labels A character vector of labels for each level of the 2nd
-#'   moderator values, provided in the same order as the \code{mod2vals}
+#'   moderator values, provided in the same order as the \code{mod2.values}
 #'   argument. If \code{NULL}, the values themselves are used as labels unless
-#'   \code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+#'   \code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 #'   are used.
 #'
 #' @param main.title A character object that will be used as an overall title
@@ -126,7 +127,8 @@
 #'
 #' @param color.class See [jtools_colors] for details on the types of arguments
 #'    accepted. Default is "CUD Bright" for factor
-#'    moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.
+#'    moderators, "Blues" for +/- SD and user-specified \code{modx.values}
+#'    values.
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
@@ -204,8 +206,9 @@
 #'   be very intuitive since it's obvious which values go in which pane. The
 #'   rest of this section will address the case of continuous moderators.
 #'
-#'   My recommendation is that you use `modxvals = "terciles"` or
-#'   `mod2vals = "terciles"` when you want to plot observed data on multi-pane
+#'   My recommendation is that you use `modx.values = "terciles"` or
+#'   `mod2.values = "terciles"` when you want to plot observed data on
+#'   multi-pane
 #'   plots. When you do, the data are split into three approximately
 #'   equal-sized groups with the lowest third, middle third, and highest third
 #'   of the data split accordingly. You can replicate this procedure using
@@ -215,13 +218,14 @@
 #'   value at one of the cut points.
 #'
 #'   Otherwise, a more ad hoc procedure is used to split the data. Quantiles
-#'   are found for each `mod2vals` or `modxvals` value. These are not the
+#'   are found for each `mod2.values` or `modx.values` value. These are not the
 #'   quantiles used to split the data, however, since we want the plotted lines
 #'   to represent the slope at a typical value in the group. The next step,
 #'   then, is to take the mean of each pair of neighboring quantiles and use
 #'   these as the cut points.
 #'
-#'   For example, if the `mod2vals` are at the 25th, 50th, and 75th percentiles
+#'   For example, if the `mod2.values` are at the 25th, 50th, and 75th
+#'   percentiles
 #'   of the distribution of the moderator, the data will be split at the
 #'   37.5th and and 62.5th percentiles. When the variable is
 #'   normally distributed, this will correspond fairly closely to using
@@ -311,8 +315,8 @@
 #' @import ggplot2
 #' @export interact_plot
 
-interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
-                          mod2vals = NULL, centered = "all", data = NULL,
+interact_plot <- function(model, pred, modx, modx.values = NULL, mod2 = NULL,
+                          mod2.values = NULL, centered = "all", data = NULL,
                           plot.points = FALSE, interval = FALSE,
                           int.type = c("confidence", "prediction"),
                           int.width = .95, outcome.scale = "response",
@@ -324,8 +328,19 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
                           mod2.labels = NULL, main.title = NULL,
                           legend.main = NULL, color.class = NULL,
                           line.thickness = 1.1, vary.lty = TRUE,
-                          point.size = 2, point.shape = FALSE,
+                          point.size = 2.5, point.shape = FALSE,
                           jitter = 0, rug = FALSE, rug.sides = "b", ...) {
+
+  # Capture extra arguments
+  dots <- list(...)
+  if (length(dots) > 0) {
+    if ("modxvals" %in% names(dots)) {
+      modx.values <- dots$modxvals
+    }
+    if ("mod2vals" %in% names(dots)) {
+      mod2.values <- dots$mod2vals
+    }
+  }
 
   # Evaluate the modx, mod2, pred args
   # This is getting nasty due to my decision to use NSE
@@ -348,8 +363,8 @@ interact_plot <- function(model, pred, modx, modxvals = NULL, mod2 = NULL,
 
   pred_out <- make_predictions(model = model, pred = pred,
                                modx = modx,
-                               modxvals = modxvals, mod2 = mod2,
-                               mod2vals = mod2vals, centered = centered,
+                               modx.values = modx.values, mod2 = mod2,
+                               mod2.values = mod2.values, centered = centered,
                                data = data, interval = interval,
                                int.type = int.type,
                                int.width = int.width,
@@ -494,7 +509,7 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
                         x.label = NULL, y.label = NULL,
                         pred.labels = NULL, main.title = NULL,
                         color.class = NULL, line.thickness = 1.1,
-                        point.size = 2,
+                        point.size = 2.5,
                         jitter = 0, rug = FALSE, rug.sides = "b", ...) {
 
   # Evaluate the pred arg
@@ -506,8 +521,8 @@ effect_plot <- function(model, pred, centered = "all", plot.points = FALSE,
 
   pred_out <- make_predictions(model = model, pred = pred,
                                modx = NULL,
-                               modxvals = NULL, mod2 = NULL,
-                               mod2vals = NULL, centered = centered,
+                               modx.values = NULL, mod2 = NULL,
+                               mod2.values = NULL, centered = centered,
                                data = data, interval = interval,
                                int.type = int.type,
                                int.width = int.width,
@@ -592,7 +607,7 @@ print.effect_plot <- function(x, ...) {
 #'     sets). **However**, it is important to note the boxplots are not based
 #'     on the model whatsoever.
 #'
-#' @param predvals Which values of the predictor should be included in the
+#' @param pred.values Which values of the predictor should be included in the
 #'   plot? By default, all levels are included.
 #'
 #' @param pred.labels A character vector of equal length to the number of
@@ -719,17 +734,31 @@ print.effect_plot <- function(x, ...) {
 #'
 
 cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
-  data = NULL, geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
-  modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
+  data = NULL, geom = c("point", "line", "bar", "boxplot"), pred.values = NULL,
+  modx.values = NULL, mod2.values = NULL, interval = TRUE, plot.points = FALSE,
   point.shape = FALSE, vary.lty = FALSE, centered = "all",
   int.type = c("confidence", "prediction"), int.width = .95,
-  line.thickness = 1, point.size = 1, pred.point.size = 3.5, jitter = 0.1,
+  line.thickness = 1, point.size = 1.5, pred.point.size = 3.5, jitter = 0.1,
   geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
   interval.geom = c("errorbar", "linerange"), outcome.scale = "response",
   robust = FALSE, cluster = NULL, vcov = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, set.offset = 1, x.label = NULL,
   y.label = NULL, main.title = NULL, legend.main = NULL,
   color.class = "CUD Bright", ...) {
+
+  # Capture extra arguments
+  dots <- list(...)
+  if (length(dots) > 0) {
+    if ("predvals" %in% names(dots)) {
+      pred.values <- dots$predvals
+    }
+    if ("modxvals" %in% names(dots)) {
+      modx.values <- dots$modxvals
+    }
+    if ("mod2vals" %in% names(dots)) {
+      mod2.values <- dots$mod2vals
+    }
+  }
 
   # Evaluate the modx, mod2, pred args
   pred <- as.character(deparse(substitute(pred)))
@@ -755,13 +784,14 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   modxvals2 <- mod2vals2 <- resp <- NULL
 
   pred_out <- make_predictions(model = model, pred = pred, modx = modx,
-    modxvals = modxvals, mod2 = mod2, mod2vals = mod2vals, centered = centered,
+    modx.values = modx.values, mod2 = mod2, mod2.values = mod2.values,
+    centered = centered,
     data = data, interval = interval, int.type = int.type,
     int.width = int.width, outcome.scale = outcome.scale,
     linearity.check = FALSE, robust = robust, cluster = cluster, vcov = vcov,
     set.offset = set.offset, modx.labels = modx.labels,
-    mod2.labels = mod2.labels, predvals = predvals, pred.labels = pred.labels,
-    force.cat = TRUE, ...)
+    mod2.labels = mod2.labels, predvals = pred.values,
+    pred.labels = pred.labels, force.cat = TRUE, ...)
 
   # These are the variables created in the helper functions
   meta <- attributes(pred_out)
@@ -774,8 +804,10 @@ cat_plot <- function(model, pred, modx = NULL, mod2 = NULL,
   d <- pred_out$original
 
   plot_cat(predictions = pm, pred = pred, modx = modx, mod2 = mod2,
-           data = d, geom = geom, predvals = predvals, modxvals = modxvals,
-           mod2vals = mod2vals, interval = interval, plot.points = plot.points,
+           data = d, geom = geom, pred.values = pred.values,
+           modx.values = modx.values, mod2.values = mod2.values
+           , interval = interval,
+           plot.points = plot.points,
            point.shape = point.shape, vary.lty = vary.lty,
            pred.labels = pred.labels, modx.labels = modx.labels,
            mod2.labels = mod2.labels, x.label = x.label, y.label = y.label,

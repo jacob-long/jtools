@@ -55,12 +55,12 @@
 #' fiti <- lm(Income ~ Frost + Murder * Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' probe_interaction(model = fiti, pred = Murder, modx = Illiteracy,
-#'                   modxvals = "plus-minus")
+#'                   modx.values = "plus-minus")
 #' # 3-way interaction
 #' fiti3 <- lm(Income ~ Frost * Murder * Illiteracy,
 #'   data=as.data.frame(state.x77))
 #' probe_interaction(model = fiti3, pred = Murder, modx = Illiteracy,
-#'                   mod2 = Frost, mod2vals = "plus-minus")
+#'                   mod2 = Frost, mod2.values = "plus-minus")
 #'
 #' # With svyglm
 #' if (requireNamespace("survey")) {
@@ -70,7 +70,7 @@
 #'                     data = apistrat, fpc = ~fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals + sch.wide, design = dstrat)
 #' probe_interaction(model = regmodel, pred = ell, modx = meals,
-#'                   modxvals = "plus-minus", cond.int = TRUE)
+#'                   modx.values = "plus-minus", cond.int = TRUE)
 #'
 #' # 3-way with survey and factor input
 #' regmodel3 <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
@@ -142,7 +142,7 @@ print.probe_interaction <- function(x, ...) {
 ## Utility function for getting values of moderator values for interaction
 ## functions
 
-mod_vals <- function(d, modx, modxvals, survey, weights,
+mod_vals <- function(d, modx, modx.values, survey, weights,
                      design = design, modx.labels = NULL,
                      any.mod2 = FALSE, is.mod2 = FALSE,
                      sims = FALSE, facet.modx = FALSE, force.cat = FALSE) {
@@ -163,15 +163,15 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
 
   }
 
-  # Testing whether modxvals refers to pre-defined arg or list of factor levels
+  # Testing whether modx.values refers to pre-defined arg or list of factor levels
   char1 <- FALSE
-  if (is.character(modxvals) & length(modxvals) == 1) {char1 <- TRUE}
+  if (is.character(modx.values) & length(modx.values) == 1) {char1 <- TRUE}
 
   # If using a preset, send to auto_mod_vals function
   if (!is.factor(d[[modx]]) && force.cat == FALSE &&
-      (is.null(modxvals) | is.character(modxvals))) {
+      (is.null(modx.values) | is.character(modx.values))) {
 
-    modxvals2 <- auto_mod_vals(d, modxvals = modxvals, modx = modx,
+    modxvals2 <- auto_mod_vals(d, modx.values = modx.values, modx = modx,
                                modmean = modmean, modsd = modsd,
                                modx.labels = modx.labels,
                                mod2 = (is.mod2 | facet.modx),
@@ -180,7 +180,7 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
   }
 
   # For user-specified numbers or factors, go here
-  if (is.null(modxvals) && (is.factor(d[[modx]]) | force.cat == TRUE)) {
+  if (is.null(modx.values) && (is.factor(d[[modx]]) | force.cat == TRUE)) {
 
     modxvals2 <- ulevels(d[[modx]])
     if (is.null(modx.labels)) {
@@ -194,31 +194,31 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
     }
     names(modxvals2) <- modx.labels
 
-  } else if (!is.null(modxvals) & ((is.numeric(modxvals) & force.cat == FALSE) |
+  } else if (!is.null(modx.values) & ((is.numeric(modx.values) & force.cat == FALSE) |
                                    char1 == FALSE)) {
     # Use user-supplied values otherwise
 
     if (!is.null(modx.labels)) {
       # What I'm doing here is preserving the label order
-      names(modxvals) <- modx.labels
+      names(modx.values) <- modx.labels
       if (!is.mod2 & !is.factor(d[[modx]])) {
-        modxvals2 <- rev(modxvals)
+        modxvals2 <- rev(modx.values)
       } else {
-        modxvals2 <- modxvals
+        modxvals2 <- modx.values
       }
       modx.labels <- names(modxvals2)
 
     } else {
 
-      names(modxvals) <- if (is.mod2 | facet.modx) {
-        paste(modx, "=", modxvals)
+      names(modx.values) <- if (is.mod2 | facet.modx) {
+        paste(modx, "=", modx.values)
       } else {
-        modxvals
+        modx.values
       }
       if (!is.mod2 & !is.factor(d[[modx]])) {
-        modxvals2 <- rev(modxvals)
+        modxvals2 <- rev(modx.values)
       } else {
-        modxvals2 <- modxvals
+        modxvals2 <- modx.values
       }
       modx.labels <- names(modxvals2)
 
@@ -250,11 +250,11 @@ mod_vals <- function(d, modx, modxvals, survey, weights,
 ## Gets the preset values, e.g., mean plus/minus 1 SD
 
 auto_mod_vals <-
-  function(d, modx, modxvals, modmean, modsd, modx.labels = NULL,
+  function(d, modx, modx.values, modmean, modsd, modx.labels = NULL,
            mod2 = FALSE, sims = FALSE) {
 
     # Default to +/- 1 SD unless modx is factor
-    if (is.null(modxvals) & length(unique(d[[modx]])) > 2) {
+    if (is.null(modx.values) & length(unique(d[[modx]])) > 2) {
 
       modxvals2 <- c(modmean - modsd,
                      modmean,
@@ -267,7 +267,7 @@ auto_mod_vals <-
                               paste("Mean of", modx, "+ 1 SD"))
       }
 
-    } else if (!is.null(modxvals) && modxvals == "plus-minus") { # No mean
+    } else if (!is.null(modx.values) && modx.values == "plus-minus") { # No mean
 
       modxvals2 <- c(modmean - modsd, modmean + modsd)
       if (mod2 == FALSE) {
@@ -277,7 +277,7 @@ auto_mod_vals <-
                               paste("Mean of", modx, "+ 1 SD"))
       }
 
-    } else if (!is.null(modxvals) && modxvals == "terciles") {
+    } else if (!is.null(modx.values) && modx.values == "terciles") {
 
       x_or_2 <- switch(as.character(mod2),
                        "TRUE" = "2",
@@ -297,7 +297,7 @@ auto_mod_vals <-
                               paste("Upper tercile of", modx))
       }
 
-    } else if (is.null(modxvals) & length(unique(d[[modx]])) == 2) {
+    } else if (is.null(modx.values) & length(unique(d[[modx]])) == 2) {
 
       modxvals2 <- as.numeric(levels(factor(d[[modx]])))
       if (!is.null(modx.labels)) {
@@ -626,8 +626,8 @@ get_offname <- function(model, survey) {
 
 }
 
-data_checks <- function(model, data, predvals = NULL,
-                        modxvals, mod2vals, pred.labels, modx.labels,
+data_checks <- function(model, data, pred.values = NULL,
+                        modx.values, mod2.values, pred.labels, modx.labels,
                         mod2.labels, env = parent.frame()) {
 
   # Avoid CRAN barking
@@ -656,15 +656,16 @@ data_checks <- function(model, data, predvals = NULL,
     d <- data
   }
 
-  if (length(predvals) == 1) {stop("predvals must be at least a length of 2.",
-                                   call. = FALSE)}
-  if (length(modxvals) == 1 && modxvals %nin% c("plus-minus", "terciles")) {
-    stop("modxvals must be at least a length of 2.",
-         call. = FALSE)
+  if (length(pred.values) == 1) {
+    stop("pred.values must be at least a length of 2.", call. = FALSE)
+    }
+  if (length(modx.values) == 1 &&
+      modx.values %nin% c("plus-minus", "terciles")) {
+    stop("modx.values must be at least a length of 2.", call. = FALSE)
   }
-  if (length(mod2vals) == 1 && mod2vals %nin% c("plus-minus", "terciles")) {
-    stop("mod2vals must be at least a length of 2.",
-          call. = FALSE)
+  if (length(mod2.values) == 1 &&
+      mod2.values %nin% c("plus-minus", "terciles")) {
+    stop("mod2.values must be at least a length of 2.", call. = FALSE)
   }
 
   # weights?
@@ -698,10 +699,10 @@ data_checks <- function(model, data, predvals = NULL,
 
 }
 
-prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
-                      mod2vals, survey, pred.labels = NULL, modx.labels,
-                      mod2.labels, wname, weights, wts, linearity.check,
-                      interval, set.offset, facvars, centered,
+prep_data <- function(model, d, pred, modx, mod2, pred.values = NULL,
+                      modx.values, mod2.values, survey, pred.labels = NULL,
+                      modx.labels, mod2.labels, wname, weights, wts,
+                      linearity.check, interval, set.offset, facvars, centered,
                       preds.per.level, force.cat = FALSE, facet.modx = FALSE) {
   # offset?
   if (!is.null(model.offset(model.frame(model)))) {
@@ -802,18 +803,18 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
   if (facpred == TRUE) {
 
-    predvals <- mod_vals(d = d, modx = pred, modxvals = predvals,
+    pred.values <- mod_vals(d = d, modx = pred, modx.values = pred.values,
                          survey = survey, weights = wts,
                          design = design,
                          modx.labels = pred.labels, is.mod2 = TRUE,
                          facet.modx = facet.modx)
-    pred.labels <- names(predvals)
+    pred.labels <- names(pred.values)
 
   }
 
   if (!is.null(modx)) {
 
-    modxvals2 <- mod_vals(d = d, modx = modx, modxvals = modxvals,
+    modxvals2 <- mod_vals(d = d, modx = modx, modx.values = modx.values,
                           survey = survey, weights = wts,
                           design = design,
                           modx.labels = modx.labels, any.mod2 = !is.null(mod2),
@@ -828,7 +829,7 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
   if (!is.null(mod2)) {
 
-    mod2vals2 <- mod_vals(d = d, modx = mod2, modxvals = mod2vals,
+    mod2vals2 <- mod_vals(d = d, modx = mod2, modx.values = mod2.values,
                           survey = survey, weights = wts,
                           design = design,
                           modx.labels = mod2.labels, any.mod2 = !is.null(mod2),
@@ -846,7 +847,7 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
   if (facpred == TRUE && !is.numeric(d[[pred]])) {
 
-    d <- drop_factor_levels(d = d, var = pred, values = predvals,
+    d <- drop_factor_levels(d = d, var = pred, values = pred.values,
                             labels = pred.labels)
 
   }
@@ -871,8 +872,9 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
   # Only do this if going to plot points
   if (!is.null(modx)) {
     d <- split_int_data(d = d, modx = modx, mod2 = mod2,
-                        linearity.check = linearity.check, modxvals = modxvals,
-                        modxvals2 = modxvals2, mod2vals = mod2vals,
+                        linearity.check = linearity.check,
+                        modx.values = modx.values,
+                        modxvals2 = modxvals2, mod2.values = mod2.values,
                         mod2vals2 = mod2vals2, facmod = facmod,
                         facmod2 = facmod2)
   }
@@ -896,7 +898,7 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
   }
 
   out <- list(pm = pm, d = d, resp = resp, facmod = facmod,
-              predvals = predvals, pred.labels = pred.labels,
+              pred.values = pred.values, pred.labels = pred.labels,
               modxvals2 = modxvals2, modx.labels = modx.labels,
               mod2vals2 = mod2vals2, mod2.labels = mod2.labels,
               facet.modx = facet.modx)
@@ -904,8 +906,8 @@ prep_data <- function(model, d, pred, modx, mod2, predvals = NULL, modxvals,
 
 }
 
-split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
-                           mod2vals, mod2vals2, facmod, facmod2) {
+split_int_data <- function(d, modx, mod2, linearity.check, modx.values,
+                           modxvals2, mod2.values, mod2vals2, facmod, facmod2) {
 
   if (facmod == FALSE) {
 
@@ -932,7 +934,7 @@ split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
     d["modx_group"] <- cut(d[[modx]], cut_points,
                            labels = names(sort(modxvals2)))
 
-    if (!is.null(modxvals) && modxvals == "terciles") {
+    if (!is.null(modx.values) && modx.values == "terciles") {
       d$modx_group <- factor(cut2(d[[modx]], g = 3, levels.mean = TRUE),
                              labels = c("Lower tercile", "Middle tercile",
                                         "Upper tercile"))
@@ -964,7 +966,7 @@ split_int_data <- function(d, modx, mod2, linearity.check, modxvals, modxvals2,
       d["mod2_group"] <- cut(d[[mod2]], cut_points2,
                           labels = names(sort(mod2vals2)))
 
-      if (!is.null(mod2vals) && mod2vals == "terciles") {
+      if (!is.null(mod2.values) && mod2.values == "terciles") {
         d$mod2_group <- factor(cut2(d[[mod2]], g = 3, levels.mean = TRUE),
                                labels = c(paste("Lower tercile of", mod2),
                                           paste("Middle tercile of", mod2),

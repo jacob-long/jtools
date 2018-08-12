@@ -71,7 +71,7 @@
 #'
 #' * `pred`, `modx`, and `mod2`
 #' * `resp`
-#' * `predvals`, `modxvals`, and `mod2vals`
+#' * `pred.values`, `modx.values`, and `mod2.values`
 #' * `pred.labels`, `modx.labels`, and `mod2.labels`
 #' * `data`
 #' * `interval`
@@ -85,7 +85,7 @@
 plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   resp = NULL, data = NULL, geom = c("point", "line", "bar", "boxplot"),
   plot.points = FALSE, interval = TRUE,
-  predvals = NULL, modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
+  pred.values = NULL, modx.values = NULL, mod2.values = NULL, linearity.check = FALSE,
   facet.modx = FALSE, x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL, legend.main = NULL,
   color.class = NULL, line.thickness = 1.1, vary.lty = NULL, jitter = 0,
@@ -114,11 +114,11 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
     # It ain't elegant and I should probability fix the ones feeding these
     # incorrect names
     if ("modxvals2" %in% names(atts)) {
-      atts$modxvals <- atts$modxvals2
+      atts$modx.values <- atts$modxvals2
       atts <- atts[names(atts) %nin% "modxvals2"]
     }
     if ("mod2vals2" %in% names(atts)) {
-      atts$mod2vals <- atts$mod2vals2
+      atts$mod2.values <- atts$mod2vals2
       atts <- atts[names(atts) %nin% "mod2vals2"]
     }
     if ("weights" %in% names(atts)) {
@@ -136,8 +136,8 @@ plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   }
 
   # Renaming these objects for compatibility with the plotting functions
-  modxvals2 <- modxvals
-  mod2vals2 <- mod2vals
+  modxvals2 <- modx.values
+  mod2vals2 <- mod2.values
 
   if (is.factor(predictions[[pred]]) | is.character(predictions[[pred]]) |
       force.cat == TRUE) {
@@ -254,7 +254,7 @@ plot_mod_continuous <- function(predictions, pred, modx, resp, mod2 = NULL,
   if (length(color.class) == 1 | length(color.class) >= length(modxvals2)) {
     colors <- suppressWarnings(get_colors(color.class, length(modxvals2)))
   } else { # Allow manually defined colors
-    stop("Manually defined colors must be of same length as modxvals.")
+    stop("Manually defined colors must be of same length as modx.values.")
   }
 
   # Manually set linetypes
@@ -614,8 +614,8 @@ plot_effect_continuous <- function(predictions, pred, plot.points = FALSE,
 
 
 plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
-   data = NULL, geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
-   modxvals = NULL, mod2vals = NULL, interval = TRUE, plot.points = FALSE,
+   data = NULL, geom = c("point", "line", "bar", "boxplot"), pred.values = NULL,
+   modx.values = NULL, mod2.values = NULL, interval = TRUE, plot.points = FALSE,
    point.shape = FALSE, vary.lty = FALSE,  pred.labels = NULL,
    modx.labels = NULL, mod2.labels = NULL, x.label = NULL, y.label = NULL,
    main.title = NULL, legend.main = NULL, color.class = "CUD Bright",
@@ -669,7 +669,7 @@ plot_cat <- function(predictions, pred, modx = NULL, mod2 = NULL,
 
   # Deal with numeric predictors coerced into factors
   if (is.numeric(pm[[pred]])) {
-    pred.levels <- if (!is.null(predvals)) {predvals} else {
+    pred.levels <- if (!is.null(pred.values)) {pred.values} else {
       unique(pm[[pred]])
     }
     pred.labels <- if (!is.null(pred.labels)) {pred.labels} else {

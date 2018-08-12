@@ -10,7 +10,7 @@
 #' @param mod2 Optional. The name of the second moderator
 #'  variable involved in the interaction.
 #'
-#' @param modxvals For which values of the moderator should simple slopes
+#' @param modx.values For which values of the moderator should simple slopes
 #'   analysis be performed? Default is \code{NULL}. If \code{NULL}, then the
 #'   values will be the customary +/- 1 standard deviation from the mean as
 #'   well as the mean itself. There is no specific limit on the number of
@@ -28,9 +28,8 @@
 #'   standardized/centered like they could be if your input data had a numeric
 #'   0/1 variable.
 #'
-#' @param mod2vals For which values of the second moderator should the plot be
-#'   facetted by? That is, there will be a separate plot for each level of this
-#'   moderator. Defaults are the same as \code{modxvals}.
+#' @param mod2.values Same as `modx.values`, but for the second moderator
+#' (`mod2`).
 #'
 #' @param centered A vector of quoted variable names that are to be
 #'   mean-centered. If `"all"`, all non-focal predictors as well as
@@ -76,17 +75,20 @@
 #'
 #' @return
 #'
+#'  A list object with the following components:
+#'
 #'  \item{slopes}{A table of coefficients for the focal predictor at each
 #'  value of the moderator}
 #'  \item{ints}{A table of coefficients for the intercept at each value of the
 #'    moderator}
-#'  \item{modxvals}{The values of the moderator used in the analysis}
+#'  \item{modx.values}{The values of the moderator used in the analysis}
 #'  \item{mods}{A list containing each regression model created to estimate
 #'     the conditional coefficients.}
 #'  \item{jn}{If \code{johnson_neyman = TRUE}, a list of `johnson_neyman`
 #'  objects from \code{\link{johnson_neyman}}. These contain the values of the
 #'  interval and the plots. If a 2-way interaction, the list will be of length
-#'  1. Otherwise, there will be 1 `johnson_neyman` object for each value of the
+#'  1. Otherwise, there will be 1 `johnson_neyman` object for each value of
+#'  the
 #'  2nd moderator for 3-way interactions.}
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -140,14 +142,25 @@
 #' @export
 #'
 
-sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
-                       mod2vals = NULL, centered = "all", data = NULL,
+sim_slopes <- function(model, pred, modx, mod2 = NULL, modx.values = NULL,
+                       mod2.values = NULL, centered = "all", data = NULL,
                        cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
                        jnalpha = .05, robust = FALSE,
                        digits = getOption("jtools-digits", default = 2),
                        pvals = TRUE, confint = FALSE, ci.width = .95,
                        cluster = NULL, modx.labels = NULL, mod2.labels = NULL,
                        ...) {
+
+  # Capture extra arguments
+  dots <- list(...)
+  if (length(dots) > 0) {
+    if ("modxvals" %in% names(dots)) {
+      modx.values <- dots$modxvals
+    }
+    if ("mod2vals" %in% names(dots)) {
+      mod2.values <- dots$mod2vals
+    }
+  }
 
   # Allows unquoted variable names
   pred <- as.character(substitute(pred))
@@ -159,8 +172,6 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     mod2vals2 <- NULL
   }
 
-  # Capture extra arguments
-  dots <- list(...)
   if (length(dots) > 0) { # See if there were any extra args
     # Check for deprecated arguments
     ss_dep_check("sim_slopes", dots)
@@ -188,9 +199,9 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
   ss <- structure(ss, digits = digits)
 
-  if (!is.null(modxvals) && !is.vector(modxvals)) {
-    stop("The modxvals argument must be a vector of at least length 2 if it is",
-         " used.")
+  if (!is.null(modx.values) && !is.vector(modx.values)) {
+    stop_wrap("The modx.values argument must be a vector of at least length 2
+              if it is used.")
   }
 
   # Is it a svyglm?
@@ -358,7 +369,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
 
 ### Getting moderator values ##################################################
 
-  modxvals2 <- mod_vals(d, modx, modxvals, survey, wts, design,
+  modxvals2 <- mod_vals(d, modx, modx.values, survey, wts, design,
                         modx.labels = modx.labels,
                         any.mod2 = !is.null(mod2), sims = TRUE)
 
@@ -369,7 +380,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   }
 
   # Now specify def or not (for labeling w/ print method)
-  if (is.character(modxvals) | is.null(modxvals)) {
+  if (is.character(modx.values) | is.null(modx.values)) {
 
     ss <- structure(ss, def = TRUE)
 
@@ -385,18 +396,18 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (!is.null(mod2)) {
 
     if (!is.factor(d[[mod2]])) {
-      mod2vals2 <- mod_vals(d, mod2, mod2vals, survey, wts, design,
+      mod2vals2 <- mod_vals(d, mod2, mod2.values, survey, wts, design,
                             modx.labels = mod2.labels, any.mod2 = !is.null(mod2),
                             sims = TRUE)
     } else {
 
-      if (is.null(mod2vals)) {
+      if (is.null(mod2.values)) {
         mod2vals2 <- levels(d[[mod2]])
       } else {
-        if (all(mod2vals %in% levels(d[[mod2]]))) {
-          mod2vals2 <- mod2vals
+        if (all(mod2.values %in% levels(d[[mod2]]))) {
+          mod2vals2 <- mod2.values
         } else {
-          warn_wrap("mod2vals argument must include only levels of the
+          warn_wrap("mod2.values argument must include only levels of the
                     factor. Using all factor levels instead.", call. = FALSE)
           mod2vals2 <- levels(d[[mod2]])
         }
@@ -405,7 +416,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     }
 
     # Now specify def or not
-    if (is.character(mod2vals) | is.null(mod2vals)) {
+    if (is.character(mod2.values) | is.null(mod2.values)) {
 
       ss <- structure(ss, def2 = TRUE)
 
@@ -644,7 +655,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   } # end mod2 loop
 
 
-    ss <- structure(ss, modxvals = modxvals2, robust = robust,
+    ss <- structure(ss, modx.values = modxvals2, robust = robust,
                     cond.int = cond.int, johnson_neyman = johnson_neyman,
                     jnplot = jnplot, jns = jns, confint = confint,
                     ci.width = ci.width)
@@ -655,7 +666,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
     if (!is.null(mod2)) {
       ss$slopes <- mats
       ss$ints <- imats
-      ss <- structure(ss, mod2vals = mod2vals2)
+      ss <- structure(ss, mod2.values = mod2vals2)
     } else {
       ss$slopes <- retmat
       ss$ints <- retmati
@@ -670,7 +681,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modxvals = NULL,
   if (!is.null(mod2) & johnson_neyman == TRUE & jnplot == TRUE) {
 
     # plots <- as.list(rep(NA, length(mod2vals) + 2))
-    plots <- as.list(rep(NA, length(mod2vals)))
+    plots <- as.list(rep(NA, length(mod2.values)))
     the_legend <- NULL
 
     for (j in seq_along(jns)) {
@@ -770,7 +781,7 @@ print.sim_slopes <- function(x, ...) {
   # This helps deal with the fact sometimes mod2vals has no length, so we want
   # to loop just once
   if (!is.null(x$mod2)) {
-    length <- length(x$mod2vals)
+    length <- length(x$mod2.values)
   } else {
     length <- 1
   }
@@ -793,20 +804,20 @@ print.sim_slopes <- function(x, ...) {
         m$ints <- m$ints[names(m$ints) %nin% unlist(make_ci_labs(x$ci.width))]
       }
 
-      if (class(x$mod2vals) != "character") {
-        x$mod2vals <- format(x$mod2vals, nsmall = x$digits, digits = 0)
+      if (class(x$mod2.values) != "character") {
+        x$mod2.values <- format(x$mod2.values, nsmall = x$digits, digits = 0)
       }
 
       # Printing output to make it clear where each batch of second moderator
       # slopes begins
       if (x$def2 == FALSE) {
         cat(rule(center = paste0("While ", x$mod2, " (2nd moderator) ",
-                               "= ", x$mod2vals[j]), line = "bar8"), "\n\n")
+                               "= ", x$mod2.values[j]), line = "bar8"), "\n\n")
       } else {
         # If the user went with default +/- SD or used a factor variable,
         # we use the labels
         cat(rule(center = paste0("While ", x$mod2, " (2nd moderator)", " = ",
-                 x$mod2vals[j], " (", names(x$mod2vals)[j], ")"),
+                 x$mod2.values[j], " (", names(x$mod2.values)[j], ")"),
                  line = "bar8"), "\n\n")
       }
 
@@ -841,10 +852,10 @@ print.sim_slopes <- function(x, ...) {
     # Clearly label simple slopes
     cat(bold(underline("SIMPLE SLOPES ANALYSIS")), "\n\n")
 
-    for (i in seq_along(x$modxvals)) {
+    for (i in seq_along(x$modx.values)) {
 
-      if (class(x$modxvals) != "character") {
-        x$modxvals <- format(x$modxvals, nsmall = x$digits, digits = 0)
+      if (class(x$modx.values) != "character") {
+        x$modx.values <- format(x$modx.values, nsmall = x$digits, digits = 0)
       }
 
       # Use the labels for the automatic +/- 1 SD
@@ -855,7 +866,7 @@ print.sim_slopes <- function(x, ...) {
             check.names = FALSE)
 
         cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
-            x$modxvals[i], " (", names(x$modxvals)[i], ")",
+            x$modx.values[i], " (", names(x$modx.values)[i], ")",
             ": \n")))
         print(format(slopes, nsmall = x$digits, digits = 0),
               row.names = FALSE)
@@ -867,7 +878,7 @@ print.sim_slopes <- function(x, ...) {
                     check.names = FALSE)
 
           cat(italic(paste0("Conditional intercept"," when ", x$modx, " = ",
-              x$modxvals[i], " (", names(x$modxvals)[i], ")",
+              x$modx.values[i], " (", names(x$modx.values)[i], ")",
               ": \n")))
           print(format(ints, nsmall = x$digits, digits = 0),
                 row.names = FALSE)
@@ -881,7 +892,7 @@ print.sim_slopes <- function(x, ...) {
             check.names = FALSE)
 
         cat(italic(paste0("Slope of ", x$pred, " when ", x$modx, " = ",
-            x$modxvals[i],
+            x$modx.values[i],
             ": \n")))
         print(format(slopes, nsmall = x$digits, digits = 0), row.names = FALSE)
 
@@ -892,7 +903,7 @@ print.sim_slopes <- function(x, ...) {
                     check.names = FALSE)
 
           cat(italic(paste0("Conditional intercept", " when ", x$modx, " = ",
-              x$modxvals[i], ": \n")))
+              x$modx.values[i], ": \n")))
           print(format(ints, nsmall = x$digits, digits = 0), row.names = FALSE)
           cat("\n")
         } else {cat("\n")}
@@ -977,7 +988,7 @@ tidy.sim_slopes <- function(x, conf.level = .95, ...) {
   # Do the same for moderator 2 if any
   if (any_mod2 == TRUE) {
     base$mod2 <- atts$mod2
-    base$mod2.value <- unlist(lapply(atts$mod2vals, function(y) {
+    base$mod2.value <- unlist(lapply(atts$mod2.values, function(y) {
       rep(y, nrow(x$slopes[[1]]))
     }))
 
@@ -1053,6 +1064,13 @@ make_table <- function(df, format = "{estimate} ({std.error})",
                                       `#` = .1),
                        digits = getOption("jtools-digits", 2)) {
 
+  # Get the predictor variable name
+  pred.name <- attr(df, "pred")
+
+  df <- as.data.frame(lapply(df, function(x) {
+    if (is.numeric(x)) {as.numeric(num_print(x, digits))} else {x}
+  }))
+
   # Quick function to create asterisks
   return_asterisk <- function(x, levels) {
     if (is.null(levels)) {return("")}
@@ -1075,15 +1093,13 @@ make_table <- function(df, format = "{estimate} ({std.error})",
   # Create new DF with the minimal information
   df2 <- data.frame(
     # Moderator value
-    modx.value = df$modx.value,
+    modx.value = num_print(df$modx.value, digits),
     # Formatted slope
     slope = glue::glue_data(.x = df, format),
     # 2nd moderator value (gets dropped later)
     mod2.value = df$mod2.value
   )
 
-  # Get the predictor variable name
-  pred.name <- attr(df, "pred")
   # Add "slope of"
   pred.name <- paste("Slope of", pred.name)
 

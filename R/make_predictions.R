@@ -28,7 +28,7 @@ make_predictions <- function(model, ...) {
 #' @param mod2 Optional. The name of the second moderator
 #'  variable involved in the interaction. This can be a bare name or string.
 #'
-#' @param predvals Which values of the predictor should be included in the
+#' @param pred.values Which values of the predictor should be included in the
 #'   plot? By default, all levels are included.
 #'
 #' @param preds.per.level For continuous predictors, a series of equally
@@ -52,9 +52,9 @@ make_predictions <- function(model, ...) {
 #' @export
 
 make_predictions.default <-
-  function(model, pred, predvals = NULL,
-           modx = NULL, modxvals = NULL,
-           mod2 = NULL, mod2vals = NULL,
+  function(model, pred, pred.values = NULL,
+           modx = NULL, modx.values = NULL,
+           mod2 = NULL, mod2.values = NULL,
            centered = "all", data = NULL, plot.points = FALSE, interval = FALSE,
            int.width = .95, outcome.scale = "response", linearity.check = FALSE,
            robust = FALSE, cluster = NULL, vcov = NULL, set.offset = 1,
@@ -67,8 +67,8 @@ make_predictions.default <-
 
   # This internal function has side effects that create
   # objects in this environment
-  data_checks(model = model, data = data, predvals = predvals,
-              modxvals = modxvals, mod2vals = mod2vals,
+  data_checks(model = model, data = data, pred.values = pred.values,
+              modx.values = modx.values, mod2.values = mod2.values,
               pred.labels = pred.labels, modx.labels = modx.labels,
               mod2.labels = mod2.labels)
 
@@ -84,7 +84,8 @@ make_predictions.default <-
 #### Prep data for predictions ##############################################
 
   prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
-                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       mod2 = mod2, modx.values = modx.values,
+                       mod2.values = mod2.values,
                        survey = FALSE, modx.labels = modx.labels,
                        mod2.labels = mod2.labels, wname = wname,
                        weights = weights, wts = wts,
@@ -92,7 +93,7 @@ make_predictions.default <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels,
+                       pred.values = pred.values, pred.labels = pred.labels,
                        force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
@@ -221,8 +222,8 @@ make_predictions.default <-
 #' @export
 
 make_predictions.svyglm <-
-  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
-    mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+  function(model, pred, pred.values = NULL, modx = NULL, modx.values = NULL,
+    mod2 = NULL, mod2.values = NULL, centered = "all", data = NULL,
     plot.points = FALSE, interval = FALSE, int.width = .95,
     outcome.scale = "response", linearity.check = FALSE, set.offset = 1,
     pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
@@ -265,7 +266,7 @@ make_predictions.svyglm <-
 #### Prep data for predictions ##############################################
 
   prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
-                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       mod2 = mod2, modx.values = modx.values, mod2.values = mod2.values,
                        survey = TRUE, modx.labels = modx.labels,
                        mod2.labels = mod2.labels, wname = wname,
                        weights = weights, wts = wts,
@@ -273,7 +274,7 @@ make_predictions.svyglm <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels,
+                       pred.values = pred.values, pred.labels = pred.labels,
                        force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
@@ -409,8 +410,8 @@ make_predictions.svyglm <-
 #' @export
 
 make_predictions.merMod <-
-  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
-           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+  function(model, pred, pred.values = NULL, modx = NULL, modx.values = NULL,
+           mod2 = NULL, mod2.values = NULL, centered = "all", data = NULL,
            plot.points = FALSE, interval = FALSE,
            int.width = .95, outcome.scale = "response", add.re.variance = FALSE,
            linearity.check = FALSE,
@@ -424,15 +425,15 @@ make_predictions.merMod <-
 
   # This internal function has side effects that create
   # objects in this environment
-  data_checks(model = model, data = data, predvals = predvals,
-              modxvals = modxvals, mod2vals = mod2vals,
+  data_checks(model = model, data = data, pred.values = pred.values,
+              modx.values = modx.values, mod2.values = mod2.values,
               pred.labels = pred.labels, modx.labels = modx.labels,
               mod2.labels = mod2.labels)
 
 #### Prep data for predictions ##############################################
 
   prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
-                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       mod2 = mod2, modx.values = modx.values, mod2.values = mod2.values,
                        survey = FALSE, modx.labels = modx.labels,
                        mod2.labels = mod2.labels, wname = wname,
                        weights = weights, wts = wts,
@@ -440,7 +441,7 @@ make_predictions.merMod <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels,
+                       pred.values = pred.values, pred.labels = pred.labels,
                        force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
@@ -607,8 +608,8 @@ make_predictions.merMod <-
 #' @export
 
 make_predictions.stanreg <-
-  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
-           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+  function(model, pred, pred.values = NULL, modx = NULL, modx.values = NULL,
+           mod2 = NULL, mod2.values = NULL, centered = "all", data = NULL,
            plot.points = FALSE, interval = TRUE,
            int.width = .95, estimate = "mean", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
@@ -620,15 +621,15 @@ make_predictions.stanreg <-
 
     # This internal function has side effects that create
     # objects in this environment
-    data_checks(model = model, data = data, predvals = predvals,
-                modxvals = modxvals, mod2vals = mod2vals,
+    data_checks(model = model, data = data, pred.values = pred.values,
+                modx.values = modx.values, mod2.values = mod2.values,
                 pred.labels = pred.labels, modx.labels = modx.labels,
                 mod2.labels = mod2.labels)
 
 #### Prep data for predictions ##############################################
 
     prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
-                         mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                         mod2 = mod2, modx.values = modx.values, mod2.values = mod2.values,
                          survey = FALSE, modx.labels = modx.labels,
                          mod2.labels = mod2.labels, wname = wname,
                          weights = weights, wts = wts,
@@ -636,7 +637,7 @@ make_predictions.stanreg <-
                          interval = interval, set.offset = set.offset,
                          facvars = facvars, centered = centered,
                          preds.per.level = preds.per.level,
-                         predvals = predvals, pred.labels = pred.labels,
+                         pred.values = pred.values, pred.labels = pred.labels,
                          force.cat = force.cat, facet.modx = facet.modx)
 
     pm <- prepped$pm
@@ -751,8 +752,8 @@ make_predictions.stanreg <-
 #' @export
 
 make_predictions.brmsfit <-
-  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
-           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+  function(model, pred, pred.values = NULL, modx = NULL, modx.values = NULL,
+           mod2 = NULL, mod2.values = NULL, centered = "all", data = NULL,
            plot.points = FALSE, interval = TRUE,
            int.width = .95, estimate = "mean", linearity.check = FALSE,
            set.offset = 1, pred.labels = NULL, modx.labels = NULL,
@@ -764,15 +765,15 @@ make_predictions.brmsfit <-
 
   # This internal function has side effects that create
   # objects in this environment
-  data_checks(model = model, data = data, predvals = predvals,
-              modxvals = modxvals, mod2vals = mod2vals,
+  data_checks(model = model, data = data, pred.values = pred.values,
+              modx.values = modx.values, mod2.values = mod2.values,
               pred.labels = pred.labels, modx.labels = modx.labels,
               mod2.labels = mod2.labels)
 
   #### Prep data for predictions ##############################################
 
   prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
-                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       mod2 = mod2, modx.values = modx.values, mod2.values = mod2.values,
                        survey = FALSE, modx.labels = modx.labels,
                        mod2.labels = mod2.labels, wname = wname,
                        weights = weights, wts = wts,
@@ -780,7 +781,7 @@ make_predictions.brmsfit <-
                        interval = interval, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels,
+                       pred.values = pred.values, pred.labels = pred.labels,
                        force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
@@ -895,8 +896,8 @@ make_predictions.brmsfit <-
 #' @export
 
 make_predictions.rq <-
-  function(model, pred, predvals = NULL, modx = NULL, modxvals = NULL,
-           mod2 = NULL, mod2vals = NULL, centered = "all", data = NULL,
+  function(model, pred, pred.values = NULL, modx = NULL, modx.values = NULL,
+           mod2 = NULL, mod2.values = NULL, centered = "all", data = NULL,
            plot.points = FALSE, int.width = .95, outcome.scale = "response",
            linearity.check = FALSE, set.offset = 1,
            pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
@@ -916,15 +917,15 @@ make_predictions.rq <-
 
   # This internal function has side effects that create
   # objects in this environment
-  data_checks(model = model, data = data, predvals = predvals,
-              modxvals = modxvals, mod2vals = mod2vals,
+  data_checks(model = model, data = data, pred.values = pred.values,
+              modx.values = modx.values, mod2.values = mod2.values,
               pred.labels = pred.labels, modx.labels = modx.labels,
               mod2.labels = mod2.labels)
 
 #### Prep data for predictions ##############################################
 
   prepped <- prep_data(model = model, d = d, pred = pred, modx = modx,
-                       mod2 = mod2, modxvals = modxvals, mod2vals = mod2vals,
+                       mod2 = mod2, modx.values = modx.values, mod2.values = mod2.values,
                        survey = FALSE, modx.labels = modx.labels,
                        mod2.labels = mod2.labels, wname = wname,
                        weights = weights, wts = wts,
@@ -932,7 +933,7 @@ make_predictions.rq <-
                        interval = TRUE, set.offset = set.offset,
                        facvars = facvars, centered = centered,
                        preds.per.level = preds.per.level,
-                       predvals = predvals, pred.labels = pred.labels,
+                       pred.values = pred.values, pred.labels = pred.labels,
                        force.cat = force.cat, facet.modx = facet.modx)
 
   pm <- prepped$pm
