@@ -282,6 +282,117 @@ print.summ.rq <- function(x, ...) {
 
 }
 
+#' @rdname knit_print.summ
+#' @export knit_print.summ.rq
+#'
+
+knit_print.summ.rq <- function(x, options = NULL, ...) {
+
+  if (!requireNamespace("huxtable")) {
+    return(knitr::normal_print(x))
+  }
+
+  if (length(options) > 0) {
+    if ("width" %in% names(options)) {
+      width <- options$width
+    } else {
+      width <- .2
+    }
+  }
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+
+  context <- huxtable::guess_knitr_output_format()
+  if (context == "") {context <- "screen"}
+
+  if (x$model.info == TRUE) {
+    method <-
+      switch(j$model$method,
+             "br" = "Barrodale-Roberts",
+             "fn" = "Frisch-Newton",
+             "pfn" = "Frisch-Newton (after pre-processing)",
+             "sfn" = "Frisch-Newton (sparse algebra)",
+             "lasso" = "lasso",
+             "scad" = "Fan-Li SCAD",
+             "fnc" = "Frisch-Newton (user-specified equality constraints)")
+
+    mod_info <-
+      mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                    type = "Quantile regression")
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+    mod_meta <- data.frame(
+      datum = c("Observations", "Dependent variable", "Type",
+                "  Quantile (tau)", "  Method"
+                ),
+      value = c(obs, mod_info$dv, mod_info$type, j$model$tau, method)
+    )
+    mod_meta <- huxtable::as_huxtable(mod_meta)
+    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+                          use_colnames = FALSE, width = width)
+    out <- format(mod_meta, output = context)
+  } else {
+    out <- NULL
+  }
+
+  if (x$model.fit == T && !is.null(x$modpval)) {
+    stats <- paste(italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
+                   num_print(x$r1, digits = x$digits), sep = "")
+    stats <- data.frame(stat = c(paste0("R\u00B9 ", "(", j$model$tau, ")")),
+                        value = c(num_print(x$r1, digits = x$digits))
+    )
+    stats <- huxtable::as_huxtable(stats)
+    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+                       width = width)
+    out <- paste(out, format(stats, output = context), "\n\n")
+
+  }
+
+  se_name <- switch(x$se,
+                    "iid" = "IID",
+                    "nid" = "Sandwich (Huber)",
+                    "ker" = "Sandwich (kernel)",
+                    "boot" = "bootstrap",
+                    "rank" = "Koenker rank test")
+  se_info <- get_se_info(x$robust, x$use_cluster, manual = se_name)
+  # Notifying user if variables altered from original fit
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+  cap <- paste0("Standard errors: ", se_info, ss)
+
+  ctable <- huxtable::as_huxtable(ctable)
+  ast_index <- which(names(ctable) == "")
+  ctable <- huxtable::add_rownames(ctable, '')
+  if (length(ast_index) == 1) {
+    colnames(ctable)[ast_index + 1] <- ""
+  }
+  ctable <- hux_theme(ctable, width = width)
+  if (length(ast_index == 1)) {
+    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+                                  col = ast_index + 1, "left")
+  }
+  ctable <- huxtable::add_footnote(ctable, cap)
+
+  out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  knitr::asis_output(out)
+  # ctable <- knitr::kable(ctable, caption = cap)
+  # ctable <- paste(c(
+  #   if (!(attr(ctable, "format") %in% c("html", "latex"))) {
+  #     c("", "", ctable, "\n")
+  #   }), collapse = "\n")
+  # knitr::asis_output(ctable)
+  # class(ctable) <- "knit_asis"
+
+}
+
 #' @export glance.summ.rq
 #' @rdname glance.summ
 

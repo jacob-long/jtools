@@ -494,15 +494,24 @@ print.summ.lm <- function(x, ...) {
 #' @description There's no reason for end users to utilize these functions,
 #' but CRAN requires it to be documented.
 #' @param x The `summ` object
+#' @param options Chunk options.
 #' @param ... Ignored.
-#' @rdname knit_print
+#' @rdname knit_print.summ
 #' @export knit_print.summ.lm
 #'
 
-knit_print.summ.lm <- function(x, ...) {
+knit_print.summ.lm <- function(x, options = NULL, ...) {
 
   if (!requireNamespace("huxtable")) {
     return(knitr::normal_print(x))
+  }
+
+  if (length(options) > 0) {
+    if ("width" %in% names(options)) {
+      width <- options$width
+    } else {
+      width <- .2
+    }
   }
 
   # saving input object as j
@@ -529,14 +538,9 @@ knit_print.summ.lm <- function(x, ...) {
       datum = c("Observations", "Dependent variable", "Type"),
       value = c(obs, mod_info$dv, mod_info$type)
     )
-    mod_meta <- huxtable::as_huxtable(mod_meta, caption = "Model Info")
-    mod_meta <- huxtable::theme_striped(mod_meta, header_row = FALSE,
-                                        header_col = FALSE)
-    mod_meta <- huxtable::set_bold(mod_meta, 1:nrow(mod_meta), 1, TRUE)
-    mod_meta <- huxtable::insert_row(mod_meta, "Model info", NA)
-    mod_meta <- huxtable::set_bottom_border(mod_meta, col = 1:2,
-                                            row = c(1, nrow(mod_meta)), 1)
-    mod_meta <- huxtable::set_colspan(mod_meta, row = 1, col = 1, 2)
+    mod_meta <- huxtable::as_huxtable(mod_meta)
+    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+                          use_colnames = FALSE, width = width)
     out <- format(mod_meta, output = context)
   } else {
     out <- NULL
@@ -550,13 +554,8 @@ knit_print.summ.lm <- function(x, ...) {
                        num_print(x$arsq, digits = x$digits))
                   )
     stats <- huxtable::as_huxtable(stats)
-    stats <- huxtable::theme_striped(stats, header_row = FALSE,
-                                        header_col = FALSE)
-    stats <- huxtable::set_bold(stats, 1:nrow(stats), 1, TRUE)
-    stats <- huxtable::insert_row(stats, "Model fit", NA)
-    stats <- huxtable::set_bottom_border(stats, col = 1:2,
-                                         row = c(1, nrow(stats)), 1)
-    stats <- huxtable::set_colspan(stats, row = 1, col = 1, 2)
+    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+                       width = width)
     out <- paste(out, format(stats, output = context), "\n\n")
 
   }
@@ -565,7 +564,7 @@ knit_print.summ.lm <- function(x, ...) {
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
-  cap <- paste("Standard errors:", se_info, ss)
+  cap <- paste0("Standard errors: ", se_info, ss)
 
   ctable <- huxtable::as_huxtable(ctable)
   ast_index <- which(names(ctable) == "")
@@ -573,23 +572,11 @@ knit_print.summ.lm <- function(x, ...) {
   if (length(ast_index) == 1) {
     colnames(ctable)[ast_index + 1] <- ""
   }
-  ctable <- huxtable::add_colnames(ctable)
-  ctable <- huxtable::theme_striped(ctable, header_row = FALSE,
-                                    header_col = FALSE)
-  ctable <- huxtable::set_bold(ctable, row = 1:nrow(ctable), col = 1,
-                               value = TRUE)
-  ctable <- huxtable::set_bold(ctable, row = 1, col = 1:ncol(ctable),
-                               value = TRUE)
-  ctable <- huxtable::set_bottom_border(ctable, row = 1, col = 1:ncol(ctable),
-                                        1)
-  ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                col = 2:ncol(ctable), "right")
-  ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable), col = 1, "left")
+  ctable <- hux_theme(ctable, width = width)
   if (length(ast_index == 1)) {
     ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
                                   col = ast_index + 1, "left")
   }
-  ctable <- huxtable::set_align(ctable, row = 1, col = 1:ncol(ctable), "center")
   ctable <- huxtable::add_footnote(ctable, cap)
 
   out <- paste(out, format(ctable, output = context), sep = "\n\n")
@@ -967,12 +954,20 @@ print.summ.glm <- function(x, ...) {
 
 
 #' @export knit_print.summ.glm
-#' @rdname knit_print
+#' @rdname knit_print.summ
 
-knit_print.summ.glm <- function(x, ...) {
+knit_print.summ.glm <- function(x, options = NULL, ...) {
 
   if (!requireNamespace("huxtable")) {
     return(knitr::normal_print(x))
+  }
+
+  if (length(options) > 0) {
+    if ("width" %in% names(options)) {
+      width <- options$width
+    } else {
+      width <- .2
+    }
   }
 
   # saving input object as j
@@ -1013,14 +1008,9 @@ knit_print.summ.glm <- function(x, ...) {
       )
     }
 
-    mod_meta <- huxtable::as_huxtable(mod_meta, caption = "Model Info")
-    mod_meta <- huxtable::theme_striped(mod_meta, header_row = FALSE,
-                                        header_col = FALSE)
-    mod_meta <- huxtable::set_bold(mod_meta, 1:nrow(mod_meta), 1, TRUE)
-    mod_meta <- huxtable::insert_row(mod_meta, "Model info", NA)
-    mod_meta <- huxtable::set_bottom_border(mod_meta, col = 1:2,
-                                            row = c(1, nrow(mod_meta)), 1)
-    mod_meta <- huxtable::set_colspan(mod_meta, row = 1, col = 1, 2)
+    mod_meta <- huxtable::as_huxtable(mod_meta)
+    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+                          use_colnames = FALSE, width = width)
     out <- format(mod_meta, output = context)
   } else {
     out <- NULL
@@ -1038,13 +1028,8 @@ knit_print.summ.glm <- function(x, ...) {
                                   num_print(x$bic, x$digits))
     )
     stats <- huxtable::as_huxtable(stats)
-    stats <- huxtable::theme_striped(stats, header_row = FALSE,
-                                     header_col = FALSE)
-    stats <- huxtable::set_bold(stats, 1:nrow(stats), 1, TRUE)
-    stats <- huxtable::insert_row(stats, "Model fit", NA)
-    stats <- huxtable::set_bottom_border(stats, col = 1:2,
-                                         row = c(1, nrow(stats)), 1)
-    stats <- huxtable::set_colspan(stats, row = 1, col = 1, 2)
+    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+                       width = width)
     out <- paste(out, format(stats, output = context), "\n\n")
 
   }
@@ -1053,7 +1038,7 @@ knit_print.summ.glm <- function(x, ...) {
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
-  cap <- paste("Standard errors:", se_info, ss)
+  cap <- paste0("Standard errors: ", se_info, ss)
 
   ctable <- huxtable::as_huxtable(ctable)
   ast_index <- which(names(ctable) == "")
@@ -1061,23 +1046,11 @@ knit_print.summ.glm <- function(x, ...) {
   if (length(ast_index) == 1) {
     colnames(ctable)[ast_index + 1] <- ""
   }
-  ctable <- huxtable::add_colnames(ctable)
-  ctable <- huxtable::theme_striped(ctable, header_row = FALSE,
-                                    header_col = FALSE)
-  ctable <- huxtable::set_bold(ctable, row = 1:nrow(ctable), col = 1,
-                               value = TRUE)
-  ctable <- huxtable::set_bold(ctable, row = 1, col = 1:ncol(ctable),
-                               value = TRUE)
-  ctable <- huxtable::set_bottom_border(ctable, row = 1, col = 1:ncol(ctable),
-                                        1)
-  ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                col = 2:ncol(ctable), "right")
-  ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable), col = 1, "left")
+  ctable <- hux_theme(ctable, width = width)
   if (length(ast_index == 1)) {
     ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
                                   col = ast_index + 1, "left")
   }
-  ctable <- huxtable::set_align(ctable, row = 1, col = 1:ncol(ctable), "center")
   ctable <- huxtable::add_footnote(ctable, cap)
 
   out <- paste(out, format(ctable, output = context), sep = "\n\n")
@@ -1473,6 +1446,116 @@ print.summ.svyglm <- function(x, ...) {
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
   if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+
+}
+
+#' @export knit_print.summ.svyglm
+#' @rdname knit_print.summ
+
+knit_print.summ.svyglm <- function(x, options = NULL, ...) {
+
+  if (!requireNamespace("huxtable")) {
+    return(knitr::normal_print(x))
+  }
+
+  if (length(options) > 0) {
+    if ("width" %in% names(options)) {
+      width <- options$width
+    } else {
+      width <- .2
+    }
+  }
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+
+  context <- huxtable::guess_knitr_output_format()
+  if (context == "") {context <- "screen"}
+
+  if (x$model.info == TRUE) {
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      type <- "Survey-weighted linear regression"
+    } else {
+      type <- "Survey-weighted generalized linear model"
+    }
+    mod_info <- mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                              type = type)
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+
+    if (type != "Survey-weighted linear regression") {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type", "Family",
+                  "Link"),
+        value = c(obs, mod_info$dv, mod_info$type, x$lmFamily[[1]],
+                  x$lmFamily[[2]])
+      )
+    } else {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type"),
+        value = c(obs, mod_info$dv, mod_info$type)
+      )
+    }
+
+    mod_meta <- huxtable::as_huxtable(mod_meta)
+    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+                          use_colnames = FALSE, width = width)
+    out <- format(mod_meta, output = context)
+  } else {
+    out <- NULL
+  }
+
+  if (x$model.fit == T) {
+
+    if (type != "Survey-weighted linear regression") {
+      stats <- data.frame(stat = c("Pseudo-R\u00B2 (Cragg-Uhler)",
+                                   "Pseudo-R\u00B2 (McFadden)",
+                                   "AIC"),
+                          value = c(num_print(x$rsq, digits = x$digits),
+                                    num_print(x$rsqmc, digits = x$digits),
+                                    num_print(x$aic, x$digits))
+                          )
+    } else {
+      stats <- data.frame(stat = c("R\u00B2", "Adj. R\u00B2"),
+                          value = c(num_print(x$rsq, digits = x$digits),
+                                    num_print(x$arsq, digits = x$digits))
+      )
+    }
+
+    stats <- huxtable::as_huxtable(stats)
+    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+                       width = width)
+    out <- paste(out, format(stats, output = context), "\n\n")
+
+  }
+
+  # Notifying user if variables altered from original fit
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+  cap <- paste0("Standard errors: Robust", ss)
+
+  ctable <- huxtable::as_huxtable(ctable)
+  ast_index <- which(names(ctable) == "")
+  ctable <- huxtable::add_rownames(ctable, '')
+  if (length(ast_index) == 1) {
+    colnames(ctable)[ast_index + 1] <- ""
+  }
+  ctable <- hux_theme(ctable, width = width)
+  if (length(ast_index == 1)) {
+    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+                                  col = ast_index + 1, "left")
+  }
+  ctable <- huxtable::add_footnote(ctable, cap)
+
+  out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  knitr::asis_output(out)
 
 }
 
@@ -2082,6 +2165,170 @@ print.summ.merMod <- function(x, ...) {
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
   if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+
+}
+
+#' @export knit_print.summ.merMod
+#' @rdname knit_print.summ
+
+knit_print.summ.merMod <- function(x, options = NULL, ...) {
+
+  if (!requireNamespace("huxtable")) {
+    return(knitr::normal_print(x))
+  }
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  if (length(options) > 0) {
+    if ("width" %in% names(options)) {
+      width <- options$width
+    } else {
+      width <- .2
+    }
+  }
+
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+
+  context <- huxtable::guess_knitr_output_format()
+  if (context == "") {context <- "screen"}
+
+  if (x$model.info == TRUE) {
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      type <- "Mixed effects linear regression"
+    } else {
+      type <- "Mixed effects generalized linear model"
+    }
+    mod_info <- mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                              type = type)
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+
+    if (type != "Mixed effects linear regression") {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type", "Family",
+                  "Link"),
+        value = c(obs, mod_info$dv, mod_info$type, x$lmFamily[[1]],
+                  x$lmFamily[[2]])
+      )
+    } else {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type"),
+        value = c(obs, mod_info$dv, mod_info$type)
+      )
+    }
+
+    mod_meta <- huxtable::as_huxtable(mod_meta)
+    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+                          use_colnames = FALSE, width = width)
+    out <- format(mod_meta, output = context)
+  } else {
+    out <- NULL
+  }
+
+  if (x$model.fit == T) {
+
+    stats <- data.frame(stat = c("AIC", "BIC"),
+                        value = c(num_print(x$aic, x$digits),
+                                  num_print(x$bic, x$digits))
+    )
+
+    if (x$r.squared == TRUE) {
+      stats <- data.frame(stat = c("AIC", "BIC",
+                                   "Pseudo-R\u00B2 (fixed effects)",
+                                   "Pseudo-R\u00B2 (total)"),
+                          value = c(num_print(x$aic, x$digits),
+                                    num_print(x$bic, x$digits),
+                                    num_print(x$rsq$Marginal, x$digits),
+                                    num_print(x$rsq$Conditional, x$digits))
+      )
+    }
+
+    stats <- huxtable::as_huxtable(stats)
+    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+                       width = width)
+    out <- paste(out, format(stats, output = context), "\n\n")
+
+  }
+
+  cap <- NULL
+
+  # Handling p-value explanation
+  if (x$pvals == TRUE & lme4::isLMM(j$model)) {
+
+    if (x$p_calc == "residual") {
+
+      p_stmt <- paste("Note: p values calculated based on residual d.f. =",
+                      x$df)
+
+      if (is.null(x$t.df)) {
+        msg_wrap("Using p values with lmer based on residual d.f. may inflate
+                the Type I error rate in many common study designs.
+                Install package \"lmerTest\" and/or \"pbkrtest\" to get more
+                accurate p values.", brk = "\n")
+      }
+
+    } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
+
+      p_stmt <- paste("p values calculated using Kenward-Roger standard",
+                      "errors and d.f.")
+
+    } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
+
+      p_stmt <- paste("p values calculated using Satterthwaite d.f.")
+
+    } else if (x$p_calc == "manual") {
+
+      p_stmt <- paste("Note: p values calculated based on user-defined d.f. =",
+                      x$df)
+
+    }
+
+    cap <- paste(cap, p_stmt)
+
+  }
+
+  # Notifying user if variables altered from original fit
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste0("; ", ss)} else {ss}
+  cap <- paste(cap, ss)
+
+  ctable <- huxtable::as_huxtable(ctable)
+  ast_index <- which(names(ctable) == "")
+  ctable <- huxtable::add_rownames(ctable, '')
+  if (length(ast_index) == 1) {
+    colnames(ctable)[ast_index + 1] <- ""
+  }
+  ctable <- hux_theme(ctable, caption = "Fixed Effects", width = width)
+  if (length(ast_index == 1)) {
+    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+                                  col = ast_index + 1, "left")
+  }
+  # ctable <- huxtable::set_align(ctable, row = 1, col = 1:ncol(ctable), "center")
+  if (!is.null(cap)) {
+    ctable <- huxtable::add_footnote(ctable, cap)
+  }
+
+  rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
+  rtable <- huxtable::as_huxtable(rtable)
+  rtable <- hux_theme(rtable, align_body = "center", caption = "Random Effects",
+                      width = width)
+
+  gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
+  gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
+  gtable <- huxtable::as_huxtable(gtable)
+  gtable <- hux_theme(gtable, align_body = "center",
+                      caption = "Grouping Variables", width = width)
+
+  out <- paste(out, format(ctable, output = context),
+               format(rtable, output = context),
+               format(gtable, output = context), sep = "\n\n")
+  knitr::asis_output(out)
 
 }
 
