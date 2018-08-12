@@ -67,3 +67,4 @@ Other survey tools: \code{\link{svycor}},
   \code{\link{svysd}}, \code{\link{weights_tests}},
   \code{\link{wgttest}}
 }
+\concept{survey tools}

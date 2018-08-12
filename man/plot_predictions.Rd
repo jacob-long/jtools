@@ -5,15 +5,16 @@
 \title{Plot predicted effects from make_predictions}
 \usage{
 plot_predictions(predictions, pred = NULL, modx = NULL, mod2 = NULL,
-  resp = NULL, data = NULL, geom = c("point", "line", "bar", "boxplot"),
-  plot.points = FALSE, interval = TRUE, predvals = NULL,
-  modxvals = NULL, mod2vals = NULL, linearity.check = FALSE,
-  facet.modx = FALSE, x.label = NULL, y.label = NULL,
-  pred.labels = NULL, modx.labels = NULL, mod2.labels = NULL,
-  main.title = NULL, legend.main = NULL, color.class = NULL,
-  line.thickness = 1.1, vary.lty = NULL, jitter = 0, weights = NULL,
-  rug = FALSE, rug.sides = "b", force.cat = FALSE, point.shape = FALSE,
-  geom.alpha = NULL, dodge.width = NULL, errorbar.width = NULL,
+  resp = NULL, data = NULL, geom = c("point", "line", "bar",
+  "boxplot"), plot.points = FALSE, interval = TRUE,
+  pred.values = NULL, modx.values = NULL, mod2.values = NULL,
+  linearity.check = FALSE, facet.modx = FALSE, x.label = NULL,
+  y.label = NULL, pred.labels = NULL, modx.labels = NULL,
+  mod2.labels = NULL, main.title = NULL, legend.main = NULL,
+  color.class = NULL, line.thickness = 1.1, vary.lty = NULL,
+  jitter = 0, weights = NULL, rug = FALSE, rug.sides = "b",
+  force.cat = FALSE, point.shape = FALSE, geom.alpha = NULL,
+  dodge.width = NULL, errorbar.width = NULL,
   interval.geom = c("errorbar", "linerange"), pred.point.size = 3.5,
   point.size = 1, ...)
 }
@@ -72,10 +73,10 @@ be based on their moderator value.}
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
 
-\item{predvals}{Which values of the predictor should be included in the
+\item{pred.values}{Which values of the predictor should be included in the
 plot? By default, all levels are included.}
 
-\item{modxvals}{For which values of the moderator should lines be plotted?
+\item{modx.values}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 deviation from the mean as well as the mean itself are used for continuous
 moderators. If \code{"plus-minus"}, plots lines when the moderator is at
@@ -83,15 +84,16 @@ moderators. If \code{"plus-minus"}, plots lines when the moderator is at
 to split the data into equally-sized groups and choose the point at the
 mean of each of those groups.
 
-If the moderator is a factor variable and \code{modxvals} is
+If the moderator is a factor variable and \code{modx.values} is
 \code{NULL}, each level of the factor is included. You may specify
 any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
 as there is more than 1. The levels will be plotted in the order you
 provide them, so this can be used to reorder levels as well.}
 
-\item{mod2vals}{For which values of the second moderator should the plot be
+\item{mod2.values}{For which values of the second moderator should the plot
+be
 facetted by? That is, there will be a separate plot for each level of this
-moderator. Defaults are the same as \code{modxvals}.}
+moderator. Defaults are the same as \code{modx.values}.}
 
 \item{linearity.check}{For two-way interactions only. If \code{TRUE}, plots a
 pane for each level of the moderator and superimposes a loess smoothed
@@ -99,7 +101,7 @@ line (in gray) over the plot. This enables you to see if the effect is
 linear through the span of the moderator. See Hainmueller et al. (2016) in
 the references for more details on the intuition behind this. It is
 recommended that you also set \code{plot.points = TRUE} and use
-\code{modxvals = "terciles"} with this option.}
+\code{modx.values = "terciles"} with this option.}
 
 \item{facet.modx}{Create separate panels for each level of the moderator?
 Default is FALSE, except when \code{linearity.check} is TRUE.}
@@ -115,15 +117,15 @@ a 2-level factor or a continuous variable with only 2 values. If
 \code{NULL}, the default, the factor labels are used.}
 
 \item{modx.labels}{A character vector of labels for each level of the
-moderator values, provided in the same order as the \code{modxvals}
+moderator values, provided in the same order as the \code{modx.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{mod2.labels}{A character vector of labels for each level of the 2nd
-moderator values, provided in the same order as the \code{mod2vals}
+moderator values, provided in the same order as the \code{mod2.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{main.title}{A character object that will be used as an overall title
@@ -135,7 +137,8 @@ variable is used.}
 
 \item{color.class}{See \link{jtools_colors} for details on the types of arguments
 accepted. Default is "CUD Bright" for factor
-moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
+moderators, "Blues" for +/- SD and user-specified \code{modx.values}
+values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
@@ -226,7 +229,7 @@ are:
 \itemize{
 \item \code{pred}, \code{modx}, and \code{mod2}
 \item \code{resp}
-\item \code{predvals}, \code{modxvals}, and \code{mod2vals}
+\item \code{pred.values}, \code{modx.values}, and \code{mod2.values}
 \item \code{pred.labels}, \code{modx.labels}, and \code{mod2.labels}
 \item \code{data}
 \item \code{interval}
@@ -237,3 +240,4 @@ are:
 \seealso{
 Other plotting tools: \code{\link{make_predictions}}
 }
+\concept{plotting tools}

@@ -30,6 +30,8 @@ reference:
     - make_predictions.brmsfit
     - make_predictions.stanreg
     - plot_predictions
+    - as_huxtable.sim_slopes
+    - plot.sim_slopes
  - title: Data centering and scaling tools
    contents:
     - gscale
@@ -57,6 +59,7 @@ reference:
    contents:
     - jtools_colors
     - tidy.summ
+    - knit_print.summ.lm
 
 
 navbar:

@@ -4,12 +4,12 @@
 \alias{sim_slopes}
 \title{Perform a simple slopes analysis.}
 \usage{
-sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
-  mod2vals = NULL, centered = "all", data = NULL, cond.int = FALSE,
-  johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
-  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  confint = FALSE, ci.width = 0.95, cluster = NULL, modx.labels = NULL,
-  mod2.labels = NULL, ...)
+sim_slopes(model, pred, modx, mod2 = NULL, modx.values = NULL,
+  mod2.values = NULL, centered = "all", data = NULL,
+  cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
+  jnalpha = 0.05, robust = FALSE, digits = getOption("jtools-digits",
+  default = 2), pvals = TRUE, confint = FALSE, ci.width = 0.95,
+  cluster = NULL, modx.labels = NULL, mod2.labels = NULL, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -26,7 +26,7 @@ supported. The model should include the interaction of interest.}
 \item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction.}
 
-\item{modxvals}{For which values of the moderator should simple slopes
+\item{modx.values}{For which values of the moderator should simple slopes
 analysis be performed? Default is \code{NULL}. If \code{NULL}, then the
 values will be the customary +/- 1 standard deviation from the mean as
 well as the mean itself. There is no specific limit on the number of
@@ -44,9 +44,8 @@ variables are coerced to numeric 0/1 variables, but are not
 standardized/centered like they could be if your input data had a numeric
 0/1 variable.}
 
-\item{mod2vals}{For which values of the second moderator should the plot be
-facetted by? That is, there will be a separate plot for each level of this
-moderator. Defaults are the same as \code{modxvals}.}
+\item{mod2.values}{Same as \code{modx.values}, but for the second moderator
+(\code{mod2}).}
 
 \item{centered}{A vector of quoted variable names that are to be
 mean-centered. If \code{"all"}, all non-focal predictors as well as
@@ -104,33 +103,36 @@ the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
 
 \item{modx.labels}{A character vector of labels for each level of the
-moderator values, provided in the same order as the \code{modxvals}
+moderator values, provided in the same order as the \code{modx.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{mod2.labels}{A character vector of labels for each level of the 2nd
-moderator values, provided in the same order as the \code{mod2vals}
+moderator values, provided in the same order as the \code{mod2.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{...}{Arguments passed to \code{\link{johnson_neyman}} and
 \code{summ}.}
 }
 \value{
+A list object with the following components:
+
 \item{slopes}{A table of coefficients for the focal predictor at each
 value of the moderator}
 \item{ints}{A table of coefficients for the intercept at each value of the
 moderator}
-\item{modxvals}{The values of the moderator used in the analysis}
+\item{modx.values}{The values of the moderator used in the analysis}
 \item{mods}{A list containing each regression model created to estimate
 the conditional coefficients.}
 \item{jn}{If \code{johnson_neyman = TRUE}, a list of \code{johnson_neyman}
 objects from \code{\link{johnson_neyman}}. These contain the values of the
 interval and the plots. If a 2-way interaction, the list will be of length
 \enumerate{
-\item Otherwise, there will be 1 \code{johnson_neyman} object for each value of the
+\item Otherwise, there will be 1 \code{johnson_neyman} object for each value of
+the
 2nd moderator for 3-way interactions.}
 }
 }
@@ -200,3 +202,4 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

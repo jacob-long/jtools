@@ -5,14 +5,17 @@
 \alias{j_summ.glm}
 \title{Generalized linear regression summaries with options}
 \usage{
-\method{summ}{glm}(model, scale = FALSE, confint = getOption("summ-confint",
-  FALSE), ci.width = getOption("summ-ci.width", 0.95),
+\method{summ}{glm}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
   robust = getOption("summ-robust", FALSE), cluster = NULL,
-  vifs = getOption("summ-vifs", FALSE), digits = getOption("jtools-digits",
-  default = 2), exp = FALSE, pvals = getOption("summ-pvals", TRUE),
-  n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
+  vifs = getOption("summ-vifs", FALSE),
+  digits = getOption("jtools-digits", default = 2), exp = FALSE,
+  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...)
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
+  ...)
 }
 \arguments{
 \item{model}{A \code{glm} object.}

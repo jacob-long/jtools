@@ -10,8 +10,9 @@
   ci.width = getOption("summ-ci.width", 0.95),
   digits = getOption("jtools-digits", default = 2),
   pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
-  transform.response = FALSE, exp = FALSE, vifs = getOption("summ-vifs",
-  FALSE), model.info = getOption("summ-model.info", TRUE),
+  transform.response = FALSE, exp = FALSE,
+  vifs = getOption("summ-vifs", FALSE),
+  model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
   which.cols = NULL, ...)
 }

@@ -4,11 +4,11 @@
 \alias{johnson_neyman}
 \title{Calculate Johnson-Neyman intervals for 2-way interactions}
 \usage{
-johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05, plot = TRUE,
-  control.fdr = FALSE, line.thickness = 0.5, df = "residual",
-  digits = getOption("jtools-digits", 2), critical.t = NULL,
-  sig.color = "#00BFC4", insig.color = "#F8766D", mod.range = NULL,
-  title = "Johnson-Neyman plot")
+johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05,
+  plot = TRUE, control.fdr = FALSE, line.thickness = 0.5,
+  df = "residual", digits = getOption("jtools-digits", 2),
+  critical.t = NULL, sig.color = "#00BFC4", insig.color = "#F8766D",
+  mod.range = NULL, title = "Johnson-Neyman plot")
 }
 \arguments{
 \item{model}{A regression model. It is tested with \code{lm}, \code{glm}, and
@@ -154,3 +154,4 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

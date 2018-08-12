@@ -4,8 +4,8 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, weights, data = NULL, model_output = FALSE, test = NULL,
-  digits = getOption("jtools-digits", default = 3))
+wgttest(model, weights, data = NULL, model_output = FALSE,
+  test = NULL, digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The unweighted linear model (must be \code{lm},
@@ -107,3 +107,4 @@ Other survey tools: \code{\link{pf_sv_test}},
   \code{\link{svycor}}, \code{\link{svysd}},
   \code{\link{weights_tests}}
 }
+\concept{survey tools}

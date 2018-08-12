@@ -4,8 +4,9 @@
 \alias{svycor}
 \title{Calculate Pearson correlations with complex survey data}
 \usage{
-svycor(formula, design, na.rm = FALSE, digits = getOption("jtools-digits",
-  default = 2), sig.stats = FALSE, bootn = 1000, mean1 = TRUE, ...)
+svycor(formula, design, na.rm = FALSE,
+  digits = getOption("jtools-digits", default = 2), sig.stats = FALSE,
+  bootn = 1000, mean1 = TRUE, ...)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the terms to correlate.}
@@ -106,3 +107,5 @@ Other survey tools: \code{\link{pf_sv_test}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{\pkg{survey} package extensions}
+\concept{survey tools}

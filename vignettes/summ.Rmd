@@ -13,7 +13,9 @@ vignette: >
 required <- c("survey", "huxtable", "broom", "lme4", "quantreg")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
-knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 5)
+knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 5,
+                      render = knitr::normal_print
+                      )
 library(jtools)
 ```
 
@@ -78,6 +80,18 @@ reduce the need to do redundant typing in interactive use.
 
 Model types supported are `lm`, `glm`, `svyglm`, `merMod`, and `rq`, though
 not all will be reviewed in detail here.
+
+**Note:** The output in this vignette will mimic how it looks in the R console,
+but if you are generating your own RMarkdown documents and have `huxtable`
+installed, you'll instead get some prettier looking tables like this:
+
+```{r render = 'knit_print'}
+summ(fit)
+```
+
+You can force `knitr` to give the console style of output by setting the
+chunk option `render = 'normal_print'`.
+
 
 ## Report robust standard errors
 
@@ -407,7 +421,7 @@ export_summs(fit, fit2, scale = TRUE)
 ```
 
 ```{r echo = FALSE, results = 'asis'}
-export_summs(fit, fit2, scale = TRUE)
+huxtable::print_html(export_summs(fit, fit2, scale = TRUE))
 ```
 
 When using RMarkdown, set `results = 'asis'` for the chunk with `export_summs`
@@ -437,8 +451,8 @@ export_summs(fit, fit2, scale = TRUE,
 ```
 
 ```{r echo = FALSE, results = 'asis'}
-export_summs(fit, fit2, scale = TRUE,
-             error_format = "[{conf.low}, {conf.high}]")
+huxtable::print_html(export_summs(fit, fit2, scale = TRUE,
+                     error_format = "[{conf.low}, {conf.high}]"))
 ```
 
 There's a lot more customization that I'm not covering here: Renaming the 

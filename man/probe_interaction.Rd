@@ -55,12 +55,12 @@ use \code{sim_slopes} and \code{interact_plot} directly.
 fiti <- lm(Income ~ Frost + Murder * Illiteracy,
   data=as.data.frame(state.x77))
 probe_interaction(model = fiti, pred = Murder, modx = Illiteracy,
-                  modxvals = "plus-minus")
+                  modx.values = "plus-minus")
 # 3-way interaction
 fiti3 <- lm(Income ~ Frost * Murder * Illiteracy,
   data=as.data.frame(state.x77))
 probe_interaction(model = fiti3, pred = Murder, modx = Illiteracy,
-                  mod2 = Frost, mod2vals = "plus-minus")
+                  mod2 = Frost, mod2.values = "plus-minus")
 
 # With svyglm
 if (requireNamespace("survey")) {
@@ -70,7 +70,7 @@ dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
                     data = apistrat, fpc = ~fpc)
 regmodel <- svyglm(api00 ~ ell * meals + sch.wide, design = dstrat)
 probe_interaction(model = regmodel, pred = ell, modx = meals,
-                  modxvals = "plus-minus", cond.int = TRUE)
+                  modx.values = "plus-minus", cond.int = TRUE)
 
 # 3-way with survey and factor input
 regmodel3 <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
@@ -90,3 +90,4 @@ Other interaction tools: \code{\link{cat_plot}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{interaction tools}

@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r echo=FALSE}
-required <- c("survey")
+required <- c("survey", "huxtable", "sandwich", "cowplot")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
 knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 5)
@@ -70,26 +70,26 @@ the `centered` argument.
 
 By default, with a continuous moderator you get three lines --- 1 standard 
 deviation above and below the mean and the mean itself. If you specify 
-`modxvals = "plus-minus"`, the mean of the moderator is not plotted, just the
+`modx.values = "plus-minus"`, the mean of the moderator is not plotted, just the
 two +/- SD lines. You may also choose `"terciles"` to split the data into 
 three equal-sized groups  --- representing the upper, middle, and lower thirds
 of the distribution of the moderator --- and get the line that represents the
 median of the moderator within each of those groups.
 
 If your moderator is **a factor**, each level will be plotted and you 
-should leave `modxvals = NULL`, the default.
+should leave `modx.values = NULL`, the default.
 
 ```{r}
 fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species")
 ```
 
-If you want, you can specify a subset of a factor's levels via the `modxvals`
+If you want, you can specify a subset of a factor's levels via the `modx.values`
 argument:
 
 ```{r}
 interact_plot(fitiris, pred = "Petal.Width", modx = "Species",
-              modxvals = c("versicolor", "virginica"))
+              modx.values = c("versicolor", "virginica"))
 ```
 
 
@@ -332,16 +332,38 @@ it means that as one of the variables goes up, the other goes down. Now we
 know the effect of `Illiteracy` only exists when `Murder` is high.
 
 You may also choose the values of the moderator yourself with the
-`modxvals =` argument.
+`modx.values =` argument.
 
 ```{r}
-sim_slopes(fiti, pred = Illiteracy, modx = Murder, modxvals = c(0, 5, 10),
+sim_slopes(fiti, pred = Illiteracy, modx = Murder, modx.values = c(0, 5, 10),
            johnson_neyman = FALSE)
 ```
 
 Bear in mind that these estimates are managed by refitting the models. If the
 model took a long time to fit the first time, expect a long run time for
 `sim_slopes`.
+
+### Visualize the coefficients
+
+Similar to what this package's `plot_coefs`/`plot_summs` functions offer,
+you can save your `sim_slopes` output to an object and call `plot` on that
+object.
+
+```{r}
+ss <- sim_slopes(fiti, pred = Illiteracy, modx = Murder, modx.values = c(0, 5, 10))
+plot(ss)
+```
+
+### Tabular output
+
+You can also use the `huxtable` package to get a publication-style table
+from your `sim_slopes` output.
+
+```{r}
+ss <- sim_slopes(fiti, pred = Illiteracy, modx = Murder, modx.values = c(0, 5, 10))
+library(huxtable)
+as_huxtable(ss)
+```
 
 ### Johnson-Neyman intervals
 
@@ -562,6 +584,19 @@ Notice that at one of the three values of the second moderator, there were no
 Johnson-Neyman interval values so it wasn't plotted. The more levels of the 
 second moderator you want to plot, the more likely that the resulting plot
 will be unwieldy and hard to read. You can resize your window to help, though.
+
+You can also use the `plot` and `as_huxtable` methods with 3-way `sim_slopes`
+objects.
+
+```{r}
+ss3 <- sim_slopes(regmodel3, pred = growth, modx = avg.ed, mod2 = enroll)
+plot(ss3)
+```
+
+```{r}
+as_huxtable(ss3)
+```
+
 
 # Generalized linear models, mixed models, et al.
 

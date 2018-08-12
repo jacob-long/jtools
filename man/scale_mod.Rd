@@ -11,8 +11,8 @@ scale_mod(model, ...)
 \method{scale_mod}{default}(model, binary.inputs = "0/1", n.sd = 1,
   center = TRUE, scale.response = FALSE, center.only = FALSE,
   data = NULL, vars = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
-  ...)
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
+  FALSE), ...)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -130,3 +130,4 @@ Other standardization, scaling, and centering tools: \code{\link{center_mod}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{standardization, scaling, and centering tools}

@@ -4,8 +4,8 @@
 \alias{svysd}
 \title{Calculate standard deviations with complex survey data}
 \usage{
-svysd(formula, design, na.rm = FALSE, digits = getOption("jtools-digits",
-  default = 3), ...)
+svysd(formula, design, na.rm = FALSE,
+  digits = getOption("jtools-digits", default = 3), ...)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the term(s) of interest.}
@@ -57,3 +57,5 @@ Other survey tools: \code{\link{pf_sv_test}},
   \code{\link{svycor}}, \code{\link{weights_tests}},
   \code{\link{wgttest}}
 }
+\concept{\pkg{survey} package extensions}
+\concept{survey tools}

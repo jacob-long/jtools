@@ -5,17 +5,19 @@
 \title{Plot interaction effects between categorical predictors.}
 \usage{
 cat_plot(model, pred, modx = NULL, mod2 = NULL, data = NULL,
-  geom = c("point", "line", "bar", "boxplot"), predvals = NULL,
-  modxvals = NULL, mod2vals = NULL, interval = TRUE,
+  geom = c("point", "line", "bar", "boxplot"), pred.values = NULL,
+  modx.values = NULL, mod2.values = NULL, interval = TRUE,
   plot.points = FALSE, point.shape = FALSE, vary.lty = FALSE,
   centered = "all", int.type = c("confidence", "prediction"),
-  int.width = 0.95, line.thickness = 1, point.size = 1,
+  int.width = 0.95, line.thickness = 1, point.size = 1.5,
   pred.point.size = 3.5, jitter = 0.1, geom.alpha = NULL,
-  dodge.width = NULL, errorbar.width = NULL, interval.geom = c("errorbar",
-  "linerange"), outcome.scale = "response", robust = FALSE,
-  cluster = NULL, vcov = NULL, pred.labels = NULL, modx.labels = NULL,
-  mod2.labels = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
-  main.title = NULL, legend.main = NULL, color.class = "CUD Bright", ...)
+  dodge.width = NULL, errorbar.width = NULL,
+  interval.geom = c("errorbar", "linerange"),
+  outcome.scale = "response", robust = FALSE, cluster = NULL,
+  vcov = NULL, pred.labels = NULL, modx.labels = NULL,
+  mod2.labels = NULL, set.offset = 1, x.label = NULL,
+  y.label = NULL, main.title = NULL, legend.main = NULL,
+  color.class = "CUD Bright", ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -62,10 +64,10 @@ sets). \strong{However}, it is important to note the boxplots are not based
 on the model whatsoever.
 }}
 
-\item{predvals}{Which values of the predictor should be included in the
+\item{pred.values}{Which values of the predictor should be included in the
 plot? By default, all levels are included.}
 
-\item{modxvals}{For which values of the moderator should lines be plotted?
+\item{modx.values}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 deviation from the mean as well as the mean itself are used for continuous
 moderators. If \code{"plus-minus"}, plots lines when the moderator is at
@@ -73,15 +75,16 @@ moderators. If \code{"plus-minus"}, plots lines when the moderator is at
 to split the data into equally-sized groups and choose the point at the
 mean of each of those groups.
 
-If the moderator is a factor variable and \code{modxvals} is
+If the moderator is a factor variable and \code{modx.values} is
 \code{NULL}, each level of the factor is included. You may specify
 any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
 as there is more than 1. The levels will be plotted in the order you
 provide them, so this can be used to reorder levels as well.}
 
-\item{mod2vals}{For which values of the second moderator should the plot be
+\item{mod2.values}{For which values of the second moderator should the plot
+be
 facetted by? That is, there will be a separate plot for each level of this
-moderator. Defaults are the same as \code{modxvals}.}
+moderator. Defaults are the same as \code{modx.values}.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals.}
@@ -179,15 +182,15 @@ factor levels of the predictor (or number specified in \code{predvals}). If
 \code{NULL}, the default, the factor labels are used.}
 
 \item{modx.labels}{A character vector of labels for each level of the
-moderator values, provided in the same order as the \code{modxvals}
+moderator values, provided in the same order as the \code{modx.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{mod2.labels}{A character vector of labels for each level of the 2nd
-moderator values, provided in the same order as the \code{mod2vals}
+moderator values, provided in the same order as the \code{mod2.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{set.offset}{For models with an offset (e.g., Poisson models), sets an
@@ -287,3 +290,4 @@ Other interaction tools: \code{\link{interact_plot}},
   \code{\link{johnson_neyman}},
   \code{\link{probe_interaction}}, \code{\link{sim_slopes}}
 }
+\concept{interaction tools}

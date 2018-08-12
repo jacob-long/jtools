@@ -13,3 +13,4 @@
 ^misc$
 ^\.vscode$
 ^revdep$
+^_pkgdown\.yml$

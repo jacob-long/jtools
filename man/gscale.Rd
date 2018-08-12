@@ -7,8 +7,8 @@
 gscale(data = NULL, vars = NULL, binary.inputs = "center",
   binary.factors = TRUE, n.sd = 2, center.only = FALSE,
   scale.only = FALSE, weights = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
-  x = NULL, messages = FALSE)
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
+  FALSE), x = NULL, messages = FALSE)
 }
 \arguments{
 \item{data}{A data frame or survey design. Only needed if you would like to
@@ -162,3 +162,4 @@ Other standardization, scaling, and centering tools: \code{\link{center_mod}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{standardization, scaling, and centering tools}

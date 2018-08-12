@@ -10,7 +10,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "man/figures/",
   fig.width = 6.5,
-  fig.height = 4
+  fig.height = 4,
+  render = knitr::normal_print
 )
 library(jtools)
 ```

@@ -4,9 +4,10 @@
 \alias{export_summs}
 \title{Export regression summaries to tables}
 \usage{
-export_summs(..., error_format = "({std.error})", error_pos = c("below",
-  "right", "same"), ci_level = 0.95, statistics = NULL,
-  model.names = NULL, coefs = NULL, to.file = NULL, file.name = NULL)
+export_summs(..., error_format = "({std.error})",
+  error_pos = c("below", "right", "same"), ci_level = 0.95,
+  statistics = NULL, model.names = NULL, coefs = NULL,
+  to.file = NULL, file.name = NULL)
 }
 \arguments{
 \item{...}{At minimum, a regression object(s). See details for more

@@ -4,13 +4,13 @@
 \alias{make_predictions.brmsfit}
 \title{Make predictions for brmsfit models}
 \usage{
-\method{make_predictions}{brmsfit}(model, pred, predvals = NULL,
-  modx = NULL, modxvals = NULL, mod2 = NULL, mod2vals = NULL,
-  centered = "all", data = NULL, plot.points = FALSE, interval = TRUE,
-  int.width = 0.95, estimate = "mean", linearity.check = FALSE,
-  set.offset = 1, pred.labels = NULL, modx.labels = NULL,
-  mod2.labels = NULL, preds.per.level = 100, force.cat = FALSE,
-  facet.modx = linearity.check, ...)
+\method{make_predictions}{brmsfit}(model, pred, pred.values = NULL,
+  modx = NULL, modx.values = NULL, mod2 = NULL, mod2.values = NULL,
+  centered = "all", data = NULL, plot.points = FALSE,
+  interval = TRUE, int.width = 0.95, estimate = "mean",
+  linearity.check = FALSE, set.offset = 1, pred.labels = NULL,
+  modx.labels = NULL, mod2.labels = NULL, preds.per.level = 100,
+  force.cat = FALSE, facet.modx = linearity.check, ...)
 }
 \arguments{
 \item{model}{A \code{brmsfit} model.}
@@ -18,13 +18,13 @@
 \item{pred}{The name of the predictor variable involved
 in the interaction. This must be a string.}
 
-\item{predvals}{Which values of the predictor should be included in the
+\item{pred.values}{Which values of the predictor should be included in the
 plot? By default, all levels are included.}
 
 \item{modx}{The name of the moderator variable involved
 in the interaction. This must be a string.}
 
-\item{modxvals}{For which values of the moderator should lines be plotted?
+\item{modx.values}{For which values of the moderator should lines be plotted?
 Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
 deviation from the mean as well as the mean itself are used for continuous
 moderators. If \code{"plus-minus"}, plots lines when the moderator is at
@@ -32,7 +32,7 @@ moderators. If \code{"plus-minus"}, plots lines when the moderator is at
 to split the data into equally-sized groups and choose the point at the
 mean of each of those groups.
 
-If the moderator is a factor variable and \code{modxvals} is
+If the moderator is a factor variable and \code{modx.values} is
 \code{NULL}, each level of the factor is included. You may specify
 any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
 as there is more than 1. The levels will be plotted in the order you
@@ -41,9 +41,10 @@ provide them, so this can be used to reorder levels as well.}
 \item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction. This can be a bare name or string.}
 
-\item{mod2vals}{For which values of the second moderator should the plot be
+\item{mod2.values}{For which values of the second moderator should the plot
+be
 facetted by? That is, there will be a separate plot for each level of this
-moderator. Defaults are the same as \code{modxvals}.}
+moderator. Defaults are the same as \code{modx.values}.}
 
 \item{centered}{A vector of quoted variable names that are to be
 mean-centered. If \code{"all"}, all non-focal predictors are centered. You
@@ -81,7 +82,7 @@ line (in gray) over the plot. This enables you to see if the effect is
 linear through the span of the moderator. See Hainmueller et al. (2016) in
 the references for more details on the intuition behind this. It is
 recommended that you also set \code{plot.points = TRUE} and use
-\code{modxvals = "terciles"} with this option.}
+\code{modx.values = "terciles"} with this option.}
 
 \item{set.offset}{For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
@@ -93,15 +94,15 @@ a 2-level factor or a continuous variable with only 2 values. If
 \code{NULL}, the default, the factor labels are used.}
 
 \item{modx.labels}{A character vector of labels for each level of the
-moderator values, provided in the same order as the \code{modxvals}
+moderator values, provided in the same order as the \code{modx.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{modxvals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{mod2.labels}{A character vector of labels for each level of the 2nd
-moderator values, provided in the same order as the \code{mod2vals}
+moderator values, provided in the same order as the \code{mod2.values}
 argument. If \code{NULL}, the values themselves are used as labels unless
-\code{mod2vals} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+\code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
 are used.}
 
 \item{preds.per.level}{For continuous predictors, a series of equally

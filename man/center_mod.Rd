@@ -7,7 +7,8 @@
 \usage{
 center_mod(model, binary.inputs = "0/1", center.response = FALSE,
   data = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE))
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
+  FALSE))
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -106,3 +107,4 @@ Other standardization, scaling, and centering tools: \code{\link{center}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{standardization, scaling, and centering tools}

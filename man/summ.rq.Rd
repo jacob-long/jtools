@@ -4,14 +4,17 @@
 \alias{summ.rq}
 \title{Quantile regression summaries with options}
 \usage{
-\method{summ}{rq}(model, scale = FALSE, confint = getOption("summ-confint",
-  FALSE), ci.width = getOption("summ-ci.width", 0.95), se = c("nid", "rank",
+\method{summ}{rq}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95), se = c("nid", "rank",
   "iid", "ker", "boot"), boot.sims = 1000, boot.method = "xy",
-  vifs = getOption("summ-vifs", FALSE), digits = getOption("jtools-digits",
-  2), pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  vifs = getOption("summ-vifs", FALSE),
+  digits = getOption("jtools-digits", 2),
+  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...)
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
+  ...)
 }
 \arguments{
 \item{model}{A \code{rq} model. At this time, \code{rqs} models (multiple \code{tau}

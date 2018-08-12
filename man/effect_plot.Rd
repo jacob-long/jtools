@@ -5,12 +5,12 @@
 \title{Plot simple effects in regression models}
 \usage{
 effect_plot(model, pred, centered = "all", plot.points = FALSE,
-  interval = FALSE, data = NULL, int.type = c("confidence", "prediction"),
-  int.width = 0.95, outcome.scale = "response", robust = FALSE,
-  cluster = NULL, vcov = NULL, set.offset = 1, x.label = NULL,
-  y.label = NULL, pred.labels = NULL, main.title = NULL,
-  color.class = NULL, line.thickness = 1.1, point.size = 2, jitter = 0,
-  rug = FALSE, rug.sides = "b", ...)
+  interval = FALSE, data = NULL, int.type = c("confidence",
+  "prediction"), int.width = 0.95, outcome.scale = "response",
+  robust = FALSE, cluster = NULL, vcov = NULL, set.offset = 1,
+  x.label = NULL, y.label = NULL, pred.labels = NULL,
+  main.title = NULL, color.class = NULL, line.thickness = 1.1,
+  point.size = 2.5, jitter = 0, rug = FALSE, rug.sides = "b", ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -95,7 +95,8 @@ for the plot. If \code{NULL}, no main title is used.}
 
 \item{color.class}{See \link{jtools_colors} for details on the types of arguments
 accepted. Default is "CUD Bright" for factor
-moderators, "Blues" for +/- SD and user-specified \code{modxvals} values.}
+moderators, "Blues" for +/- SD and user-specified \code{modx.values}
+values.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
