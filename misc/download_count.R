@@ -6,8 +6,8 @@ ds <-
   cranlogs::cran_downloads(packages = "jtools",
                                        from = "2017-02-28", to = Sys.Date())
 library(ggplot2)
-dsa$avg_7 <- filter(dsa$count, rep(1, 7), sides = 1)/7
-dsa$adj_avg_7 <- filter(dsa$adjusted_downloads, rep(1, 7), sides = 1)/7
+dsa$avg_7 <- stats::filter(dsa$count, rep(1, 7), sides = 1)/7
+dsa$adj_avg_7 <- stats::filter(dsa$adjusted_downloads, rep(1, 7), sides = 1)/7
 
 dst <- dsa[c("date", "avg_7", "adj_avg_7")]
 library(tidyr)
@@ -28,3 +28,4 @@ ggplot(data = dst) +
   labs(caption = "Dashed vertical lines show dates of updates")
 
 total_dls <- sum(dsa$count)
+total_dls
