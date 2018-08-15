@@ -350,7 +350,7 @@ create_table <- function(params, which.cols, ivs) {
 
 which_columns <- function(which.cols, margins = FALSE,
                           confint, ci.labs, vifs, pvals, t.col,
-                          exp = NULL, others = NULL) {
+                          exp = NULL, df = FALSE, others = NULL) {
 
   if (!is.null(which.cols)) {
     return(which.cols)
@@ -369,6 +369,7 @@ which_columns <- function(which.cols, margins = FALSE,
       cols <- c(cols, "A.M.E.")
     }
     cols <- c(cols, t.col)
+    if (df == TRUE) {cols <- c(cols, "d.f.")}
     if (pvals == TRUE) {cols <- c(cols, "p")}
     if (vifs == TRUE) {cols <- c(cols, "VIF")}
     if (!is.null(others)) {cols <- c(cols, others)}

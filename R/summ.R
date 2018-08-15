@@ -2037,7 +2037,7 @@ summ.merMod <- function(
                               ci.labs = make_ci_labs(ci.width), vifs = FALSE,
                               pvals = pvals, t.col = tcol,
                               exp = exp,
-                              others = if (is.null(dfs)) {NULL} else {"d.f."})
+                              df = !is.null(dfs))
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Dealing with random effects
@@ -2064,7 +2064,7 @@ summ.merMod <- function(
 
   j <- structure(j, lmFamily = family(model))
 
-  j$coeftable <- mat
+  j$coeftable <- as.table(mat)
   j$rcoeftable <- tables$rcmat # Random effects table
   j$gvars <- tables$gvmat # Grouping variables table
   j$model <- model
@@ -2114,6 +2114,9 @@ print.summ.merMod <- function(x, ...) {
   }
 
   cat(underline("FIXED EFFECTS:\n"))
+  if ("d.f." %in% names(ctable)) {
+    ctable[,"d.f."] <- as.integer(ctable[,"d.f."])
+  }
   print(ctable)
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
