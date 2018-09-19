@@ -679,12 +679,16 @@ mod_rank <- function(model) {
 }
 
 hux_theme <- function(table, align_body = "right", caption = NULL,
-                      use_colnames = TRUE, width = .2) {
+                      use_colnames = TRUE, width = .2,
+                      latex = knitr::is_latex_output()) {
   # table <- huxtable::theme_striped(table, header_row = FALSE,
   #                                  header_col = FALSE)
-  table <- huxtable::set_background_color(table, huxtable::odds,
+  if (latex) { # don't shade odd rows if latex
+    table <- huxtable::set_background_color(table, huxtable::odds,
                                           huxtable::everywhere,
                                           grDevices::grey(0.9))
+  }
+  
   if (use_colnames == TRUE) {
     table <- huxtable::add_colnames(table)
     table <- huxtable::set_bold(table, row = 1, col = 1:ncol(table),
@@ -712,10 +716,76 @@ hux_theme <- function(table, align_body = "right", caption = NULL,
     table <- huxtable::set_bottom_border(table, row = 1, col = 1:ncol(table), 1)
   }
 
-  table <- huxtable::set_position(table, "left")
+  table <- huxtable::set_position(table,
+                                  ifelse(latex, no = "left", yes = "center"))
   # table <- huxtable::set_width(table, width)
 
   return(table)
+}
+
+#' @importFrom magrittr "%>%"
+#' @importFrom magrittr "%<>%"
+to_kable <- function(t, html = !knitr::is_latex_output(), caption = NULL,
+                     cols = NULL, footnote = NULL, row.names = FALSE,
+                     col.names = NA, escape = FALSE, format = NULL) {
+  
+  format <- ifelse(html, yes = "html", no = "latex")
+  t %<>% knitr::kable(format = format, row.names = row.names,
+                      col.names = col.names, escape = escape,
+                      booktabs = TRUE)
+  
+  if (length(caption) > 0) { # I'm getting a character(0) object here sometimes
+    head <- cols
+    names(head) <- caption
+    t %<>% kableExtra::add_header_above(header = head)
+  }
+  
+  # center <- if (bold) {"left"} else {"center"}
+
+  t %<>%
+    kableExtra::kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      position = "center",
+      latex_options = c("hold_position", "striped")
+    )
+
+  if (html == TRUE) {
+    t %<>% kableExtra::column_spec(1, bold = TRUE)
+  }
+  
+  if (length(footnote) > 0) {
+    t %<>% kableExtra::add_footnote(label = footnote, notation = "none")
+  }
+  
+  return(t)
+    
+}
+
+kableExtra_latex_deps <- list(
+  list(name = "booktabs"),
+  list(name = "longtable"),
+  list(name = "array"),
+  list(name = "multirow"),
+  list(name = "xcolor", options = "table"),
+  list(name = "wrapfig"),
+  list(name = "float"),
+  list(name = "colortbl"),
+  list(name = "pdflscape"),
+  list(name = "tabu"),
+  list(name = "threeparttable"),
+  list(name = "threeparttablex"),
+  list(name = "ulem", options = "ulem"),
+  list(name = "makecell")
+)
+
+## Pandoc converts single asterisks to a black dot
+escape_stars <- function(t) {
+  if (any(colnames(t) == "")) {
+    t[,which(colnames(t) == "")] <- 
+      gsub("^\\*$", "\\\\*", t[,which(colnames(t) =="")])
+  }
+  return(t)
 }
 
 ### pseudo-R2 ################################################################

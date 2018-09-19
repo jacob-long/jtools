@@ -288,28 +288,32 @@ print.summ.rq <- function(x, ...) {
 
 knit_print.summ.rq <- function(x, options = NULL, ...) {
 
-  if (!requireNamespace("huxtable")) {
-    return(knitr::normal_print(x))
-  }
+  # if (!requireNamespace("huxtable")) {
+  #   return(knitr::normal_print(x))
+  # }
 
-  if (length(options) > 0) {
-    if ("width" %in% names(options)) {
-      width <- options$width
-    } else {
-      width <- .2
-    }
-  }
+  # if (length(options) > 0) {
+  #   if ("width" %in% names(options)) {
+  #     width <- options$width
+  #   } else {
+  #     width <- .2
+  #   }
+  # }
 
   # saving input object as j
   j <- x
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
+
   # Helper function to deal with table rounding, significance stars
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
-  context <- huxtable::guess_knitr_output_format()
-  if (context == "") {context <- "screen"}
+  # context <- huxtable::guess_knitr_output_format()
+  # if (context == "") {context <- "screen"}
 
   if (x$model.info == TRUE) {
     method <-
@@ -335,12 +339,13 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
                 ),
       value = c(obs, mod_info$dv, mod_info$type, j$model$tau, method)
     )
-    mod_meta <- huxtable::as_huxtable(mod_meta)
-    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
-                          use_colnames = FALSE, width = width)
-    out <- format(mod_meta, output = context)
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+    # mod_meta <- huxtable::as_huxtable(mod_meta)
+    # mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+    #                       use_colnames = FALSE, width = width)
+    # out <- format(mod_meta, output = context)
   } else {
-    out <- NULL
+    mod_meta <- NULL
   }
 
   if (x$model.fit == T && !is.null(x$modpval)) {
@@ -349,12 +354,13 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
     stats <- data.frame(stat = c(paste0("R\u00B9 ", "(", j$model$tau, ")")),
                         value = c(num_print(x$r1, digits = x$digits))
     )
-    stats <- huxtable::as_huxtable(stats)
-    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
-                       width = width)
-    out <- paste(out, format(stats, output = context), "\n\n")
+    # stats <- huxtable::as_huxtable(stats)
+    # stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+    #                    width = width)
+    # out <- paste(out, format(stats, output = context), "\n\n")
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
 
-  }
+  } else {stats <- NULL}
 
   se_name <- switch(x$se,
                     "iid" = "IID",
@@ -368,21 +374,23 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: ", se_info, ss)
 
-  ctable <- huxtable::as_huxtable(ctable)
-  ast_index <- which(names(ctable) == "")
-  ctable <- huxtable::add_rownames(ctable, '')
-  if (length(ast_index) == 1) {
-    colnames(ctable)[ast_index + 1] <- ""
-  }
-  ctable <- hux_theme(ctable, width = width)
-  if (length(ast_index == 1)) {
-    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                  col = ast_index + 1, "left")
-  }
-  ctable <- huxtable::add_footnote(ctable, cap)
+  # ctable <- huxtable::as_huxtable(ctable)
+  # ast_index <- which(names(ctable) == "")
+  # ctable <- huxtable::add_rownames(ctable, '')
+  # if (length(ast_index) == 1) {
+  #   colnames(ctable)[ast_index + 1] <- ""
+  # }
+  # ctable <- hux_theme(ctable, width = width)
+  # if (length(ast_index == 1)) {
+  #   ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+  #                                 col = ast_index + 1, "left")
+  # }
+  # ctable <- huxtable::add_footnote(ctable, cap)
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
 
-  out <- paste(out, format(ctable, output = context), sep = "\n\n")
-  knitr::asis_output(out)
+  # out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  # knitr::asis_output(out)
   # ctable <- knitr::kable(ctable, caption = cap)
   # ctable <- paste(c(
   #   if (!(attr(ctable, "format") %in% c("html", "latex"))) {
@@ -390,6 +398,12 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   #   }), collapse = "\n")
   # knitr::asis_output(ctable)
   # class(ctable) <- "knit_asis"
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
+  knitr::asis_output(out)
 
 }
 

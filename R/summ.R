@@ -522,8 +522,13 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   # Helper function to deal with table rounding, significance stars
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
-  context <- huxtable::guess_knitr_output_format()
-  if (context == "") {context <- "screen"}
+  # context <- huxtable::guess_knitr_output_format()
+  # if (context == "") {context <- "screen"}
+  # context <- "md"
+  context <- format <- 
+    ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
 
   if (x$model.info == TRUE) {
     type <- paste("OLS linear regression")
@@ -538,12 +543,25 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
       datum = c("Observations", "Dependent variable", "Type"),
       value = c(obs, mod_info$dv, mod_info$type)
     )
-    mod_meta <- huxtable::as_huxtable(mod_meta)
-    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
-                          use_colnames = FALSE, width = width)
-    out <- format(mod_meta, output = context)
+    # mod_meta <- knitr::kable(mod_meta, format = "html",
+    #                          caption = "Model Info", col.names = NULL)
+    # 
+    # mod_meta <- kable_theme(mod_meta)
+    # mod_meta <- kableExtra::add_header_above(
+    #   mod_meta, header = c("Model Info" = 2)
+    # )
+    # return(knitr::asis_output(mod_meta))
+    # return(knitr::asis_output(paste(mod_meta, collapse = "\n")))
+    # mod_meta <- huxtable::as_huxtable(mod_meta)
+    # mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+    #                       use_colnames = FALSE, width = width)
+    # out <- format(mod_meta, output = context)
+    # out <- NULL
+      mod_meta %<>% 
+        to_kable(format = format, row.names = FALSE, col.names = NULL)
+
   } else {
-    out <- NULL
+    mod_meta <- NULL
   }
 
   if (x$model.fit == T && !is.null(x$modpval)) {
@@ -551,13 +569,14 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
                        "R\u00B2", "Adj. R\u00B2"),
                   value = c(num_print(x$fstat, digits = x$digits),
                        num_print(x$rsq, digits = x$digits),
-                       num_print(x$arsq, digits = x$digits))
+                       num_print(x$arsq, digits = x$digits)),
+                       stringsAsFactors = FALSE
                   )
-    stats <- huxtable::as_huxtable(stats)
-    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
-                       width = width)
-    out <- paste(out, format(stats, output = context), "\n\n")
-
+    # stats <- huxtable::as_huxtable(stats)
+    # stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+    #                    width = width)
+    # out <- paste(out, format(stats, output = context), "\n\n")
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
   }
 
   se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS")
@@ -566,20 +585,28 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: ", se_info, ss)
 
-  ctable <- huxtable::as_huxtable(ctable)
-  ast_index <- which(names(ctable) == "")
-  ctable <- huxtable::add_rownames(ctable, '')
-  if (length(ast_index) == 1) {
-    colnames(ctable)[ast_index + 1] <- ""
-  }
-  ctable <- hux_theme(ctable, width = width)
-  if (length(ast_index == 1)) {
-    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                  col = ast_index + 1, "left")
-  }
-  ctable <- huxtable::add_footnote(ctable, cap)
+  # ctable <- huxtable::as_huxtable(ctable)
+  # ast_index <- which(names(ctable) == "")
+  # ctable <- huxtable::add_rownames(ctable, '')
+  # if (length(ast_index) == 1) {
+  #   colnames(ctable)[ast_index + 1] <- ""
+  # }
+  # ctable <- hux_theme(ctable, width = width)
+  # if (length(ast_index == 1)) {
+  #   ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+  #                                 col = ast_index + 1, "left")
+  # }
+  # ctable <- huxtable::add_footnote(ctable, cap)
+  if (context == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
 
-  out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  # out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  # knitr::asis_output(out)
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
   knitr::asis_output(out)
   # ctable <- knitr::kable(ctable, caption = cap)
   # ctable <- paste(c(
@@ -924,7 +951,7 @@ print.summ.glm <- function(x, ...) {
   }
 
   if (x$model.fit == TRUE) {
-    stats <- paste("\U1D6D8\u00B2(",
+    stats <- paste("\u03C7\u00B2(",
                   x$chisq$df,  ") = ", num_print(x$chisq$chi, x$digits), ", ",
                   italic("p"), " = ", num_print(x$chisq$p, x$digits), "\n",
                    italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
@@ -958,17 +985,17 @@ print.summ.glm <- function(x, ...) {
 
 knit_print.summ.glm <- function(x, options = NULL, ...) {
 
-  if (!requireNamespace("huxtable")) {
-    return(knitr::normal_print(x))
-  }
+  # if (!requireNamespace("huxtable")) {
+  #   return(knitr::normal_print(x))
+  # }
 
-  if (length(options) > 0) {
-    if ("width" %in% names(options)) {
-      width <- options$width
-    } else {
-      width <- .2
-    }
-  }
+  # if (length(options) > 0) {
+  #   if ("width" %in% names(options)) {
+  #     width <- options$width
+  #   } else {
+  #     width <- .2
+  #   }
+  # }
 
   # saving input object as j
   j <- x
@@ -978,8 +1005,9 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   # Helper function to deal with table rounding, significance stars
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
-  context <- huxtable::guess_knitr_output_format()
-  if (context == "") {context <- "screen"}
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -1007,17 +1035,29 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
         value = c(obs, mod_info$dv, mod_info$type)
       )
     }
+    
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
 
-    mod_meta <- huxtable::as_huxtable(mod_meta)
-    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
-                          use_colnames = FALSE, width = width)
-    out <- format(mod_meta, output = context)
+    # mod_meta <- huxtable::as_huxtable(mod_meta)
+    # mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+    #                       use_colnames = FALSE, width = width)
+    # out <- format(mod_meta, output = context)
   } else {
-    out <- NULL
+    mod_meta <- NULL
   }
 
   if (x$model.fit == T) {
-    stats <- data.frame(stat = c(paste0("\U1D6D8\u00B2(", x$chisq$df,  ")"),
+    if (context != "latex" && Sys.info()[['sysname']] != "Windows") {
+      chi <- "\U1D6D8\u00B2("
+      # alternately -> "\U0001D712\u00B2("
+    } else if (context == "latex") {
+      chi <- "\\foreignlanguage{greek}{\u03C7}\u00B2("
+    } else if (context == "html") {
+      chi <- "&chi;\u00B2("
+    } else {
+      chi <- "chi\u00B2("
+    }
+    stats <- data.frame(stat = c(paste0(chi, x$chisq$df,  ")"),
                                  "Pseudo-R\u00B2 (Cragg-Uhler)",
                                  "Pseudo-R\u00B2 (McFadden)",
                                  "AIC", "BIC"),
@@ -1025,14 +1065,17 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
                                   num_print(x$rsq, digits = x$digits),
                                   num_print(x$rsqmc, digits = x$digits),
                                   num_print(x$aic, x$digits),
-                                  num_print(x$bic, x$digits))
+                                  num_print(x$bic, x$digits)),
+                        stringsAsFactors = FALSE
     )
-    stats <- huxtable::as_huxtable(stats)
-    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
-                       width = width)
-    out <- paste(out, format(stats, output = context), "\n\n")
+    # stats <- huxtable::as_huxtable(stats)
+    # stats <- huxtable::set_escape_contents(stats, 1, 1, FALSE)
+    # stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+    #                    width = width)
+    # stats[1,1] <- kableExtra::text_spec(stats[1,1], escape = FALSE)
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
 
-  }
+  } else {stats <- NULL}
 
   se_info <- get_se_info(x$robust, x$use_cluster)
   # Notifying user if variables altered from original fit
@@ -1040,20 +1083,42 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: ", se_info, ss)
 
-  ctable <- huxtable::as_huxtable(ctable)
-  ast_index <- which(names(ctable) == "")
-  ctable <- huxtable::add_rownames(ctable, '')
-  if (length(ast_index) == 1) {
-    colnames(ctable)[ast_index + 1] <- ""
-  }
-  ctable <- hux_theme(ctable, width = width)
-  if (length(ast_index == 1)) {
-    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                  col = ast_index + 1, "left")
-  }
-  ctable <- huxtable::add_footnote(ctable, cap)
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+    
+  # ctable <- huxtable::as_huxtable(ctable)
+  # ast_index <- which(names(ctable) == "")
+  # ctable <- huxtable::add_rownames(ctable, '')
+  # if (length(ast_index) == 1) {
+  #   colnames(ctable)[ast_index + 1] <- ""
+  # }
+  # ctable <- hux_theme(ctable, width = width)
+  # if (length(ast_index == 1)) {
+  #   ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+  #                                 col = ast_index + 1, "left")
+  # }
+  # ctable <- huxtable::add_footnote(ctable, cap)
 
-  out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  # out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  # if (context == 'latex') {
+  #   latex_deps <- huxtable::report_latex_dependencies(quiet = TRUE)
+  #   latex_deps[[length(latex_deps) + 1]] <- list(name = "babel",
+  #                                                options = c("greek", "english"))
+  #   class(latex_deps[[length(latex_deps) ]]) <- "latex_dependency"
+  #   tenv <- huxtable::tabular_environment(mod_meta)
+  #   if (tenv %in% c('tabulary', 'longtable')) {
+  #     latex_deps <- c(latex_deps, list(rmarkdown::latex_dependency(tenv)))
+  #   }
+  #   # options(kableExtra.auto_format = o_opt)
+  #   return(knitr::asis_output(out, meta = latex_deps))
+  # }
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    kableExtra_latex_deps[[length(kableExtra_latex_deps) + 1]] <-
+      list(name = "babel", options = c("greek", "english"))
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
   knitr::asis_output(out)
 
 }
@@ -1454,28 +1519,32 @@ print.summ.svyglm <- function(x, ...) {
 
 knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
-  if (!requireNamespace("huxtable")) {
-    return(knitr::normal_print(x))
-  }
+  # if (!requireNamespace("huxtable")) {
+  #   return(knitr::normal_print(x))
+  # }
 
-  if (length(options) > 0) {
-    if ("width" %in% names(options)) {
-      width <- options$width
-    } else {
-      width <- .2
-    }
-  }
+  # if (length(options) > 0) {
+  #   if ("width" %in% names(options)) {
+  #     width <- options$width
+  #   } else {
+  #     width <- .2
+  #   }
+  # }
 
   # saving input object as j
   j <- x
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
+
   # Helper function to deal with table rounding, significance stars
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
-  context <- huxtable::guess_knitr_output_format()
-  if (context == "") {context <- "screen"}
+  # context <- huxtable::guess_knitr_output_format()
+  # if (context == "") {context <- "screen"}
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -1504,12 +1573,14 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
       )
     }
 
-    mod_meta <- huxtable::as_huxtable(mod_meta)
-    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
-                          use_colnames = FALSE, width = width)
-    out <- format(mod_meta, output = context)
+    # mod_meta <- huxtable::as_huxtable(mod_meta)
+    # mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+    #                       use_colnames = FALSE, width = width)
+    # out <- format(mod_meta, output = context)
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+
   } else {
-    out <- NULL
+    mod_meta <- NULL
   }
 
   if (x$model.fit == T) {
@@ -1529,10 +1600,12 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
       )
     }
 
-    stats <- huxtable::as_huxtable(stats)
-    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
-                       width = width)
-    out <- paste(out, format(stats, output = context), "\n\n")
+    # stats <- huxtable::as_huxtable(stats)
+    # stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+    #                    width = width)
+    # out <- paste(out, format(stats, output = context), "\n\n")
+
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL) 
 
   }
 
@@ -1541,21 +1614,31 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: Robust", ss)
 
-  ctable <- huxtable::as_huxtable(ctable)
-  ast_index <- which(names(ctable) == "")
-  ctable <- huxtable::add_rownames(ctable, '')
-  if (length(ast_index) == 1) {
-    colnames(ctable)[ast_index + 1] <- ""
-  }
-  ctable <- hux_theme(ctable, width = width)
-  if (length(ast_index == 1)) {
-    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                  col = ast_index + 1, "left")
-  }
-  ctable <- huxtable::add_footnote(ctable, cap)
+  # ctable <- huxtable::as_huxtable(ctable)
+  # ast_index <- which(names(ctable) == "")
+  # ctable <- huxtable::add_rownames(ctable, '')
+  # if (length(ast_index) == 1) {
+  #   colnames(ctable)[ast_index + 1] <- ""
+  # }
+  # ctable <- hux_theme(ctable, width = width)
+  # if (length(ast_index == 1)) {
+  #   ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+  #                                 col = ast_index + 1, "left")
+  # }
+  # ctable <- huxtable::add_footnote(ctable, cap)
+  if (context == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
 
-  out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    kableExtra_latex_deps[[length(kableExtra_latex_deps) + 1]] <-
+      list(name = "babel", options = c("greek", "english"))
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
   knitr::asis_output(out)
+  # out <- paste(out, format(ctable, output = context), sep = "\n\n")
+  # knitr::asis_output(out)
 
 }
 
@@ -1582,6 +1665,10 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #' @param re.variance Should random effects variances be expressed in
 #'  standard deviations or variances? Default, to be consistent with previous
 #'  versions of `jtools`, is `"sd"`. Use `"var"` to get the variance instead.
+#' @param re.table Show table summarizing variance of random effects? Default
+#'  is TRUE.
+#' @param groups.table Show table summarizing the grouping variables? Default
+#'  is TRUE.
 #' @param conf.method Argument passed to [lme4::confint.merMod()]. Default
 #'  is `"Wald"`, but `"profile"` or `"boot"` are better when accuracy is a
 #'  priority. Be aware that both of the alternate methods are sometimes very
@@ -1758,7 +1845,8 @@ summ.merMod <- function(
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
   re.variance = getOption("summ-re.variance", c("sd", "var")),
-  which.cols = NULL, ...) {
+  which.cols = NULL, re.table = getOption("summ-re.table", TRUE),
+  groups.table = getOption("summ-groups.table", TRUE), ...) {
 
   j <- list()
 
@@ -2059,8 +2147,8 @@ summ.merMod <- function(
                  df = df, p_calc = p_calc, r.squared = r.squared,
                  failed.rsq = failed.rsq, test.stat = tcol,
                  standardize.response = transform.response,
-                 exp = exp,
-                 scale.response = transform.response)
+                 exp = exp, scale.response = transform.response,
+                 re.table = re.table, groups.table = groups.table)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -2154,16 +2242,20 @@ print.summ.merMod <- function(x, ...) {
 
   }
 
-  cat(underline("\nRANDOM EFFECTS:\n"))
-  rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
-  #rownames(rtable) <- rep("", times = nrow(rtable))
-  print(rtable, row.names = FALSE)
+  if (x$re.table == TRUE) {
+    cat(underline("\nRANDOM EFFECTS:\n"))
+    rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
+    #rownames(rtable) <- rep("", times = nrow(rtable))
+    print(rtable, row.names = FALSE)
+  }
 
-  cat(underline("\nGrouping variables:\n"))
-  gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
-  gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
-  #rownames(gtable) <- rep("", times = nrow(gtable))
-  print(gtable, row.names = FALSE)
+  if (x$groups.table == TRUE) {
+    cat(underline("\nGrouping variables:\n"))
+    gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
+    gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
+    #rownames(gtable) <- rep("", times = nrow(gtable))
+    print(gtable, row.names = FALSE)
+  }
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -2176,28 +2268,36 @@ print.summ.merMod <- function(x, ...) {
 
 knit_print.summ.merMod <- function(x, options = NULL, ...) {
 
-  if (!requireNamespace("huxtable")) {
-    return(knitr::normal_print(x))
-  }
+  # if (!requireNamespace("kableExtra")) {
+  #   return(knitr::normal_print(x))
+  # }
 
   # saving input object as j
   j <- x
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  if (length(options) > 0) {
-    if ("width" %in% names(options)) {
-      width <- options$width
-    } else {
-      width <- .2
-    }
-  }
+  # if (length(options) > 0) {
+  #   if ("width" %in% names(options)) {
+  #     width <- options$width
+  #   } else {
+  #     width <- .2
+  #   }
+  # }
 
   # Helper function to deal with table rounding, significance stars
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
-  context <- huxtable::guess_knitr_output_format()
-  if (context == "") {context <- "screen"}
+  # context <- huxtable::guess_knitr_output_format()
+  # if (context == "") {
+  #   context <- "screen"
+  # } else if (context %nin% c("latex", "html", "md", "screen")) {
+  #   context <- "html"
+  # }
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  if (length(format) == 0) {format <- "html"}
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -2225,14 +2325,15 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
         value = c(obs, mod_info$dv, mod_info$type)
       )
     }
+    
+    mod_meta %<>% to_kable(format = format, col.names = NULL)
 
-    mod_meta <- huxtable::as_huxtable(mod_meta)
-    mod_meta <- hux_theme(mod_meta, caption = "Model Info",
-                          use_colnames = FALSE, width = width)
-    out <- format(mod_meta, output = context)
-  } else {
-    out <- NULL
-  }
+    # mod_meta <- huxtable::as_huxtable(mod_meta)
+    # mod_meta <- hux_theme(mod_meta, caption = "Model Info",
+    #                       use_colnames = FALSE, width = width)
+    # out <- format(mod_meta, output = context)
+    # print(mod_meta)
+  } else {mod_meta <- NULL}
 
   if (x$model.fit == T) {
 
@@ -2252,12 +2353,12 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
       )
     }
 
-    stats <- huxtable::as_huxtable(stats)
-    stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
-                       width = width)
-    out <- paste(out, format(stats, output = context), "\n\n")
+    # stats <- huxtable::as_huxtable(stats)
+    # stats <- hux_theme(stats, caption = "Model Fit", use_colnames = FALSE,
+    #                    width = width)
+    stats %<>% to_kable(format = format, col.names = NULL)
 
-  }
+  } else {stats <- NULL}
 
   cap <- NULL
 
@@ -2301,36 +2402,62 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste0("; ", ss)} else {ss}
   cap <- paste(cap, ss)
 
-  ctable <- huxtable::as_huxtable(ctable)
-  ast_index <- which(names(ctable) == "")
-  ctable <- huxtable::add_rownames(ctable, '')
-  if (length(ast_index) == 1) {
-    colnames(ctable)[ast_index + 1] <- ""
-  }
-  ctable <- hux_theme(ctable, caption = "Fixed Effects", width = width)
-  if (length(ast_index == 1)) {
-    ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
-                                  col = ast_index + 1, "left")
-  }
+  # ctable <- huxtable::as_huxtable(ctable)
+  # ast_index <- which(names(ctable) == "")
+  # ctable <- huxtable::add_rownames(ctable, '')
+  # if (length(ast_index) == 1) {
+  #   colnames(ctable)[ast_index + 1] <- ""
+  # }
+  # ctable <- hux_theme(ctable, caption = "Fixed Effects", width = width)
+  # if (length(ast_index == 1)) {
+  #   ctable <- huxtable::set_align(ctable, row = 2:nrow(ctable),
+  #                                 col = ast_index + 1, "left")
+  # }
+  num_cols <- ncol(ctable)
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, cols = num_cols + 1,
+                       caption = "Fixed Effects", footnote = cap)
   # ctable <- huxtable::set_align(ctable, row = 1, col = 1:ncol(ctable), "center")
-  if (!is.null(cap)) {
-    ctable <- huxtable::add_footnote(ctable, cap)
+  if (length(cap) != 0) { # I'm getting a character(0) object here sometimes
+    # ctable <- huxtable::add_footnote(ctable, cap)
+    ctable <- kableExtra::add_footnote(ctable, label = cap, notation = "none")
   }
 
-  rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
-  rtable <- huxtable::as_huxtable(rtable)
-  rtable <- hux_theme(rtable, align_body = "center", caption = "Random Effects",
-                      width = width)
+  if (x$re.table == TRUE) {
+    rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
+    # rtable <- huxtable::as_huxtable(rtable)
+    # rtable <- hux_theme(rtable, align_body = "center", caption = "Random Effects",
+    #                     width = width)
+    rtable %<>% to_kable(format = format, row.names = FALSE, 
+                         cols = ncol(j$rcoeftable), caption = "Random Effects",
+                         html = FALSE)
+  } else {rtable <- NULL}
 
-  gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
-  gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
-  gtable <- huxtable::as_huxtable(gtable)
-  gtable <- hux_theme(gtable, align_body = "center",
-                      caption = "Grouping Variables", width = width)
-
-  out <- paste(out, format(ctable, output = context),
-               format(rtable, output = context),
-               format(gtable, output = context), sep = "\n\n")
+  if (x$groups.table == TRUE) {
+    gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
+    gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
+    # gtable <- huxtable::as_huxtable(gtable)
+    # gtable <- hux_theme(gtable, align_body = "center",
+    #                     caption = "Grouping Variables", width = width)
+    gtable %<>% to_kable(format = format, cols = ncol(j$gvars), 
+                         caption = "Grouping Variables", html = FALSE)
+  } else {gtable <- NULL}
+  
+  # out <- paste(c(mod_meta, stats, ctable, rtable, gtable), collapse = "\n\n")
+  # if (context == 'latex') {
+  #   latex_deps <- huxtable::report_latex_dependencies(quiet = TRUE)
+  #   tenv <- huxtable::tabular_environment(ctable)
+  #   if (tenv %in% c('tabulary', 'longtable')) {
+  #     latex_deps <- c(latex_deps, list(rmarkdown::latex_dependency(tenv)))
+  #   }
+  #   options(kableExtra.auto_format = o_opt)
+  #   return(knitr::asis_output(out, meta = latex_deps))
+  # }
+  out <- paste(mod_meta, stats, ctable, rtable, gtable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
   knitr::asis_output(out)
 
 }
