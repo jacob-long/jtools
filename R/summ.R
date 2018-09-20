@@ -532,22 +532,34 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
       value = c(obs, mod_info$dv, mod_info$type)
     )
     
-    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+    if (x$model.fit == FALSE | is.null(x$modpval)) {
+      mod_meta %<>% to_kable(format = format, row.names = FALSE,
+                             col.names = NULL)
+    }
 
   } else {
     mod_meta <- NULL
   }
 
   if (x$model.fit == T && !is.null(x$modpval)) {
-    stats <- data.frame(stat = c(paste0("F(", x$fnum, ",", x$fden, ")"),
+    stats <- data.frame(datum = c(paste0("F(", x$fnum, ",", x$fden, ")"),
                        "R\u00B2", "Adj. R\u00B2"),
                   value = c(num_print(x$fstat, digits = x$digits),
                        num_print(x$rsq, digits = x$digits),
                        num_print(x$arsq, digits = x$digits)),
                        stringsAsFactors = FALSE
                   )
-    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
-  } else {stats <- NULL}
+    if (is.null(mod_meta)) {
+      mod_meta %<>%
+        to_kable(format = format, row.names = FALSE, col.names = NULL)
+    } else {
+      df <- rbind(mod_meta, stats)
+      mod_meta %<>% to_kable(format = format, row.names = FALSE,
+                             col.names = NULL) %>%
+        kableExtra::group_rows("Model Info", 1, 3) %>%
+        kableExtra::group_rows("Model Fit", 4, 6)
+    }
+  }
 
   se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS")
   # Notifying user if variables altered from original fit
