@@ -563,6 +563,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modx.values = NULL,
       dt[[modx]] <- dt[[modx]] - modxvals2[i]
     } else {
       dt[[modx]] <- relevel(dt[[modx]], ref = modxvals2[i])
+      dt[[modx]] <- stats::C(dt[[modx]], "contr.treatment")
     }
 
     if (!is.null(mod2)) {
@@ -572,6 +573,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modx.values = NULL,
         dt[[mod2]] <- dt[[mod2]] - mod2vals2[j]
       } else {
         dt[[mod2]] <- relevel(dt[[mod2]], ref = mod2vals2[j])
+        dt[[mod2]] <- stats::C(dt[[mod2]], "contr.treatment")
       }
 
 
