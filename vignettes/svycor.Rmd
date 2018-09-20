@@ -2,7 +2,7 @@
 title: "Calculate correlations and correlation tables with complex survey data"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: rmdformats::html_clean
 vignette: >
   %\VignetteIndexEntry{Calculate correlations and correlation tables with complex survey data}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,7 +11,8 @@ vignette: >
 
 ```{r echo=FALSE}
 required <- c("survey", "weights")
-knitr::opts_chunk$set(message=F, warning=F)
+knitr::opts_chunk$set(message=F, warning=F, fig.options = list(type = "cairo"),
+                      comment = "")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
 library(jtools)

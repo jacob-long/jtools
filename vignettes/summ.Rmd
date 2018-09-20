@@ -2,7 +2,7 @@
 title: "Tools for summarizing and visualizing regression models"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: rmdformats::html_clean
 vignette: >
   %\VignetteIndexEntry{Tools for summarizing and visualizing regression models}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,7 +14,8 @@ required <- c("survey", "huxtable", "broom", "lme4", "quantreg")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
 knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 5,
-                      render = knitr::normal_print
+                      render = knitr::normal_print,
+                      fig.options = list(type = "cairo")
                       )
 library(jtools)
 ```
@@ -82,7 +83,7 @@ Model types supported are `lm`, `glm`, `svyglm`, `merMod`, and `rq`, though
 not all will be reviewed in detail here.
 
 **Note:** The output in this vignette will mimic how it looks in the R console,
-but if you are generating your own RMarkdown documents and have `huxtable`
+but if you are generating your own RMarkdown documents and have `kableExtra`
 installed, you'll instead get some prettier looking tables like this:
 
 ```{r render = 'knit_print'}
