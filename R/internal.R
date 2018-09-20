@@ -727,9 +727,10 @@ mod_rank <- function(model) {
 #' @importFrom magrittr "%<>%"
 to_kable <- function(t, html = !knitr::is_latex_output(), caption = NULL,
                      cols = NULL, footnote = NULL, row.names = FALSE,
-                     col.names = NA, escape = FALSE, format = NULL) {
+                     col.names = NA, escape = knitr::is_latex_output(),
+                     format = NULL) {
   
-  format <- ifelse(html, yes = "html", no = "latex")
+  # format <- ifelse(html, yes = "html", no = "latex")
   t %<>% knitr::kable(format = format, row.names = row.names,
                       col.names = col.names, escape = escape,
                       booktabs = TRUE)
