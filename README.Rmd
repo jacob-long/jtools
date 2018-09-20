@@ -11,7 +11,11 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/",
   fig.width = 6.5,
   fig.height = 4,
-  render = knitr::normal_print
+  render = knitr::normal_print,
+  dev.args=list(type="cairo"),
+  # dev = "png",
+  dpi = 300,
+  retina = 1
 )
 library(jtools)
 ```

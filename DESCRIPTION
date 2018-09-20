@@ -40,6 +40,7 @@ Suggests:
   weights,
     knitr,
     rmarkdown,
+    rmdformats,
     testthat
 RoxygenNote: 6.1.0.9000
 VignetteBuilder: knitr
