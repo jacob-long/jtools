@@ -502,7 +502,8 @@ print.summ.lm <- function(x, ...) {
 
 knit_print.summ.lm <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra"))) {
+  if (!nzchar(system.file(package = "kableExtra")) |
+      getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -532,10 +533,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
       value = c(obs, mod_info$dv, mod_info$type)
     )
     
-    if (x$model.fit == FALSE | is.null(x$modpval)) {
-      mod_meta %<>% to_kable(format = format, row.names = FALSE,
-                             col.names = NULL)
-    }
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
 
   } else {
     mod_meta <- NULL
@@ -549,17 +547,8 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
                        num_print(x$arsq, digits = x$digits)),
                        stringsAsFactors = FALSE
                   )
-    if (is.null(mod_meta)) {
-      mod_meta %<>%
-        to_kable(format = format, row.names = FALSE, col.names = NULL)
-    } else {
-      df <- rbind(mod_meta, stats)
-      mod_meta %<>% to_kable(format = format, row.names = FALSE,
-                             col.names = NULL) %>%
-        kableExtra::group_rows("Model Info", 1, 3) %>%
-        kableExtra::group_rows("Model Fit", 4, 6)
-    }
-  }
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+  } else {stats <- NULL}
 
   se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS")
   # Notifying user if variables altered from original fit
@@ -567,7 +556,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: ", se_info, ss)
 
-  if (context == "html") {ctable %<>% escape_stars()}
+  if (format == "html") {ctable %<>% escape_stars()}
   ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
 
   out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
@@ -946,7 +935,7 @@ print.summ.glm <- function(x, ...) {
 
 knit_print.summ.glm <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra"))) {
+  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -996,12 +985,12 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   }
 
   if (x$model.fit == T) {
-    if (context != "latex" && Sys.info()[['sysname']] != "Windows") {
+    if (format != "latex" && Sys.info()[['sysname']] != "Windows") {
       chi <- "\U1D6D8\u00B2("
       # alternately -> "\U0001D712\u00B2("
-    } else if (context == "latex") {
-      chi <- "\\foreignlanguage{greek}{\u03C7}\u00B2("
-    } else if (context == "html") {
+    } else if (format == "latex") {
+      chi <- "$\\chi^2$("
+    } else if (format == "html") {
       chi <- "&chi;\u00B2("
     } else {
       chi <- "chi\u00B2("
@@ -1018,7 +1007,8 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
                         stringsAsFactors = FALSE
     )
 
-    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL,
+                        escape = FALSE)
   
   } else {stats <- NULL}
 
@@ -1438,7 +1428,7 @@ print.summ.svyglm <- function(x, ...) {
 
 knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra"))) {
+  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -1513,7 +1503,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: Robust", ss)
 
-  if (context == "html") {ctable %<>% escape_stars()}
+  if (format == "html") {ctable %<>% escape_stars()}
   ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
 
   out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
@@ -2153,7 +2143,7 @@ print.summ.merMod <- function(x, ...) {
 
 knit_print.summ.merMod <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra"))) {
+  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -2268,7 +2258,8 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
   num_cols <- ncol(ctable)
   if (format == "html") {ctable %<>% escape_stars()}
   ctable %<>% to_kable(format = format, cols = num_cols + 1,
-                       caption = "Fixed Effects", footnote = cap)
+                       caption = "Fixed Effects", footnote = cap,
+                       row.names = TRUE)
 
   if (x$re.table == TRUE) {
     rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")

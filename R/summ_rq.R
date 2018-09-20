@@ -288,7 +288,8 @@ print.summ.rq <- function(x, ...) {
 
 knit_print.summ.rq <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra"))) {
+  if (!nzchar(system.file(package = "kableExtra")) |
+      getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
