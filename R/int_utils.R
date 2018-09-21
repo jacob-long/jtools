@@ -518,7 +518,7 @@ center_values_non_survey <- function(d, weights, omitvars, centered) {
       centered <- centered[centered %nin% omitvars]
     }
     if (length(centered) > 0) {
-      vals <- sapply(d[centered], function(x, weights, na.rm) {
+      vals <- lapply(d[centered], function(x, weights, na.rm) {
         if (is.numeric(x)) {
           return(weighted.mean(x, weights, na.rm = na.rm))
         } else {
@@ -533,7 +533,7 @@ center_values_non_survey <- function(d, weights, omitvars, centered) {
     vars <- names(d)[names(d) %nin% omitvars]
 
     if (length(vars) > 0) {
-      vals <- sapply(d[vars], function(x, weights, na.rm) {
+      vals <- lapply(d[vars], function(x, weights, na.rm) {
         if (is.numeric(x)) {
           return(weighted.mean(x, weights, na.rm = na.rm))
         } else {
@@ -583,7 +583,7 @@ center_values_survey <- function(d, omitvars, design = NULL,
       } else {vals <- NULL}
       
       if (length(facvars) > 0) { # return ref level of non-numerics
-        vals <- c(vals, sapply(d[facvars], function(x) {
+        vals <- c(vals, lapply(d[facvars], function(x) {
           return(levels(factor(x))[1])
         }))
       }
@@ -604,7 +604,7 @@ center_values_survey <- function(d, omitvars, design = NULL,
       } else {vals <- NULL}
       
       if (length(facvars) > 0) { # return ref level of non-numerics
-        vals <- c(vals, sapply(d[facvars], function(x) {
+        vals <- c(vals, lapply(d[facvars], function(x) {
           return(levels(factor(x))[1])
         }))
       }
@@ -1123,7 +1123,7 @@ make_pred_frame_cont <- function(d, pred, modx, modxvals2, mod2, mod2vals2,
   if (!is.null(vals)) {
     vals <- vals[names(vals) %nin% c(offname,modx,mod2,pred,resp)]
     for (var in names(vals)) {
-      pm[[var]] <- rep(vals[var], times = nrow(pm))
+      pm[[var]] <- rep(vals[[var]], times = nrow(pm))
     }
   }
 
@@ -1215,7 +1215,7 @@ make_pred_frame_cat <- function(d, pred,
   if (!is.null(vals)) {
     vals <- vals[names(vals) %nin% c(offname, modx, mod2, pred, resp)]
     for (var in names(vals)) {
-      pm[[var]] <- rep(vals[var], times = nrow(pm))
+      pm[[var]] <- rep(vals[[var]], times = nrow(pm))
     }
   }
 
