@@ -9,6 +9,8 @@ states$o70 <- 0
 states$o70[states$`Life Exp` > 70] <- 1
 states$o70n <- states$o70
 states$o70 <- factor(states$o70)
+states$o70l <- states$`Life Exp` > 70
+states$o70c <- ifelse(states$o70l, yes = "yes", no = "no")
 set.seed(3)
 states$wts <- runif(50, 0, 3)
 fit <- lm(Income ~ HSGrad*Murder*Illiteracy + o70 + Area, data = states)
@@ -16,6 +18,8 @@ fit2 <- lm(Income ~ HSGrad*o70, data = states)
 fit2n <- lm(Income ~ HSGrad*o70n, data = states)
 fitw <- lm(Income ~ HSGrad*Murder*Illiteracy + o70 + Area, data = states,
            weights = wts)
+fitl <- lm(Income ~ HSGrad*o70l, data = states)
+fitc <- lm(Income ~ HSGrad*Murder + o70c, data = states)
 
 if (requireNamespace("survey")) {
   suppressMessages(library(survey, quietly = TRUE))
@@ -113,6 +117,28 @@ test_that("interact_plot works for weighted lm", {
                              modx = Illiteracy,
                              mod2 = HSGrad,
                              centered = "all"))
+  expect_silent(print(p))
+})
+
+test_that("sim_slopes and interact_plot work for lm w/ logical", {
+  expect_silent(sim_slopes(model = fitl,
+                           pred = HSGrad,
+                           modx = o70l,
+                           johnson_neyman = FALSE))
+  expect_silent(p <- interact_plot(model = fitl,
+                           pred = HSGrad,
+                           modx = o70l))
+  expect_silent(print(p))
+})
+
+test_that("sim_slopes and interact_plot work for lm w/ non-focal character", {
+  expect_silent(sim_slopes(model = fitc,
+                           pred = HSGrad,
+                           modx = Murder,
+                           johnson_neyman = FALSE))
+  expect_silent(p <- interact_plot(model = fitc,
+                                   pred = HSGrad,
+                                   modx = Murder))
   expect_silent(print(p))
 })
 
