@@ -687,7 +687,7 @@ data_checks <- function(model, data, pred.values = NULL,
   }
 
   facvars <- names(which(sapply(d, function(x) {
-    is.factor(x) | is.character(x)
+    !is.numeric(x)
     })
   ))
 
