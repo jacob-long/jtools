@@ -148,12 +148,12 @@ mod_vals <- function(d, modx, modx.values, survey, weights,
                      sims = FALSE, facet.modx = FALSE, force.cat = FALSE) {
 
   # Get moderator mean
-  if (survey == FALSE & !is.factor(d[[modx]]) & !is.character(d[[modx]])) {
+  if (survey == FALSE & is.numeric(d[[modx]])) {
 
     modmean <- weighted.mean(d[[modx]], weights, na.rm = TRUE)
     modsd <- wtd.sd(d[[modx]], weights)
 
-  } else if (survey == TRUE & !is.factor(d[[modx]]) & !is.character(d[[modx]])) {
+  } else if (survey == TRUE & is.numeric(d[[modx]])) {
 
     modsd <- svysd(as.formula(paste("~", modx, sep = "")), design = design)
     # Have to construct the formula this way since the syntax for svymean
@@ -168,7 +168,7 @@ mod_vals <- function(d, modx, modx.values, survey, weights,
   if (is.character(modx.values) & length(modx.values) == 1) {char1 <- TRUE}
 
   # If using a preset, send to auto_mod_vals function
-  if (!is.factor(d[[modx]]) && force.cat == FALSE &&
+  if (is.numeric(d[[modx]]) && force.cat == FALSE &&
       (is.null(modx.values) | is.character(modx.values))) {
 
     modxvals2 <- auto_mod_vals(d, modx.values = modx.values, modx = modx,
@@ -180,7 +180,7 @@ mod_vals <- function(d, modx, modx.values, survey, weights,
   }
 
   # For user-specified numbers or factors, go here
-  if (is.null(modx.values) && (is.factor(d[[modx]]) | force.cat == TRUE)) {
+  if (is.null(modx.values) && (!is.numeric(d[[modx]]) | force.cat == TRUE)) {
 
     modxvals2 <- ulevels(d[[modx]])
     if (is.null(modx.labels)) {
@@ -194,8 +194,8 @@ mod_vals <- function(d, modx, modx.values, survey, weights,
     }
     names(modxvals2) <- modx.labels
 
-  } else if (!is.null(modx.values) & ((is.numeric(modx.values) & force.cat == FALSE) |
-                                   char1 == FALSE)) {
+  } else if (!is.null(modx.values) &
+             ((is.numeric(modx.values) & force.cat == FALSE) | char1 == FALSE)) {
     # Use user-supplied values otherwise
 
     if (!is.null(modx.labels)) {
@@ -717,7 +717,7 @@ prep_data <- function(model, d, pred, modx, mod2, pred.values = NULL,
 
   }
 
-  if (is.factor(d[[pred]]) | is.character(d[[pred]])) {
+  if (!is.numeric(d[[pred]])) {
     facpred <- TRUE
     if (is.character(d[[pred]])) {d[[pred]] <- factor(d[[pred]])}
   } else if (force.cat == FALSE) {
@@ -727,15 +727,9 @@ prep_data <- function(model, d, pred, modx, mod2, pred.values = NULL,
   }
 
   # Setting default for colors
-  if (!is.null(modx) && (is.factor(d[[modx]]) | is.character(d[[modx]]))) {
+  if (!is.null(modx) && !is.numeric(d[[modx]])) {
     facmod <- TRUE
     if (is.character(d[[modx]])) {d[[modx]] <- factor(d[[modx]])}
-    # # Unrelated, but good place to throw a warning
-    # if (!is.null(modxvals) && length(modxvals) != nlevels(d[[modx]])) {
-    #   warning("All levels of factor must be used. Ignoring modxvals",
-    #           " argument...")
-    #   modxvals <- NULL
-    # }
   } else if (force.cat == FALSE | is.null(modx)) {
     facmod <- FALSE
   } else if (!is.null(modx)) {
@@ -747,11 +741,9 @@ prep_data <- function(model, d, pred, modx, mod2, pred.values = NULL,
   }
 
   # Fix character mod2 as well
-  if (!is.null(mod2) && is.factor(d[[mod2]])) {
+  if (!is.null(mod2) && !is.numeric(d[[mod2]])) {
     facmod2 <- TRUE
-  } else if (!is.null(mod2) && is.character(d[[mod2]])) {
-    d[[mod2]] <- factor(d[[mod2]])
-    facmod2 <- TRUE
+    if (is.character(d[[mod2]])) {d[[mod2]] <- factor(d[[mod2]])}
   } else if (force.cat == FALSE | is.null(mod2)) {
     facmod2 <- FALSE
   } else if (!is.null(mod2)) {
