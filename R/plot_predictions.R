@@ -84,7 +84,7 @@
 #'
 plot_predictions <- function(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   resp = NULL, data = NULL, geom = c("point", "line", "bar", "boxplot"),
-  plot.points = FALSE, interval = TRUE,
+  plot.points = FALSE, interval = FALSE,
   pred.values = NULL, modx.values = NULL, mod2.values = NULL, linearity.check = FALSE,
   facet.modx = FALSE, x.label = NULL, y.label = NULL, pred.labels = NULL,
   modx.labels = NULL, mod2.labels = NULL, main.title = NULL, legend.main = NULL,
