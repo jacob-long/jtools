@@ -865,6 +865,11 @@ get_dist_curves <- function(tidies, order, models, rescale.distributions) {
 
 #' @export tidy.summ
 #' @rdname glance.summ
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.lm)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.glm)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.svyglm)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.merMod)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.rq)}
 
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
@@ -987,6 +992,11 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 #'
 #' @rdname glance.summ
 #' @export glance.summ.lm
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.lm)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.glm)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.svyglm)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.merMod)}
+#' @rawNamespace if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.rq)}
 
 glance.summ.lm <- function(x, ...) {
 

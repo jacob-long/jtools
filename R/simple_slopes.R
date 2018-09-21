@@ -1049,6 +1049,10 @@ nobs.sim_slopes <- function(object, ...) {
 #'
 #' @export as_huxtable.sim_slopes
 #' @rdname as_huxtable.sim_slopes
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(huxtable::as_huxtable, sim_slopes)
+#' }
 
 as_huxtable.sim_slopes <-  function(x, format = "{estimate} ({std.error})",
   sig.levels = c(`***` = .001, `**` = .01, `*` = .05, `#` = .1),
