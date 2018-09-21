@@ -1,3 +1,34 @@
+# jtools 1.1.1
+
+This is a minor release.
+
+## Bug fixes
+
+* `plot_predictions` had an incorrect default value for `interval`, causing
+an error if you used the default arguments with `make_predictions`. The default
+is now `FALSE`. (#39)
+* `interact_plot`, `cat_plot`, and `effect_plot` would have errors when the
+models included covariates (not involved in the interaction, if any) that
+were non-numeric. That has been corrected. (#41)
+* Logical variables (with values of `TRUE` or `FALSE`) were not handled by
+the plotting functions appropriately, causing them to be treated as numeric.
+They are now preserved as logical. (#40).
+* `sim_slopes` gave inaccurate results when factor moderators did not have
+treatment coding (`"contr.treatment"`) but are now recoded to treatment 
+coding.
+
+## Other changes
+
+* `summ` output in RMarkdown documents is now powered by `kableExtra`, which
+(in my opinion) offers more attractive HTML output and seems to have better
+luck with float placement in PDF documents. Your mileage may vary.
+* 2 vignettes are now made with `rmdformats` rather than the base `rmarkdown`
+template.
+* S3 methods for S3 generics that aren't imported by the package (`tidy` and
+`glance` from `broom`, `knit_print` from `knitr`, `as_huxtable` from `huxtable`)
+will now have conditional namespace registration for users of R 3.6. This 
+shouldn't have much effect on end users.
+
 # jtools 1.1.0
 
 This release was initally intended to be a bugfix release, but enough other

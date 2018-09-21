@@ -6,7 +6,7 @@
 \usage{
 plot_predictions(predictions, pred = NULL, modx = NULL, mod2 = NULL,
   resp = NULL, data = NULL, geom = c("point", "line", "bar",
-  "boxplot"), plot.points = FALSE, interval = TRUE,
+  "boxplot"), plot.points = FALSE, interval = FALSE,
   pred.values = NULL, modx.values = NULL, mod2.values = NULL,
   linearity.check = FALSE, facet.modx = FALSE, x.label = NULL,
   y.label = NULL, pred.labels = NULL, modx.labels = NULL,
