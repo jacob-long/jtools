@@ -501,6 +501,7 @@ sim_slopes <- function(model, pred, modx, mod2 = NULL, modx.values = NULL,
       } else {
         dt[[mod2]] <- factor(dt[[mod2]])
         dt[[mod2]] <- relevel(dt[[mod2]], ref = as.character(mod2vals2[j]))
+        dt[[mod2]] <- stats::C(dt[[mod2]], "contr.treatment")
       }
 
     }
