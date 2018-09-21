@@ -518,8 +518,13 @@ center_values_non_survey <- function(d, weights, omitvars, centered) {
       centered <- centered[centered %nin% omitvars]
     }
     if (length(centered) > 0) {
-      vals <- sapply(d[centered], weighted.mean, weights = weights,
-                     na.rm = TRUE)
+      vals <- sapply(d[centered], function(x, weights, na.rm) {
+        if (is.numeric(x)) {
+          return(weighted.mean(x, weights, na.rm = na.rm))
+        } else {
+          return(levels(factor(x))[1])
+        }
+      }, weights = weights, na.rm = TRUE)
     }
 
   } else if (centered == "all") {
@@ -528,7 +533,13 @@ center_values_non_survey <- function(d, weights, omitvars, centered) {
     vars <- names(d)[names(d) %nin% omitvars]
 
     if (length(vars) > 0) {
-      vals <- sapply(d[vars], weighted.mean, weights = weights)
+      vals <- sapply(d[vars], function(x, weights, na.rm) {
+        if (is.numeric(x)) {
+          return(weighted.mean(x, weights, na.rm = na.rm))
+        } else {
+          return(levels(factor(x))[1])
+        }
+      }, weights = weights, na.rm = TRUE)
     }
 
   } else if (centered == "none") {
@@ -562,7 +573,20 @@ center_values_survey <- function(d, omitvars, design = NULL,
     }
 
     if (length(centered) > 0) {
-      vals <- survey::svymean(survey::make.formula(centered), design)
+      # Pulling out non-numeric vars
+      facvars <- sapply(d[centered], is.numeric)
+      facvars <- names(facvars[facvars == FALSE])
+      if (length(facvars) > 0) {centered <- centered[centered %nin% facvars]}
+      
+      if (length(centered) > 0) { # might have just pulled out all non-focals
+        vals <- survey::svymean(survey::make.formula(centered), design)
+      } else {vals <- NULL}
+      
+      if (length(facvars) > 0) { # return ref level of non-numerics
+        vals <- c(vals, sapply(d[facvars], function(x) {
+          return(levels(factor(x))[1])
+        }))
+      }
     }
     d <- design$variables
 
@@ -571,7 +595,19 @@ center_values_survey <- function(d, omitvars, design = NULL,
     vars <- names(d)[names(d) %nin% omitvars]
 
     if (length(vars) > 0) {
-      vals <- survey::svymean(survey::make.formula(vars), design)
+      facvars <- sapply(d[vars], is.numeric)
+      facvars <- names(facvars[facvars == FALSE])
+      if (length(facvars) > 0) {vars <- vars[vars %nin% facvars]}
+      
+      if (length(vars) > 0) { # might have just pulled out all non-focals
+        vals <- survey::svymean(survey::make.formula(vars), design)
+      } else {vals <- NULL}
+      
+      if (length(facvars) > 0) { # return ref level of non-numerics
+        vals <- c(vals, sapply(d[facvars], function(x) {
+          return(levels(factor(x))[1])
+        }))
+      }
     }
 
   } else if (centered == "none") {
@@ -776,7 +812,8 @@ prep_data <- function(model, d, pred, modx, mod2, pred.values = NULL,
     facvars[facvars %nin% c(pred, resp, modx, mod2, wname, offname)]
 
   # Create omitvars variable; we don't center any of these
-  omitvars <- c(pred, resp, modx, mod2, wname, offname, facvars,
+  omitvars <- c(pred, resp, modx, mod2, wname, offname, 
+                # facvars,
                 "(weights)", "(offset)")
 
   if (survey == FALSE) {
