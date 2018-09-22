@@ -306,7 +306,7 @@ test_that("sim_slopes handles offsets", {
 # fitrs <- stan_glmer(incidence ~ size * as.numeric(period) + (1 | herd),
 #                   data = lme4::cbpp, family = poisson,
 #                   # this next line is only to keep the example small in size!
-#                   chains = 2, cores = 2, seed = 12345, iter = 2000)
+#                   chains = 2, cores = 2, seed = 12345, iter = 500)
 # saveRDS(fitrs, "rsafit.rds")
 
 #### brms and rstanarm tests #################################################
