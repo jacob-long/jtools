@@ -217,7 +217,7 @@ if (requireNamespace("lme4")) {
 
 }
 \references{
-Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth’s
+Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth's
 $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
 Evolution}, \emph{5}, 944–946. \url{https://doi.org/10.1111/2041-210X.12225}
 
