@@ -4,5 +4,7 @@
 * Windows 2012 Server (on Appveyor) R-release, R-devel
 
 ## R CMD check results
-There were no ERRORS, WARNINGS, or NOTES.
+I occasionally get a NOTE about invalid URLs. Some of them are doi.org 
+URLs and in these cases they are false positives. At the time of submission,
+a link to u-tokyo.ac.jp appears to be temporarily down.
 
