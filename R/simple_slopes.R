@@ -924,8 +924,14 @@ print.sim_slopes <- function(x, ...) {
 
 #### alternate output formats ################################################
 
-#' @export tidy.sim_slopes
 #' @rdname glance.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(broom::tidy, sim_slopes)
+#' } else {
+#'   export(tidy.sim_slopes)
+#' }
+
 
 tidy.sim_slopes <- function(x, conf.level = .95, ...) {
 

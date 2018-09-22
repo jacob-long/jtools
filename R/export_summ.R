@@ -721,9 +721,14 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     if (!is.null(ex_args)) {
 
       method_stub <- find_S3_class("tidy", mods[[i]], package = "broom")
+      if (getRversion() < 3.5) {
       # getS3method() only available in R >= 3.3
-      the_method <- get(paste0("tidy.", method_stub), asNamespace("broom"),
-                        mode = "function")
+        the_method <- get(paste0("tidy.", method_stub), asNamespace("broom"),
+                          mode = "function")
+      } else {
+        the_method <- utils::getS3method("tidy", method_stub,
+                                         envir = asNamespace("broom"))
+      }
       method_args <- formals(the_method)
 
       method_args <-

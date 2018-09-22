@@ -38,6 +38,12 @@ if (getRversion() >= "3.6.0") {
 }
 
 if (getRversion() >= "3.6.0") {
+  S3method(broom::tidy, sim_slopes)
+} else {
+  export(tidy.sim_slopes)
+}
+
+if (getRversion() >= "3.6.0") {
   S3method(broom::tidy, summ)
 } else {
   export(tidy.summ)
@@ -141,7 +147,6 @@ export(summ)
 export(svycor)
 export(svysd)
 export(theme_apa)
-export(tidy.sim_slopes)
 export(weights_tests)
 export(wgttest)
 import(ggplot2)
