@@ -7,9 +7,8 @@ latex: false
 
 r:
   - release
-  - patched
   - devel
-  - old-rel
+  - oldrel
 
 addons:
   apt:
