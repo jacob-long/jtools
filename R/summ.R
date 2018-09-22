@@ -497,10 +497,11 @@ print.summ.lm <- function(x, ...) {
 #' @param options Chunk options.
 #' @param ... Ignored.
 #' @rdname knit_print.summ
-#' @export knit_print.summ.lm
 #' @rawNamespace 
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(knitr::knit_print, summ.lm)
+#' } else {
+#'   export(knitr::knit_print, summ.lm)
 #' }
 
 knit_print.summ.lm <- function(x, options = NULL, ...) {
@@ -933,11 +934,12 @@ print.summ.glm <- function(x, ...) {
 }
 
 
-#' @export knit_print.summ.glm
 #' @rdname knit_print.summ
 #' @rawNamespace 
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(knitr::knit_print, summ.glm)
+#' } else {
+#'   export(knitr::knit_print, summ.glm)
 #' }
 
 knit_print.summ.glm <- function(x, options = NULL, ...) {
@@ -1430,11 +1432,12 @@ print.summ.svyglm <- function(x, ...) {
 
 }
 
-#' @export knit_print.summ.svyglm
 #' @rdname knit_print.summ
 #' @rawNamespace 
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(knitr::knit_print, summ.svyglm)
+#' } else {
+#'   export(knitr::knit_print, summ.svyglm)
 #' }
 
 knit_print.summ.svyglm <- function(x, options = NULL, ...) {
@@ -2149,11 +2152,12 @@ print.summ.merMod <- function(x, ...) {
 
 }
 
-#' @export knit_print.summ.merMod
 #' @rdname knit_print.summ
 #' @rawNamespace 
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(knitr::knit_print, summ.merMod)
+#' } else {
+#'   export(knitr::knit_print, summ.merMod)
 #' }
 
 knit_print.summ.merMod <- function(x, options = NULL, ...) {

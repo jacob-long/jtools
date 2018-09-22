@@ -2,27 +2,81 @@
 
 
 if (getRversion() >= "3.6.0") {
+  S3method(broom::glance, sim_slopes)
+} else {
+  export(glance.sim_slopes)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(broom::glance, summ.glm)
+} else {
+  export(glance.summ.glm)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(broom::glance, summ.lm)
+} else {
+  export(glance.summ.lm)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(broom::glance, summ.merMod)
+} else {
+  export(glance.summ.merMod)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(broom::glance, summ.rq)
+} else {
+  export(glance.summ.rq)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(broom::glance, summ.svyglm)
+} else {
+  export(glance.summ.svyglm)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(broom::tidy, summ)
+} else {
+  export(tidy.summ)
+}
+
+if (getRversion() >= "3.6.0") {
   S3method(huxtable::as_huxtable, sim_slopes)
+} else {
+  export(as_huxtable.sim_slopes)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.glm)
+} else {
+  export(knitr::knit_print, summ.glm)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.lm)
+} else {
+  export(knitr::knit_print, summ.lm)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.merMod)
+} else {
+  export(knitr::knit_print, summ.merMod)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.rq)
+} else {
+  export(knitr::knit_print, summ.rq)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.svyglm)
+} else {
+  export(knitr::knit_print, summ.svyglm)
 }
 S3method(getCall,summ)
 S3method(make_predictions,brmsfit)
@@ -60,7 +114,6 @@ S3method(summ,svyglm)
 export(add_gridlines)
 export(add_x_gridlines)
 export(add_y_gridlines)
-export(as_huxtable.sim_slopes)
 export(cat_plot)
 export(center)
 export(center_mod)
@@ -69,21 +122,10 @@ export(drop_x_gridlines)
 export(drop_y_gridlines)
 export(effect_plot)
 export(export_summs)
-export(glance.sim_slopes)
-export(glance.summ.glm)
-export(glance.summ.lm)
-export(glance.summ.merMod)
-export(glance.summ.rq)
-export(glance.summ.svyglm)
 export(gscale)
 export(interact_plot)
 export(j_summ)
 export(johnson_neyman)
-export(knit_print.summ.glm)
-export(knit_print.summ.lm)
-export(knit_print.summ.merMod)
-export(knit_print.summ.rq)
-export(knit_print.summ.svyglm)
 export(make_predictions)
 export(pf_sv_test)
 export(plot_coefs)
@@ -100,19 +142,8 @@ export(svycor)
 export(svysd)
 export(theme_apa)
 export(tidy.sim_slopes)
-export(tidy.summ)
 export(weights_tests)
 export(wgttest)
-if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.glm)}
-if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.lm)}
-if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.merMod)}
-if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.rq)}
-if (getRversion() >= "3.6.0") {S3method(broom::glance, summ.svyglm)}
-if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.glm)}
-if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.lm)}
-if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.merMod)}
-if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.rq)}
-if (getRversion() >= "3.6.0") {S3method(broom::tidy, summ.svyglm)}
 import(ggplot2)
 importFrom(cli,cat_rule)
 importFrom(cli,rule)

@@ -1011,7 +1011,12 @@ tidy.sim_slopes <- function(x, conf.level = .95, ...) {
 
 }
 
-#' @export glance.sim_slopes
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(broom::glance, sim_slopes)
+#' } else {
+#'   export(glance.sim_slopes)
+#' }
 #' @rdname glance.summ
 
 glance.sim_slopes <- function(x, ...) {
@@ -1049,11 +1054,12 @@ nobs.sim_slopes <- function(object, ...) {
 #'
 #' For more on what you can do with a `huxtable`, see \pkg{huxtable}.
 #'
-#' @export as_huxtable.sim_slopes
 #' @rdname as_huxtable.sim_slopes
 #' @rawNamespace 
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(huxtable::as_huxtable, sim_slopes)
+#' } else {
+#'   export(as_huxtable.sim_slopes)
 #' }
 
 as_huxtable.sim_slopes <-  function(x, format = "{estimate} ({std.error})",
