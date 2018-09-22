@@ -287,7 +287,7 @@ print.summ.rq <- function(x, ...) {
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(knitr::knit_print, summ.rq)
 #' } else {
-#'   export(knitr::knit_print, summ.rq)
+#'   export(knit_print.summ.rq)
 #' }
 
 knit_print.summ.rq <- function(x, options = NULL, ...) {

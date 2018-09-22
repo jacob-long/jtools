@@ -52,31 +52,31 @@ if (getRversion() >= "3.6.0") {
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.glm)
 } else {
-  export(knitr::knit_print, summ.glm)
+  export(knit_print.summ.glm)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.lm)
 } else {
-  export(knitr::knit_print, summ.lm)
+  export(knit_print.summ.lm)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.merMod)
 } else {
-  export(knitr::knit_print, summ.merMod)
+  export(knit_print.summ.merMod)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.rq)
 } else {
-  export(knitr::knit_print, summ.rq)
+  export(knit_print.summ.rq)
 }
 
 if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.svyglm)
 } else {
-  export(knitr::knit_print, summ.svyglm)
+  export(knit_print.summ.svyglm)
 }
 S3method(getCall,summ)
 S3method(make_predictions,brmsfit)
