@@ -378,6 +378,39 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
 
 }
 
+#### Quantile regression helpers ##############################################
+
+# Get R1 (Koenker & Machado, 1999)
+#' @importFrom stats model.response
+R1 <- function(model) {
+  rho_1 <- model$rho
+  null_resids <- model.frame(model)[[1]] - quantile(model.frame(model)[[1]],
+                                                    model$tau)
+  
+  rho_0 <- sum(null_resids * (model$tau - (null_resids < 0)))
+  
+  return(1 - (rho_1 / rho_0))
+}
+
+rq_model_matrix <- function(object) {
+  mt <- terms(object)
+  m <- model.frame(object)
+  y <- model.response(m)
+  if (object$method == "sfn")
+    x <- object$model$x
+  else x <- model.matrix(mt, m, contrasts = object$contrasts)
+  return(x)
+}
+
+rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
+                      iid = TRUE, interp = TRUE, tcrit = TRUE, ...) {
+  
+  rq.fit.br(x, y, tau = tau, alpha = alpha, ci = ci, iid = iid,
+            interp = interp, tcrit = tcrit)
+  
+}
+
+
 #' @rdname glance.summ
 
 glance.summ.rq <- function(x, ...) {
