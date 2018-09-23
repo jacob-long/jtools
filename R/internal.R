@@ -730,10 +730,21 @@ to_kable <- function(t, html = !knitr::is_latex_output(), caption = NULL,
                      col.names = NA, escape = knitr::is_latex_output(),
                      format = NULL) {
   
+  # I've already converted numeric values to character, so I need to
+  # tell kable to right-align them like it would do for numbers
+  if (row.names == TRUE) {
+    numerics <- names(t) %nin% ""
+    align <- ifelse(numerics, yes = "r", no = "l")
+  } else if (ncol(t) == 2) {
+    align <- c("l", "r")
+  } else {
+    align <- NULL
+  }
+  
   # format <- ifelse(html, yes = "html", no = "latex")
   t %<>% knitr::kable(format = format, row.names = row.names,
                       col.names = col.names, escape = escape,
-                      booktabs = TRUE)
+                      booktabs = TRUE, align = align)
   
   if (length(caption) > 0) { # I'm getting a character(0) object here sometimes
     head <- cols
@@ -756,7 +767,9 @@ to_kable <- function(t, html = !knitr::is_latex_output(), caption = NULL,
   }
   
   if (length(footnote) > 0) {
-    t %<>% kableExtra::add_footnote(label = footnote, notation = "none")
+    t %<>% kableExtra::footnote(general = footnote, 
+                                general_title = "",
+                                threeparttable = TRUE)
   }
   
   return(t)

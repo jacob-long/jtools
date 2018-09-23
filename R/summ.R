@@ -560,6 +560,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
   cap <- paste0("Standard errors: ", se_info, ss)
 
+  # pandoc turns single asterisks into a big dot
   if (format == "html") {ctable %<>% escape_stars()}
   ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
 
