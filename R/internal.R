@@ -150,60 +150,6 @@ escapeRegex <- function(string) {
   gsub('([.|()\\^{}+$*?]|\\[|\\])', '\\\\\\1', string)
 }
 
-#### ncvTest #################################################################
-
-## Taken from car package with modifications so it doesn't break j_summ
-ncvTest <- function(model, ...){
-  UseMethod("ncvTest")
-}
-
-ncvTest.lm <- function(model, var.formula, ...) {
-  # data <- getCall(model)$data
-  # model <- if (!is.null(data)){
-  #   data <- eval(data, envir=environment(formula(model)))
-  #   update(model, formula(model), na.action="na.exclude", data=data)
-  # }
-  # else update(model, formula(model), na.action="na.exclude")
-  sumry <- summary(model)
-  residuals <- residuals(model, type = "pearson")
-  S.sq <- stats::df.residual(model) * (sumry$sigma)^2 / sum(!is.na(residuals))
-  .U <- (residuals^2) / S.sq
-  if (missing(var.formula)) {
-    mod <- lm(.U ~ fitted.values(model))
-    varnames <- "fitted.values"
-    var.formula <- ~ fitted.values
-    df <- 1
-  }
-  else {
-    form <- as.formula(paste0(".U ~ ", as.character(var.formula)[[2]]))
-    mod <- if (!is.null(data)) {
-      data$.U <- .U
-      lm(form, data = data)
-    }
-    else lm(form)
-    df <- sum(!is.na(coefficients(mod))) - 1
-  }
-  SS <- anova(mod)$"Sum Sq"
-  RegSS <- sum(SS) - SS[length(SS)]
-  Chisq <- RegSS/2
-  result <- list(formula = var.formula, formula.name = "Variance",
-                 ChiSquare = Chisq, Df = df,
-                 p = stats::pchisq(Chisq, df, lower.tail = FALSE),
-                 test = "Non-constant Variance Score Test")
-  class(result) <- "chisqTest"
-  result
-}
-
-# print.chisqTest <- function(x, ...) {
-#   title <- if (!is.null(x$test)) x$test else "Chisquare Test"
-#   cat(title,"\n")
-#   if (!is.null(x$formula)) cat(x$formula.name,
-#                                "formula:", as.character(x$formula), "\n")
-#   cat("Chisquare =", x$ChiSquare,"   Df =", x$Df,
-#       "    p =", x$p, "\n")
-#   invisible(x)
-# }
-
 ### Hadley update #############################################################
 # from https://stackoverflow.com/questions/13690184/update-inside-a-function-
 # only-searches-the-global-environment

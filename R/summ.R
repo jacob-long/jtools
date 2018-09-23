@@ -117,10 +117,6 @@ j_summ <- summ
 #'
 #' @param model.fit Toggles printing of model fit statistics.
 #'
-#' @param model.check Toggles whether to perform Breusch-Pagan test for
-#'  heteroskedasticity
-#'  and print number of high-leverage observations. See details for more info.
-#'
 #' @param data If you provide the data used to fit the model here, that data
 #'   frame is used to re-fit the model (if `scale` is `TRUE`)
 #'   instead of the [stats::model.frame()]
@@ -173,27 +169,6 @@ j_summ <- summ
 #'  use these as a heuristic when used alongside robust standard errors; do
 #'  not report the "robust" partial and semipartial correlations in
 #'  publications.
-#'
-#'  There are two pieces of information given for \code{model.check}, provided
-#'  that the model is an \code{lm} object. First, a Breusch-Pagan test is
-#'  performed with \code{\link[car]{ncvTest}}. This is a
-#'  hypothesis test for which the alternative hypothesis is heteroskedastic
-#'  errors. The test becomes much more likely to be statistically significant
-#'  as the sample size increases; however, the homoskedasticity assumption
-#'  becomes less important to inference as sample size increases (Lumley,
-#'  Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
-#'  graphical checks rather than a definitive decision. Note that the use of
-#'  robust standard errors can account for heteroskedasticity, though some
-#'  oppose this approach (see King & Roberts, 2015).
-#'
-#'  The second piece of information provided by setting \code{model.check} to
-#'  \code{TRUE} is the number of high leverage observations. There are no hard
-#'  and fast rules for determining high leverage either, but in this case it is
-#'  based on Cook's Distance. All Cook's Distance values greater than (4/N) are
-#'  included in the count. Again, this is not a recommendation to locate and
-#'  remove such observations, but rather to look more closely with graphical
-#'  and other methods.
-#'
 #'
 #' @return If saved, users can access most of the items that are returned in
 #'   the output (and without rounding).
@@ -248,8 +223,7 @@ summ.lm <- function(
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
-  which.cols = NULL,  ...) {
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
 
   j <- list()
 
@@ -405,17 +379,6 @@ summ.lm <- function(
                               pvals = pvals, t.col = "t val.",
                               others = part.corr.arg)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
-
-  # Implement model checking features
-  if (model.check == TRUE) {
-
-    homoskedp <- ncvTest(model)$p
-    j <- structure(j, homoskedp = homoskedp)
-
-    cd <- table(cooks.distance(model) > 4 / n)
-    j <- structure(j, cooksdf = cd[2])
-
-  }
 
   j <- structure(j, rsq = rsq, arsq = arsq, dv = names(model$model[1]),
                  npreds = model$rank - df.int, lmClass = class(model),
