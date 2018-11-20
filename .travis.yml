@@ -3,13 +3,16 @@
 language: R
 sudo: false
 cache: packages
+latex: false
 
 r:
-- release
-- devel
+  - release
+  - devel
 
-before_install:
-  Rscript -e 'update.packages(ask = FALSE)'
+addons:
+  apt:
+    packages:
+      - libnlopt-dev
 
 r_packages:
   - covr

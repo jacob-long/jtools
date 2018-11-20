@@ -9,3 +9,8 @@
 ^.*\.sublime-project$
 ^.*\.sublime-workspace$
 ^_pkgdown.yaml$
+^download_count.R$
+^misc$
+^\.vscode$
+^revdep$
+^_pkgdown\.yml$

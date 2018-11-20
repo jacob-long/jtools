@@ -4,8 +4,8 @@
 \alias{svysd}
 \title{Calculate standard deviations with complex survey data}
 \usage{
-svysd(formula, design, na.rm = FALSE, digits = getOption("jtools-digits",
-  default = 3), ...)
+svysd(formula, design, na.rm = FALSE,
+  digits = getOption("jtools-digits", default = 3), ...)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the term(s) of interest.}
@@ -36,6 +36,7 @@ This function was designed independent of the \pkg{survey} package and
 is neither endorsed nor known to its authors.
 }
 \examples{
+if (requireNamespace("survey")) {
  library(survey)
  data(api)
  # Create survey design object
@@ -44,6 +45,7 @@ is neither endorsed nor known to its authors.
 
  # Print the standard deviation of some variables
  svysd(~api00+ell+meals, design = dstrat)
+}
 
 }
 \seealso{

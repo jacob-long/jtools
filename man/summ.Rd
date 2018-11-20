@@ -7,10 +7,10 @@
 summ(model, ...)
 }
 \arguments{
-\item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
-\code{\link[lme4]{merMod}} object.}
+\item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},
+\code{\link[lme4]{merMod}}, \code{\link[quantreg]{rq}} object.}
 
-\item{...}{Other arguments to be passed to the model.specific function.}
+\item{...}{Other arguments to be passed to the model-specific function.}
 }
 \description{
 To get specific documentation, choose the appropriate link to the
@@ -23,6 +23,7 @@ type of model that you want to summarize from the details section.
 \item \code{\link{summ.glm}}
 \item \code{\link{summ.svyglm}}
 \item \code{\link{summ.merMod}}
+\item \code{\link{summ.rq}}
 
 }
 }

@@ -5,20 +5,22 @@
 \alias{j_summ.svyglm}
 \title{Complex survey regression summaries with options}
 \usage{
-\method{summ}{svyglm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
-  ci.width = 0.95, digits = getOption("jtools-digits", default = 2),
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  pvals = TRUE, n.sd = 1, center = FALSE, scale.response = FALSE,
-  odds.ratio = FALSE, ...)
+\method{summ}{svyglm}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  digits = getOption("jtools-digits", default = 2),
+  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  transform.response = FALSE, exp = FALSE,
+  vifs = getOption("summ-vifs", FALSE),
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
+  which.cols = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{svyglm} object.}
 
 \item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
-
-\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
-factors (VIF). Default is \code{FALSE}.}
 
 \item{confint}{Show confidence intervals instead of standard errors? Default
 is \code{FALSE}.}
@@ -33,18 +35,8 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{model.info}{Toggles printing of basic information on sample size,
-name of DV, and number of predictors.}
-
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
-
-\item{model.check}{Toggles whether to perform Breusch-Pagan test for
-heteroskedasticity
-and print number of high-leverage observations. See details for more info.}
-
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
-are not printed. Default is \code{TRUE}, except for merMod objects (see
-details).}
+are not printed. Default is \code{TRUE}.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
@@ -52,13 +44,29 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
+\item{transform.response}{Should scaling/centering apply to response
+variable? Default is \code{FALSE}.}
 
-\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+\item{exp}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
+
+\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
+factors (VIF). Default is \code{FALSE}.}
+
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of model fit statistics.}
+
+\item{model.check}{Toggles whether to perform Breusch-Pagan test for
+heteroskedasticity
+and print number of high-leverage observations. See details for more info.}
+
+\item{which.cols}{Developmental feature. By providing columns by name,
+you can add/remove/reorder requested columns in the output. Not fully
+supported, for now.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
@@ -84,7 +92,7 @@ console:
 \item The sample size
 \item The name of the outcome variable
 \item The (Pseudo-)R-squared value and AIC.
-\item A table with regression coefficients, standard errors, t-values, and
+\item A table with regression coefficients, standard errors, t values, and
 p values.
 }
 
@@ -98,13 +106,15 @@ refit means the runtime will be similar to the original time it took to fit
 the model.
 }
 \examples{
-library(survey)
-data(api)
-dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
-                    data = apistrat, fpc =~ fpc)
-regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
+if (requireNamespace("survey")) {
+  library(survey)
+  data(api)
+  dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
+                      data = apistrat, fpc =~ fpc)
+  regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 
-summ(regmodel)
+  summ(regmodel)
+}
 }
 \seealso{
 \code{\link{scale_lm}} can simply perform the standardization if

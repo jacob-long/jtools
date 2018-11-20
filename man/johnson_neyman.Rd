@@ -4,13 +4,18 @@
 \alias{johnson_neyman}
 \title{Calculate Johnson-Neyman intervals for 2-way interactions}
 \usage{
-johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05, plot = TRUE,
-  control.fdr = FALSE, line.thickness = 0.5, df = "residual",
-  digits = getOption("jtools-digits", 2))
+johnson_neyman(model, pred, modx, vmat = NULL, alpha = 0.05,
+  plot = TRUE, control.fdr = FALSE, line.thickness = 0.5,
+  df = "residual", digits = getOption("jtools-digits", 2),
+  critical.t = NULL, sig.color = "#00BFC4", insig.color = "#F8766D",
+  mod.range = NULL, title = "Johnson-Neyman plot")
 }
 \arguments{
-\item{model}{A regression model of type \code{lm} or \code{\link[survey]{svyglm}}.
-It should contain the interaction of interest.}
+\item{model}{A regression model. It is tested with \code{lm}, \code{glm}, and
+\code{svyglm} objects, but others may work as well. It should contain the
+interaction of interest. Be aware that just because the computations
+work, this does not necessarily mean the procedure is appropriate for
+the type of model you have.}
 
 \item{pred}{The predictor variable involved in the interaction.}
 
@@ -47,6 +52,29 @@ report in the output. Default is 2. You can change the default number of
 digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
+
+\item{critical.t}{If you want to provide the critical test statistic instead
+relying on a normal or \emph{t} approximation, or the \code{control.fdr} calculation,
+you can give that value here. This allows you to use other methods for
+calculating it.}
+
+\item{sig.color}{Sets the color for areas of the Johnson-Neyman plot where
+the slope of the moderator is significant at the specified level. \code{"black"}
+can be a good choice for greyscale publishing.}
+
+\item{insig.color}{Sets the color for areas of the Johnson-Neyman plot where
+the slope of the moderator is insignificant at the specified level. \code{"grey"}
+can be a good choice for greyscale publishing.}
+
+\item{mod.range}{The range of values of the moderator (the x-axis) to plot.
+By default, this goes from one standard deviation below the observed range
+to one standard deviation above the observed range and the observed range
+is highlighted on the plot. You could instead choose to provide the
+actual observed minimum and maximum, in which case the range of the
+observed data is not highlighted in the plot. Provide the range as a vector,
+e.g., \code{c(0, 10)}.}
+
+\item{title}{The plot title. \code{"Johnson-Neyman plot"} by default.}
 }
 \value{
 \item{bounds}{The two numbers that make up the interval.}
@@ -104,9 +132,9 @@ johnson_neyman(model = fit, pred = Murder,
 
 }
 \references{
-Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and multilevel
-regression: Inferential and graphical techniques. \emph{Multivariate Behavioral
-Research}, \emph{40}(3), 373-400.
+Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+multilevel regression: Inferential and graphical techniques.
+\emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 \url{http://doi.org/10.1207/s15327906mbr4003_5}
 
 Esarey, J., & Sumner, J. L. (2017). Marginal effects in interaction models:

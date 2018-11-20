@@ -5,7 +5,7 @@
 \title{Test whether sampling weights are needed}
 \usage{
 weights_tests(model, weights, data, model_output = TRUE, test = NULL,
-  sims = 1000, digits = getOption("jtools-digits", default = 3))
+  sims = 1000, digits = getOption("jtools-digits", default = 2))
 }
 \arguments{
 \item{model}{The fitted model, without weights}
@@ -14,7 +14,8 @@ weights_tests(model, weights, data, model_output = TRUE, test = NULL,
 or a vector of weights equal in length to the number of observations
 included in \code{model}.}
 
-\item{data}{The data frame with the data fed to the fitted model and the weights}
+\item{data}{The data frame with the data fed to the fitted model and the
+weights}
 
 \item{model_output}{Should a summary of the model with weights as predictor
 be printed? Default is TRUE, but you may not want it if you are trying to
@@ -53,11 +54,13 @@ This function just runs each of them for you.
 
 # Note: This is a contrived example to show how the function works,
 # not a case with actual sammpling weights from a survey vendor
-states <- as.data.frame(state.x77)
-set.seed(100)
-states$wts <- runif(50, 0, 3)
-fit <- lm(Murder ~ Illiteracy + Frost, data = states)
-weights_tests(model = fit, data = states, weights = wts, sims = 100)
+if (requireNamespace("boot")) {
+  states <- as.data.frame(state.x77)
+  set.seed(100)
+  states$wts <- runif(50, 0, 3)
+  fit <- lm(Murder ~ Illiteracy + Frost, data = states)
+  weights_tests(model = fit, data = states, weights = wts, sims = 100)
+}
 
 }
 \references{

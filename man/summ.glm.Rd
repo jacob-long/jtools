@@ -5,20 +5,23 @@
 \alias{j_summ.glm}
 \title{Generalized linear regression summaries with options}
 \usage{
-\method{summ}{glm}(model, scale = FALSE, vifs = FALSE, confint = FALSE,
-  ci.width = 0.95, robust = FALSE, robust.type = "HC3", cluster = NULL,
-  digits = getOption("jtools-digits", default = 2), odds.ratio = FALSE,
-  model.info = TRUE, model.fit = TRUE, pvals = TRUE, n.sd = 1,
-  center = FALSE, scale.response = FALSE, ...)
+\method{summ}{glm}(model, scale = FALSE,
+  confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", 0.95),
+  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  vifs = getOption("summ-vifs", FALSE),
+  digits = getOption("jtools-digits", default = 2), exp = FALSE,
+  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
+  ...)
 }
 \arguments{
 \item{model}{A \code{glm} object.}
 
 \item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
-
-\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
-factors (VIF). Default is \code{FALSE}.}
 
 \item{confint}{Show confidence intervals instead of standard errors? Default
 is \code{FALSE}.}
@@ -27,22 +30,23 @@ is \code{FALSE}.}
 desired confidence interval. Default is \code{.95}, which corresponds
 to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
 
-\item{robust}{If \code{TRUE}, reports heteroskedasticity-robust standard
+\item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
 errors instead of conventional SEs. These are also known as Huber-White
-standard errors.
+standard errors. There are several options provided by
+\code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}: \code{"HC0"}, \code{"HC1"}, \code{"HC2"}, \code{"HC3"}, \code{"HC4"},
+\code{"HC4m"}, \code{"HC5"}.
 
 Default is \code{FALSE}.
 
 This requires the \code{sandwich} package to compute the
 standard errors.}
 
-\item{robust.type}{Only used if \code{robust = TRUE}. Specifies the type of
-robust standard errors to be used by \code{sandwich}. By default, set to
-\code{"HC3"}. See details for more on options.}
-
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.}
+
+\item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
+factors (VIF). Default is \code{FALSE}.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
@@ -50,19 +54,13 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{odds.ratio}{If \code{TRUE}, reports exponentiated coefficients with
+\item{exp}{If \code{TRUE}, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.}
 
-\item{model.info}{Toggles printing of basic information on sample size,
-name of DV, and number of predictors.}
-
-\item{model.fit}{Toggles printing of R-squared and adjusted R-squared.}
-
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
-are not printed. Default is \code{TRUE}, except for merMod objects (see
-details).}
+are not printed. Default is \code{TRUE}.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
@@ -70,8 +68,23 @@ predictors be divided by? Default is 1, though some suggest 2.}
 \item{center}{If you want coefficients for mean-centered variables but don't
 want to standardize, set this to \code{TRUE}.}
 
-\item{scale.response}{Should standardization apply to response variable?
-Default is \code{FALSE}.}
+\item{transform.response}{Should scaling/centering apply to response
+variable? Default is \code{FALSE}.}
+
+\item{data}{If you provide the data used to fit the model here, that data
+frame is used to re-fit the model (if \code{scale} is \code{TRUE})
+instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
+of the model. This is particularly useful if you have variable
+transformations or polynomial terms specified in the formula.}
+
+\item{model.info}{Toggles printing of basic information on sample size,
+name of DV, and number of predictors.}
+
+\item{model.fit}{Toggles printing of model fit statistics.}
+
+\item{which.cols}{Developmental feature. By providing columns by name,
+you can add/remove/reorder requested columns in the output. Not fully
+supported, for now.}
 
 \item{...}{This just captures extra arguments that may only work for other
 types of models.}
@@ -91,16 +104,17 @@ Much other information can be accessed as attributes.
 \code{summary}, but formatted differently with more options.
 }
 \details{
-By default, this function will print the following items to the console:
+By default, this function will print the following items to the
+console:
 \itemize{
 \item The sample size
 \item The name of the outcome variable
-\item The (Pseudo-)R-squared value and AIC/BIC.
-\item A table with regression coefficients, standard errors, t-values, and
+\item The chi-squared test, (Pseudo-)R-squared value and AIC/BIC.
+\item A table with regression coefficients, standard errors, z values, and
 p values.
 }
 
-There are several options available for \code{robust.type}. The heavy
+There are several options available for \code{robust}. The heavy
 lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
 described.
 Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
@@ -113,7 +127,7 @@ or is a vector of clusters.
 
 The \code{scale} and \code{center} options are performed via
 refitting
-the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
 respectively. Each of those in turn uses \code{\link{gscale}} for the
 mean-centering and scaling.
 }

@@ -9,15 +9,17 @@
 #'   \item \code{\link{summ.glm}}
 #'   \item \code{\link{summ.svyglm}}
 #'   \item \code{\link{summ.merMod}}
+#'   \item \code{\link{summ.rq}}
 #'
 #' }
 #'
-#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
-#'   \code{\link[lme4]{merMod}} object.
-#' @param ... Other arguments to be passed to the model.specific function.
+#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},
+#'   \code{\link[lme4]{merMod}}, \code{\link[quantreg]{rq}} object.
+#' @param ... Other arguments to be passed to the model-specific function.
 #'
 #'
 #' @export
+#' @importFrom stats nobs
 #'
 
 
@@ -50,7 +52,7 @@ summ <- function(model, ...) {
 
 j_summ <- summ
 
-#### lm ########################################################################
+#### lm #######################################################################
 
 #' Linear regression summaries with options
 #'
@@ -72,18 +74,16 @@ j_summ <- summ
 #'   desired confidence interval. Default is \code{.95}, which corresponds
 #'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
 #'
-#' @param robust If \code{TRUE}, reports heteroskedasticity-robust standard
+#' @param robust If not `FALSE`, reports heteroskedasticity-robust standard
 #'   errors instead of conventional SEs. These are also known as Huber-White
-#'   standard errors.
+#'   standard errors. There are several options provided by
+#'   [sandwich::vcovHC()]: `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"`, `"HC4"`,
+#'   `"HC4m"`, `"HC5"`.
 #'
 #'   Default is \code{FALSE}.
 #'
 #'   This requires the \code{sandwich} package to compute the
 #'    standard errors.
-#'
-#' @param robust.type Only used if \code{robust = TRUE}. Specifies the type of
-#'   robust standard errors to be used by \code{sandwich}. By default, set to
-#'   \code{"HC3"}. See details for more on options.
 #'
 #' @param cluster For clustered standard errors, provide the column name of
 #'   the cluster variable in the input data frame (as a string). Alternately,
@@ -96,8 +96,7 @@ j_summ <- summ
 #'   number.
 #'
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
-#'  are not printed. Default is \code{TRUE}, except for merMod objects (see
-#'  details).
+#'  are not printed. Default is \code{TRUE}.
 #'
 #' @param n.sd If \code{scale = TRUE}, how many standard deviations should
 #'  predictors be divided by? Default is 1, though some suggest 2.
@@ -105,8 +104,8 @@ j_summ <- summ
 #' @param center If you want coefficients for mean-centered variables but don't
 #'    want to standardize, set this to \code{TRUE}.
 #'
-#' @param scale.response Should standardization apply to response variable?
-#'    Default is \code{FALSE}.
+#' @param transform.response Should scaling/centering apply to response
+#'    variable? Default is \code{FALSE}.
 #'
 #' @param part.corr Print partial (labeled "partial.r") and
 #'  semipartial (labeled "part.r") correlations with the table?
@@ -116,11 +115,21 @@ j_summ <- summ
 #' @param model.info Toggles printing of basic information on sample size,
 #'   name of DV, and number of predictors.
 #'
-#' @param model.fit Toggles printing of R-squared and adjusted R-squared.
+#' @param model.fit Toggles printing of model fit statistics.
 #'
 #' @param model.check Toggles whether to perform Breusch-Pagan test for
 #'  heteroskedasticity
 #'  and print number of high-leverage observations. See details for more info.
+#'
+#' @param data If you provide the data used to fit the model here, that data
+#'   frame is used to re-fit the model (if `scale` is `TRUE`)
+#'   instead of the [stats::model.frame()]
+#'   of the model. This is particularly useful if you have variable
+#'   transformations or polynomial terms specified in the formula.
+#'
+#' @param which.cols Developmental feature. By providing columns by name,
+#'   you can add/remove/reorder requested columns in the output. Not fully
+#'   supported, for now.
 #'
 #' @param ... This just captures extra arguments that may only work for other
 #'  types of models.
@@ -135,7 +144,7 @@ j_summ <- summ
 #'    p values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy
+#'  There are several options available for \code{robust}. The heavy
 #'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
@@ -148,7 +157,7 @@ j_summ <- summ
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
 #'
@@ -195,7 +204,7 @@ j_summ <- summ
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod}} can simply perform the standardization if
 #'  preferred.
 #'
 #'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
@@ -232,43 +241,33 @@ j_summ <- summ
 #' @aliases j_summ.lm
 
 summ.lm <- function(
-  model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
-  robust = FALSE, robust.type = "HC3", cluster = NULL,
-  digits = getOption("jtools-digits", default = 2), pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, part.corr = FALSE,
-  model.info = TRUE, model.fit = TRUE, model.check = FALSE,
-  ...) {
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  vifs = getOption("summ-vifs", FALSE),
+  digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
+  n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
+  part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
+  which.cols = NULL,  ...) {
 
   j <- list()
 
   dots <- list(...)
 
-  # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(!any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
-
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package",
-              "installed. Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
 
   # Using information from summary()
   sum <- summary(model)
@@ -279,36 +278,34 @@ summ.lm <- function(
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd,
-                      scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd,
+                      scale.response = transform.response,
+                      data = data)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_lm(model)
+    model <- center_mod(model, center.response = transform.response,
+                        data = data)
     # Using information from summary()
     sum <- summary(model)
 
   }
 
   j <- structure(j, standardize = scale, vifs = vifs, robust = robust,
-                 robust.type = robust.type, digits = digits,
-                 model.info = model.info, model.fit = model.fit,
-                 model.check = model.check, n.sd = n.sd, center = center,
-                 call = the_call, env = the_env, scale = scale)
-
-  if (!all(attributes(model$terms)$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
+                 digits = digits, model.info = model.info,
+                 model.fit = model.fit, model.check = model.check,
+                 n.sd = n.sd, center = center, call = the_call,
+                 env = the_env, scale = scale, data = data,
+                 transform.response = transform.response)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
     df.int <- if (attr(model$terms, "intercept"))
-      1L
-    else 0L
+      1L else 0L
+  } else { # intercept only
+    df.int <- 1
   }
 
   # Sample size used
@@ -323,172 +320,91 @@ summ.lm <- function(
   ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(model))
+  coefs <- unname(coef(model))
+  params <- list("Est." = coefs)
 
   # Model statistics
   fstat <- unname(sum$fstatistic[1])
   fnum <- unname(sum$fstatistic[2])
   fden <- unname(sum$fstatistic[3])
-  j <- structure(j, fstat = fstat, fnum = fnum, fden = fden)
+  if (!is.null(fstat)) {
+    modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
+  } else {modpval <- NULL}
+  j <- structure(j, fstat = fstat, fnum = fnum, fden = fden, modpval = modpval)
 
   # VIFs
   if (vifs == TRUE) {
-    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
-      tvifs <- rep(NA, 1)
-    } else {
-      tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(model))
-    }
+    tvifs <- rep(NA, length(ivs))
+    the_vifs <- unname(vif(model))
+    if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
+    tvifs[-1] <- the_vifs
+    params[["VIF"]] <- tvifs
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE) {
-
-    if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
-           " package for robust standard errors. Please install it or set",
-           " robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (is.character(cluster)) {
-
-      call <- getCall(model)
-      d <- eval(call$data, envir = environment(formula(model)))
-
-      cluster <- d[,cluster]
-      use_cluster <- TRUE
-
-    } else if (length(cluster) > 1) {
-
-      if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-        warning("Invalid cluster input. Either use the name of the variable",
-                " in the input data frame or provide a numeric/factor vector.",
-                " Cluster is not being used in the reported SEs.")
-        cluster <- NULL
-        use_cluster <- FALSE
-
-      } else {
-
-        use_cluster <- TRUE
-
-      }
-
-    } else {
-
-      use_cluster <- FALSE
-
-    }
-
-    if (robust.type %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
-      # vcovCL only goes up to HC3
-      coefs <- sandwich::vcovHC(model, type = robust.type)
-
-    } else if (robust.type %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
-
-      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
-
-    } else if (robust == TRUE) {
-
-      coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust.type)
-
-    }
-
-    coefs <- coeftest(model, coefs)
-    ses <- coefs[,2]
-    ts <- coefs[,3]
-    ps <- coefs[,4]
-
-  } else {
+  if (identical(FALSE, robust)) {
 
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
     ps <- coef(sum)[,4]
     use_cluster <- FALSE
 
-  }
-
-  if (confint == TRUE) {
-
-    alpha <- (1 - ci.width) / 2
-    tcrit <- abs(qnorm(alpha))
-
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
-
-    lci <- ucoefs - (ses * tcrit)
-    uci <- ucoefs + (ses * tcrit)
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, "t val.", "p")
-
   } else {
 
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", "t val.", "p")
+    # Pass to robust helper function
+    rob_info <- do_robust(model, robust, cluster, data)
+
+    ses <- rob_info$ses
+    ts <- rob_info$ts
+    ps <- rob_info$ps
+
+    use_cluster <- rob_info$use_cluster
+    robust <- rob_info$robust
 
   }
 
-  if (vifs == TRUE) {
-
-    params[length(params) + 1] <- list(tvifs)
-    namevec <- c(namevec, "VIF")
-
+  # Handle rank-deficient models
+  if (length(coefs) > length(ses)) {
+    # Creating a vector the length of ucoefs (which has the NAs)
+    temp_vec <- rep(NA, times = length(coefs))
+    # Now I replace only at indices where ucoefs is non-missing
+    temp_vec[which(!is.na(coefs))] <- ses
+    # Now replace params[[i]] with the vector that includes the missings
+    ses <- temp_vec
   }
+  params[c("S.E.", "t val.", "p")] <- list(ses, ts, ps)
+
+  # Alpha level to find critical t-statistic for confidence intervals
+  alpha <- (1 - ci.width) / 2
+  # Get the critical t
+  tcrit <- abs(qt(alpha, df = df.residual(model)))
+  # Make confidence interval labels
+  labs <- make_ci_labs(ci.width)
+  # Get the lower and upper CI bounds
+  lci <- coefs - (ses * tcrit)
+  uci <- coefs + (ses * tcrit)
+  # Store cis in list
+  cis <- list(lci, uci)
+  names(cis) <- labs
+
+  params[names(cis)] <- cis
 
   if (part.corr == TRUE) {
-    # Need df
-    ## Using length of t-value vector to get the p for DF calculation
-    p.df <- length(ts) - df.int # If intercept, don't include it
-    df.resid <- n - p.df - 1
 
-    partial_corrs <- ts / sqrt(ts^2 + df.resid)
-    if (df.int == 1) {
-      partial_corrs[1] <- NA # Intercept partial corr. isn't interpretable
-    }
+    pcs <- part_corr(ts, df.int, rsq, robust, n)
 
-    semipart_corrs <- (ts * sqrt(1 - rsq))/sqrt(df.resid)
-    if (df.int == 1) {
-      semipart_corrs[1] <- NA # Intercept partial corr. isn't interpretable
-    }
-
-    namevec <- c(namevec, "partial.r", "part.r")
-    pl <- length(params)
-    params[(pl + 1)] <- list(partial_corrs)
-    params[(pl + 2)] <- list(semipart_corrs)
-
-    if (robust == TRUE) {
-
-      warning("Partial/semipartial correlations calculated based on robust",
-              " t-statistics. See summ.lm documentation for cautions on",
-              " interpreting partial and semipartial correlations alongside",
-              " robust standard errors.")
-
-    }
+    partial_corr <- pcs$partial_corrs
+    part_corr <- pcs$semipart_corrs
+    params[c("partial.r", "part.r")] <- list(partial_corr, part_corr)
 
   }
 
-  mat <- matrix(nrow = length(ivs), ncol = length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  for (i in seq_len(length(params))) {
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  # Drop p-vals if user requests
-  if (pvals == FALSE) {
-
-    mat <- mat[,colnames(mat) %nin% "p"]
-
-  }
+  part.corr.arg <- if (part.corr) {c("partial.r", "part.r")} else {NULL}
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs,
+                              pvals = pvals, t.col = "t val.",
+                              others = part.corr.arg)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Implement model checking features
   if (model.check == TRUE) {
@@ -506,12 +422,10 @@ summ.lm <- function(
                  missing = missing, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = "t val.",
-                 standardize.response = scale.response,
-                 scale.response = scale.response,
-                 odds.ratio = FALSE)
-
-  modpval <- pf(fstat, fnum, fden, lower.tail = FALSE)
-  j <- structure(j, modpval = modpval)
+                 standardize.response = transform.response,
+                 scale.response = transform.response,
+                 transform.response = transform.response,
+                 exp = FALSE)
 
   j$coeftable <- mat
   j$model <- model
@@ -523,6 +437,7 @@ summ.lm <- function(
 ### PRINT METHOD
 
 #' @export
+#' @importFrom crayon underline inverse italic
 
 print.summ.lm <- function(x, ...) {
 
@@ -535,27 +450,18 @@ print.summ.lm <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    if (x$missing == 0) {
-      cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-      cat("\n")
-    } else {
-      cat("MODEL INFO:", "\n", "Observations: ", x$n, " (", x$missing,
-          " missing obs. deleted)", "\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-      cat("\n")
-    }
+    type <- paste("OLS linear regression")
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
-  if (x$model.fit == T) {
-    cat("MODEL FIT: ", "\n", "F(", x$fnum, ",", x$fden, ") = ",
-        round(x$fstat, digits = x$digits), ", p = ",
-        round(x$modpval, digits = x$digits),
-        "\n", "R-squared = ", round(x$rsq, digits = x$digits), "\n",
-        "Adj. R-squared = ",
-        round(x$arsq, digits = x$digits), "\n", "\n", sep = "")
+  if (x$model.fit == T && !is.null(x$modpval)) {
+    stats <- paste(italic("F"), "(", x$fnum, ",", x$fden, ") = ",
+        num_print(x$fstat, digits = x$digits), ", ", italic("p"), " = ",
+        num_print(x$modpval, digits = x$digits), "\n",
+        italic("R\u00B2 = "), num_print(x$rsq, digits = x$digits), "\n",
+        italic("Adj. R\u00B2 = "), num_print(x$arsq, digits = x$digits),
+        sep = "")
+    print_mod_fit(stats)
   }
 
   if (x$model.check == TRUE) {
@@ -567,54 +473,107 @@ print.summ.lm <- function(x, ...) {
       homoskedtf <- paste0("Assumption not violated (p = ",
                           round(x$homoskedp, digits = x$digits), ")")
     }
-    cat("MODEL CHECKING:", "\n", "Homoskedasticity (Breusch-Pagan) = ",
+    cat(underline("MODEL CHECKING:"), "\n",
+        "Homoskedasticity (Breusch-Pagan) = ",
         homoskedtf,
         "\n", "Number of high-leverage observations = ", x$cooksdf,
         "\n\n", sep = "")
   }
 
-  if (x$robust == FALSE) {
-
-    cat("Standard errors: OLS", "\n")
-
-  } else if (x$robust == TRUE) {
-
-    cat("Standard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-      cat(" Robust, type = ", x$robust.type, "\n", sep = "")
-
-    } else if (x$use_cluster == TRUE) {
-
-      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
-
-    }
-
-  }
+  print_se_info(x$robust, x$use_cluster, manual = "OLS")
 
   print(ctable)
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-        x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
-###### glm #####################################################################
+#' @title knitr methods for summ
+#' @description There's no reason for end users to utilize these functions,
+#' but CRAN requires it to be documented.
+#' @param x The `summ` object
+#' @param options Chunk options.
+#' @param ... Ignored.
+#' @rdname knit_print.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(knitr::knit_print, summ.lm)
+#' } else {
+#'   export(knit_print.summ.lm)
+#' }
+
+knit_print.summ.lm <- function(x, options = NULL, ...) {
+
+  if (!nzchar(system.file(package = "kableExtra")) |
+      getOption("summ-normal-print", FALSE)) {
+    return(knitr::normal_print(x))
+  }
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
+
+  if (x$model.info == TRUE) {
+    type <- paste("OLS linear regression")
+    mod_info <-
+      mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                    type = "OLS linear regression")
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+    mod_meta <- data.frame(
+      datum = c("Observations", "Dependent variable", "Type"),
+      value = c(obs, mod_info$dv, mod_info$type)
+    )
+    
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+
+  } else {
+    mod_meta <- NULL
+  }
+
+  if (x$model.fit == T && !is.null(x$modpval)) {
+    stats <- data.frame(datum = c(paste0("F(", x$fnum, ",", x$fden, ")"),
+                       "R\u00B2", "Adj. R\u00B2"),
+                  value = c(num_print(x$fstat, digits = x$digits),
+                       num_print(x$rsq, digits = x$digits),
+                       num_print(x$arsq, digits = x$digits)),
+                       stringsAsFactors = FALSE
+                  )
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+  } else {stats <- NULL}
+
+  se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS")
+  # Notifying user if variables altered from original fit
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+  cap <- paste0("Standard errors: ", se_info, ss)
+
+  # pandoc turns single asterisks into a big dot
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
+  knitr::asis_output(out)
+
+}
+
+###### glm ####################################################################
 
 #' Generalized linear regression summaries with options
 #'
@@ -622,7 +581,7 @@ print.summ.lm <- function(x, ...) {
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A `glm` object.
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#' @param exp If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
@@ -631,16 +590,17 @@ print.summ.lm <- function(x, ...) {
 #'
 #' @inheritParams summ.lm
 #'
-#' @details By default, this function will print the following items to the console:
+#' @details By default, this function will print the following items to the
+#'  console:
 #' \itemize{
 #'   \item The sample size
 #'   \item The name of the outcome variable
-#'   \item The (Pseudo-)R-squared value and AIC/BIC.
-#'   \item A table with regression coefficients, standard errors, t-values, and
+#'   \item The chi-squared test, (Pseudo-)R-squared value and AIC/BIC.
+#'   \item A table with regression coefficients, standard errors, z values, and
 #'    p values.
 #' }
 #'
-#'  There are several options available for \code{robust.type}. The heavy
+#'  There are several options available for \code{robust}. The heavy
 #'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
@@ -653,7 +613,7 @@ print.summ.lm <- function(x, ...) {
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
+#'  the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
 #'  respectively. Each of those in turn uses \code{\link{gscale}} for the
 #'  mean-centering and scaling.
 #'
@@ -707,44 +667,33 @@ print.summ.lm <- function(x, ...) {
 #'
 
 summ.glm <- function(
-  model, scale = FALSE, vifs = FALSE, confint = FALSE, ci.width = .95,
-  robust = FALSE, robust.type = "HC3",
-  cluster = NULL, digits = getOption("jtools-digits", default = 2),
-  odds.ratio = FALSE, model.info = TRUE, model.fit = TRUE, pvals = TRUE,
-  n.sd = 1, center = FALSE, scale.response = FALSE, ...) {
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  vifs = getOption("summ-vifs", FALSE),
+  digits = getOption("jtools-digits", default = 2),
+  exp = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
+  center = FALSE, transform.response = FALSE, data = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
 
   j <- list()
 
   dots <- list(...)
 
   # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(!any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
-
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package",
-              " installed. Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
-  ell <- list(...)
 
   # Using information from summary()
   sum <- summary(model)
@@ -752,20 +701,22 @@ summ.glm <- function(
   # Check missing obs
   missing <- length(sum$na.action)
 
-  if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
+  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
     warning("Model checking is not currently implemented for GLMs")
   }
 
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd, scale.response = transform.response,
+                       data = data)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_lm(model)
+    model <- center_mod(model, center.response = transform.response,
+                        data = data)
     # Using information from summary()
     sum <- summary(model)
 
@@ -775,99 +726,33 @@ summ.glm <- function(
   j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
                  center = center, call = the_call, env = the_env,
-                 scale = scale)
-
-  if (!all(attributes(model$terms)$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
+                 scale = scale, data = data,
+                 transform.response = transform.response)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
     df.int <- if (attr(model$terms, "intercept"))
-      1L
-    else 0L
+      1L else 0L
+  } else { # intercept only
+    df.int <- 1
   }
 
   # Sample size used
   n <- length(model$residuals)
   j <- structure(j, n = n)
 
-  # Calculate R-squared
-  ### Below taken from summary.lm
-  r <- model$residuals
-  f <- model$fitted.values
-  w <- model$weights
-  ## Dealing with no-intercept models, getting the df.int
-  if (is.null(w)) {
-    mss <- if (df.int == 1L)
-      sum((f - mean(f))^2)
-    else sum(f^2)
-    rss <- sum(r^2)
-  } else {
-    mss <- if (df.int == 1L) {
-      m <- sum(w * f/sum(w))
-      sum(w * (f - m)^2)
-    } else sum(w * f^2)
-    rss <- sum(w * r^2)
-    r <- sqrt(w) * r
-  }
-
-  ## Namespace issues require me to define pR2 here
-  pR2 <- function(object) {
-    llh <- suppressWarnings(logLik(object))
-    if (is.null(attr(terms(formula(object)),"offset"))) {
-
-      if (is.null(model.weights(model.frame(object)))) {
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1,
-                                      data = model.frame(object)))
-
-      } else {
-        `(weights)` <- model.frame(object)["(weights)"] # appeasing CRAN
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1,
-                                              data = model.frame(object),
-                                              weights = `(weights)`))
-
-      }
-
-    } else {
-
-      offs <- model.offset(model.frame(object))
-      frame <- model.frame(object)
-      frame$jtools_offs <- offs
-      if (is.null(model.weights(frame))) {
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1 + offset(jtools_offs),
-                                              data = frame))
-
-      } else {
-
-        objectNull <- suppressWarnings(j_update(object, ~ 1 + offset(jtools_offs),
-                                              data = frame,
-                                              weights = `(weights)`))
-
-      }
-
-    }
-
-    llhNull <- logLik(objectNull)
-    n <- dim(object$model)[1]
-    pR2Work(llh,llhNull,n)
-
-  }
-
   if (model.fit == TRUE) {
     # Final calculations (linear pseudo-rsq)
+    pr <- pR2(model)
     ## Cragg-Uhler
-    rsq <- pR2(model)$r2CU
+    rsq <- pr$r2CU
     ## McFadden
-    rsqmc <- pR2(model)$McFadden
+    rsqmc <- pr$McFadden
+    chisq <- list(chi = pr$chisq, df = pr$chisq_df, p = pr$chisq_p)
   } else {
     rsq <- NULL
     rsqmc <- NULL
+    chisq <- NULL
   }
 
   # AIC for GLMs
@@ -877,152 +762,100 @@ summ.glm <- function(
   ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(model))
+  coefs <- unname(coef(model))
+  params <- list("Est." = coefs)
 
   # VIFs
   if (vifs == TRUE) {
-    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
-      tvifs <- rep(NA, 1)
-    } else {
-      tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(model))
-    }
+    tvifs <- rep(NA, length(ivs))
+    the_vifs <- unname(vif(model))
+    if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
+    tvifs[-1] <- the_vifs
+    params[["VIF"]] <- tvifs
   }
 
   # Standard errors and t-statistics
-  if (robust == TRUE) {
-
-    if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
-           " package for robust standard errors. Please install it or set",
-           " robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (is.character(cluster)) {
-
-      call <- getCall(model)
-      d <- eval(call$data, envir = environment(formula(model)))
-
-      cluster <- d[,cluster]
-      use_cluster <- TRUE
-
-    } else if (length(cluster) > 1) {
-
-      if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-        warning("Invalid cluster input. Either use the name of the variable",
-                " in the input data frame or provide a numeric/factor vector.",
-                " Cluster is not being used in the reported SEs.")
-        cluster <- NULL
-        use_cluster <- FALSE
-
-      } else {
-
-        use_cluster <- TRUE
-
-      }
-
-    } else {
-
-      use_cluster <- FALSE
-
-    }
-
-    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
-      # vcovCL only goes up to HC3
-      coefs <- sandwich::vcovHC(model, type = robust.type)
-
-    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
-
-      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
-
-    } else if (robust == TRUE) {
-
-      coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust.type)
-
-    }
-
-    coefs <- coeftest(model, coefs)
-    ses <- coefs[,2]
-    ts <- coefs[,3]
-    ps <- coefs[,4]
-
-  } else {
+  if (identical(FALSE, robust)) {
 
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
     ps <- coef(sum)[,4]
     use_cluster <- FALSE
 
+  } else {
+
+    # Pass to robust helper function
+    rob_info <- do_robust(model, robust, cluster, data)
+
+    ses <- rob_info$ses
+    ts <- rob_info$ts
+    ps <- rob_info$ps
+
+    use_cluster <- rob_info$use_cluster
+    robust <- rob_info$robust
+
   }
 
+  # Handle rank-deficient models
+  if (length(coefs) > length(ses)) {
+    # Creating a vector the length of ucoefs (which has the NAs)
+    temp_vec <- rep(NA, times = length(coefs))
+    # Now I replace only at indices where ucoefs is non-missing
+    temp_vec[which(!is.na(coefs))] <- ses
+    # Now replace params[[i]] with the vector that includes the missings
+    ses <- temp_vec
+  }
   # Need proper name for test statistic
   tcol <- colnames(coef(sum))[3]
   tcol <- gsub("value", "val.", tcol)
+  # Add SE, test statistic, p to params
+  params[c("S.E.", tcol, "p")] <- list(ses, ts, ps)
 
-  if (confint == TRUE | odds.ratio == TRUE) {
-
-    alpha <- (1 - ci.width) / 2
-    tcrit <- abs(qnorm(alpha))
-
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
-
-  }
+  # Alpha level to find critical t-statistic for confidence intervals
+  alpha <- (1 - ci.width) / 2
+  # Get the critical t
+  tcrit <- abs(qnorm(alpha))
+  # Make confidence interval labels
+  labs <- make_ci_labs(ci.width)
 
   # Report odds ratios instead, with conf. intervals
-  if (odds.ratio == TRUE) {
+  if (exp == TRUE) {
 
-    ecoefs <- exp(ucoefs)
-    lci <- exp(ucoefs - (ses*tcrit))
-    uci <- exp(ucoefs + (ses*tcrit))
-    params <- list(ecoefs, lci, uci, ts, ps)
-    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
-
-  } else if (odds.ratio == FALSE & confint == TRUE) {
-
-    lci <- ucoefs - (ses*tcrit)
-    uci <- ucoefs + (ses*tcrit)
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
+    ecoefs <- exp(coefs)
+    lci <- exp(coefs - (ses * tcrit))
+    uci <- exp(coefs + (ses * tcrit))
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[["exp(Est.)"]] <- ecoefs
+    params[names(cis)] <- cis
+    if ("confint" %nin% names(the_call)) {confint <- TRUE}
 
   } else {
 
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", tcol, "p")
+    lci <- coefs - (ses * tcrit)
+    uci <- coefs + (ses * tcrit)
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[names(cis)] <- cis
 
   }
+
+  ## TODO: finish margins implementation
+  # if (margins == TRUE) {
+  #   margs <- rep(NA, times = length(ivs))
+  #   names(margs) <- ivs
+  #   the_margs <- summary(margins::margins(model))
+  #   which_coefs <- which(ivs %in% the_margs$factor)
+  #   margs[which_coefs] <- the_margs$AME
+  #   params[["A.M.E."]] <- margs
+  # }
 
   # Put things together
-
-  # Calculate vifs
-  if (vifs == TRUE) {
-    params[length(params) + 1] <- list(tvifs)
-    namevec <- c(namevec, "VIF")
-  }
-
-  mat <- matrix(nrow = length(ivs), ncol = length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  for (i in seq_len(length(params))) {
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  # Drop p-vals if user requests
-  if (pvals == FALSE) {
-
-    mat <- mat[, colnames(mat) %nin% "p"]
-
-  }
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs,
+                              pvals = pvals, t.col = tcol,
+                              exp = exp)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Extract dispersion parameter
   dispersion <- sum$dispersion
@@ -1030,14 +863,13 @@ summ.glm <- function(
   j <- structure(j, rsq = rsq, rsqmc = rsqmc, dv = names(model$model[1]),
                  npreds = model$rank - df.int, dispersion = dispersion,
                  missing = missing, pvals = pvals, robust = robust,
-                 robust.type = robust.type, use_cluster = use_cluster,
+                 robust.type = robust, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
-                 standardize.response = scale.response,
-                 odds.ratio = odds.ratio,
-                 scale.response = scale.response)
-
-  j <- structure(j, lmFamily = model$family)
+                 standardize.response = transform.response,
+                 exp = exp,
+                 scale.response = transform.response,
+                 lmFamily = model$family, chisq = chisq)
 
   j$coeftable <- mat
   j$model <- model
@@ -1061,77 +893,156 @@ print.summ.glm <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
-    if (x$missing == 0) {
-      cat("\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-    } else {
-      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
-    }
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
-      cat("Type: Linear regression", "\n\n")
+      type <- "Linear regression"
     } else {
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+      type <- paste("Generalized linear model\n ",
+                    italic("Family:"),
+                    as.character(x$lmFamily[1]), "\n ",
+                    italic("Link function:"),
+                    as.character(x$lmFamily[2]), sep = " ")
     }
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
-  if (x$model.fit == T) {
-    cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-        round(x$rsq, digits = x$digits), "\n",
-        "Pseudo R-squared (McFadden) = ",
-        round(x$rsqmc, digits = x$digits),
-        "\n", "AIC = ", round(x$aic, x$digits), ", BIC = ",
-        round(x$bic, x$digits), "\n\n", sep = "")
+  if (x$model.fit == TRUE) {
+    stats <- paste("\u03C7\u00B2(",
+                  x$chisq$df,  ") = ", num_print(x$chisq$chi, x$digits), ", ",
+                  italic("p"), " = ", num_print(x$chisq$p, x$digits), "\n",
+                   italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
+                   num_print(x$rsq, digits = x$digits), "\n",
+                   italic("Pseudo-R\u00B2 (McFadden)"), " = ",
+                   num_print(x$rsqmc, digits = x$digits), "\n",
+                   italic("AIC"), " = ", num_print(x$aic, x$digits),
+                   ", ", italic("BIC"), " = ", num_print(x$bic, x$digits),
+                   sep = "")
+    print_mod_fit(stats)
   }
 
-  if (x$robust == FALSE) {
-    cat("Standard errors: MLE", "\n")
-  } else if (x$robust == TRUE) {
-
-    cat("Standard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-      cat(" Robust, type = ", x$robust.type, "\n", sep = "")
-
-    } else if (x$use_cluster == TRUE) {
-
-      cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
-
-    }
-
-  }
+  print_se_info(x$robust, x$use_cluster)
 
   print(ctable)
 
   if (x$dispersion != 1) {
     cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits), "\n")
   }
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
-##### svyglm ###################################################################
+
+#' @rdname knit_print.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(knitr::knit_print, summ.glm)
+#' } else {
+#'   export(knit_print.summ.glm)
+#' }
+
+knit_print.summ.glm <- function(x, options = NULL, ...) {
+
+  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+    return(knitr::normal_print(x))
+  }
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
+
+  if (x$model.info == TRUE) {
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      type <- "Linear regression"
+    } else {
+      type <- "Generalized linear model"
+    }
+    mod_info <- mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                              type = type)
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+
+    if (type != "Linear regression") {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type", "Family",
+                  "Link"),
+        value = c(obs, mod_info$dv, mod_info$type, x$lmFamily[[1]],
+                  x$lmFamily[[2]])
+      )
+    } else {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type"),
+        value = c(obs, mod_info$dv, mod_info$type)
+      )
+    }
+    
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+
+  } else {
+    mod_meta <- NULL
+  }
+
+  if (x$model.fit == T) {
+    if (format != "latex" && Sys.info()[['sysname']] != "Windows") {
+      chi <- "\U1D6D8\u00B2("
+      # alternately -> "\U0001D712\u00B2("
+    } else if (format == "latex") {
+      chi <- "$\\chi^2$("
+    } else if (format == "html") {
+      chi <- "&chi;\u00B2("
+    } else {
+      chi <- "chi\u00B2("
+    }
+    stats <- data.frame(stat = c(paste0(chi, x$chisq$df,  ")"),
+                                 "Pseudo-R\u00B2 (Cragg-Uhler)",
+                                 "Pseudo-R\u00B2 (McFadden)",
+                                 "AIC", "BIC"),
+                        value = c(num_print(x$chisq$chi, x$digits),
+                                  num_print(x$rsq, digits = x$digits),
+                                  num_print(x$rsqmc, digits = x$digits),
+                                  num_print(x$aic, x$digits),
+                                  num_print(x$bic, x$digits)),
+                        stringsAsFactors = FALSE
+    )
+
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL,
+                        escape = FALSE)
+  
+  } else {stats <- NULL}
+
+  se_info <- get_se_info(x$robust, x$use_cluster)
+  # Notifying user if variables altered from original fit
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+  cap <- paste0("Standard errors: ", se_info, ss)
+
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    kableExtra_latex_deps[[length(kableExtra_latex_deps) + 1]] <-
+      list(name = "babel", options = c("greek", "english"))
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
+  knitr::asis_output(out)
+
+}
+
+##### svyglm ##################################################################
 
 #' Complex survey regression summaries with options
 #'
@@ -1139,7 +1050,7 @@ print.summ.glm <- function(x, ...) {
 #' \code{summary}, but formatted differently with more options.
 #'
 #' @param model A `svyglm` object.
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#' @param exp If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
@@ -1152,7 +1063,7 @@ print.summ.glm <- function(x, ...) {
 #'   \item The sample size
 #'   \item The name of the outcome variable
 #'   \item The (Pseudo-)R-squared value and AIC.
-#'   \item A table with regression coefficients, standard errors, t-values, and
+#'   \item A table with regression coefficients, standard errors, t values, and
 #'    p values.
 #' }
 #'
@@ -1183,58 +1094,49 @@ print.summ.glm <- function(x, ...) {
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @examples
-#' library(survey)
-#' data(api)
-#' dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
-#'                     data = apistrat, fpc =~ fpc)
-#' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
+#' if (requireNamespace("survey")) {
+#'   library(survey)
+#'   data(api)
+#'   dstrat <- svydesign(id = ~1, strata =~ stype, weights =~ pw,
+#'                       data = apistrat, fpc =~ fpc)
+#'   regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
 #'
-#' summ(regmodel)
+#'   summ(regmodel)
+#' }
 #
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
-#'  extractAIC family fitted pt residuals terms model.weights
+#'  extractAIC family fitted pt residuals terms model.weights poisson binomial
 #' @export
 #' @aliases j_summ.svyglm
 
 summ.svyglm <- function(
-  model, scale = FALSE, vifs = FALSE,
-  confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 2), model.info = TRUE,
-  model.fit = TRUE, model.check = FALSE, pvals = TRUE, n.sd = 1,
-  center = FALSE,
-  scale.response = FALSE, odds.ratio = FALSE, ...) {
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  digits = getOption("jtools-digits", default = 2),
+  pvals = getOption("summ-pvals", TRUE),
+  n.sd = 1, center = FALSE, transform.response = FALSE,
+  exp = FALSE, vifs = getOption("summ-vifs", FALSE),
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE),
+  model.check = FALSE, which.cols = NULL, ...) {
 
   j <- list()
 
   dots <- list(...)
 
-  # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(!any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
-
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package installed. Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
-  ell <- list(...)
 
   # Using information from summary()
   sum <- summary(model)
@@ -1242,8 +1144,9 @@ summ.svyglm <- function(
   # Check missing obs
   missing <- length(sum$na.action)
 
-  if ("robust" %in% names(ell) && ell$robust == TRUE) {
-    warning("Robust standard errors are reported by default in the survey package.")
+  if ("robust" %in% names(dots)) {
+    warning("Robust standard errors are reported by default\n in the ",
+            "survey package.")
   }
 
   # Standardized betas
@@ -1251,13 +1154,14 @@ summ.svyglm <- function(
     # Standardized betas
     if (scale == TRUE) {
 
-      model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
+      model <- scale_mod(model, n.sd = n.sd,
+                         scale.response = transform.response)
       # Using information from summary()
       sum <- summary(model)
 
     } else if (center == TRUE && scale == FALSE) {
 
-      model <- center_lm(model)
+      model <- center_mod(model, center.response = transform.response)
       # Using information from summary()
       sum <- summary(model)
 
@@ -1270,8 +1174,9 @@ summ.svyglm <- function(
 
   j <- structure(j, standardize = scale, vifs = vifs, digits = digits,
                  model.info = model.info, model.fit = model.fit,
-                 n.sd = n.sd, center = center, call = the_call, env = the_env,
-                 scale = scale)
+                 n.sd = n.sd, center = center, call = the_call,
+                 env = the_env, scale = scale,
+                 transform.response = transform.response)
 
 
 
@@ -1282,19 +1187,14 @@ summ.svyglm <- function(
     linear <- FALSE
   }
 
-  if (!all(attributes(model$terms)$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
-
   j <- structure(j, linear = linear)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
     df.int <- if (attr(model$terms, "intercept"))
-      1L
-    else 0L
+      1L else 0L
+  } else { # intercept only
+    df.int <- 1
   }
 
   # Sample size used
@@ -1308,50 +1208,55 @@ summ.svyglm <- function(
     f <- model$fitted.values
     w <- model$weights
     ## Dealing with no-intercept models, getting the df.int
-    if (is.null(w)) {
-      mss <- if (df.int == 1L)
-        sum((f - mean(f))^2)
-      else sum(f^2)
-      rss <- sum(r^2)
-    } else {
-      mss <- if (df.int == 1L) {
-        m <- sum(w * f/sum(w))
-        sum(w * (f - m)^2)
-      } else sum(w * f^2)
-      rss <- sum(w * r^2)
-      r <- sqrt(w) * r
-    }
-
+    mss <- if (df.int == 1L) {
+      m <- sum(w * f/sum(w))
+      sum(w * (f - m)^2)
+    } else sum(w * f^2)
+    rss <- sum(w * r^2)
+    r <- sqrt(w) * r
     ## Final calculations
-    rsq <- mss/(mss+rss)
-    arsq <- 1 - (1 - rsq) * ((n-df.int)/model$df.residual)
-
+    rsq <- mss/(mss + rss)
+    arsq <- 1 - (1 - rsq) * ((n - df.int)/model$df.residual)
     j <- structure(j, rsq = rsq, arsq = arsq)
+
   } else { # If not linear, calculate pseudo-rsq
 
-    ## Have to specify pR2 here to fix namespace issues
-    pR2 <- function(object) {
+    ## Have to specify pR2 here to avoid namespace issues
+    svypR2 <- function(object) {
+
       llh <- suppressWarnings(logLik(object))
+      fam <- family(object)$family
+      link <- family(object)$link
+
+      if (fam == "quasibinomial") {
+        fam <- binomial(link = link)
+      } else if (fam == "quasipoisson") {
+        fam <- poisson(link = link)
+      } else {
+        fam <- family(object)
+      }
       if (is.null(attr(terms(formula(object)),"offset"))) {
         objectNull <- suppressWarnings(update(object, ~ 1,
-                                              design = object$survey.design))
+                                              design = object$survey.design,
+                                              family = fam))
       } else {
         offs <- model.offset(model.frame(object))
         frame <- object$survey.design
         frame$variables$jtools_offs <- offs
         objectNull <- suppressWarnings(update(object, ~ 1 + offset(jtools_offs),
-                                              design = frame))
+                                              design = frame, family = fam))
       }
       llhNull <- logLik(objectNull)
       n <- dim(object$model)[1]
-      pR2Work(llh,llhNull,n)
+      pR2Work(llh, llhNull, n)
     }
 
     # Final calculations (linear pseudo-rsq)
+    pr2 <- suppressWarnings(svypR2(model))
     ## Cragg-Uhler
-    rsq <- suppressWarnings(pR2(model)$r2CU)
+    rsq <-  pr2$r2CU
     ## McFadden
-    rsqmc <- suppressWarnings(pR2(model)$McFadden)
+    rsqmc <- pr2$McFadden
 
     j <- structure(j, rsq = rsq, rsqmc = rsqmc)
 
@@ -1363,16 +1268,16 @@ summ.svyglm <- function(
   ivs <- names(coefficients(model))
 
   # Unstandardized betas
-  ucoefs <- unname(coef(model))
+  coefs <- unname(coef(model))
+  params <- list("Est." = coefs)
 
   # VIFs
   if (vifs == TRUE) {
-    if (model$rank == 2 | (model$rank == 1 & df.int == 0L)) {
-      tvifs <- rep(NA, 1)
-    } else {
-      tvifs <- rep(NA, length(ivs))
-      tvifs[-1] <- unname(car::vif(model))
-    }
+    tvifs <- rep(NA, length(ivs))
+    the_vifs <- unname(vif(model))
+    if (is.matrix(the_vifs)) {the_vifs <- the_vifs[,1]}
+    tvifs[-1] <- the_vifs
+    params[["VIF"]] <- tvifs
   }
 
   # Standard errors and t-statistics
@@ -1384,88 +1289,68 @@ summ.svyglm <- function(
   tcol <- colnames(coef(sum))[3]
   tcol <- gsub("value", "val.", tcol)
 
+  params[c("S.E.", tcol, "p")] <- list(ses, ts, ps)
+
   # Groundwork for CIs and ORs
-  if (confint == TRUE | odds.ratio == TRUE) {
-
-    alpha <- (1 - ci.width)/2
+  alpha <- (1 - ci.width)/2
+  if (linear == TRUE) {
+    tcrit <- abs(qt(alpha, df = df.residual(model)))
+  } else {
     tcrit <- abs(qnorm(alpha))
-
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
-
   }
 
+  labs <- make_ci_labs(ci.width)
+
   # Report odds ratios instead, with conf. intervals
-  if (odds.ratio == TRUE) {
+  if (exp == TRUE) {
 
-    ecoefs <- exp(ucoefs)
-    lci <- exp(ucoefs - (ses * tcrit))
-    uci <- exp(ucoefs + (ses * tcrit))
-    params <- list(ecoefs, lci, uci, ts, ps)
-    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+    ecoefs <- exp(coefs)
+    lci <- exp(coefs - (ses * tcrit))
+    uci <- exp(coefs + (ses * tcrit))
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[["exp(Est.)"]] <- ecoefs
+    params[names(cis)] <- cis
 
-  } else if (odds.ratio == FALSE & confint == TRUE) { # regular CIs
+  } else { # regular CIs
 
-    lci <- ucoefs - (ses*tcrit)
-    uci <- ucoefs + (ses*tcrit)
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
-
-  } else {
-
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", tcol, "p")
+    lci <- coefs - (ses * tcrit)
+    uci <- coefs + (ses * tcrit)
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[names(cis)] <- cis
 
   }
 
   # Put things together
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = vifs,
+                              pvals = pvals, t.col = tcol,
+                              exp = exp)
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
-  if (vifs == TRUE) {
-    params[length(params)+1] <- list(tvifs)
-    namevec <- c(namevec, "VIF")
-  }
-
-  mat <- matrix(nrow=length(ivs), ncol=length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  for (i in seq_len(length(params))) {
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  # Dropping p-vals if requested by user
-  if (pvals == FALSE) {
-
-    mat <- mat[,!(colnames(mat) == "p")]
-
-  }
 
   if (model.check == TRUE && linear == TRUE) {
     cd <- table(cooks.distance(model) > 4 / n)
     j <- structure(j, cooksdf = cd[2])
 
     if (model.check == TRUE && linear == FALSE) {
-      warning("Model checking for non-linear models is not yet implemented.")
+      warning("Model checking for non-linear models is not ",
+              "yet implemented.")
     }
   }
 
   # Extract dispersion parameter
   dispersion <- sum$dispersion
 
-  j <- structure(j, dv = names(model$model[1]), npreds = model$rank-df.int,
+  j <- structure(j, dv = names(model$model[1]),
+                 npreds = model$rank-df.int,
                  dispersion = dispersion, missing = missing,
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  test.stat = tcol,
-                 standardize.response = scale.response,
-                 odds.ratio = odds.ratio,
-                 scale.response = scale.response)
+                 standardize.response = transform.response,
+                 exp = exp,
+                 scale.response = transform.response)
 
   j <- structure(j, lmFamily = model$family, model.check = model.check)
 
@@ -1477,8 +1362,6 @@ summ.svyglm <- function(
 }
 
 ### PRINT METHOD ###
-
-
 
 #' @export
 
@@ -1493,43 +1376,38 @@ print.summ.svyglm <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    # Always showing this
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, sep = "")
-    if (x$missing == 0) {
-      cat("\n",
-          "Dependent Variable: ",
-          x$dv, "\n", sep = "")
-    } else {
-      cat(" (", x$missing, " missing obs. deleted)\n", sep = "")
-    }
-    cat("\n", "Analysis of complex survey design", "\n", sep = "")
     # If it's linear...
     if (as.character(x$lmFamily[1]) == "gaussian" &&
         as.character(x$lmFamily[2]) == "identity") {
       # Just call it linear
-      cat("Survey-weighted linear regression", "\n", "\n", sep = "")
+      type <- paste("Survey-weighted linear regression", sep = "")
     } else {
       # Otherwise just treat it like glm
-      cat("Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ", as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+      type <- paste("Analysis of complex survey design", "\n",
+                  italic("Family:"), as.character(x$lmFamily[1]),
+                  "\n", italic("Link function:"), as.character(x$lmFamily[2]),
+                  sep = " ")
     }
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == TRUE) { # Show fit statistics
     if (as.character(x$lmFamily[1]) == "gaussian" &&
         as.character(x$lmFamily[2]) == "identity") {
       # If it's a linear model, show regular lm fit stats
-      cat("MODEL FIT: ", "\n", "R-squared = ", round(x$rsq, digits = x$digits),
-          "\n", "Adj. R-squared = ", round(x$arsq, digits = x$digits), "\n",
-          "\n", sep = "")
+      stats <- paste(italic("R\u00B2"), " = ",
+                     num_print(x$rsq, digits = x$digits), "\n",
+                     italic("Adj. R\u00B2"), " = ",
+                     num_print(x$arsq, digits = x$digits), sep = "")
     } else {
       # If it isn't linear, show GLM fit stats
-      cat("MODEL FIT: ", "\n", "Pseudo R-squared (Cragg-Uhler) = ",
-          round(x$rsq, digits = x$digits), "\n",
-          "Pseudo R-squared (McFadden) = ",
-          round(x$rsqmc, digits = x$digits),
-          "\n", "AIC = ", round(x$aic, x$digits), "\n\n", sep = "")
+      stats <- paste(italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
+                     num_print(x$rsq, digits = x$digits), "\n",
+                     italic("Pseudo-R\u00B2 (McFadden)"), " = ",
+                     num_print(x$rsqmc, digits = x$digits), "\n",
+                     italic("AIC"), " = ", num_print(x$aic, x$digits), sep = "")
     }
+    print_mod_fit(stats)
   }
 
   if (x$model.check == TRUE && x$linear == TRUE) {
@@ -1546,25 +1424,111 @@ print.summ.svyglm <- function(x, ...) {
 
   if (x$dispersion != 1) {
     cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits))
+    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits),"\n")
   }
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+
+}
+
+#' @rdname knit_print.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(knitr::knit_print, summ.svyglm)
+#' } else {
+#'   export(knit_print.summ.svyglm)
+#' }
+
+knit_print.summ.svyglm <- function(x, options = NULL, ...) {
+
+  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+    return(knitr::normal_print(x))
   }
-  cat("\n")
+
+  # saving input object as j
+  j <- x
+  # saving attributes as x (this was to make a refactoring easier)
+  x <- attributes(j)
+
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
+
+  # Helper function to deal with table rounding, significance stars
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+
+  if (x$model.info == TRUE) {
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      type <- "Survey-weighted linear regression"
+    } else {
+      type <- "Survey-weighted generalized linear model"
+    }
+    mod_info <- mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                              type = type)
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+
+    if (type != "Survey-weighted linear regression") {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type", "Family",
+                  "Link"),
+        value = c(obs, mod_info$dv, mod_info$type, x$lmFamily[[1]],
+                  x$lmFamily[[2]])
+      )
+    } else {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type"),
+        value = c(obs, mod_info$dv, mod_info$type)
+      )
+    }
+
+    mod_meta %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
+
+  } else {
+    mod_meta <- NULL
+  }
+
+  if (x$model.fit == T) {
+
+    if (type != "Survey-weighted linear regression") {
+      stats <- data.frame(stat = c("Pseudo-R\u00B2 (Cragg-Uhler)",
+                                   "Pseudo-R\u00B2 (McFadden)",
+                                   "AIC"),
+                          value = c(num_print(x$rsq, digits = x$digits),
+                                    num_print(x$rsqmc, digits = x$digits),
+                                    num_print(x$aic, x$digits))
+                          )
+    } else {
+      stats <- data.frame(stat = c("R\u00B2", "Adj. R\u00B2"),
+                          value = c(num_print(x$rsq, digits = x$digits),
+                                    num_print(x$arsq, digits = x$digits))
+      )
+    }
+
+    stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL) 
+
+  }
+
+  # Notifying user if variables altered from original fit
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+  cap <- paste0("Standard errors: Robust", ss)
+
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+
+  out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    kableExtra_latex_deps[[length(kableExtra_latex_deps) + 1]] <-
+      list(name = "babel", options = c("greek", "english"))
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
+  }
+  knitr::asis_output(out)
 
 }
 
@@ -1577,17 +1541,28 @@ print.summ.svyglm <- function(x, ...) {
 #'
 #' @param model A \code{\link[lme4]{merMod}} object.
 #' @param r.squared Calculate an r-squared model fit statistic? Default is
-#'  \code{FALSE} because it seems to have convergence problems too often.
+#'  \code{TRUE}, but if it has errors or takes a long time to calculate you
+#'  may want to consider setting to FALSE.
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
-#' @param odds.ratio If \code{TRUE}, reports exponentiated coefficients with
+#' @param exp If \code{TRUE}, reports exponentiated coefficients with
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
 #' @param t.df For \code{lmerMod} models only. User may set the degrees of
 #'  freedom used in conducting t-tests. See details for options.
-#'
+#' @param re.variance Should random effects variances be expressed in
+#'  standard deviations or variances? Default, to be consistent with previous
+#'  versions of `jtools`, is `"sd"`. Use `"var"` to get the variance instead.
+#' @param re.table Show table summarizing variance of random effects? Default
+#'  is TRUE.
+#' @param groups.table Show table summarizing the grouping variables? Default
+#'  is TRUE.
+#' @param conf.method Argument passed to [lme4::confint.merMod()]. Default
+#'  is `"Wald"`, but `"profile"` or `"boot"` are better when accuracy is a
+#'  priority. Be aware that both of the alternate methods are sometimes very
+#'  time-consuming.
 #' @inheritParams summ.lm
 #'
 #' @details By default, this function will print the following items to the
@@ -1623,7 +1598,10 @@ print.summ.svyglm <- function(x, ...) {
 #'  the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
 #'  installed, however, p values are reported using the Kenward-Roger
 #'  d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
-#'  set to something other than \code{NULL}.
+#'  set to something other than \code{NULL}. In publications,
+#'  you should cite the
+#'  Kenward & Roger (1997) piece as well as either this package or
+#'  \pkg{pbkrtest} package to explain how the p values were calculated.
 #'
 #'  See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
 #'  If you're looking for a simple test with no extra packages installed,
@@ -1635,77 +1613,110 @@ print.summ.svyglm <- function(x, ...) {
 #'
 #'  You have some options to customize the output in this regard with the
 #'  \code{t.df} argument. If \code{NULL}, the default, the
-#'  degrees of freedom used depends on whether the user has \pkg{pbkrtest}
-#'  installed. If installed, the Kenward-Roger approximation is used. If not,
-#'  and user sets \code{pvals = TRUE}, then the residual degrees of freedom
+#'  degrees of freedom used depends on whether the user has
+#'  \pkg{lmerTest} or \pkg{pbkrtest} installed. If `lmerTest` is installed,
+#'  the degrees of freedom for each coefficient are calculated using the
+#'  Satterthwaite method and the p values calculated accordingly.
+#'  If only `pbkrtest` is installed or `t.df` is `"k-r"`, the Kenward-Roger
+#'  approximation of the standard errors and degrees of freedom for each
+#'  coefficient is used. Note that Kenward-Roger standard errors can take
+#'  longer to calculate and may cause R to crash with models fit to large
+#'  (roughly greater than 5000 rows) datasets.
+#'
+#'  If neither is installed and the user sets
+#'  \code{pvals = TRUE}, then the residual degrees of freedom
 #'  is used. If \code{t.df = "residual"}, then the residual d.f. is used
 #'  without a message. If the user prefers to use some other method to
 #'  determine the d.f., then any number provided as the argument will be
 #'  used.
 #'
+#'  **About pseudo-R^2**
+#'
+#'  There is no one way to calculate R^2 for mixed models or nonlinear
+#'  models. Many caution against interpreting or even using such
+#'  approximations outside of OLS regression. With that said, this package
+#'  reports one version for your benefit, though you should of course
+#'  understand that it is not an unambiguous measure of model fit.
+#'
+#'  This package calculates R^2 for mixed models using an adapted version
+#'  of \code{\link[piecewiseSEM]{sem.model.fits}} from the \pkg{piecewiseSEM}
+#'  package. This is an implementation of the Nakagawa & Schielzeth (2013)
+#'  procedure with refinements by Johnson (2014). If you choose to report
+#'  the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
+#'  to explain how the calculation was done.
+#'
 #' @return If saved, users can access most of the items that are returned in
 #'   the output (and without rounding).
 #'
 #'  \item{coeftable}{The outputted table of variables and coefficients}
+#'  \item{rcoeftable}{The secondary table with the grouping variables and
+#'    random coefficients.}
+#'  \item{gvars}{The tertiary table with the grouping variables, numbers of
+#'    groups, and ICCs.}
 #'  \item{model}{The model for which statistics are displayed. This would be
 #'    most useful in cases in which \code{scale = TRUE}.}
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod}} can simply perform the standardization if
 #'  preferred.
 #'
 #'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
-#'  \code{\link[pbkrtest]{get_ddf_Lb}} gets the Kenward-Roger degrees of
+#'  [pbkrtest::get_ddf_Lb()] gets the Kenward-Roger degrees of
 #'  freedom if you have \pkg{pbkrtest} installed.
 #'
-#'  A tweaked version of \code{\link[MuMIn]{r.squaredGLMM}} is used to
+#'  A tweaked version of [piecewiseSEM::sem.model.fits()] is used to
 #'  generate the pseudo-R-squared estimates for linear models.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
 #' @examples
+#' if (requireNamespace("lme4")) {
+#'   library(lme4, quietly = TRUE)
+#'   data(sleepstudy)
+#'   mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 #'
-#' library(lme4, quietly = TRUE)
-#' data(sleepstudy)
-#' mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+#'   summ(mv) # Note lack of p values if you don't have lmerTest/pbkrtest
 #'
-#' summ(mv) # Note lack of p values if you don't have pbkrtest
+#'   # Without lmerTest/pbkrtest, you'll get message about Type 1 errors
+#'   summ(mv, pvals = TRUE)
 #'
-#' # Without pbkrtest, you'll get message about Type 1 errors
-#' summ(mv, pvals = TRUE)
+#'   # To suppress message, manually specify t.df argument
+#'   summ(mv, t.df = "residual")
 #'
-#' # To suppress message, manually specify t.df argument
-#' summ(mv, t.df = "residual")
+#'   # Confidence intervals may be better alternative to p values
+#'   summ(mv, confint = TRUE)
+#'   # Use conf.method to get profile intervals (may be slow to run)
+#'   # summ(mv, confint = TRUE, conf.method = "profile")
 #'
-#' \dontrun{
-#'  # Confidence intervals may be better alternative in absence of pbkrtest
-#'  summ(mv, confint = TRUE)
 #' }
 #'
 #' @references
 #'
-#' Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth’s
+#' Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth's
 #'  $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
-#'  Evolution}, \emph{5}, 944–946. https://doi.org/10.1111/2041-210X.12225
+#'  Evolution}, \emph{5}, 944–946. \url{https://doi.org/10.1111/2041-210X.12225}
 #'
 #' Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
 #'  effects from restricted maximum likelihood. \emph{Biometrics},
 #'  \emph{53}, 983.
-#'  https://doi.org/10.2307/2533558
+#'  \url{https://doi.org/10.2307/2533558}
+#'
+#' Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017). lmerTest
+#'  package: Tests in linear mixed effects models.
+#'  *Journal of Statistical Software*, *82*.
+#'  \url{https://doi.org/10.18637/jss.v082.i13}
 #'
 #' Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 #'  in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
-#'  https://doi.org/10.3758/s13428-016-0809-y
+#'  \url{https://doi.org/10.3758/s13428-016-0809-y}
 #'
 #' Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
 #'  obtaining $R^2$ from generalized linear mixed-effects models.
 #'  \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
-#'  https://doi.org/10.1111/j.2041-210x.2012.00261.x
-#'
-#'
+#'  \url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
@@ -1715,72 +1726,100 @@ print.summ.svyglm <- function(x, ...) {
 #'
 
 summ.merMod <- function(
-  model, scale = FALSE, confint = FALSE, ci.width = .95,
-  digits = getOption("jtools-digits", default = 2), model.info = TRUE,
-  model.fit = TRUE, r.squared = FALSE, pvals = NULL, n.sd = 1,
-  center = FALSE,
-  scale.response = FALSE, odds.ratio = FALSE, t.df = NULL, ...) {
+  model, scale = FALSE, confint = getOption("summ-confint", FALSE),
+  ci.width = getOption("summ-ci.width", .95),
+  conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
+  digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
+  pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
+  transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE),
+  re.variance = getOption("summ-re.variance", c("sd", "var")),
+  which.cols = NULL, re.table = getOption("summ-re.table", TRUE),
+  groups.table = getOption("summ-groups.table", TRUE), ...) {
 
   j <- list()
 
   dots <- list(...)
 
-  # Check for deprecated argument
-  if ("standardize" %in% names(dots)) {
-    warning("The standardize argument is deprecated. Please use 'scale'",
-      " instead.")
-    scale <- dots$standardize
-  }
-
-  # Check for deprecated argument
-  if ("standardize.response" %in% names(dots)) {
-    warning("The standardize.response argument is deprecated. Please use",
-      " 'scale.response' instead.")
-    scale.response <- dots$standardize.response
+  # Check for deprecated arguments with helper function
+  deps <- dep_checks(dots)
+  any_deps <- sapply(deps, is.null)
+  if (any(!any_deps)) {
+    for (n in names(any_deps)[which(any_deps == FALSE)]) {
+      # Reassign values as needed
+      assign(n, deps[[n]])
+    }
   }
 
   the_call <- match.call()
   the_call[[1]] <- substitute(summ)
   the_env <- parent.frame(n = 2)
 
-  # Accept arguments meant for other types of models and print warnings as
-  # needed.
-  ell <- list(...)
+  # Accept arguments meant for other types of models and print warnings.
 
-  if ("robust" %in% names(ell) && ell$robust == TRUE) {
+  if ("robust" %in% names(dots) && dots$robust == TRUE) {
     warning("Robust standard errors are not supported for mixed models.")
   }
 
-  if ("model.check" %in% names(ell) && ell$model.check == TRUE) {
-    warning("Model checking is not currently implemented for mixed models.")
+  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
+    warning("Model checking is not currently implemented for mixed ",
+            "models.")
   }
 
-  if ("vifs" %in% names(ell) && ell$vifs == TRUE) {
+  if ("vifs" %in% names(dots) && dots$vifs == TRUE) {
     warning("VIFs are not supported for mixed models.")
   }
 
-  # If pbkrtest is installed, using the Kenward-Roger approximation
-  if (requireNamespace("pbkrtest", quietly = TRUE)) {
+  # Get random effects variances argument
+  re.variance <- match.arg(re.variance, c("sd", "var"), several.ok = FALSE)
 
-    if (is.null(pvals)) {
-
+  # Setting defaults
+  manual_df <- FALSE
+  pbkr <- FALSE
+  satt <- FALSE
+  if (is.null(pvals)) {
+    if (is.null(t.df)) {
+      if (requireNamespace("lmerTest", quietly = TRUE) |
+          requireNamespace("pbkrtest", quietly = TRUE)) {
+        pvals <- TRUE
+      } else {
+        pvals <- FALSE
+      }
+    } else {
       pvals <- TRUE
-      pbkr <- TRUE
+    }
+  }
 
-    } else if (pvals == TRUE) {
-
-      pbkr <- TRUE
-
-    } else if (pvals == FALSE) {
-
-      pbkr <- FALSE
+  if (pvals == TRUE) {
+    if (is.null(t.df)) {
+      if (requireNamespace("lmerTest", quietly = TRUE)) {
+        satt <- TRUE
+      } else if (requireNamespace("pbkrtest", quietly = TRUE)) {
+        pbkr <- TRUE
+      }
+    } else {
+      if (t.df %in% c("s", "satterthwaite", "Satterthwaite")) {
+        if (requireNamespace("lmerTest", quietly = TRUE)) {
+          satt <- TRUE
+        } else {
+          stop_wrap("You have requested Satterthwaite p values but you do
+                    not have the lmerTest package installed.")
+        }
+      } else if (t.df %in% c("k-r", "kenward-roger", "Kenward-Roger")) {
+        if (requireNamespace("pbkrtest", quietly = TRUE)) {
+          pbkr <- TRUE
+        } else {
+          stop_wrap("You have requested Kenward-Roger p values but you do
+                    not have the pbkrtest package installed.")
+        }
+      } else if (is.numeric(t.df) | t.df %in% c("resid", "residual")) {
+        manual_df <- TRUE
+      } else {
+        stop_wrap("t.df argument not understood.")
+      }
 
     }
-
-  } else {
-
-    pbkr <- FALSE
-
   }
 
   if (lme4::isGLMM(model)) {
@@ -1791,19 +1830,18 @@ summ.merMod <- function(
 
     }
 
-    # Using pbkr as a stand-in for whether to calculate t-vals myself
-    pbkr <- FALSE
-
   }
 
   # Standardized betas
   if (scale == TRUE) {
 
-    model <- scale_lm(model, n.sd = n.sd, scale.response = scale.response)
+    model <- scale_mod(model, n.sd = n.sd, scale.response = transform.response,
+                       data = data)
 
   } else if (center == TRUE && scale == FALSE) {
 
-    model <- center_lm(model)
+    model <- center_mod(model, center.response = transform.response,
+                        data = data)
 
   }
 
@@ -1811,16 +1849,10 @@ summ.merMod <- function(
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd,
                  center = center, t.df = t.df, call = the_call, env = the_env,
-                 scale = scale)
+                 scale = scale, transform.response = transform.response)
 
   # Using information from summary()
   sum <- summary(model)
-
-  if (!all(attributes(terms(model))$order > 1)) {
-    interaction <- TRUE
-  } else {
-    interaction <- FALSE
-  }
 
   # Intercept?
   if (length(terms(model)) != attr(terms(model), "intercept")) {
@@ -1833,33 +1865,12 @@ summ.merMod <- function(
   n <- length(residuals(model))
   j <- structure(j, n = n)
 
-  # Calculate R-squared
-  ### Below taken from summary.lm
-  r <- residuals(model)
-  f <- fitted(model)
-  w <- weights(model)
-  ## Dealing with no-intercept models, getting the df.int
-  if (is.null(w)) {
-    mss <- if (df.int == 1L)
-      sum((f - mean(f))^2)
-    else sum(f^2)
-    rss <- sum(r^2)
-  } else {
-    mss <- if (df.int == 1L) {
-      m <- sum(w * f/sum(w))
-      sum(w * (f - m)^2)
-    } else sum(w * f^2)
-    rss <- sum(w * r^2)
-    r <- sqrt(w) * r
-  }
-
-  # TODO: Figure out model fit indices for MLMs
-  ## This is a start
+  # Model fit
   failed.rsq <- FALSE
   if (r.squared == TRUE) {
 
     t0 <- Sys.time() # Calculating time elapsed
-    tryo <- try({rsqs <- suppressWarnings(r.squaredGLMM(model))}, silent = TRUE)
+    tryo <- try({rsqs <- suppressWarnings(pR2_merMod(model))}, silent = TRUE)
     t1 <- Sys.time()
 
     if (class(tryo) == "try-error") {
@@ -1867,8 +1878,8 @@ summ.merMod <- function(
       rsqs <- NA
       failed.rsq <- TRUE
       r.squared <- FALSE
-      warning("Could not calculate r-squared. Try removing missing data",
-              " before fitting the model.\n")
+      warning("Could not calculate r-squared. Try removing missing data\n",
+              "before fitting the model.\n")
 
     }
 
@@ -1893,120 +1904,119 @@ summ.merMod <- function(
   ivs <- rownames(sum$coefficients)
 
   # Unstandardized betas
-  ucoefs <- unname(sum$coefficients[,1])
+  coefs <- unname(sum$coefficients[,1])
+  params <- list("Est." = coefs)
 
   # Standard errors and t-statistics
   ses <- sum$coefficients[,2]
   ts <- sum$coefficients[,3]
-
-  # lmerMod doesn't have p values, so
-  if (!sum$isLmer) {
-    ps <- sum$coefficients[,4]
-  } else {
-    # Use Kenward-Roger if available
-    if (pbkr == FALSE & is.null(t.df)) { # If not, do it like any lm
-
-      df <- n - length(ivs) - 1
-
-    } else if (pbkr == TRUE & is.null(t.df)) {
-
-      t0 <- Sys.time()
-      df <- pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
-      t1 <- Sys.time()
-
-      if ((t1 - t0) > 5 & !getOption("pbkr_warned", FALSE)) {
-        message("If summ is taking too long to run, try setting ",
-                "pvals = FALSE or t.df = 'residual' (or some number).")
-        options("pbkr_warned" = TRUE)
-      }
-
-    } else if (!is.null(t.df)) {
-
-      if (is.numeric(t.df)) {
-        df <- t.df
-      } else if (t.df %in% c("residual","resid")) {
-        df <- n - length(ivs) - 1
-      }
-
-    }
-
-    vec <- rep(NA, times = length(ts))
-    for (i in seq_len(length(ts))) {
-      p <- pt(abs(ts[i]), lower.tail = F, df)
-      p <- p*2
-      vec[i] <- p
-    }
-
-    ps <- vec
-
-  }
-
   # Need proper name for test statistic
   tcol <- colnames(sum$coefficients)[3]
   tcol <- gsub("value", "val.", tcol)
 
-  if (confint == TRUE | odds.ratio == TRUE) {
+  dfs <- NULL
+  p_calc <- NULL
 
-    alpha <- (1-ci.width)/2
+  # lmerMod doesn't have p values, so
+  if (!sum$isLmer) {
+    ps <- sum$coefficients[,4]
+    params[["p"]] <- ps
+  } else {
+    if (satt == TRUE) {
 
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
+      all_coefs <- get_all_sat(model)
+      ts <- all_coefs[,"t value"]
+      ses <- all_coefs[,"Std. Error"]
+      dfs <- all_coefs[, "df"]
+      params[["d.f."]] <- dfs
+      ps <- all_coefs[, "Pr(>|t|)"]
+      p_calc <- "s"
 
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
+    } else if (pbkr == TRUE) {
+
+      t0 <- Sys.time()
+      # df <- pbkrtest::get_ddf_Lb(model, lme4::fixef(model))
+      ses <- get_se_kr(model)
+      # New t values with adjusted covariance matrix
+      ts <- coefs[!is.na(coefs)] / ses
+      dfs <- get_df_kr(model)
+      params[["d.f."]] <- dfs
+      ps <- pt(abs(ts), lower.tail = F, dfs)
+      t1 <- Sys.time()
+
+      if ((t1 - t0) > 10 & !getOption("pbkr_warned", FALSE)) {
+        msg_wrap("If summ is taking too long to run, try setting pvals = FALSE,
+                 t.df = 's' if you have the lmerTest package, or
+                 t.df = 'residual' (or some number).")
+        options("pbkr_warned" = TRUE)
+      }
+
+      p_calc <- "k-r"
+
+    } else if (manual_df == TRUE) {
+
+      if (is.numeric(t.df)) {
+        df <- t.df
+        p_calc <- "manual"
+      } else if (t.df %in% c("residual","resid")) {
+        df <- n - length(ivs) - 1
+        p_calc <- "residual"
+      }
+
+      ps <- pt(abs(ts), lower.tail = F, df)
+
+
+    }
+
+    if (exists("ps")) {params[["p"]] <- ps}
+
+  }
+
+  params[c("Est.", "S.E.", tcol)] <- list(coefs, ses, ts)
+
+  if (confint == TRUE | exp == TRUE) {
+
+    alpha <- (1 - ci.width) / 2
+    labs <- make_ci_labs(ci.width)
 
   }
 
   # Report odds ratios instead, with conf. intervals
-  if (odds.ratio == TRUE) {
+  if (exp == TRUE) {
   # TODO: revisit after lme4 bug fixed
     the_cis <-
-      suppressWarnings(confint(model, parm = "beta_", method = "profile",
+      suppressWarnings(confint(model, parm = "beta_", method = conf.method[1],
                        level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
-    ecoefs <- exp(ucoefs)
+    ecoefs <- exp(coefs)
     lci <- exp(the_cis[,1])
     uci <- exp(the_cis[,2])
-    params <- list(ecoefs, lci, uci, ts, ps)
-    namevec <- c("Odds Ratio", lci_lab, uci_lab, tcol, "p")
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[["exp(Est.)"]] <- ecoefs
+    params[names(cis)] <- cis
 
-  } else if (odds.ratio == FALSE & confint == TRUE) {
+  } else if (exp == FALSE & confint == TRUE) {
 
     the_cis <-
-      suppressWarnings(confint(model, parm = "beta_", method = "profile",
+      suppressWarnings(confint(model, parm = "beta_", method = conf.method[1],
                        level = ci.width))
     the_cis <- the_cis[rownames(sum$coefficients),]
     lci <- the_cis[,1]
     uci <- the_cis[,2]
-    params <- list(ucoefs, lci, uci, ts, ps)
-    namevec <- c("Est.", lci_lab, uci_lab, tcol, "p")
-
-  } else {
-
-    params <- list(ucoefs, ses, ts, ps)
-    namevec <- c("Est.", "S.E.", tcol, "p")
+    cis <- list(lci, uci)
+    names(cis) <- labs
+    params[names(cis)] <- cis
 
   }
 
   # Put things together
-
-  mat <- matrix(nrow=length(ivs), ncol=length(params))
-  rownames(mat) <- ivs
-  colnames(mat) <- namevec
-
-  for (i in seq_len(length(params))) {
-    if (is.numeric(params[[i]])) {
-      mat[,i] <- params[[i]]
-    } else {
-      mat[,i] <- params[[i]]
-    }
-  }
-
-  if (pvals == FALSE) {
-
-    mat <- mat[,seq_len(ncol(mat)-1)]
-
-  }
+  which.cols <- which_columns(which.cols = which.cols, confint = confint,
+                              ci.labs = make_ci_labs(ci.width), vifs = FALSE,
+                              pvals = pvals, t.col = tcol,
+                              exp = exp,
+                              df = !is.null(dfs))
+  mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
   # Dealing with random effects
   ## Names of grouping vars
@@ -2016,38 +2026,25 @@ summ.merMod <- function(
   ## Calculate ICCs w/ internal function from sjstats
   iccs <- icc(model)
 
-  ## Make a table summarizing grouping vars
-  gvmat <- matrix(ncol = 3, nrow = length(ngroups))
-  colnames(gvmat) <- c("Group","# groups","ICC")
-  for (i in seq_len(length(ngroups))) {
-    gvmat[i,1] <- groups[i]
-    gvmat[i,2] <- ngroups[i]
-    gvmat[i,3] <- iccs[i]
-  }
-
-  ## Make table explaining random coefs
-  rcmat <- as.data.frame(lme4::VarCorr(model))
-  rcmat <- rcmat[is.na(rcmat$var2),]
-  rcmat <- rcmat[,names(rcmat) %in% c("grp","var1","sdcor")]
-  rcmat <- as.matrix(rcmat)
-  colnames(rcmat) <- c("Group","Parameter","Std.Dev.")
-
+  tables <- get_re_tables_mer(model = model, re.variance = re.variance,
+                              groups = groups, ngroups = ngroups,
+                              iccs = iccs)
 
   j <- structure(j, groups = groups, ngroups = ngroups, iccs = iccs,
                  vcnames = names(iccs), dv = names(model.frame(model)[1]),
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 df = df, pbkr = pbkr, r.squared = r.squared,
+                 df = df, p_calc = p_calc, r.squared = r.squared,
                  failed.rsq = failed.rsq, test.stat = tcol,
-                 standardize.response = scale.response,
-                 odds.ratio = odds.ratio,
-                 scale.response = scale.response)
+                 standardize.response = transform.response,
+                 exp = exp, scale.response = transform.response,
+                 re.table = re.table, groups.table = groups.table)
 
   j <- structure(j, lmFamily = family(model))
 
-  j$coeftable <- mat
-  j$rcoeftable <- rcmat # Random effects table
-  j$gvars <- gvmat # Grouping variables table
+  j$coeftable <- as.table(mat)
+  j$rcoeftable <- tables$rcmat # Random effects table
+  j$gvars <- tables$gvmat # Grouping variables table
   j$model <- model
   class(j) <- c("summ.merMod", "summ")
   return(j)
@@ -2069,483 +2066,106 @@ print.summ.merMod <- function(x, ...) {
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n", "Observations: ", x$n, "\n",
-        "Dependent Variable: ",
-        x$dv, "\n", sep = "")
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
-      cat("Type: Mixed effects linear regression", "\n\n")
+      type <- "Mixed effects linear regression"
     } else {
-      cat("\nType: Mixed effects generalized linear regression", "\n",
-          "Error Distribution: ", as.character(x$lmFamily[1]), "\n",
-          "Link function: ",
-          as.character(x$lmFamily[2]), "\n", "\n", sep = "")
+      type <- paste("Mixed effects generalized linear regression", "\n",
+                    italic("Error Distribution: "),
+                    as.character(x$lmFamily[1]), "\n",
+                    italic("Link function: "), as.character(x$lmFamily[2]),
+                    sep = "")
     }
+    print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == T) {
-    cat("MODEL FIT: ",
-        "\n", "AIC = ", round(x$aic, x$digits),
-        ", BIC = ", round(x$bic, x$digits), "\n", sep = "")
+    stats <- paste(italic("AIC"), " = ", num_print(x$aic, x$digits),
+                   ", ", italic("BIC"), " = ",
+                   num_print(x$bic, x$digits), sep = "")
     if (x$r.squared == TRUE) {
-      cat("Pseudo R-squared (fixed effects) = ", round(x$rsq[1],x$digits),
-          "\n", sep = "")
-      cat("Pseudo R-squared (total) = ", round(x$rsq[2], x$digits),
-          "\n\n", sep = "")
-    } else {
-      cat("\n")
+      stats <- paste(stats, "\n", italic("Pseudo-R\u00B2 (fixed effects)"),
+                     " = ", num_print(x$rsq$Marginal, x$digits), "\n",
+                     italic("Pseudo-R\u00B2 (total)"), " = ",
+                     num_print(x$rsq$Conditional, x$digits), sep = "")
     }
+    print_mod_fit(stats)
   }
 
-  cat("FIXED EFFECTS:\n")
+  cat(underline("FIXED EFFECTS:\n"))
+  if ("d.f." %in% names(ctable)) {
+    ctable[,"d.f."] <- as.integer(ctable[,"d.f."])
+  }
   print(ctable)
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
-    if (x$pbkr == FALSE & is.null(x$t.df)) {
+    if (x$p_calc == "residual") {
 
-      cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
+      cat(italic$cyan("\nNote: p values calculated based on residual d.f. =",
+          x$df, "\n"))
 
-      message("Using p values with lmer based on residual d.f. may inflate the
-Type I error rate in many common study designs. Install
-package \"pbkrtest\" to get more accurate p values.")
-
-    } else if (x$pbkr == TRUE & is.null(x$t.df)) {
-
-      cat("\np values calculated using Kenward-Roger d.f. =", round(x$df, x$digits), "\n")
-
-    } else if (!is.null(x$t.df)) {
-
-      if (x$t.df %in% c("residual","resid")) {
-
-        cat("\nNote: p values calculated based on residual d.f. =", x$df, "\n")
-
-      } else {
-
-        cat("\nNote: p values calculated based on user-defined d.f. =", x$df, "\n")
-
+      if (is.null(x$t.df)) {
+        msg_wrap("Using p values with lmer based on residual d.f. may inflate
+                the Type I error rate in many common study designs.
+                Install package \"lmerTest\" and/or \"pbkrtest\" to get more
+                accurate p values.", brk = "\n")
       }
+
+    } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
+
+      cat("\n")
+      cat_wrap(italic$cyan("p values calculated using Kenward-Roger standard
+                           errors and d.f."), brk = "\n")
+
+    } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
+
+      cat("\n")
+      cat_wrap(italic$cyan("p values calculated using Satterthwaite
+                      d.f."), brk = "\n")
+
+    } else if (x$p_calc == "manual") {
+
+      cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
+          x$df, "\n")
 
     }
 
   }
 
-  cat("\nRANDOM EFFECTS:\n")
-  rtable <- round_df_char(j$rcoeftable, digits = x$digits)
-  #rownames(rtable) <- rep("", times = nrow(rtable))
-  print(rtable, row.names = FALSE)
+  if (x$re.table == TRUE) {
+    cat(underline("\nRANDOM EFFECTS:\n"))
+    rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
+    #rownames(rtable) <- rep("", times = nrow(rtable))
+    print(rtable, row.names = FALSE)
+  }
 
-  cat("\nGrouping variables:\n")
-  gtable <- round_df_char(j$gvars, digits = x$digits)
-  #rownames(gtable) <- rep("", times = nrow(gtable))
-  print(gtable, row.names = FALSE)
+  if (x$groups.table == TRUE) {
+    cat(underline("\nGrouping variables:\n"))
+    gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
+    gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
+    #rownames(gtable) <- rep("", times = nrow(gtable))
+    print(gtable, row.names = FALSE)
+  }
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
-  }
-  cat("\n")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
-### Default method ############################################################
+#' @rdname knit_print.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'   S3method(knitr::knit_print, summ.merMod)
+#' } else {
+#'   export(knit_print.summ.merMod)
+#' }
 
-#' @rdname summ.lm
-#' @export
-#'
+knit_print.summ.merMod <- function(x, options = NULL, ...) {
 
-summ.default <- function(model, scale = FALSE, vifs = FALSE,
-                         confint = FALSE, ci.width = .95,
-                         robust = FALSE, robust.type = "HC3", cluster = NULL,
-                         digits = getOption("jtools-digits", default = 2),
-                         pvals = TRUE, n.sd = 1, center = FALSE,
-                         scale.response = FALSE, model.info = TRUE,
-                         model.fit = TRUE, model.check = FALSE, ...) {
-
-  if (!requireNamespace("broom", quietly = TRUE)) {
-
-    stop("Install the broom package to use the summ function for",
-         " unsupported models.")
-
+  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+    return(knitr::normal_print(x))
   }
-
-  the_call <- match.call()
-  the_call[[1]] <- substitute(summ)
-  the_env <- parent.frame(n = 2)
-
-  # Standardized betas
-  if (scale == TRUE) {
-
-    model2 <-
-      try({scale_lm(model, n.sd = n.sd, scale.response = scale.response)},
-          silent = TRUE)
-    if ("try-error" %in% class(model2)) {
-
-      warning("Could not scale this type of model. Reporting",
-              " unscaled estimates...")
-      scale <- FALSE
-      center <- FALSE
-
-    } else {
-
-      model <- model2
-
-    }
-
-  } else if (center == TRUE && scale == FALSE) {
-
-    model2 <-  try({center_lm(model)}, silent = TRUE)
-    if ("try-error" %in% class(model2)) {
-
-      warning("Could not center this type of model. Reporting",
-              " uncentered estimates...")
-      center <- FALSE
-
-    } else {
-
-      model <- model2
-
-    }
-
-  }
-
-  # Checking for required package for VIFs to avoid problems
-  if (vifs == TRUE) {
-    if (!requireNamespace("car", quietly = TRUE)) {
-      warning("When vifs is set to TRUE, you need to have the 'car' package",
-              "installed. Proceeding without VIFs...")
-      vifs <- FALSE
-    }
-  }
-
-  mod_class <- class(model)
-
-  t <- suppressWarnings(try({coefs <-
-    broom::tidy(model, conf.int = confint, conf.level = ci.width)},
-    silent = TRUE))
-
-  if ("try-error" %nin% class(t)) {
-    # Checking that broom can get the right info
-    t <- try({coefs[,c("std.error","statistic","p.value")]})
-
-  }
-
-  if ("try-error" %in% class(t)) {
-
-    t <-
-      suppressWarnings(try({coefs <- coeftest(model)}, silent = TRUE))
-
-
-    if (class(t) == "try-error") {
-      stop("Could not find a way to extract coefficients via broom::tidy",
-           " or coeftest.")
-    } else {
-      coefs <- as.table(coefs)
-    }
-
-    broom <- FALSE
-
-
-  } else {
-
-    broom <- TRUE
-
-  }
-
-  t <- suppressWarnings(try({mod_info <- broom::glance(model)}, silent = TRUE))
-
-  if ("try-error" %in% class(t)) {
-
-    mod_info <- NULL
-
-    n_obs <- try({nobs(model)}, silent = TRUE)
-    if (class(n_obs) == "try-error") {n_obs <- NULL}
-
-    aic <- try({AIC(model)}, silent = TRUE)
-    if (class(aic) == "try-error") {aic <- NULL}
-
-    bic <- try({BIC(model)}, silent = TRUE)
-    if (class(bic) == "try-error") {bic <- NULL}
-
-    r.squared <- NULL
-
-    mod_info2 <- list(r.squared = r.squared, aic = aic, bic = bic)
-
-  } else {
-
-    if ("AIC" %in% names(mod_info)) {
-
-      aic <- mod_info$AIC
-
-    } else {
-
-      aic <- NULL
-
-    }
-
-    if ("BIC" %in% names(mod_info)) {
-
-      bic <- mod_info$BIC
-
-    } else {
-
-      bic <- NULL
-
-    }
-
-    if ("r.squared" %in% names(mod_info)) {
-
-      r.squared <- mod_info$r.squared
-
-    } else {
-
-      r.squared <- NULL
-
-    }
-
-    mod_info2 <- list(aic = aic, bic = bic, r.squared = r.squared)
-
-  }
-
-  if (!exists("n_obs") || is.null(n_obs)) {
-
-    n_obs <- nrow(model.frame(model))
-
-  }
-
-  if (confint == TRUE) {
-
-    alpha <- (1 - ci.width)/2
-
-    lci_lab <- 0 + alpha
-    lci_lab <- paste(round(lci_lab * 100,1), "%", sep = "")
-
-    uci_lab <- 1 - alpha
-    uci_lab <- paste(round(uci_lab * 100,1), "%", sep = "")
-
-    if (broom == TRUE) {
-
-      coeftable <- coefs[,c("estimate","conf.low","conf.high",
-                           "statistic","p.value")]
-
-      coeftable <- as.table(as.matrix(coeftable))
-      rownames(coeftable) <- coefs[,"term"]
-      colnames(coeftable) <- c("Est.", lci_lab, uci_lab, "test stat.", "p")
-      stat <- "test stat."
-
-    } else {
-
-      cis <- try({confint(model, level = ci.width)}, silent = TRUE)
-      if ("try-error" %in% class(cis)) {
-
-        warning("Could not compute CIs. Reporting without them...")
-        confint <- FALSE
-
-      } else {
-
-        ests <- coefs[,"Est."]
-        try({stats <- coefs[,"t val."]}, silent = TRUE)
-        if ("try-error" %in% class(stats)) {
-          stats <- coefs[,"z val."]
-          stat <- "z val."
-        } else {
-          stat <- "t val."
-        }
-        ps <- coefs[,"p"]
-
-        coefs <- cbind(ests, cis[1], cis[2], stats, ps)
-        colnames(coefs) <- c("Est.", lci_lab, uci_lab, stat, "p")
-
-      }
-
-    }
-
-  }
-
-  if (confint == FALSE) {
-
-    if (broom == TRUE) {
-
-      coeftable <- coefs[,c("estimate","std.error","statistic","p.value")]
-
-      coeftable <- as.table(as.matrix(coeftable))
-      rownames(coeftable) <- coefs[,"term"]
-      colnames(coeftable) <- c("Est.", "S.E.", "test stat.", "p")
-      stat <- "test stat."
-
-    } else {
-
-      coeftable <- as.table(coefs)
-
-    }
-
-  }
-
-  if (robust == TRUE & confint == FALSE) {
-
-    if (!requireNamespace("sandwich", quietly = TRUE)) {
-      stop("When robust is set to TRUE, you need to have the \'sandwich\'",
-           " package for robust standard errors. Please install it or set",
-           " robust to FALSE.",
-           call. = FALSE)
-    }
-
-    if (is.character(cluster)) {
-
-      call <- getCall(model)
-      d <- eval(call$data, envir = environment(formula(model)))
-
-      cluster <- d[,cluster]
-      use_cluster <- TRUE
-
-    } else if (length(cluster) > 1) {
-
-      if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-        warning("Invalid cluster input. Either use the name of the variable",
-              " in the input data frame or provide a numeric/factor vector.",
-                " Cluster is not being used in the reported SEs.")
-        cluster <- NULL
-        use_cluster <- FALSE
-
-      } else {
-
-        use_cluster <- TRUE
-
-      }
-
-    } else {
-
-      use_cluster <- FALSE
-
-    }
-
-    if (robust.type %in% c("HC4","HC4m","HC5") & is.null(cluster)) {
-      # vcovCL only goes up to HC3
-      tvcov <- try({sandwich::vcovHC(model, type = robust.type)},
-          silent = TRUE)
-      if ("try-error" %in% class(tvcov)) {
-
-        warning("Could not calculate robust standard errors for this model",
-                " type. Returning the non-robust statistics.")
-        robust <- FALSE
-
-      }
-
-    } else if (robust.type %in% c("HC4","HC4m","HC5") & !is.null(cluster)) {
-
-      stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
-
-    } else if (robust == TRUE) {
-
-      tvcov <-
-        try({sandwich::vcovCL(model, cluster = cluster, type = robust.type)},
-                   silent = TRUE)
-      if ("try-error" %in% class(tvcov)) {
-
-        warning("Could not calculate robust standard errors for this model",
-                " type. Returning the non-robust statistics.")
-        robust <- FALSE
-        use_cluster <- FALSE
-
-      }
-
-    }
-
-    new_coefs <- try({coeftest(model, tvcov)})
-    if ("try-error" %in% class(new_coefs)) {
-
-      warning("Could not calculate robust standard errors for this model",
-              " type. Returning the non-robust statistics.")
-      robust <- FALSE
-      use_cluster <- FALSE
-
-    } else {
-
-      new_ses <- coefs[,2]
-      new_ts <- coefs[,3]
-      new_ps <- coefs[,4]
-
-      coeftable[,stat] <- new_ts
-      coeftable[,"p"] <- new_ps
-      coeftable[,"S.E."] <- new_ses
-
-      use_cluster <- FALSE
-
-    }
-
-  } else if (robust == TRUE & confint == TRUE) {
-
-    warning("Robust statistics and confidence intervals cannot be combined",
-            " for this type of model. Reporting non-robust intervals...")
-    robust <- FALSE
-    use_cluster <- FALSE
-
-  } else {
-
-    use_cluster <- FALSE
-
-  }
-
-  if (vifs == TRUE) {
-
-    tvifs <- try({car::vif(model)}, silent = TRUE)
-    if ("try-error" %in% class(tvifs)) {
-
-      warning("VIFs could not be fitted for this type of model.")
-      vifs <- FALSE
-
-    } else {
-
-      coeftable[,"VIF"] <- rep(NA, times = nrow(coeftable))
-      if (length(tvifs) == nrow(coeftable)) {
-        coeftable[,"VIF"] <- tvifs
-      } else {
-        coeftable[-1,"VIF"] <- tvifs
-      }
-
-    }
-
-  }
-
-  if (pvals == FALSE) {
-
-    coeftable <- coeftable[,colnames(coeftable) %nin% "p"]
-
-  }
-
-  dv <- as.character(attr(terms(formula(model)),"variables"))[2]
-
-  out <- list(coeftable = coeftable, model = model)
-  out <- structure(out, pvals = pvals, robust = robust, vifs = vifs,
-                   mod_class = mod_class, mod_info = mod_info,
-                   confint = confint, ci.width = ci.width, broom = broom,
-                   scale = scale, center = center,
-                   n.sd = n.sd, dv = dv,
-                   n = n_obs, mod_info2 = mod_info2, digits = digits,
-                   model.info = model.info, model.fit = model.fit,
-                   use_cluster = use_cluster, robust.type = robust.type,
-                   scale.response = scale.response,
-                   call = the_call, env = the_env)
-  class(out) <- c("summ.default","summ")
-  return(out)
-
-}
-
-
-#' @export
-
-print.summ.default <- function(x, ...) {
 
   # saving input object as j
   j <- x
@@ -2555,72 +2175,190 @@ print.summ.default <- function(x, ...) {
   # Helper function to deal with table rounding, significance stars
   ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
 
+  format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
+  if (length(format) == 0) {format <- "html"}
+  o_opt <- getOption("kableExtra.auto_format", NULL)
+  options(kableExtra.auto_format = FALSE)
+
   if (x$model.info == TRUE) {
-    cat("MODEL INFO:", "\n")
-    cat("Observations:", x$n, "\n")
-    if (!is.null(x$dv)) {
-      cat("Dependent Variable: ", x$dv, "\n", sep = "")
+    if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
+      type <- "Mixed effects linear regression"
+    } else {
+      type <- "Mixed effects generalized linear model"
     }
-    cat("Model type:", x$mod_class[1], "\n")
+    mod_info <- mod_info_list(missing = x$missing, n = x$n, dv = x$dv,
+                              type = type)
+    obs <- mod_info$n
+    if ("missing" %in% names(mod_info)) {
+      obs <- paste0(obs, " (", mod_info$missing, " missing obs. deleted)")
+    }
+
+    if (type != "Mixed effects linear regression") {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type", "Family",
+                  "Link"),
+        value = c(obs, mod_info$dv, mod_info$type, x$lmFamily[[1]],
+                  x$lmFamily[[2]])
+      )
+    } else {
+      mod_meta <- data.frame(
+        datum = c("Observations", "Dependent variable", "Type"),
+        value = c(obs, mod_info$dv, mod_info$type)
+      )
+    }
+    
+    mod_meta %<>% to_kable(format = format, col.names = NULL)
+
+  } else {mod_meta <- NULL}
+
+  if (x$model.fit == T) {
+
+    stats <- data.frame(stat = c("AIC", "BIC"),
+                        value = c(num_print(x$aic, x$digits),
+                                  num_print(x$bic, x$digits))
+    )
+
+    if (x$r.squared == TRUE) {
+      stats <- data.frame(stat = c("AIC", "BIC",
+                                   "Pseudo-R\u00B2 (fixed effects)",
+                                   "Pseudo-R\u00B2 (total)"),
+                          value = c(num_print(x$aic, x$digits),
+                                    num_print(x$bic, x$digits),
+                                    num_print(x$rsq$Marginal, x$digits),
+                                    num_print(x$rsq$Conditional, x$digits))
+      )
+    }
+
+    stats %<>% to_kable(format = format, col.names = NULL)
+
+  } else {stats <- NULL}
+
+  cap <- NULL
+
+  # Handling p-value explanation
+  if (x$pvals == TRUE & lme4::isLMM(j$model)) {
+
+    if (x$p_calc == "residual") {
+
+      p_stmt <- paste("Note: p values calculated based on residual d.f. =",
+                      x$df)
+
+      if (is.null(x$t.df)) {
+        msg_wrap("Using p values with lmer based on residual d.f. may inflate
+                the Type I error rate in many common study designs.
+                Install package \"lmerTest\" and/or \"pbkrtest\" to get more
+                accurate p values.", brk = "\n")
+      }
+
+    } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
+
+      p_stmt <- paste("p values calculated using Kenward-Roger standard",
+                      "errors and d.f.")
+
+    } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
+
+      p_stmt <- paste("p values calculated using Satterthwaite d.f.")
+
+    } else if (x$p_calc == "manual") {
+
+      p_stmt <- paste("Note: p values calculated based on user-defined d.f. =",
+                      x$df)
+
+    }
+
+    cap <- paste(cap, p_stmt)
+
   }
-
-  if (x$model.fit == T & !all(sapply(x$mod_info2, is.null))) {
-    cat("\nMODEL FIT: \n")
-    if (!is.null(x$mod_info2$r.squared)) {
-      cat("R-squared =", round(x$mod_info2$r.squared, x$digits), "\n")
-    }
-    if (!is.null(x$mod_info2$aic)) {
-      cat("AIC =", round(x$mod_info2$aic, x$digits), "\n")
-    }
-    if (!is.null(x$mod_info2$bic)) {
-      cat("BIC =", round(x$mod_info2$bic, x$digits), "\n")
-    }
-
-  }
-
-  cat("\n")
-  if (x$robust == TRUE) {
-
-    cat("\nStandard errors:", sep = "")
-
-    if (x$use_cluster == FALSE) {
-
-        cat(" Robust, type = ", x$robust.type, "\n", sep = "")
-
-    } else if (x$use_cluster == TRUE) {
-
-        cat(" Cluster-robust, type = ", x$robust.type, "\n", sep = "")
-
-    }
-
-  } else {
-
-    cat("\n")
-
-  }
-
-  print(ctable)
 
   # Notifying user if variables altered from original fit
-  if (x$scale == TRUE) {
-    if (x$scale.response == TRUE) {
-      cat("\n")
-      cat("All continuous variables are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    } else {
-      cat("\n")
-      cat("All continuous predictors are mean-centered and scaled by",
-          x$n.sd, "s.d.", "\n")
-    }
-  } else if (x$center == TRUE) {
-    cat("\n")
-    cat("All continuous predictors are mean-centered.")
+  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+  ss <- if (!is.null(ss)) {paste0("; ", ss)} else {ss}
+  cap <- paste(cap, ss)
+
+  num_cols <- ncol(ctable)
+  if (format == "html") {ctable %<>% escape_stars()}
+  ctable %<>% to_kable(format = format, cols = num_cols + 1,
+                       caption = "Fixed Effects", footnote = cap,
+                       row.names = TRUE)
+
+  if (x$re.table == TRUE) {
+    rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
+    rtable %<>% to_kable(format = format, row.names = FALSE, 
+                         cols = ncol(j$rcoeftable), caption = "Random Effects",
+                         html = FALSE)
+  } else {rtable <- NULL}
+
+  if (x$groups.table == TRUE) {
+    gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
+    gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
+
+    gtable %<>% to_kable(format = format, cols = ncol(j$gvars), 
+                         caption = "Grouping Variables", html = FALSE)
+  } else {gtable <- NULL}
+
+  out <- paste(mod_meta, stats, ctable, rtable, gtable, collapse = "\n\n")
+  options(kableExtra.auto_format = o_opt)
+  if (format == "latex") {
+    return(knitr::asis_output(out, meta = kableExtra_latex_deps))
   }
-  cat("\n")
+  knitr::asis_output(out)
 
 }
 
 #### utilities ###############################################################
+
+#' @title Set defaults for `summ` function
+#'
+#' @description This function is convenience wrapper for manually setting
+#'  options using [options()]. This gives a handy way to, for instance,
+#'  set the arguments to be used in every call to `summ` in your script/session.
+#'
+#'  To make the settings persist across sessions, you can run this in your
+#'  `.Rprofile` file.
+#'
+#'  Note that arguments that do not apply (e.g., `robust` for `merMod` models)
+#'  are silently ignored when those types of models are used.
+#'
+#' @inheritParams summ.lm
+#' @inheritParams summ.merMod
+#'
+#' @export
+#'
+
+set_summ_defaults <- function(digits = NULL, model.info = NULL,
+                              model.fit = NULL, pvals = NULL, robust = NULL,
+                              confint = NULL, ci.width = NULL, vifs = NULL,
+                              conf.method = NULL) {
+
+  if ("confint" %in% names(match.call())) {
+    options("summ-confint" = confint)
+  }
+  if ("ci.width" %in% names(match.call())) {
+    options("summ-ci.width" = ci.width)
+  }
+  if ("model.info" %in% names(match.call())) {
+    options("summ-model.info" = model.info)
+  }
+  if ("model.fit" %in% names(match.call())) {
+    options("summ-model.fit" = model.fit)
+  }
+  if ("robust" %in% names(match.call())) {
+    options("summ-robust" = robust)
+  }
+  if ("vifs" %in% names(match.call())) {
+    options("summ-vifs" = vifs)
+  }
+  if ("digits" %in% names(match.call())) {
+    options("jtools-digits" = digits)
+  }
+  if ("pvals" %in% names(match.call())) {
+    options("summ-pvals" = pvals)
+  }
+  if ("conf.method" %in% names(match.call())) {
+    options("summ-conf.method" = pvals)
+  }
+
+}
 
 #' @export
 
@@ -2630,45 +2368,38 @@ getCall.summ <- function(x, ...) {
 
 }
 
-#' @export
+# #' @export
 
-update.summ <- function(object, ...) {
-
-  call <- getCall(object)
-
-  extras <- match.call(expand.dots = FALSE)$...
-  if (length(extras)) {
-    existing <- !is.na(match(names(extras), names(call)))
-    for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
-    if (any(!existing)) {
-      call <- c(as.list(call), extras[!existing])
-      call <- as.call(call)
-    }
-  }
-  s_env <- attr(object, "env")
-  eval(call, envir = s_env)
-
-}
+# update.summ <- function(object, ...) {
+#
+#   call <- getCall(object)
+#
+#   extras <- match.call(expand.dots = FALSE)$...
+#   if (length(extras)) {
+#     existing <- !is.na(match(names(extras), names(call)))
+#     for (a in names(extras)[existing]) call[[a]] <- extras[[a]]
+#     if (any(!existing)) {
+#       call <- c(as.list(call), extras[!existing])
+#       call <- as.call(call)
+#     }
+#   }
+#   s_env <- attr(object, "env")
+#   eval(call, envir = s_env)
+#
+# }
 
 update_summ <- function(summ, call.env, ...) {
 
   call <- getCall(summ)
 
-  # Assuming all models are the same type as first
-  mod_type <- which(!is.null(sapply(class(summ$model),
-                    utils::getS3method, f = "summ",
-                    optional = T)))
-  mod_type <- class(summ$model)[mod_type[1]]
-  mod_type <- paste0("summ.", mod_type)
-
   # Now get the argument names for that version of summ
-  summ_formals <- formals(getFromNamespace(mod_type, "jtools"))
+  summ_formals <- formals(getFromNamespace(class(summ), "jtools"))
 
   extras <- as.list(match.call())
-  indices <- match(names(extras), names(summ_formals))
+  indices <- which(names(extras) %in% names(summ_formals))
   extras <- extras[indices]
 
-  for (i in 1:length(extras)) {
+  for (i in seq_along(extras)) {
     if (is.name(extras[[i]])) {
       extras[[i]] <- eval(extras[[i]], envir = call.env)
     }
@@ -2688,3 +2419,47 @@ update_summ <- function(summ, call.env, ...) {
 
 }
 
+# Use summ over a list of models and return them.
+# If model isn't supported, just return it.
+summs <- function(models, ...) {
+
+  # Create empty list to hold tidy frames
+  the_summs <- as.list(rep(NA, times = length(models)))
+
+  ex_args <- list(...)
+
+  for (i in seq_along(models)) {
+
+    method_stub <- find_S3_class("summ", models[[i]], package = "jtools")
+
+    if (!is.na(method_stub)) {
+      # Get the right summ function's arguments
+      method_args <- formals(getS3method("summ", method_stub))
+      # Because deprecated args aren't in formals, I add them here
+      dep_names <- c("standardize", "scale.response", "standardize.response",
+                     "center.response", "robust.type")
+      # Match the args
+      extra_args <- ex_args[names(ex_args) %in% c(names(method_args),
+                                                  dep_names)]
+      if (!is.null(extra_args)) {
+        extra_args <- lapply(extra_args, function(x) {
+          if (length(x) > 1) {return(x[[i]])} else {return(x)}
+        })
+      }
+
+      all_args <- as.list(c(unname(models[i]), extra_args))
+
+      the_summs[[i]] <- do.call(getS3method("summ", method_stub),
+                                args = all_args)
+
+    } else {
+
+      the_summs[[i]] <- models[[i]]
+
+    }
+
+  }
+
+  return(the_summs)
+
+}

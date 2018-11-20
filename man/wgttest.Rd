@@ -4,8 +4,8 @@
 \alias{wgttest}
 \title{Test whether sampling weights are needed}
 \usage{
-wgttest(model, weights, data = NULL, model_output = TRUE, test = NULL,
-  digits = getOption("jtools-digits", default = 3))
+wgttest(model, weights, data = NULL, model_output = FALSE,
+  test = NULL, digits = getOption("jtools-digits", default = 3))
 }
 \arguments{
 \item{model}{The unweighted linear model (must be \code{lm},
@@ -19,8 +19,8 @@ included in \code{model}.}
 weights}
 
 \item{model_output}{Should a summary of the model with weights as predictor
-be printed? Default is TRUE, but you may not want it if you are trying to
-declutter a document.}
+be printed? Default is FALSE since the output can be very long for
+complex models.}
 
 \item{test}{Which type of test should be used in the ANOVA? The default,
 \code{NULL}, chooses based on the model type ("F" for linear models).
@@ -45,7 +45,8 @@ test of significance is performed to compare the weights-added model to the
 original; if insignificant, weights are not significantly related to the
 result and you can use the more efficient estimation from unweighted OLS.
 
-It can be helpful to look at the created model using \code{model_output = TRUE}
+It can be helpful to look at the created model using
+\code{model_output = TRUE}
 to see which variables might be the ones affected by inclusion of weights.
 
 This test can support most GLMs in addition to LMs, a use validated by

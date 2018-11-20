@@ -4,16 +4,20 @@
 \alias{sim_slopes}
 \title{Perform a simple slopes analysis.}
 \usage{
-sim_slopes(model, pred, modx, mod2 = NULL, modxvals = NULL,
-  mod2vals = NULL, centered = NULL, scale = FALSE, cond.int = FALSE,
-  johnson_neyman = TRUE, jnplot = FALSE, jnalpha = 0.05, robust = FALSE,
-  robust.type = "HC3", digits = getOption("jtools-digits", default = 2),
-  n.sd = 1, standardize = NULL, ...)
+sim_slopes(model, pred, modx, mod2 = NULL, modx.values = NULL,
+  mod2.values = NULL, centered = "all", data = NULL,
+  cond.int = FALSE, johnson_neyman = TRUE, jnplot = FALSE,
+  jnalpha = 0.05, robust = FALSE, digits = getOption("jtools-digits",
+  default = 2), pvals = TRUE, confint = FALSE, ci.width = 0.95,
+  cluster = NULL, modx.labels = NULL, mod2.labels = NULL, ...)
 }
 \arguments{
-\item{model}{A regression model of type \code{lm} or
-\code{\link[survey]{svyglm}}.
-It should contain the interaction of interest.}
+\item{model}{A regression model. The function is tested with \code{lm},
+\code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+\code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
+\code{stanreg} models.
+Models from other classes may work as well but are not officially
+supported. The model should include the interaction of interest.}
 
 \item{pred}{The predictor variable involved in the interaction.}
 
@@ -22,7 +26,7 @@ It should contain the interaction of interest.}
 \item{mod2}{Optional. The name of the second moderator
 variable involved in the interaction.}
 
-\item{modxvals}{For which values of the moderator should simple slopes
+\item{modx.values}{For which values of the moderator should simple slopes
 analysis be performed? Default is \code{NULL}. If \code{NULL}, then the
 values will be the customary +/- 1 standard deviation from the mean as
 well as the mean itself. There is no specific limit on the number of
@@ -40,21 +44,24 @@ variables are coerced to numeric 0/1 variables, but are not
 standardized/centered like they could be if your input data had a numeric
 0/1 variable.}
 
-\item{mod2vals}{For which values of the second moderator should the plot be
-facetted by? That is, there will be a separate plot for each level of this
-moderator. Defaults are the same as \code{modxvals}.}
+\item{mod2.values}{Same as \code{modx.values}, but for the second moderator
+(\code{mod2}).}
 
 \item{centered}{A vector of quoted variable names that are to be
-mean-centered. If \code{NULL}, all non-focal predictors are centered. If
-not \code{NULL}, only the user-specified predictors are centered. User
-can also use "none" or "all" arguments. The response variable is not
-centered unless specified directly.}
+mean-centered. If \code{"all"}, all non-focal predictors as well as
+the \code{pred} variable are centered. You
+may instead pass a character vector of variables to center. User can
+also use "none" to base all predictions on variables set at 0.
+The response variable, \code{modx}, and \code{mod2} variables are never
+centered.}
 
-\item{scale}{Logical. Would you like to standardize the variables
-that are centered? Default is \code{FALSE}, but if \code{TRUE} it will
-scale variables specified by the \code{centered} argument. Note that
-non-focal predictors are centered when \code{centered = NULL}, its
-default.}
+\item{data}{Optional, default is NULL. You may provide the data used to
+fit the model. This can be a better way to get mean values for centering
+and can be crucial for models with variable transformations in the formula
+(e.g., \code{log(x)}) or polynomial terms (e.g., \code{poly(x, 2)}). You will
+see a warning if the function detects problems that would likely be
+solved by providing the data with this argument and the function will
+attempt to retrieve the original data from the global environment.}
 
 \item{cond.int}{Should conditional intercepts be printed in addition to the
 slopes? Default is \code{FALSE}.}
@@ -69,12 +76,11 @@ is \code{FALSE}.}
 \item{jnalpha}{What should the alpha level be for the Johnson-Neyman
 interval? Default is .05, which corresponds to a 95\% confidence interval.}
 
-\item{robust}{Logical. If \code{TRUE}, computes heteroskedasticity-robust
-standard errors.}
-
-\item{robust.type}{Type of heteroskedasticity-robust standard errors to use
-if \code{robust=TRUE}. See details of \code{\link{j_summ}} for more on
-options.}
+\item{robust}{Should robust standard errors be used to find confidence
+intervals for supported models? Default is FALSE, but you should specify
+the type of sandwich standard errors if you'd like to use them (i.e.,
+\code{"HC0"}, \code{"HC1"}, and so on). If \code{TRUE}, defaults to \code{"HC3"} standard
+errors.}
 
 \item{digits}{An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
@@ -82,28 +88,51 @@ digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired
 number.}
 
-\item{n.sd}{How many standard deviations should be used if \code{scale
-= TRUE}? Default is 1, but some prefer 2.}
+\item{pvals}{Show p values and significance stars? If \code{FALSE}, these
+are not printed. Default is \code{TRUE}.}
 
-\item{standardize}{Deprecated. Equivalent to \code{scale}. Please change your
-scripts to use \code{scale} instead as this argument will be removed in the
-future.}
+\item{confint}{Show confidence intervals instead of standard errors? Default
+is \code{FALSE}.}
 
-\item{...}{Arguments passed to \code{\link{johnson_neyman}}.}
+\item{ci.width}{A number between 0 and 1 that signifies the width of the
+desired confidence interval. Default is \code{.95}, which corresponds
+to a 95\% confidence interval. Ignored if \code{confint = FALSE}.}
+
+\item{cluster}{For clustered standard errors, provide the column name of
+the cluster variable in the input data frame (as a string). Alternately,
+provide a vector of clusters.}
+
+\item{modx.labels}{A character vector of labels for each level of the
+moderator values, provided in the same order as the \code{modx.values}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{mod2.labels}{A character vector of labels for each level of the 2nd
+moderator values, provided in the same order as the \code{mod2.values}
+argument. If \code{NULL}, the values themselves are used as labels unless
+\code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
+are used.}
+
+\item{...}{Arguments passed to \code{\link{johnson_neyman}} and
+\code{summ}.}
 }
 \value{
+A list object with the following components:
+
 \item{slopes}{A table of coefficients for the focal predictor at each
 value of the moderator}
 \item{ints}{A table of coefficients for the intercept at each value of the
 moderator}
-\item{modxvals}{The values of the moderator used in the analysis}
+\item{modx.values}{The values of the moderator used in the analysis}
 \item{mods}{A list containing each regression model created to estimate
 the conditional coefficients.}
 \item{jn}{If \code{johnson_neyman = TRUE}, a list of \code{johnson_neyman}
 objects from \code{\link{johnson_neyman}}. These contain the values of the
 interval and the plots. If a 2-way interaction, the list will be of length
 \enumerate{
-\item Otherwise, there will be 1 \code{johnson_neyman} object for each value of the
+\item Otherwise, there will be 1 \code{johnson_neyman} object for each value of
+the
 2nd moderator for 3-way interactions.}
 }
 }
@@ -119,25 +148,20 @@ three-way interactions are not easy to interpret in this way.
 
 For more about Johnson-Neyman intervals, see \code{\link{johnson_neyman}}.
 
-The function accepts a \code{lm} object and uses it to recompute models
-with the moderating variable set to the levels requested.
-\code{\link[survey]{svyglm}} objects are also accepted, though users
-should be cautioned against using simple slopes analysis with non-linear
-models (\code{svyglm} also estimates linear models).
-
-Factor moderators are coerced to a 0/1 numeric variable and are not
-centered, even when requested in arguments. To avoid this, modify your
-data to change the factor to a binary numeric variable. Factors with more
-than 2 levels trigger an error.
+The function is tested with \code{lm}, \code{glm}, \code{svyglm}, and \code{merMod} inputs.
+Others may work as well, but are not tested. In all but the linear model
+case, be aware that not all the assumptions applied to simple slopes
+analysis apply.
 }
 \examples{
 
 # Using a fitted model as formula input
 fiti <- lm(Income ~ Frost + Murder * Illiteracy,
-  data=as.data.frame(state.x77))
+  data = as.data.frame(state.x77))
 sim_slopes(model = fiti, pred = Murder, modx = Illiteracy)
 
 # With svyglm
+if (requireNamespace("survey")) {
 library(survey)
 data(api)
 dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
@@ -148,6 +172,7 @@ sim_slopes(regmodel, pred = ell, modx = meals)
 # 3-way with survey and factor input
 regmodel <- svyglm(api00 ~ ell * meals * sch.wide, design = dstrat)
 sim_slopes(regmodel, pred = ell, modx = meals, mod2 = sch.wide)
+}
 
 }
 \references{
@@ -167,8 +192,7 @@ results with \code{\link[ggplot2]{ggplot}}.
 \code{\link[rockchalk]{testSlopes}} performs a hypothesis test of
 differences and provides Johnson-Neyman intervals.
 
-\code{\link[pequod]{simpleSlope}} performs a similar analysis and can
-also analyze a second moderator.
+\code{\link[pequod]{simpleSlope}} performs a similar analysis.
 
 Other interaction tools: \code{\link{cat_plot}},
   \code{\link{interact_plot}},

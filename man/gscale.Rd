@@ -2,31 +2,37 @@
 % Please edit documentation in R/gscale.R
 \name{gscale}
 \alias{gscale}
-\title{Scale and/or center regression inputs, including from survey designs, by dividing by 2 SD}
+\title{Scale and/or center data, including survey designs}
 \usage{
-gscale(x = NULL, binary.inputs = "center", data = NULL, n.sd = 2,
-  center.only = FALSE, scale.only = FALSE, weights = NULL)
+gscale(data = NULL, vars = NULL, binary.inputs = "center",
+  binary.factors = TRUE, n.sd = 2, center.only = FALSE,
+  scale.only = FALSE, weights = NULL,
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
+  FALSE), x = NULL, messages = FALSE)
 }
 \arguments{
-\item{x}{A vector to be rescaled, or a vector of variable names. If none provided, but data
-frame or \code{svydesign} object is, all columns will be processed and returned.}
-
-\item{binary.inputs}{Options for binary variables. Default is \code{center};
-\code{0/1} keeps original scale; \code{-0.5/0.5} rescales 0 as -0.5 and 1 as 0.5;
-\code{center} subtracts the mean; and \code{full} subtracts the mean and
-divides by 2 sd.}
-
 \item{data}{A data frame or survey design. Only needed if you would like to
 rescale multiple variables at once. If \code{x = NULL}, all columns will
 be rescaled. Otherwise, \code{x} should be a vector of variable names. If
 \code{x} is a numeric vector, this argument is ignored.}
 
-\item{n.sd}{By how many standard deviations should the variables be divided by?
-Default is 2, as in \pkg{arm}'s \code{\link[arm]{rescale}}. Choosing 1 would
-make for a more typical standardization scheme.}
+\item{vars}{If \code{data} is a data.frame or similar, you can scale only
+select columns by providing a vector column names to this argument.}
 
-\item{center.only}{A logical value indicating whether you would like to mean-center
-the values, but not scale them.}
+\item{binary.inputs}{Options for binary variables. Default is \code{center};
+\code{0/1} keeps original scale; \code{-0.5/0.5} rescales 0 as -0.5 and 1
+as 0.5; \code{center} subtracts the mean; and \code{full} subtracts the
+mean and divides by 2 sd.}
+
+\item{binary.factors}{Coerce two-level factors to numeric and apply scaling
+functions to them? Default is TRUE.}
+
+\item{n.sd}{By how many standard deviations should the variables be divided
+by? Default for \code{gscale} is 2, like \pkg{arm}'s \code{\link[arm]{rescale}}.
+1 is the more typical standardization scheme.}
+
+\item{center.only}{A logical value indicating whether you would like to mean
+-center the values, but not scale them.}
 
 \item{scale.only}{A logical value indicating whether you would like to scale
 the values, but not mean-center them.}
@@ -35,15 +41,31 @@ the values, but not mean-center them.}
 over a data frame, the weights will need to be equal in length to all the
 columns to avoid errors. You may need to remove missing values before using
 the weights.}
+
+\item{apply.weighted.contrasts}{Factor variables cannot be scaled, but you
+can set the contrasts such that the intercept in a regression model will
+reflect the true mean (assuming all other variables are centered). If set
+to TRUE, the argument will apply weighted effects coding to all factors.
+This is similar to the R default effects coding, but weights according to
+how many observations are at each level. An adapted version of
+\code{\link[wec:contr.wec]{wec::contr.wec()}} from the \pkg{wec} package is used to do this. See
+that package's documentation and/or Grotenhuis et al. (2016) for more
+info.}
+
+\item{x}{Deprecated. Pass numeric vectors to \code{data}. Pass vectors of column
+names to \code{vars}.}
+
+\item{messages}{Print messages when variables are not processed due to
+being non-numeric or all missing? Default is FALSE.}
 }
 \description{
-\code{gscale()} standardizes variables by dividing them by 2 standard deviations
-and mean-centering them by default. It contains options for handling binary
-variables separately. \code{gscale()} is a fork of \code{\link[arm]{rescale}}
-from the \pkg{arm} package---the key feature difference is that
-\code{gscale()} will perform the same functions for variables in
-\code{\link[survey]{svydesign}} objects. \code{gscale()} is also more
-user-friendly in that it is more flexible in how it accepts input.
+\code{gscale} standardizes variables by dividing them by 2 standard
+deviations and mean-centering them by default. It contains options for
+handling binary variables separately. \code{gscale()} is a fork of
+\code{\link[arm]{rescale}} from the \pkg{arm} package---the key feature
+difference is that \code{gscale()} will perform the same functions for
+variables in \code{\link[survey]{svydesign}} objects. \code{gscale()} is
+also more user-friendly in that it is more flexible in how it accepts input.
 }
 \details{
 This function is adapted from the \code{\link[arm]{rescale}} function of
@@ -55,13 +77,13 @@ can also accept multiple types of input without breaking a sweat.
 Only numeric variables are altered when in a data.frame or survey design.
 Character variables, factors, etc. are skipped.
 
-For those dealing with survey data, if you provide a \code{survey.design} object
-you can rest assured that the mean-centering and scaling is performed
+For those dealing with survey data, if you provide a \code{survey.design}
+object you can rest assured that the mean-centering and scaling is performed
 with help from the \code{\link[survey]{svymean}} and
-\code{\link[survey]{svyvar}} functions, respectively. It was among the primary
-motivations for creating this function. \code{gscale()} will not center or
-scale the weights variables defined in the survey design unless the user
-specifically requests them in the \code{x =} argument.
+\code{\link[survey]{svyvar}} functions, respectively. It was among the
+primary motivations for creating this function. \code{gscale()} will not
+center or scale the weights variables defined in the survey design unless
+the user specifically requests them in the \code{x =} argument.
 }
 \examples{
 
@@ -87,7 +109,7 @@ gscale(x2, binary.inputs = "center") # mean center it
 gscale(data = mtcars, binary.inputs = "-0.5/0.5")
 
 # Specified vars in data frame
-gscale(c("hp", "wt", "vs"), data = mtcars, binary.inputs = "center")
+gscale(mtcars, vars = c("hp", "wt", "vs"), binary.inputs = "center")
 
 # Weighted inputs
 
@@ -95,23 +117,24 @@ wts <- runif(10, 0, 1)
 gscale(x, weights = wts)
 # If using a weights column of data frame, give its name
 mtcars$weights <- runif(32, 0, 1)
-gscale(data = mtcars, weights = weights) # will skip over mtcars$weights
+gscale(mtcars, weights = weights) # will skip over mtcars$weights
 # If using a weights column of data frame, can still select variables
-gscale(x = c("hp", "wt", "vs"), data = mtcars, weights = weights)
+gscale(mtcars, vars = c("hp", "wt", "vs"), weights = weights)
 
 # Survey designs
-library(survey)
-data(api)
-## Create survey design object
-dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
-                     data = apistrat, fpc=~fpc)
-# Creating test binary variable
-dstrat$variables$binary <- rbinom(200, 1, 0.5)
+if (requireNamespace("survey")) {
+  library(survey)
+  data(api)
+  ## Create survey design object
+  dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                       data = apistrat, fpc=~fpc)
+  # Creating test binary variable
+  dstrat$variables$binary <- rbinom(200, 1, 0.5)
 
-gscale(data = dstrat, binary.inputs = "-0.5/0.5")
-gscale(c("api00","meals","binary"), data = dstrat,
-       binary.inputs = "-0.5/0.5")
-
+  gscale(data = dstrat, binary.inputs = "-0.5/0.5")
+  gscale(data = dstrat, vars = c("api00","meals","binary"),
+         binary.inputs = "-0.5/0.5")
+}
 
 
 
@@ -120,14 +143,21 @@ gscale(c("api00","meals","binary"), data = dstrat,
 Gelman, A. (2008). Scaling regression inputs by dividing by two standard
 deviations. \emph{Statistics in Medicine}, \emph{27}, 2865–2873.
 \url{http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
+
+Grotenhuis, M. te, Pelzer, B., Eisinga, R., Nieuwenhuis, R.,
+Schmidt-Catran, A., & Konig, R. (2017). When size matters: Advantages of
+weighted effect coding in observational studies. \emph{International Journal of
+Public Health}, \emph{62}, 163–167. https://doi.org/10.1007/s00038-016-0901-1 (
+open access)
 }
 \seealso{
 \code{\link{j_summ}} is a replacement for the \code{summary} function for
 regression models. On request, it will center and/or standardize variables
 before printing its output.
 
-Other standardization, scaling, and centering tools: \code{\link{center_lm}},
-  \code{\link{scale_lm}}
+Other standardization, scaling, and centering tools: \code{\link{center_mod}},
+  \code{\link{center}}, \code{\link{scale_mod}},
+  \code{\link{standardize}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

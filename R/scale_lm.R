@@ -1,10 +1,29 @@
+#' @export
+#' @rdname scale_mod
+
+scale_mod <- function(model, ...) {
+
+  UseMethod("scale_mod")
+
+}
+
+
+#' @export
+#'
+
+scale_lm <- scale_mod
+
+
 #' Scale variables in fitted regression models
 #'
-#' \code{scale_lm()} takes fitted regression models and scales all predictors
-#' by dividing each by 1 or 2 standard deviations (as chosen by the user).
+#' `scale_mod` (previously known as `scale_lm`) takes fitted regression models
+#'  and scales all
+#'  predictors by dividing each by 1 or 2 standard deviations (as chosen by the
+#'  user).
 #'
-#' @param model A regression model of type \code{lm}, \code{glm}, or
-#' \code{\link[survey]{svyglm}}.
+#' @param model A regression model of type \code{lm}, \code{glm},
+#' \code{\link[survey]{svyglm}}, or [lme4::merMod]. Other model types
+#' may work as well but are not tested.
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{"0/1"};
 #'   \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5
@@ -24,22 +43,34 @@
 #'   them.
 #'
 #' @param scale.response Should the response variable also be rescaled? Default
-#'   is \code{TRUE}.
+#'   is \code{FALSE}.
+#'
+#' @param data If you provide the data used to fit the model here, that data
+#'   frame is used to re-fit the model instead of the [stats::model.frame()]
+#'   of the model. This is particularly useful if you have variable
+#'   transformations or polynomial terms specified in the formula.
+#'
+#' @param vars A character vector of variable names that you want to be
+#'   scaled. If NULL, the default, it is all predictors.
+#'
+#' @param ... Ignored.
+#'
+#' @inheritParams gscale
 #'
 #' @details This function will scale all continuous variables in a regression
 #'   model for ease of interpretation, especially for those models that have
-#'   interaction terms. It can also mean-center all of them as well, if 
+#'   interaction terms. It can also mean-center all of them as well, if
 #'   requested.
 #'
-#'   The scaling happens on the input data, not the terms themselves. That 
+#'   The scaling happens on the input data, not the terms themselves. That
 #'   means interaction terms are still properly calculated because they are
-#'   the product of standardized predictors, not a standardized product of 
+#'   the product of standardized predictors, not a standardized product of
 #'   predictors.
 #'
-#'   This function re-estimates the model, so for large models one should 
+#'   This function re-estimates the model, so for large models one should
 #'   expect a runtime equal to the first run.
 #'
-#' @return The functions returns a \code{lm} or \code{glm} object, inheriting
+#' @return The functions returns a re-fitted model object, inheriting
 #'   from whichever class was supplied.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -55,44 +86,50 @@
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
-#'  multilevel regression: Inferential and graphical techniques. 
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+#'  multilevel regression: Inferential and graphical techniques.
 #'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
-#' multiple regression/correlation analyses for the behavioral sciences} (3rd 
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd
 #' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
 #' fit <- lm(formula = Murder ~ Income * Illiteracy,
 #'           data = as.data.frame(state.x77))
-#' fit_scale <- scale_lm(fit)
-#' fit_scale <- scale_lm(fit, center = TRUE)
+#' fit_scale <- scale_mod(fit)
+#' fit_scale <- scale_mod(fit, center = TRUE)
 #'
 #' # With weights
 #' fitw <- lm(formula = Murder ~ Income * Illiteracy,
 #'            data = as.data.frame(state.x77),
 #'            weights = Population)
-#' fitw_scale <- scale_lm(fitw)
-#' fitw_scale <- scale_lm(fitw, center = TRUE, binary.input = "0/1")
+#' fitw_scale <- scale_mod(fitw)
+#' fitw_scale <- scale_mod(fitw, center = TRUE, binary.input = "0/1")
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat<-svydesign(id=~1,strata=~stype, weights=~pw, data=apistrat, fpc=~fpc)
 #' regmodel <- svyglm(api00~ell*meals,design=dstrat)
-#' regmodel_scale <- scale_lm(regmodel)
-#' regmodel_scale <- scale_lm(regmodel, binary.input = "0/1")
+#' regmodel_scale <- scale_mod(regmodel)
+#' regmodel_scale <- scale_mod(regmodel, binary.input = "0/1")
+#' }
 #'
 #' @importFrom stats weighted.mean as.formula getCall formula
 #' @importFrom stats model.matrix model.weights
-#'
-#' @export scale_lm
+#' @aliases scale_lm
+#' @export
+#' @rdname scale_mod
 #'
 
-scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
-                     scale.response = TRUE, center.only = FALSE) {
+scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
+   center = TRUE, scale.response = FALSE, center.only = FALSE, data = NULL,
+   vars = NULL,
+   apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+   ...) {
 
   # Save data --- using the call to access the data to avoid problems w/
   # transformed data
@@ -122,8 +159,9 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
   resp <- as.character(formula(model)[2])
 
   # Save list of terms
-  vars <- attributes(terms(model))$variables
-  vars <- as.character(vars)[2:length(vars)] # Use 2:length bc 1 is "list"
+  all_vars <- attributes(terms(model))$variables
+  # Use 2:length bc 1 is "list"
+  all_vars <- as.character(all_vars)[2:length(all_vars)]
 
   # If offset supplied in the formula, detect it, delete it
   if (!is.null(attr(terms(form), "offset"))) {
@@ -136,7 +174,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
   # Now I'm quoting all the names so there's no choking on vars with functions
   # applied. I save the backticked names
-  for (var in vars) {
+  for (var in all_vars) {
 
     regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
                            "(?=($|~|\\s|\\*|\\+))", sep = "")
@@ -148,15 +186,7 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
   formc <- paste0(formc, collapse = "")
   formc <- gsub("``", "`", formc, fixed = TRUE)
 
-
-  # svyglm?
-  if (class(model)[1] == "svyglm" || class(model)[1] == "svrepglm") {
-    survey <- TRUE
-  } else {
-    survey <- FALSE
-  }
-
-  if (!is.null(model.weights(mf)) && survey == FALSE) {
+  if (!is.null(model.weights(mf))) {
 
     weights <- TRUE
     the_weights <- model.weights(mf)
@@ -168,100 +198,171 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
   }
 
-  # things are different for these svyglm objects...
-  if (survey == TRUE) {
+  if (!is.null(data)) {
 
-    # Get the survey design object
-    design <- model$survey.design
-
-    # Now we need to know the variables of interest
-    vars <- attributes(model$terms)$variables
-    vars <- as.character(vars)[2:length(vars)]
-
-    # Add vars to design if they aren't already there
-    # (fixes issues with functions)
-    adds <- which(!(vars %in% names(design$variables)))
-    for (var in vars[adds]) {
-
-      design[,var] <- mf[,var]
-
-    }
-
-    if (scale.response == FALSE) {
-      vars <- vars[!(vars %in% resp)]
-    }
-
-    # Call gscale()
-    design <- gscale(x = vars, data = design, n.sd = n.sd, scale.only = !center,
-                     center.only = center.only)
-
-    call$design <- quote(design)
-    call[[1]] <- survey::svyglm
-    new <- eval(call)
-
-  }
-
-  # weights?
-  if (survey == FALSE && !is.null(call$weights)) {
-
-    weights <- TRUE
-    mf <- mf[,names(mf) != "(weights)"] # just getting rid of the column
+    mf <- data
+    # Keep only variables used
+    mf <- get_all_vars(formula(model), data = mf)
+    # And only the complete cases
+    mf <- mf[complete.cases(mf),]
 
   } else {
 
-    weights <- FALSE
+    all_vars <- sapply(all_vars, function(x) {
+                         gsub("`", "", x, fixed = TRUE )
+                       })
 
   }
 
-  # calling gscale(), incorporating the weights
-  if (weights == TRUE) {
-
-    if (scale.response == FALSE) {
-
-      vars <- vars[!(vars %in% resp)]
-
-    }
-
-    mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
-                 n.sd = n.sd, weights = the_weights, scale.only = !center,
-                 center.only = center.only)
-
-    mf$the_weights <- the_weights
-
-  } else {
-
-    if (scale.response == FALSE) {
+  if (scale.response == FALSE) {
       # Now we need to know the variables of interest
-      vars <- vars[!(vars %in% resp)]
-      mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
-                   n.sd = n.sd, scale.only = !center,
-                   center.only = center.only)
+      all_vars <- all_vars[all_vars %nin% resp]
+  }
 
-    } else {
+  if (!is.null(vars)) {
+    all_vars <- all_vars[all_vars %in% vars]
+  }
 
-      mf <- gscale(x = vars, data = mf, binary.inputs = binary.inputs,
-                   n.sd = n.sd, scale.only = !center,
-                   center.only = center.only)
+  mf <- gscale(vars = all_vars, data = mf, binary.inputs = binary.inputs,
+               n.sd = n.sd, scale.only = !center,
+               center.only = center.only, weights = the_weights,
+               apply.weighted.contrasts = apply.weighted.contrasts)
 
-    }
+  form <- as.formula(formc)
+
+  # Create new environment
+  e <- new.env()
+  # Add everything from the model's data to this environment
+  lapply(names(mf), function(x, env, f) {env[[x]] <- f[[x]]}, env = e, f = mf)
+  # Add the offset to the environment
+  e$the_offset <- the_offset
+  # Add the weights to the environment
+  e$the_weights <- the_weights
+  # Add the environment to the formula
+  environment(form) <- e
+
+  # Get the model's original call
+  call <- getCall(model)
+  # Replace that call's formula with this new one that includes the modified
+  # environment. Then set the `data` arg of the call to NULL so it looks only
+  # in the new, modified environment
+  call$formula <- form
+  call$data <- NULL
+  # Conditionally add the names of the offset and weights args
+  if (!is.null(the_offset)) {
+    call$offset <- quote(the_offset)
+  }
+  if (!is.null(the_weights)) {
+    call$weights <- quote(the_weights)
+  }
+  # Update the model
+  new <- eval(call)
+
+  return(new)
+
+}
+
+#' @export
+#'
+
+scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
+   center = TRUE, scale.response = FALSE, center.only = FALSE, data = NULL,
+   vars = NULL,
+   apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+   ...) {
+
+  # Save data --- using the call to access the data to avoid problems w/
+  # transformed data
+  call <- getCall(model)
+  if (is.null(call)) {
+    stop("Model object does not support updating (no call)", call. = FALSE)
+  }
+
+  mf <- model.frame(model)
+  form <- formula(model)
+  formc <- as.character(deparse(formula(model)))
+
+  # Detect presence of offset, save the vector
+  if (!is.null(model.offset(mf))) {
+
+    offset <- TRUE
+    the_offset <- model.offset(mf)
+
+  } else {
+
+    offset <- FALSE
+    the_offset <- NULL
 
   }
 
+  # Save response variable
+  resp <- as.character(formula(model)[2])
 
-  if (survey == FALSE) {
+  # Save list of terms
+  all_vars <- attributes(terms(model))$variables
+  # Use 2:length bc 1 is "list"
+  all_vars <- as.character(all_vars)[2:length(all_vars)]
 
-    form <- as.formula(formc)
+  # If offset supplied in the formula, detect it, delete it
+  if (!is.null(attr(terms(form), "offset"))) {
 
-    call <- getCall(model)
-    call$formula <- form
-    call$data <- quote(mf) # quoting avoids that gnarly output
-    call$offset <- the_offset
-    call$weights <- the_weights
-
-    new <- eval(call)
+    off_pos <- attr(terms(form), "offset") # Get index of offset in terms list
+    offname <- attr(terms(form), "variables")[off_pos] # Get its name in list
+    formc <- gsub(offname, "", formc)
 
   }
 
+  # Now I'm quoting all the names so there's no choking on vars with functions
+  # applied. I save the backticked names
+  for (var in all_vars) {
+
+    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
+                           "(?=($|~|\\s|\\*|\\+))", sep = "")
+    backtick_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(regex_pattern, backtick_name, formc, perl = T)
+
+  }
+
+  formc <- paste0(formc, collapse = "")
+  formc <- gsub("``", "`", formc, fixed = TRUE)
+
+  # Get the survey design object
+  design <- model$survey.design
+
+  # Now we need to know the variables of interest
+  all_vars <- attributes(model$terms)$variables
+  all_vars <- as.character(all_vars)[2:length(all_vars)]
+
+  # Add vars to design if they aren't already there
+  # (fixes issues with functions)
+  adds <- which(all_vars %nin% names(design$variables))
+  for (var in all_vars[adds]) {
+
+    design$variables[[var]] <- mf[[var]]
+
+  }
+
+  # Complete cases only
+  design$variables <-
+    design$variables[complete.cases(design$variables[all_vars]),]
+
+  if (scale.response == FALSE) {
+    all_vars <- all_vars[all_vars %nin% resp]
+  }
+
+  if (!is.null(vars)) {
+    all_vars <- all_vars[all_vars %in% vars]
+  }
+
+
+  # Call gscale()
+  design <- gscale(vars = all_vars, data = design, n.sd = n.sd,
+                   scale.only = !center, center.only = center.only)
+
+  call$design <- quote(design)
+
+  call[[1]] <- survey::svyglm
+  new <- eval(call)
 
   return(new)
 
@@ -269,10 +370,11 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 
 #' Center variables in fitted regression models
 #'
-#' \code{center_lm} takes fitted regression models and mean-centers the 
-#'   continuous variables in the model to aid interpretation, especially in 
-#'   the case of models with interactions. It is a wrapper to 
-#'   \code{\link{scale_lm}}.
+#' `center_mod` (previously known as `center_lm`) takes fitted regression models
+#'  and mean-centers the
+#'   continuous variables in the model to aid interpretation, especially in
+#'   the case of models with interactions. It is a wrapper to
+#'   \code{\link{scale_mod}}.
 #'
 #' @param model A regression model of type \code{lm}, \code{glm}, or
 #' \code{\link[survey]{svyglm}}; others may work as well but have not been
@@ -280,25 +382,27 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #'
 #' @param binary.inputs Options for binary variables. Default is \code{0/1};
 #'   \code{0/1} keeps original scale; \code{-0.5,0.5} rescales 0 as -0.5 and 1
-#'   as 0.5; \code{center} subtracts the mean; and \code{full} treats them 
+#'   as 0.5; \code{center} subtracts the mean; and \code{full} treats them
 #'   like other continuous variables.
 #'
-#' @param center.response Should the response variable also be centered? 
+#' @param center.response Should the response variable also be centered?
 #'   Default is \code{FALSE}.
 #'
-#' @details This function will mean-center all continuous variables in a 
-#'   regression model for ease of interpretation, especially for those models 
+#' @inheritParams scale_mod
+#'
+#' @details This function will mean-center all continuous variables in a
+#'   regression model for ease of interpretation, especially for those models
 #'   that have
 #'   interaction terms. The mean for \code{svyglm} objects is calculated using
 #'   \code{svymean}, so reflects the survey-weighted mean. The weight variables
 #'   in \code{svyglm} are not centered, nor are they in other \code{lm} family
 #'   models.
 #'
-#'   This function re-estimates the model, so for large models one should 
+#'   This function re-estimates the model, so for large models one should
 #'   expect
 #'   a runtime equal to the first run.
 #'
-#' @return The functions returns a \code{lm} or \code{glm} object, inheriting 
+#' @return The functions returns a \code{lm} or \code{glm} object, inheriting
 #'   from whichever class was supplied.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -314,41 +418,47 @@ scale_lm <- function(model, binary.inputs = "0/1", n.sd = 1, center = TRUE,
 #'
 #' @references
 #'
-#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and 
-#'  multilevel regression: Inferential and graphical techniques. 
+#' Bauer, D. J., & Curran, P. J. (2005). Probing interactions in fixed and
+#'  multilevel regression: Inferential and graphical techniques.
 #'  \emph{Multivariate Behavioral Research}, \emph{40}(3), 373-400.
 #'
-#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied 
-#' multiple regression/correlation analyses for the behavioral sciences} (3rd 
+#' Cohen, J., Cohen, P., West, S. G., & Aiken, L. S. (2003). \emph{Applied
+#' multiple regression/correlation analyses for the behavioral sciences} (3rd
 #' ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 #'
 #' @examples
 #'
 #' fit <- lm(formula = Murder ~ Income * Illiteracy,
 #'           data = as.data.frame(state.x77))
-#' fit_center <- center_lm(fit)
+#' fit_center <- center_mod(fit)
 #'
 #' # With weights
 #' fitw <- lm(formula = Murder ~ Income * Illiteracy,
 #'            data = as.data.frame(state.x77),
 #'            weights = Population)
-#' fitw_center <- center_lm(fitw)
+#' fitw_center <- center_mod(fitw)
 #'
 #' # With svyglm
+#' if (requireNamespace("survey")) {
 #' library(survey)
 #' data(api)
 #' dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
 #'                     data = apistrat, fpc =~ fpc)
 #' regmodel <- svyglm(api00 ~ ell * meals, design = dstrat)
-#' regmodel_center <- center_lm(regmodel)
+#' regmodel_center <- center_mod(regmodel)
+#' }
 #'
-#' @export center_lm
-#'
+#' @export center_mod
+#' @aliases center_lm
 
-center_lm <- function(model, binary.inputs = "0/1", center.response = FALSE) {
+center_mod <- center_lm <- function(model, binary.inputs = "0/1",
+    center.response = FALSE, data = NULL,
+    apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE)) {
 
-  out <- scale_lm(model, binary.inputs = binary.inputs,
-                  scale.response = center.response, center.only = TRUE)
+  out <- scale_mod(model, binary.inputs = binary.inputs,
+                  scale.response = center.response, center.only = TRUE,
+                  data = data,
+                  apply.weighted.contrasts = apply.weighted.contrasts)
 
   return(out)
 

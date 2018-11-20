@@ -1,4 +1,391 @@
-## jtools 0.9.3 (CRAN release)
+# jtools 1.1.1
+
+This is a minor release.
+
+## Bug fixes
+
+* `plot_predictions` had an incorrect default value for `interval`, causing
+an error if you used the default arguments with `make_predictions`. The default
+is now `FALSE`. (#39)
+* `interact_plot`, `cat_plot`, and `effect_plot` would have errors when the
+models included covariates (not involved in the interaction, if any) that
+were non-numeric. That has been corrected. (#41)
+* Logical variables (with values of `TRUE` or `FALSE`) were not handled by
+the plotting functions appropriately, causing them to be treated as numeric.
+They are now preserved as logical. (#40).
+* `sim_slopes` gave inaccurate results when factor moderators did not have
+treatment coding (`"contr.treatment"`) but are now recoded to treatment 
+coding.
+
+## Other changes
+
+* `summ` output in RMarkdown documents is now powered by `kableExtra`, which
+(in my opinion) offers more attractive HTML output and seems to have better
+luck with float placement in PDF documents. Your mileage may vary.
+* 2 vignettes are now made with `rmdformats` rather than the base `rmarkdown`
+template.
+* S3 methods for S3 generics that aren't imported by the package (`tidy` and
+`glance` from `broom`, `knit_print` from `knitr`, `as_huxtable` from `huxtable`)
+will now have conditional namespace registration for users of R 3.6. This 
+shouldn't have much effect on end users.
+
+# jtools 1.1.0
+
+This release was initally intended to be a bugfix release, but enough other
+things came up to make it a minor release.
+
+## Bug fixes
+* Suppressed a number of warning messages caused by a `broom` update 
+when using `export_summs` and `plot_coefs`.
+* Fixed an error with `plot_coefs` arising from the latest update to `ggplot2`.
+* Fixed a new bug introduced in 1.0.0 wherein the points of weighted data
+were not being sized according to their weight.
+* Fixed an issue with pseudo-R^2 calculation in non-interactive use. [#34]
+* Pseudo-R^2 is now included in the `export_summs` output for `glm` models.
+[#36]
+* `interact_plot` no longer errors if there are missing observations in 
+the original data and quantiles are requested.
+
+## New features
+* For `summ.merMod`, the default p-value calculation is now via the 
+Satterthwaite method if you have `lmerTest` installed. The old default,
+Kenward-Roger, is used by request or when `pbkrtest` is installed but not
+`lmerTest`. It now calculates a different degrees of freedom for each 
+predictor and also calculates a variance-covariance matrix for the model,
+meaning the standard errors are adjusted as well. It is not the default
+largely because the computation takes too long for too many models.
+* `johnson_neyman` now allows you to specify your own critical *t* value
+if you are using some alternate method to calculate it. 
+* `johnson_neyman` now allows you to specify the range of moderator values
+you want to plot as well as setting a title. 
+* Users may now label values in `sim_slopes` in a way similar to 
+`interact_plot`. [#35]
+* Users may provide their own labels for preset moderator values with
+`interact_plot` (e.g., when `modx.values = "plus-minus"`). [#31]
+* `plot_coefs`/`plot_summs` now supports facetting the coefficients
+based on user-specified groupings. See `?plot_summs` for details.
+* All `summ` variants now have pretty output in RMarkdown documents if you 
+have the `huxtable` package installed. This can be disabled with the chunk
+option `render = 'normal_print'`.
+
+## Interface changes
+* All interaction functions now use `modx.values`, `mod2.values`, and 
+`pred.values` in place of `modxvals`, `mod2vals`, and `predvals`. Don't
+go running to change your code, though; those old argument names will 
+still work, but these new ones are clearer and preferred in new code.
+
+## New functions
+* There is now a `plot` method for `sim_slopes` objects. Just save
+your `sim_slopes` call to an object and call the `plot` function on that
+object to see what happens. Basically, it's `plot_coefs` for `sim_slopes`.
+* For those who have `huxtable` installed, you can now call `as_huxtable`
+on a `sim_slopes` object to get a publication-style table. The interface
+is comparable to `export_summs`.
+
+
+
+# jtools 1.0.0
+
+## Major release
+
+This release has several big changes embedded within, side projects that needed
+a lot of work to implement and required some user-facing changes. Overall
+these are improvements, but in some edge cases they could break old code.
+The following sections are divided by the affected functions. Some of the 
+functions are discussed in more than one section.
+
+### `interact_plot`, `cat_plot`, and `effect_plot`
+
+These functions no longer re-fit the inputted model to center covariates,
+impose labels on factors, and so on. This generally has several key positives,
+including
+
+* Major speed gains (15% faster for small `lm` models, 60% for `svyglm`,
+and 80% for `merMod` in my testing). The speed gains increase as the models
+become more complicated and the source data become larger.
+* More model types are supported. In the past, some models failed because
+the update method was not defined correctly or there was more information needed
+to refit the model than what can be provided by these functions.
+* More complicated formula input is supported, with a caveat. If you have,
+for instance, log-transformed a predictor (with `log`) in the formula, 
+the function would previously would have a lot of trouble and usually 
+have errors. Now this is supported, provided you input the data used to fit
+the model via the `data` argument. You'll receive a warning if the function
+thinks this is needed to work right.
+
+As noted, there is a new `data` argument for these functions. You do not 
+normally need to use this if your model is fit with a `y ~ x + z` type of
+formula. But if you start doing things like `y ~ factor(x) + z`, then 
+you need to provide the source data frame. Another benefit is that this 
+allows for fitting polynomials with `effect_plot` or even interactions with
+polynomials with `interact_plot`. For instance, if my model was fit using
+this kind of formula --- `y ~ poly(x, 2) + z` --- I could then plot the 
+predicted curve with `effect_plot(fit, pred = x, data = data)` substituting
+`fit` with whatever my model is called and `data` with whatever data frame
+I used is called.
+
+There are some possible drawbacks for these changes. One is that no longer are 
+factor predictors supported in `interact_plot` and `effect_plot`,
+even two-level ones. This worked before by coercing
+them to 0/1 continuous variables and re-fitting the model. Since the model is
+no longer re-fit, this can't be done. To work around it, either transform the
+predictor to numeric before fitting the model or use `cat_plot`. Relatedly,
+two-level factor covariates are no longer centered and are simply
+set to their reference value.
+
+**Robust confidence intervals**: Plotting robust standard errors for compatible
+models (tested on `lm`, `glm`). Just use the `robust` argument like you would 
+for `sim_slopes` or `summ`.
+
+**Preliminary support for confidence intervals for `merMod` models**: You may 
+now get confidence intervals when using `merMod` objects as input to the
+plotting functions. Of importance, though, is the uncertainty is *only for
+the fixed effects*. For now, a warning is printed. See the next section for
+another option for `merMod` confidence intervals.
+
+**Rug plots in the margins**: So-called "rug" plots can be included in the 
+margins of the plots for any of these functions. These show tick marks for 
+each of the observed data points, giving a non-obtrusive impression of the 
+distribution of the `pred` variable and (optionally) the dependent variable.
+See the documentation for `interact_plot` and `effect_plot` and the 
+`rug`/`rug.sides` arguments.
+
+**Facet by the `modx` variable**: Some prefer to visualize the predicted lines
+on separate panes, so that is now an option available via the `facet.modx` 
+argument. You can also use `plot.points` with this, though the division into
+groups is not straightforward is the moderator isn't a factor. See the 
+documentation for more on how that is done.
+
+### `make_predictions` and `plot_predictions`: New tools for advanced plotting 
+
+To let users have some more flexibility, `jtools` now lets users directly 
+access the (previously internal) functions that make `effect_plot`, `cat_plot`,
+and `interact_plot` work. This should make it easier to tailor the
+outputs for specific needs. Some features may be implemented for these functions
+only to keep the `_plot` functions from getting any more complicated than they
+already are.
+
+The simplest use of the two functions is to use `make_predictions` just like 
+you would `effect_plot`/`interact_plot`/`cat_plot`. The difference is, of
+course, that `make_predictions` only makes the *data* that would be used for
+plotting. The resulting `predictions` object has both the predicted and original
+data as well as some attributes describing the arguments used. If you pass
+this object to `plot_predictions` with no further arguments, it should do 
+exactly what the corresponding `_plot` function would do. However, you might 
+want to do something entirely different using the predicted data which is part
+of the reason these functions are separate.
+
+One such feature specific to `make_predictions` is **bootstrap confidence
+intervals for `merMod` models**.
+
+### All interaction tools
+
+You may no longer use these tools to scale the models. Use `scale_mod`, save
+the resulting object, and use that as your input to the functions if you want
+scaling.
+
+All these tools have a new default `centered` argument. They are now set to
+`centered = "all"`, but `"all"` no longer means what it used to. Now it refers
+to *all variables not included in the interaction, including the dependent
+variable*. This means that in effect, the default option does the same thing
+that previous versions did. But instead of having that occur when 
+`centered = NULL`, that's what `centered = "all"` means. There is no 
+`NULL` option any longer. Note that with `sim_slopes`, the focal predictor
+(`pred`) will now be centered --- this only affects the conditional intercept.
+
+### `sim_slopes`
+
+This function now supports categorical (factor) moderators, though there is
+no option for Johnson-Neyman intervals in these cases. You can use the 
+significance of the interaction term(s) for inference about whether the slopes
+differ at each level of the factor when the moderator is a factor.
+
+You may now also pass arguments to `summ`, which is used internally to calculate
+standard errors, p values, etc. This is particularly useful if you are using
+a `merMod` model for which the `pbkrtest`-based p value calculation is too 
+time-consuming.
+
+### `gscale`
+
+The interface has been changed slightly, with the actual numbers always provided
+as the `data` argument. There is no `x` argument and instead a `vars` argument
+to which you can provide variable names. The upshot is that it now fits much 
+better into a piping workflow. 
+
+The entire function has gotten an extensive reworking, which in some cases 
+should result in significant speed gains. And if that's not enough, just know
+that the code was an absolute monstrosity before and now it's not.
+
+There are two new functions that are wrappers around `gscale`: `standardize`
+and `center`, which call `gscale` but with `n.sd = 1` in the first case and
+with `center.only = TRUE` in the latter case.
+
+### `summ`
+
+Tired of specifying your preferred configuration every time you use `summ`?
+Now, many arguments will by default check your options so you can set your
+own defaults. See `?set_summ_defaults` for more info.
+
+Rather than having separate `scale.response` and `center.response` arguments,
+each `summ` function now uses `transform.response` to collectively cover those
+bases. Whether the response is centered or scaled depends on the `scale` and
+`center` arguments.
+
+The `robust.type` argument is deprecated. Now, provide the type of robust 
+estimator directly to `robust`. For now, if `robust = TRUE`, it defaults to
+`"HC3"` with a warning. Better is to provide the argument directly, e.g.,
+`robust = "HC3"`. `robust = FALSE` is still fine for using OLS/MLE standard
+errors.
+
+Whereas `summ.glm`, `summ.svyglm`, and `summ.merMod` previously offered an
+`odds.ratio` argument, that has been renamed to `exp` (short for exponentiate)
+to better express the quantity.
+
+`vifs` now works when there are factor variables in the model.
+
+One of the first bugs `summ` ever had occurred when the function was given
+a rank-deficient model. It is not straightforward to detect, especially since
+I need to make a space for an almost empty row in the outputted table. At long
+last, this release can handle such models gracefully.
+
+Like the rest of R, when `summ` rounded your output, items rounded exactly to
+zero would be treated as, well, zero. But this can be misleading if the 
+original value was actually negative. For instance, if `digits = 2` and a 
+coefficient was `-0.003`, the value printed to the console was `0.00`, 
+suggesting a zero or slightly positive value when in fact it was the 
+opposite. This is a limitation of the `round` (and `trunc`) function. I've 
+now changed it so the zero-rounded value retains its sign.
+
+`summ.merMod` now calculates pseudo-R^2 much, much faster. For only modestly
+complex models, the speed-up is roughly 50x faster. Because of how much faster
+it now is and how much less frequently it throws errors or prints cryptic 
+messages, it is now calculated by default. The confidence interval calculation
+is now "Wald" for these models (see `confint.merMod` for details) rather than
+"profile", which for many models can take a very long time and sometimes does
+not work at all. This can be toggled with the `conf.method` argument.
+
+`summ.glm`/`summ.svyglm` now will calculate pseudo-R^2 for quasibinomial and
+quasipoisson families using the value obtained from refitting them as
+binomial/poisson. For now, I'm not touching AIC/BIC for such models 
+because the underlying theory is a bit different and the implementation
+more challenging.
+
+`summ.lm` now uses the *t*-distribution for finding critical values for 
+confidence intervals. Previously, a normal approximation was used.
+
+The `summ.default` method has been removed. It was becoming an absolute terror
+to maintain and I doubted anyone found it useful. It's hard to provide the
+value added for models of a type that I do not know (robust errors don't 
+always apply, scaling doesn't always work, model fit statistics may not make
+sense, etc.). Bug me if this has really upset things for you.
+
+One new model type has been supported: `rq` models from the `quantreg` package.
+Please feel free to provide feedback for the output and support of these models.
+
+### `scale_lm` and `center_lm` are now `scale_mod`/`center_mod`
+
+To better reflect the capabilities of these functions (not restricted to `lm`
+objects), they have been renamed. The old names will continue to work to 
+preserve old code.
+
+However, `scale.response` and `center.response` now default to `FALSE` to
+reflect the fact that only OLS models can support transformations of the
+dependent variable in that way.
+
+There is a new `vars =` argument for `scale_mod` that allows you to only apply
+scaling to whichever variables are included in that character vector.
+
+I've also implemented a neat technical fix that allows the updated model to
+itself be updated while not also including the actual raw data in the model
+call.
+
+### `plot_coefs` and `plot_summs`
+
+A variety of fixes and optimizations have been added to these functions. 
+Now, by default, there are two confidence intervals plotted, a thick line
+representing (with default settings) the 90% interval and a thinner line
+for the 95% intervals. You can set `inner_ci_level` to `NULL` to get rid of
+the thicker line.
+
+With `plot_summs`, you can also set per-model `summ` arguments by providing
+the argument as a vector (e.g., `robust = c(TRUE, FALSE)`). Length 1 arguments
+are applied to all models. `plot_summs` will now also support models not 
+accepted by `summ` by just passing those models to `plot_coefs` without
+using `summ` on them.
+
+Another new option is `point.shape`, similar to the model plotting functions.
+This is most useful for when you are planning to distribute your output in
+grayscale or to colorblind audiences (although the new default color scheme is
+meant to be colorblind friendly, it is always best to use another visual cue).
+
+The coolest is the new `plot.distributions` argument, which if TRUE will plot
+normal distributions to even better convey the uncertainty. Of course, you
+should use this judiciously if your modeling or estimation approach doesn't
+produce coefficient estimates that are asymptotically normally distributed.
+Inspiration comes from https://twitter.com/BenJamesEdwards/status/979751070254747650.
+
+Minor fixes: `broom`'s interface for Bayesian methods is inconsistent, so I've
+hacked together a few tweaks to make `brmsfit` and `stanreg` models work with
+`plot_coefs`.
+
+You'll also notice vertical gridlines on the plots, which I think/hope will
+be useful. They are easily removable (see `drop_x_gridlines()`) with ggplot2's
+built-in theming options.
+
+### `export_summs`
+
+Changes here are not too major. Like `plot_summs`, you can now provide
+unsupported model types to `export_summs` and they are just passed through
+to `huxreg`. You can also provide different arguments to `summ` on a per-model
+basis in the way described under the `plot_summs` heading above.
+
+There are some tweaks to the model info (provided by `glance`). Most prominent
+is for `merMod` models, for which there is now a separate N for each grouping
+factor.
+
+### `theme_apa` plus new functions `add_gridlines`, `drop_gridlines`
+
+New arguments have been added to `theme_apa`: `remove.x.gridlines` and 
+`remove.y.gridlines`, both of which are `TRUE` by default. APA hates giving
+hard and fast rules, but the norm is that gridlines should be omitted unless
+they are crucial for interpretation. `theme_apa` is also now a "complete" 
+theme, which means specifying further options via `theme` will not revert
+`theme_apa`'s changes to the base theme. 
+
+Behind the scenes the helper functions `add_gridlines` and `drop_gridlines`
+are used, which do what they sound like they do. To avoid using the arguments
+to those functions, you can also use `add_x_gridlines`/`add_y_gridlines` or
+`drop_x_gridlines`/`drop_y_gridlines` which are wrappers around the 
+more general functions.
+
+### Survey tools
+
+`weights_tests` --- `wgttest` and `pf_sv_test` --- now handle missing data
+in a more sensible and consistent way.
+
+### Colors
+
+There is a new default qualitative palette, based on Color Universal Design 
+(designed to  be readable by the colorblind) that looks great to all. There are
+several other new palette choices as well. These are all documented at 
+`?jtools_colors`
+
+### Other stuff
+
+Using the `crayon` package as a backend, console output is now formatted
+for most `jtools` functions for better readability on supported systems.
+Feedback on this is welcome since this might look better or worse in
+certain editors/setups.
+
+# jtools 0.9.4 (CRAN release)
+
+This release is limited to dealing with the `huxtable` package's temporary
+removal from CRAN, which in turn makes this package out of compliance with
+CRAN policies regarding dependencies on non-CRAN packages.
+
+Look out for `jtools` 1.0.0 coming very soon!
+
+# jtools 0.9.3 (CRAN release)
 
 Bugfixes:
 
@@ -10,7 +397,7 @@ a need to change the internals of `gscale`.
 * The default model names in `export_summs` had an extra space (e.g., `( 1)`) 
 due to changes in `huxtable`. The defaults are now just single numbers.
 
-## jtools 0.9.2 
+# jtools 0.9.2 
 
 Bugfix:
 
@@ -21,7 +408,7 @@ Feature update:
 
 * `johnson_neyman` now handles multilevel models from `lme4`. 
 
-## jtools 0.9.1 (CRAN release)
+# jtools 0.9.1 (CRAN release)
 
 Bugfix update:
 
@@ -44,7 +431,7 @@ providing a vector of colors (any format that `ggplot2` accepts) for the
 * Noah Greifer wrote up a tweak to `summ` that formats the output in a way that
 lines up the decimal points. It looks great.
 
-## jtools 0.9.0 (CRAN release)
+# jtools 0.9.0 (CRAN release)
 
 This may be the single biggest update yet. If you downloaded from CRAN, be sure
 to check the 0.8.1 update as well.
@@ -112,7 +499,7 @@ categorical variables. You can use bar plots, line plots, dot plots, and
 box and whisker plots to do so. You can also use the function to plot the effect
 of a single categorical predictor without an interaction.
 
-## jtools 0.8.1
+# jtools 0.8.1
 
 Thanks to Kim Henry who reported a bug with `johnson_neyman` in the case that
 there is an interval, but the entire interval is outside of the plotted area:
@@ -132,12 +519,12 @@ examining the main effect of the focal predictor. With this update, the
 plotted points for continous moderators are shaded along a gradient that matches
 the colors used for the predicted lines and confidence intervals.
 
-## jtools 0.8.0 (CRAN release)
+# jtools 0.8.0 (CRAN release)
 
 Not many user-facing changes since 0.7.4, but major refactoring internally
 should speed things up and make future development smoother.
 
-## jtools 0.7.4
+# jtools 0.7.4
 
 Bugfixes:
 
@@ -159,7 +546,7 @@ the user has defined the values but not the labels.
 * confidence intervals are now properly supported with export_summs
 * changes made to export_summs for compatibility with huxtable 1.0.0 changes
 
-## jtools 0.7.3 (CRAN release)
+# jtools 0.7.3 (CRAN release)
 
 Important bugfix:
 
@@ -176,7 +563,7 @@ wanting an efficient way to export regressions that are standardized and/or use
 robust standard errors. 
 
 
-## jtools 0.7.2
+# jtools 0.7.2
 
 The documentation for j_summ has been reorganized such that each supported
 model type has its own, separate documentation. `?j_summ` will now just give you
@@ -204,7 +591,7 @@ that is also the default behavior of `lme4`.
 runtime since it must fit a null model for comparison and sometimes this also
 causes convergence issues.
 
-## jtools 0.7.1
+# jtools 0.7.1
 
 Returning to CRAN!
 
@@ -217,7 +604,7 @@ The only change from 0.7.0 is fixing that problem, but if you're a CRAN user
 you will want to flip through the past several releases as well to see what 
 you've missed.
 
-## jtools 0.7.0
+# jtools 0.7.0
 
 New features:
 
@@ -241,7 +628,7 @@ Bug fix:
 explain the option well in its documentation.
 * johnson_neyman got confused when a factor variable was given as a predictor
 
-## jtools 0.6.1
+# jtools 0.6.1
 
 Bug fix release:
 
@@ -256,7 +643,7 @@ now.
 the scaling incorrect. If you saw a warning, re-check your outputs after this
 update.
 
-## jtools 0.6.0
+# jtools 0.6.0
 
 A lot of changes!
 
@@ -305,7 +692,7 @@ on models that were originally fit with tibbles in the data argument.
 the weights were specified in the function call. It should now work for all
 weighted lm objects.
 
-## jtools 0.5.0
+# jtools 0.5.0
 
 More goodies for users of interact_plot:
 
@@ -340,7 +727,7 @@ out one such instance.
 TRUE, the robust.type argument was not being passed (causing the default of 
 "HC3" to be used). Now it is passing that argument correctly.
 
-## jtools 0.4.5
+# jtools 0.4.5
 
 * Added better support for plotting nonlinear interactions with interact_plot,
 providing an option to plot on original (nonlinear) scale.
@@ -349,19 +736,19 @@ providing an option to plot on original (nonlinear) scale.
 * Added preliminary merMod support for j_summ. Still needs convergence warnings,
   some other items.
 
-## jtools 0.4.4
+# jtools 0.4.4
 
 * Under the hood changes to j_summ
 * Cleaned up examples
 * Added wgttest function, which runs a test to assess need for sampling weights
 in linear regression
 
-## jtools 0.4.3 
+# jtools 0.4.3 
 
 * No matter what you do, there's nothing like seeing your package on CRAN to 
 open your eyes to all the typos, etc. you've put into your package. 
 
-## jtools 0.4.2 — Initial CRAN release
+# jtools 0.4.2 — Initial CRAN release
 
 * This is the first CRAN release. Compared to 0.4.1, the prior Github release,
 dependencies have been removed and several functions optimized for speed.
