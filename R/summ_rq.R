@@ -240,7 +240,8 @@ print.summ.rq <- function(x, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
 
@@ -275,7 +276,9 @@ print.summ.rq <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster, manual = se_name)
 
-  print(ctable)
+  cat("\n")
+  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
+            align = "r"), sep = "\n")
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -308,7 +311,8 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   options(kableExtra.auto_format = FALSE)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      add_col = TRUE, stars = x$stars)
 
   # context <- huxtable::guess_knitr_output_format()
   # if (context == "") {context <- "screen"}

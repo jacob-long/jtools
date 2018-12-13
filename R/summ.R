@@ -403,6 +403,7 @@ summ.lm <- function(
 
 #' @export
 #' @importFrom crayon underline inverse italic
+#' @importFrom knitr kable
 
 print.summ.lm <- function(x, ...) {
 
@@ -430,25 +431,11 @@ print.summ.lm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  if (x$model.check == TRUE) {
-    # Since it's lm, we can do Breusch-Pagan test
-    if (x$homoskedp < .05) {
-      homoskedtf <- paste0("Assumption violated (p = ",
-                          round(x$homoskedp,digits = x$digits), ")")
-    } else {
-      homoskedtf <- paste0("Assumption not violated (p = ",
-                          round(x$homoskedp, digits = x$digits), ")")
-    }
-    cat(underline("MODEL CHECKING:"), "\n",
-        "Homoskedasticity (Breusch-Pagan) = ",
-        homoskedtf,
-        "\n", "Number of high-leverage observations = ", x$cooksdf,
-        "\n\n", sep = "")
-  }
-
   print_se_info(x$robust, x$use_cluster, manual = "OLS")
 
-  print(ctable)
+  cat("\n")
+  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
+            align = "r"), sep = "\n")
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -669,10 +656,6 @@ summ.glm <- function(
   # Check missing obs
   missing <- length(sum$na.action)
 
-  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
-    warning("Model checking is not currently implemented for GLMs")
-  }
-
   # Standardized betas
   if (scale == TRUE) {
 
@@ -890,7 +873,9 @@ print.summ.glm <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster)
 
-  print(ctable)
+  cat("\n")
+  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
+            align = "r"), sep = "\n")
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1299,17 +1284,6 @@ summ.svyglm <- function(
                               exp = exp)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
-
-  if (model.check == TRUE && linear == TRUE) {
-    cd <- table(cooks.distance(model) > 4 / n)
-    j <- structure(j, cooksdf = cd[2])
-
-    if (model.check == TRUE && linear == FALSE) {
-      warning("Model checking for non-linear models is not ",
-              "yet implemented.")
-    }
-  }
-
   # Extract dispersion parameter
   dispersion <- sum$dispersion
 
@@ -1322,7 +1296,7 @@ summ.svyglm <- function(
                  exp = exp,
                  scale.response = transform.response)
 
-  j <- structure(j, lmFamily = model$family, model.check = model.check)
+  j <- structure(j, lmFamily = model$family)
 
   j$coeftable <- mat
   j$model <- model
@@ -1343,7 +1317,8 @@ print.summ.svyglm <- function(x, ...) {
   x <- attributes(j)
 
     # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
     # If it's linear...
@@ -1380,17 +1355,13 @@ print.summ.svyglm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  if (x$model.check == TRUE && x$linear == TRUE) {
-    # Just check outliers
-    cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
-        x$cooksdf, "\n\n", sep = "")
-  }
-
   if (x$linear == TRUE) {
     cat("Standard errors: Robust\n")
   }
 
-  print(ctable)
+  cat("\n")
+  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
+            align = "r"), sep = "\n")
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1413,7 +1384,8 @@ print.summ.svyglm <- function(x, ...) {
 
 knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+  if (!nzchar(system.file(package = "kableExtra")) | 
+      getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -1734,11 +1706,6 @@ summ.merMod <- function(
     warning("Robust standard errors are not supported for mixed models.")
   }
 
-  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
-    warning("Model checking is not currently implemented for mixed ",
-            "models.")
-  }
-
   if ("vifs" %in% names(dots) && dots$vifs == TRUE) {
     warning("VIFs are not supported for mixed models.")
   }
@@ -2014,7 +1981,7 @@ summ.merMod <- function(
 
   j <- structure(j, lmFamily = family(model))
 
-  j$coeftable <- as.table(mat)
+  j$coeftable <- mat
   j$rcoeftable <- tables$rcmat # Random effects table
   j$gvars <- tables$gvmat # Grouping variables table
   j$model <- model
@@ -2068,7 +2035,11 @@ print.summ.merMod <- function(x, ...) {
   if ("d.f." %in% names(ctable)) {
     ctable[,"d.f."] <- as.integer(ctable[,"d.f."])
   }
-  print(ctable)
+  
+  cat("\n")
+  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
+            align = "r"), sep = "\n")
+  
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
@@ -2109,7 +2080,10 @@ print.summ.merMod <- function(x, ...) {
     cat(underline("\nRANDOM EFFECTS:\n"))
     rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
     #rownames(rtable) <- rep("", times = nrow(rtable))
-    print(rtable, row.names = FALSE)
+    # print(rtable, row.names = FALSE)
+    cat("\n")
+    cat(jable(rtable, format = getOption("summ.table.format", "markdown"),
+              align = "c", row.names = FALSE), sep = "\n")
   }
 
   if (x$groups.table == TRUE) {
@@ -2117,7 +2091,10 @@ print.summ.merMod <- function(x, ...) {
     gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
     gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
     #rownames(gtable) <- rep("", times = nrow(gtable))
-    print(gtable, row.names = FALSE)
+    # print(gtable, row.names = FALSE)
+    cat("\n")
+    cat(jable(gtable, format = getOption("summ.table.format", "markdown"),
+              align = "c", row.names = FALSE), sep = "\n")
   }
 
   # Notifying user if variables altered from original fit
