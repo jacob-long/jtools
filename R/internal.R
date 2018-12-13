@@ -1,19 +1,10 @@
 
 #### Programming helpers #####################################################
 
-## Making a "opposite of %in%" or "not %in%" function to simplify code
-`%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
-
 ## Quicker way to get last item of vector
 last <- function(x) {return(x[length(x)])}
 ## Just so code reads more clearly when using last(x)
 first <- function(x) {return(x[1])}
-
-## Print rounded numbers with all requested digits, signed zeroes
-num_print <- function(x, digits = getOption("jtools-digits", 2),
-                      format = "f") {
-  formatC(x, digits = digits, format = "f")
-}
 
 check_if_zero_base <- function(x) {
   # this is the default tolerance used in all.equal
@@ -43,13 +34,13 @@ cat_wrap <- function(..., brk = "") {
 orange <- crayon::make_style("orange")
 
 # Like cat_wrap but for warnings
-warn_wrap <- function(..., call. = FALSE, brk = "\n") {
-  warning(orange(wrap_str(...)), brk, call. = call.)
+warn_wrap <- function(..., brk = "\n", call. = FALSE) {
+  warning(orange(wrap_str(...)), brk, call. = FALSE)
 }
 
 # Like cat_wrap but for errors
-stop_wrap <- function(..., call. = FALSE, brk = "\n") {
-  stop(red(wrap_str(...)), brk, call. = call.)
+stop_wrap <- function(...,  brk = "\n", call. = FALSE) {
+  stop(red(wrap_str(...)), brk, call. = FALSE)
 }
 
 # Like cat_wrap but for messages
