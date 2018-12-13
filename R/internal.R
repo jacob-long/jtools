@@ -97,6 +97,80 @@ ulevels <- function(x) {
   }
 }
 
+any_transforms <- function(formula, rhs.only = TRUE) {
+  if (rhs.only == TRUE) {
+    any(all_vars(formula) %nin% rownames(attr(terms(formula), "factor")))
+  } else {
+    any(all.vars(formula) %nin% rownames(attr(terms(formula), "factor")))
+  }
+}
+
+which_terms <- function(formula, var) {
+  terms <- terms(formula)
+  factors <- attr(terms, "factors")
+  names(factors[var,] %not% 0)
+}
+
+original_terms <- function(formula) {
+  o <- all.vars(formula)
+  names(o) <- rownames(attr(terms(formula), "factors"))
+  o
+}
+
+# get_response <- function(formula) {
+#   original_terms(formula)[attr(terms(formula), "response")]
+# }
+
+# Adapted from formula.tools
+two_sided <- function(x, ...) {
+  # from operator.tools::operators()
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  is.name(x[[1]]) && deparse(x[[1]]) %in% operators && length(x) == 3
+}
+
+# Adapted from formula.tools
+one_sided <- function(x, ...) {
+  # from operator.tools::operators()
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  is.name(x[[1]]) && deparse(x[[1]]) %in% operators && length(x) == 2
+}
+
+# Adapted from formula.tools
+get_lhs <- function(x) {
+  if (two_sided(x) == TRUE) {
+    x[[2]] 
+  } else if(one_sided(x)) {
+    NULL   
+  } else {
+    stop_wrap(x, "does not appear to be a one- or two-sided formula.")
+  }
+}
+
+# Adapted from formula.tools
+get_rhs <- function(x) {
+  # from operator.tools::operators()
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  
+  if (as.character(x[[1]]) %nin% operators) {
+    stop_wrap(x[[1]], "does not appear to be an operator.")
+  }
+  
+  if (two_sided(x) == TRUE) {x[[3]]} else if (one_sided(x) == TRUE) {x[[2]]}
+} 
+
+all_vars <- function(formula) {
+  c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
+}
+
 #### Weighted helpers ########################################################
 
 wtd.sd <- function(x, w) {
