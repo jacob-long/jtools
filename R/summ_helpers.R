@@ -4,7 +4,7 @@
 ## Also rounds the digits and spits out a table from a matrix
 ## Since it's doing double duty, also can skip the p vals if requested
 
-add_stars <- function(table, digits, p_vals) {
+add_stars <- function(table, digits, p_vals, add_col = FALSE, stars = TRUE) {
   
   if (p_vals == TRUE) { # Only do this if showing p values
     
@@ -37,13 +37,43 @@ add_stars <- function(table, digits, p_vals) {
   table <- round_df_char(table, digits)
   
   # Can't do this in the first conditional because of the need to round
-  if (p_vals == TRUE) {
+  if (p_vals == TRUE & stars == TRUE) {
     # Get the colnames so I can fix them after cbinding
     tnames <- colnames(table)
-    # put in the stars
-    table <- cbind(table, sigstars)
-    # Makes the name for the stars column empty
-    colnames(table) <- c(tnames, "")
+    if (add_col == FALSE) {
+      # Pad the stars and colnames for alignment
+      max_len <- max(nchar(sigstars))
+      for (i in seq_len(length(sigstars))) {
+        # How many characters is this one
+        len <- nchar(sigstars[i])
+        # Generate spaces needed to pad it
+        spaces <- paste0(rep("\u00A0", times = max_len - len), collapse = "")
+        # Append spaces to make length equal to max
+        sigstars[i] <- if (max_len > 0) {
+          paste0("\u00A0", sigstars[i], spaces)
+        } else {
+          paste0(sigstars[i], spaces)
+        }
+      }
+      # Which colname is p?
+      p_i <- which(colnames(table) == "p")
+      # Rename the column to align the same way
+      spaces <- paste0(rep("\u00A0", ifelse(max_len > 0, yes = max_len + 1,
+                                            no = max_len)),
+                       collapse = "")
+      tnames[p_i] <- paste0("p", spaces)
+      # Change the column names
+      colnames(table) <- tnames
+      # Now append the stars to the p values
+      table[,p_i] <- paste0(table[,p_i], sigstars)
+      
+    } else { # This is the legacy behavior and still used for knitted output
+      # put in the stars
+      table <- cbind(table, sigstars)
+      # Makes the name for the stars column empty
+      colnames(table) <- c(tnames, "")
+    }
+    
   }
   
   return(table)
