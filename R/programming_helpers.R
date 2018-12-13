@@ -7,6 +7,104 @@
 #' @rdname nin
 #' @export 
 `%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
+
+
+#' @export
+#' @rdname subsetters
+`%not%` <- function(x, y) {
+  UseMethod("%not%")
+}
+
+#' @export
+#' @rdname subsetters
+`%just%` <- function(x, y) {
+  UseMethod("%just%")
+}
+
+# Automates my most common use of %nin%
+#' @title Subsetting operators
+#' @description `%just%` and `%not%` are subsetting convenience functions 
+#'  for situations when you would do `x[x %in% y]` or `x[x %nin% y]`. See
+#'  details for behavior when `x` is a data frame or matrix.
+#' @param x Object to subset
+#' @param y List of items to include if they are/aren't in `x`
+#' @details 
+#'  The behavior of %not% and %just% are different when you're subsetting 
+#'  data frames or matrices. The subset `y` in this case is interpreted as
+#'  column names or indices. 
+#' @return All of `x` that are in `y` (`%just%`) or all of `x` that are not in
+#'  `y` (`%not%`).
+#' @examples 
+#' 
+#'  x <- 1:5
+#'  y <- 3:8
+#'  
+#'  x %just% y # 3 4 5
+#'  x %not% y # 1 2
+#'  
+#'  mtcars %just% c("mpg", "qsec", "cyl") # keeps only columns with those names
+#'  mtcars %not% 1:5 # drops columns 1 through 5
+#'  
+#'  
+#' @rdname subsetters
+#' @export 
+
+`%not%.default` <- function(x, y) {
+  x[x %nin% y]
+}
+
+#' @rdname subsetters
+#' @export 
+
+`%not%.data.frame` <- function(x, y) {
+  if (is.character(y)) {
+    x[names(x) %nin% y]
+  } else {
+    x[seq_along(x) %nin% y]
+  }
+}
+
+#' @rdname subsetters
+#' @export 
+
+`%not%.matrix` <- function(x, y) {
+  if (is.character(y)) {
+    x[, colnames(x) %nin% y]
+  } else {
+    x[, seq_length(ncol(x)) %nin% y]
+  }
+}
+
+#' @rdname subsetters
+#' @export
+# Automates my most common use of %in%
+`%just%.default` <- function(x, y) {
+  x[x %in% y]
+}
+
+#' @rdname subsetters
+#' @export 
+
+`%just%.data.frame` <- function(x, y) {
+  if (is.character(y)) {
+    x[names(x) %in% y]
+  } else {
+    x[seq_along(x) %in% y]
+  }
+}
+
+#' @rdname subsetters
+#' @export 
+
+`%just%.matrix` <- function(x, y) {
+  if (is.character(y)) {
+    x[, colnames(x) %in% y]
+  } else {
+    x[, seq_length(ncol(x)) %in% y]
+  }
+}
+
+
 ## Print rounded numbers with all requested digits, signed zeroes
 #' @title Numbering printing with signed zeroes and trailing zeroes
 #' @description This function will print exactly the amount of digits requested
