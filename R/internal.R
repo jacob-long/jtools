@@ -173,6 +173,7 @@ all_vars <- function(formula) {
 
 #### Weighted helpers ########################################################
 
+#' @export
 wtd.sd <- function(x, w) {
   # Get the mean
   xm <- weighted.mean(x, w, na.rm = TRUE)
