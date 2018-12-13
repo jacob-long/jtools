@@ -4,8 +4,8 @@
 #'   argument in plotting functions.
 #'
 #' @details
-#'   The argument to `color.class` in functions like `interact_plot`,
-#'   `cat_plot`, `plot_coefs`, and others is very flexible but may also
+#'   The argument to `color.class` in functions like `effect_plot` and
+#'   `plot_coefs`, and others is very flexible but may also
 #'   cause confusion.
 #'
 #'   If you provide an argument of length 1, it is assumed that you are naming
@@ -32,8 +32,7 @@
 #'   differentiate against a white background.
 #'
 #'   Lastly, you may provide colors by name. This must be a vector of the
-#'   same length as whatever it is the colors will correspond to (e.g.,
-#'   3 colors for 3 values of the moderator in `interact_plot`). The format
+#'   same length as whatever it is the colors will correspond to. The format
 #'   must be one understood by `ggplot2`'s manual scale functions. This
 #'   basically means it needs to be in hex format (e.g., "#000000") or
 #'   one of the many names R understands (e.g., "red"; use `colors()` to
@@ -52,7 +51,14 @@
 #' @name jtools_colors
 NULL
 
+#' @param color.class The name of the desired color class or a vector of colors.
+#'  See details.
+#' @param num_colors How many colors should be returned? Default is 1.
+#' @param reverse Should the colors be returned in reverse order, compared to
+#'  normal? Default is FALSE.
 #' @importFrom grDevices rgb
+#' @rdname jtools_colors
+#' @export
 get_colors <- function(color.class, num_colors = 1, reverse = FALSE) {
 
   # Save all valid color brewer names
