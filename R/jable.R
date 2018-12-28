@@ -1,3 +1,39 @@
+
+#' @title Print attractive data frames in the console 
+#' @description This function takes data frame input and prints to the console
+#'   as a markdown table for better readability.
+#' @param x A data frame or matrix.
+#' @param format The style, which can be either "markdown" or "pandoc".
+#'  Default: "markdown"
+#' @param digits How many digits to print for numbers.
+#'  Default: 2
+#' @param sig.digits Should each number be printed with `digits` number of 
+#'  digits or only when there are at least that many significant digits? Default
+#'  is TRUE, meaning only print `digits` number of *significant* digits.
+#' @inheritParams knitr::kable
+#' @rdname md_table
+#' @export 
+
+md_table <- function(x, format = "markdown",
+                     digits = getOption("jtools-digits", 2), sig.digits = TRUE,
+                     row.names = NA, col.names = NA, format.args = list()) {
+  align <- sapply(1:ncol(x), function(y) {is.numeric(x[,y])})
+  align <- ifelse(align, yes = "r", no = "l")
+  if (sig.digits == FALSE) {
+    x <- round_df_char(x, digits = digits)
+  }
+  out <- jable(x, format = format, digits = digits, row.names = row.names, 
+               col.names = col.names, format.args = format.args, align = align)
+  class(out) <- "md_table"
+  return(out)
+}
+
+#' @export
+print.md_table <- function(x, ...) {
+  cat(x, sep = "\n")
+}
+
+
 jable <- function (x, format, digits = getOption("digits"), row.names = NA, 
           col.names = NA, align, caption = NULL, format.args = list(), 
           escape = TRUE, ...)  {
@@ -187,4 +223,12 @@ format_args <- function (x, args = list()) {
   args$x = x
   args$trim = TRUE
   replace_na(do.call(format, args), is.na(x))
+}
+
+format_matrix <- function(x, args) {
+  nms = rownames(x)
+  rownames(x) = NULL
+  x = as.matrix(format_args(as.data.frame(x), args))
+  rownames(x) = nms
+  x
 }
