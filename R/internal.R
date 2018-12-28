@@ -140,7 +140,6 @@ get_rhs <- function(x) {
 } 
 
 all_vars <- function(formula) {
-  c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
   if (two_sided(formula)) {
     c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
   } else if (one_sided(formula)) {
