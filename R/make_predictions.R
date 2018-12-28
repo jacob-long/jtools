@@ -232,13 +232,13 @@ make_predictions.svyglm <- function(model, pred, pred.values = NULL, at = NULL,
 }
 
 ### merMod method #############################################################
-
+#' @export
 make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, interval = TRUE, 
   int.type = c("confidence", "prediction"), int.width = .95,
   outcome.scale = "response", re.form = ~0, add.re.variance = FALSE,
   boot = FALSE, sims = 1000, progress = "txt", set.offset = NULL,
-  return.orig.data = FALSE, ...) {
+  return.orig.data = FALSE, message = TRUE, ...) {
   
   # Get the data ready with make_new_data()
   pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
@@ -247,6 +247,12 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
   resp <- get_response_name(model)
   link_or_lm <- ifelse(family(model)$link == "identity",
                        yes = "response", no = "link")
+  
+  if (interval == TRUE && boot == FALSE && message == TRUE) {
+    msg_wrap("Confidence intervals for merMod models is an experimental
+              feature. The intervals reflect only the variance of the
+              fixed effects, not the random effects.")
+  }
   
   # Do the predictions using built-in prediction method if robust is FALSE
   if (interval == FALSE) {
