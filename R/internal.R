@@ -19,36 +19,6 @@ check_if_zero_base <- function(x) {
 # This seems to give about a 80%-90% speed boost
 check_if_zero <- Vectorize(check_if_zero_base)
 
-# Automate the addition of newline characters for long strings
-wrap_str <- function(..., sep = "") {
-  paste0(strwrap(paste(..., sep = sep), width = 0.95 * getOption("width", 80)),
-         collapse = "\n")
-}
-
-# Go ahead and wrap the cat function too
-cat_wrap <- function(..., brk = "") {
-  cat(wrap_str(...), brk, sep = "")
-}
-
-# Define orange crayon output
-orange <- crayon::make_style("orange")
-
-# Like cat_wrap but for warnings
-warn_wrap <- function(..., brk = "\n", call. = FALSE) {
-  warning(orange(wrap_str(...)), brk, call. = FALSE)
-}
-
-# Like cat_wrap but for errors
-stop_wrap <- function(...,  brk = "\n", call. = FALSE) {
-  stop(red(wrap_str(...)), brk, call. = FALSE)
-}
-
-# Like cat_wrap but for messages
-#' @importFrom crayon cyan
-msg_wrap <- function(..., brk = "\n") {
-  message(cyan(wrap_str(...)), brk)
-}
-
 # Try to anticipate which S3 will be called (sloop package should have
 # something like this when it is released)
 # Code adapted from G. Grothendieck's at Stack Overflow:
