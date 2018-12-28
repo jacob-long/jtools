@@ -67,6 +67,8 @@ ulevels <- function(x) {
   }
 }
 
+### Formula helpers ##########################################################
+
 any_transforms <- function(formula, rhs.only = TRUE) {
   if (rhs.only == TRUE) {
     any(all_vars(formula) %nin% rownames(attr(terms(formula), "factor")))
@@ -139,6 +141,29 @@ get_rhs <- function(x) {
 
 all_vars <- function(formula) {
   c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
+  if (two_sided(formula)) {
+    c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
+  } else if (one_sided(formula)) {
+    all.vars(get_rhs(formula))
+  }
+}
+
+any_interaction <- function(formula) {
+  any(attr(terms(formula), "order") > 1)
+}
+
+get_interactions <- function(formula) {
+  if (any_interaction(formula)) {
+    ts <- terms(formula)
+    labs <- paste("~", attr(ts, "term.labels"))
+    forms <- lapply(labs, as.formula)
+    forms <- forms[which(attr(ts, "order") > 1)]
+    ints <- lapply(forms, all.vars)
+    names(ints) <- attr(ts, "term.labels")[which(attr(ts, "order") > 1)]
+    return(ints)
+  } else {
+    stop_wrap("No interactions found in this formula.")
+  }
 }
 
 #### Weighted helpers ########################################################
