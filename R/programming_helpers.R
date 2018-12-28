@@ -1,5 +1,5 @@
 ## Making a "opposite of %in%" or "not %in%" function to simplify code
-#' @title Not `%in%``
+#' @title Not `%in%`
 #' @description This function does the very opposite of `%in%`
 #' @param x An object
 #' @param table The object you want see if `x` is not in
@@ -116,7 +116,11 @@
 #' @export
 num_print <- function(x, digits = getOption("jtools-digits", 2),
                       format = "f") {
-  formatC(x, digits = digits, format = "f")
+  sapply(x, function(x) {if (is.numeric(x)) {
+    formatC(x, digits = digits, format = format)
+  } else {
+    x
+  }}, USE.NAMES = FALSE)
 }
 
 # Automate the addition of newline characters for long strings
