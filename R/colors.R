@@ -4,7 +4,7 @@
 #'   argument in plotting functions.
 #'
 #' @details
-#'   The argument to `color.class` in functions like `effect_plot` and
+#'   The argument to `color.class` in functions like `effect_plot`,
 #'   `plot_coefs`, and others is very flexible but may also
 #'   cause confusion.
 #'
@@ -30,6 +30,13 @@
 #'   `brewer.pal` and then drops the lightest color. My experience is that
 #'   those scales tend to give one color that is too light to easily
 #'   differentiate against a white background.
+#'   
+#'   For **gradients**, you can use any of the `RColorBrewer` sequential palette
+#'   names and get comparable results on a continuous scale. There are also some
+#'   `jtools`-specific gradient schemes: `"blue"`, `"blue2"`, `"green"`, 
+#'   `"red"`, `"purple"`, `"seagreen"`. 
+#'   If you want something a little non-standard, I'd suggest taking a look 
+#'   at `"blue2"` or `"seagreen"`.
 #'
 #'   Lastly, you may provide colors by name. This must be a vector of the
 #'   same length as whatever it is the colors will correspond to. The format
@@ -41,7 +48,7 @@
 #' @references
 #'
 #' Paul Tol's site is what is used to derive 4 of the 6 `jtools`-specific
-#' palettes: \url{https://personal.sron.nl/~pault/}
+#' qualitative palettes: \url{https://personal.sron.nl/~pault/}
 #'
 #' Okabe and Ito's palette inspired "CUD Bright", though "CUD Bright" is not
 #' exactly the same. "CUD" is the same.
@@ -51,15 +58,20 @@
 #' @name jtools_colors
 NULL
 
+#' @title Get colors for plotting functions
+#' @description This is a helper function that provides hex color codes for 
+#'  `jtools`, `interactions`, and perhaps other packages.
 #' @param color.class The name of the desired color class or a vector of colors.
-#'  See details.
+#'  See details of [jtools_colors].
 #' @param num_colors How many colors should be returned? Default is 1.
 #' @param reverse Should the colors be returned in reverse order, compared to
 #'  normal? Default is FALSE.
+#' @param gradient Return endpoints for a gradient? Default is FALSE. If TRUE,
+#'  `num_colors` is ignored.
 #' @importFrom grDevices rgb
-#' @rdname jtools_colors
 #' @export
-get_colors <- function(color.class, num_colors = 1, reverse = FALSE) {
+get_colors <- function(color.class, num_colors = 1, reverse = FALSE,
+                       gradient = FALSE) {
 
   # Save all valid color brewer names
   ## Sequential palettes get different treatment
@@ -72,12 +84,19 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE) {
       "Spectral", "Accent", "Dark2", "Paired", "Pastel1", "Pastel2", "Set1",
       "Set2", "Set3")
   brewers <- c(sequentials, div_or_qual)
+  viridis <- c("viridis", "magma", "A", "inferno", "B", "plasma", "C",
+               "D", "cividis", "E")
 
-  if (length(color.class) == 1 && color.class %in% brewers) {
+  if (length(color.class) == 1 && color.class %in% c(brewers, viridis) &
+      gradient == FALSE) {
 
     if (color.class %in% sequentials) {
       colors <- RColorBrewer::brewer.pal(num_colors + 1, color.class)[-1]
       colors <- colors[seq_len(num_colors)]
+      if (reverse == TRUE) {colors <- rev(colors)}
+      return(colors)
+    } else if (color.class %in% viridis) {
+      colors <- rev(scales::viridis_pal(option = color.class)(num_colors))
       if (reverse == TRUE) {colors <- rev(colors)}
       return(colors)
     } else {
@@ -85,10 +104,15 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE) {
       if (reverse == TRUE) {colors <- rev(colors)}
       return(colors)
     }
-
+    
+  } else if (length(color.class) == 1 && color.class %in% viridis) {
+    colors <- rev(scales::viridis_pal(option = color.class)(num_colors))
+    if (reverse == TRUE) {colors <- rev(colors)}
+    return(colors)
   }
 
-  if (length(color.class) == 1) {
+  mine <- c("CUD", "CUD Bright", "Rainbow", "Qual1", "Qual3")
+  if (length(color.class) == 1 & color.class %in% mine) {
 
     cb14 <- c("#4477AA", "#EE6677", "#228833", "#CC8844")
     cb16 <- c("#4477AA", "#66CCEE", "#228833", "#CC8844", "#EE6677",
@@ -188,9 +212,72 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE) {
     return(colors)
 
   }
+  
+  if (gradient == TRUE) {
+    if (length(color.class) == 1) {
+      if (color.class == "Blues") {
+        colors <- c("#C6DBEF", "#08519C")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "Oranges") {
+        colors <- c("#FDD0A2", "#7F2704")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "Greens") {
+        colors <- c("#C7E9C0", "#00441B")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "Reds") {
+        colors <- c("#FCBBA1", "#67000D")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "Purples") {
+        colors <- c("#DADAEB", "#3F007D")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "Greys") {
+        colors <- c("#D9D9D9", "#000000")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "blue") {
+        # colors <- c("#99bbff", "#003399")
+        colors <- c("#9ed2fa", "#06477a")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "green") {
+        colors <- c("#33ff33", "#004d00")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "red") {
+        colors <- c("#ff9999", "#800000")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "purple") {
+        colors <- c("#cc99ff", "#330066")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "seagreen") {
+        colors <- c("#85e0e0", "#004d4d")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else if (color.class == "blue2") {
+        colors <- c("#C2CEFA", "#33559B")
+        if (reverse) {rev(colors)}
+        return(colors)
+      } else {
+        colors <- RColorBrewer::brewer.pal(num_colors, color.class)
+        if (reverse) {rev(colors)}
+        return(colors)
+      }
+    }
+  }
 
   if (length(color.class) >= num_colors) {
     colors <- color.class[seq_len(num_colors)]
+    if (reverse == TRUE) {colors <- rev(colors)}
+    return(colors)
+  } else if (length(color.class) == 2 && gradient == TRUE) {
+    colors <- color.class
     if (reverse == TRUE) {colors <- rev(colors)}
     return(colors)
   } else {
