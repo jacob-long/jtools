@@ -349,8 +349,10 @@ make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
                       data = data, center = center, set.offset = set.offset)
   
   
-  predicted <- rstanarm::posterior_predict(model, newdata = pm,
-                                           re.form = re.form)
+  predicted <- 
+    rstanarm::posterior_predict(model, 
+                                newdata = pm %not% get_response_name(model), 
+                                re.form = re.form)
   
   # the 'ppd' object is a weird pseudo-matrix that misbehaves when
   # I try to make it into a data frame
