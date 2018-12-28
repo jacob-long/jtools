@@ -143,12 +143,19 @@ all_vars <- function(formula) {
 
 #### Weighted helpers ########################################################
 
-#' @export
-wtd.sd <- function(x, w) {
+#' @title Weighted standard deviation calculation
+#' @description This function calculates standard deviations with weights and
+#'  is a counterpart to the built-in `weighted.mean` function.
+#' @param x A vector of values for which you want the standard deviation
+#' @param weights A vector of weights equal in length to `x`
+#' @rdname wtd.sd 
+#' @export 
+
+wtd.sd <- function(x, weights) {
   # Get the mean
-  xm <- weighted.mean(x, w, na.rm = TRUE)
+  xm <- weighted.mean(x, weights, na.rm = TRUE)
   # Squaring the weighted deviations and dividing by weighted N - 1
-  variance <- sum((w * (x - xm)^2) / (sum(w) - 1), na.rm = TRUE)
+  variance <- sum((weights * (x - xm)^2) / (sum(weights) - 1), na.rm = TRUE)
   # Standard deviation is sqrt(variance)
   sd <- sqrt(variance)
   # Return the SD
