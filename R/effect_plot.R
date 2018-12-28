@@ -348,7 +348,7 @@ plot_effect_continuous <-
   }
   
   # Using theme_apa for theming...but using legend title and side positioning
-  p <- p + theme_apa(legend.pos = "right", legend.use.title = TRUE)
+  p <- p + theme_nice(legend.pos = "right")
   
   p <- p + labs(x = x.label, y = y.label) # better labels for axes
   
@@ -519,7 +519,8 @@ plot_cat <- function(predictions, pred, data = NULL,
   }
   
   # Using theme_apa for theming...but using legend title and side positioning
-  p <- p + theme_apa() + labs(x = x.label, y = y.label) # better labels for axes
+  p <- p + theme_nice() + drop_x_gridlines() + 
+    labs(x = x.label, y = y.label) # better labels for axes
   
   # Give the plot the user-specified title if there is one
   if (!is.null(main.title)) {

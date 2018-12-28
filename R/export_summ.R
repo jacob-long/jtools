@@ -677,11 +677,11 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
      name = legend.title) +
     scale_shape_manual(limits = rev(levels(tidies$model)),
       values = shapes, name = legend.title) +
-    theme_apa(legend.pos = "right", legend.font.size = 9,
-              remove.x.gridlines = FALSE, legend.use.title = TRUE,
-              facet.title.size = 10) +
+    theme_nice(legend.pos = "right") +
+    drop_y_gridlines() +
     theme(axis.title.y = element_blank(),
-          axis.text.y = element_text(size = 10)) +
+          axis.text.y = element_text(size = 10),
+          panel.grid.major.x = element_line(linetype = "solid")) +
     xlab(ifelse(exp, no = "Estimate", yes = "exp(Estimate)"))
 
   # Plotting distributions often causes distributions to poke out above top
