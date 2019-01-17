@@ -56,6 +56,7 @@
 #'   \code{"link"}.
 #'
 #' @inheritParams summ.lm
+#' @inheritParams make_predictions
 #'
 #' @param vcov Optional. You may supply the variance-covariance matrix of the
 #'  coefficients yourself. This is useful if you are using some method for
@@ -84,9 +85,6 @@
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
-#'
-#' @param vary.lty Should the resulting plot have different shapes for each
-#'   line in addition to colors? Defaults to \code{TRUE}.
 #'
 #' @param jitter How much should `plot.points` observed values be "jittered"
 #'    via [ggplot2::position_jitter()]? When there are many points near each
@@ -123,6 +121,47 @@
 #'   provide a vector of clusters.
 #'
 #' @param ... extra arguments passed to `make_predictions`
+#' 
+#' @param pred.values Values of `pred` to use instead of the equi-spaced 
+#'   series by default (for continuous variables) or all unique values (for
+#'   non-continuous variables).
+#' @param force.cat Force the continuous `pred` to be treated as categorical?
+#'   default is FALSE, but this can be useful for things like dummy 0/1 
+#'   variables.
+#' @param cat.geom If `pred` is categorical (or `force.cat` is TRUE), 
+#'   what type of plot should this be? There are several options
+#'   here since the best way to visualize categorical interactions varies by
+#'   context. Here are the options:
+#'
+#'   * `"point"`: The default. Simply plot the point estimates. You may want to
+#'      use `point.shape = TRUE` with this and you should also consider
+#'     `interval = TRUE` to visualize uncertainty.
+#'
+#'   * `"line"`: This connects observations across levels of the `pred`
+#'     variable with a line. This is a good option when the `pred` variable
+#'     is ordinal (ordered). You may still consider `point.shape = TRUE` and
+#'     `interval = TRUE` is still a good idea.
+#'
+#'   * `"bar"`: A bar chart. Some call this a "dynamite plot."
+#'     Many applied researchers advise against this type of plot because it
+#'     does not represent the distribution of the observed data or the
+#'     uncertainty of the predictions very well. It is best to at least use the
+#'     `interval = TRUE` argument with this geom.
+#'
+#'   * `"boxplot"`: This geom plots a dot and whisker plot. These can be useful
+#'     for understanding the distribution of the observed data without having
+#'     to plot all the observed points (especially helpful with larger data
+#'     sets). **However**, it is important to note the boxplots are not based
+#'     on the model whatsoever.
+#' @param cat.interval.geom For categorical by categorical interactions.
+#'   One of "errorbar" or "linerange". If the former,
+#'   [ggplot2::geom_errorbar()] is used. If the latter,
+#'   [ggplot2::geom_linerange()] is used.
+#' @param cat.pred.point.size (for categorical `pred`)
+#'  If TRUE and `geom` is `"point"` or `"line"`,
+#'  sets the size of the predicted points. Default is 3.5.
+#'  Note the distinction from `point.size`, which refers to the
+#'  observed data points.
 #'
 #' @details This function provides a means for plotting effects for the
 #'   purpose of exploring regression estimates. You must have the
