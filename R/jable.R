@@ -34,7 +34,7 @@ print.md_table <- function(x, ...) {
 }
 
 
-jable <- function (x, format, digits = getOption("digits"), row.names = NA, 
+jable <- function(x, format, digits = getOption("digits"), row.names = NA, 
           col.names = NA, align, caption = NULL, format.args = list(), 
           escape = TRUE, ...)  {
   
@@ -113,7 +113,9 @@ jable_mark <- function(x, sep.row = c("=", "=", "="), sep.col = "  ", padding = 
           align.fun = function(s, a) s, rownames.name = "", ...) {
   if (sep.col == "|") 
     for (j in seq_len(ncol(x))) {
-      x[, j] = gsub("\\|", "&#124;", x[, j])
+      x[, j] = gsub("\\|", 
+                    "&#124;",
+                    x[, j])
     }
   l = if (prod(dim(x)) > 0) 
     apply(x, 2, function(z) max(nchar(z, type = "width"), 
