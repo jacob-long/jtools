@@ -23,6 +23,7 @@ test_that("summ.rq works", {
   expect_is(summ(rfit, vifs = TRUE), "summ.rq")
 })
 
+data(mpg, package = "ggplot2")
 mpg2 <- mpg
 mpg2$auto <- "auto"
 mpg2$auto[mpg2$trans %in% c("manual(m5)", "manual(m6)")] <- "manual"
@@ -37,12 +38,12 @@ suppressWarnings(fit3r <- rq(cty ~ cyl * auto, data = mpg2, tau = 0.5))
 
 test_that("rq plotters work", {
   expect_silent(effect_plot(rfit, pred = "Air.Flow", interval = TRUE))
-  expect_silent(interact_plot(rfiti, pred = "Air.Flow", modx = "Water.Temp",
-                              interval = TRUE))
-  expect_silent(cat_plot(fit3r, pred = cyl, modx = auto, geom = "line",
-                interval = TRUE))
+  # expect_silent(interact_plot(rfiti, pred = "Air.Flow", modx = "Water.Temp",
+  #                             interval = TRUE))
+  # expect_silent(cat_plot(fit3r, pred = cyl, modx = auto, geom = "line",
+  #               interval = TRUE))
   expect_is(make_predictions(rfiti, pred = "Air.Flow", modx = "Water.Temp",
-                             se = "ker"), "predictions")
+                             se = "ker"), "data.frame")
 })
 
 test_that("export_summs et al.", {
