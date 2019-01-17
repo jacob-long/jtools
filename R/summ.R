@@ -433,8 +433,8 @@ print.summ.lm <- function(x, ...) {
   print_se_info(x$robust, x$use_cluster, manual = "OLS")
 
   cat("\n")
-  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
-            align = "r"), sep = "\n")
+  md_table(ctable, format = getOption("summ.table.format", "markdown"),
+           align = "r")
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -873,8 +873,8 @@ print.summ.glm <- function(x, ...) {
   print_se_info(x$robust, x$use_cluster)
 
   cat("\n")
-  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
-            align = "r"), sep = "\n")
+  md_table(ctable, format = getOption("summ.table.format", "markdown"),
+           align = "r")
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1359,8 +1359,8 @@ print.summ.svyglm <- function(x, ...) {
   }
 
   cat("\n")
-  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
-            align = "r"), sep = "\n")
+  md_table(ctable, format = getOption("summ.table.format", "markdown"),
+           align = "r")
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -2036,8 +2036,8 @@ print.summ.merMod <- function(x, ...) {
   }
   
   cat("\n")
-  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
-            align = "r"), sep = "\n")
+  md_table(ctable, format = getOption("summ.table.format", "markdown"),
+           align = "r")
   
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
@@ -2081,8 +2081,8 @@ print.summ.merMod <- function(x, ...) {
     #rownames(rtable) <- rep("", times = nrow(rtable))
     # print(rtable, row.names = FALSE)
     cat("\n")
-    cat(jable(rtable, format = getOption("summ.table.format", "markdown"),
-              align = "c", row.names = FALSE), sep = "\n")
+    md_table(rtable, format = getOption("summ.table.format", "markdown"),
+             align = "c", row.names = FALSE)
   }
 
   if (x$groups.table == TRUE) {
@@ -2092,8 +2092,8 @@ print.summ.merMod <- function(x, ...) {
     #rownames(gtable) <- rep("", times = nrow(gtable))
     # print(gtable, row.names = FALSE)
     cat("\n")
-    cat(jable(gtable, format = getOption("summ.table.format", "markdown"),
-              align = "c", row.names = FALSE), sep = "\n")
+    md_table(gtable, format = getOption("summ.table.format", "markdown"),
+             align = "c", row.names = FALSE)
   }
 
   # Notifying user if variables altered from original fit

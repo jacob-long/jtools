@@ -277,8 +277,8 @@ print.summ.rq <- function(x, ...) {
   print_se_info(x$robust, x$use_cluster, manual = se_name)
 
   cat("\n")
-  cat(jable(ctable, format = getOption("summ.table.format", "markdown"),
-            align = "r"), sep = "\n")
+  md_table(ctable, format = getOption("summ.table.format", "markdown"),
+           align = "r")
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
