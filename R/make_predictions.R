@@ -289,7 +289,7 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
       pm[["ymin"]] <- lower
       
       # Drop the cases that should be missing if I had done it piecewise
-      pm <- pm[completes,]
+      pm <- pm[complete.cases(pm),]
     } else {
       ## Convert the confidence percentile to a number of S.E. to multiply by
       intw <- 1 - ((1 - int.width)/2)

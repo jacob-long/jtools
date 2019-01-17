@@ -403,7 +403,6 @@ summ.lm <- function(
 
 #' @export
 #' @importFrom crayon underline inverse italic
-#' @importFrom knitr kable
 
 print.summ.lm <- function(x, ...) {
 

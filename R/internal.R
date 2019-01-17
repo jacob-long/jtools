@@ -210,6 +210,28 @@ wtd.table <- function(x, weights = NULL, na.rm = TRUE) {
 
 }
 
+### weighted effects coding ##################################################
+
+#' @importFrom stats contr.treatment
+
+contr.weighted <- function(x, base = 1, weights = NULL) {
+
+  frequencies <- wtd.table(x, weights = weights)
+  n.cat <- length(frequencies)
+
+  # If base level is named, get the index
+  if (is.character(base)) {
+    base <- which(levels(x) == base)
+  }
+
+  new.contrasts <- contr.treatment(n.cat, base = base)
+  new.contrasts[base, ] <- -1 * frequencies[-base]/frequencies[base]
+  colnames(new.contrasts) <- names(frequencies[-base])
+
+  return(new.contrasts)
+
+}
+
 #### Regex helper ############################################################
 
 # Taken from Hmisc

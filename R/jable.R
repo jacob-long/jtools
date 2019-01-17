@@ -53,7 +53,7 @@ jable <- function (x, format, digits = getOption("digits"), row.names = NA,
     align = ifelse(isn, "r", "l")
   digits = rep(digits, length.out = m)
   for (j in seq_len(m)) {
-    if (knitr:::is_numeric(x[, j])) 
+    if (is_numeric(x[, j])) 
       x[, j] = round(x[, j], digits[j])
   }
   if (any(isn)) {
@@ -148,7 +148,7 @@ jable_pandoc <- function(x, caption = NULL, padding = 1, ...) {
   tab <- if (ncol(x) == 1) {
     jable_markdown(x, padding = padding, ...)
   } else {
-    jable_mark(x, c(NA, "-", if (knitr:::is_blank(colnames(x))) "-" else NA), 
+    jable_mark(x, c(NA, "-", if (is_blank(colnames(x))) "-" else NA), 
                   padding = padding, ...)
   }
   tab
@@ -205,6 +205,10 @@ is_blank <- function(x) {
   if (length(x)) 
     all(grepl("^\\s*$", x))
   else TRUE
+}
+
+is_numeric <- function(x) {
+  class(x)[1] %in% c("numeric", "integer", "difftime")
 }
 
 spaces <- function(n = 1, char = " ") {

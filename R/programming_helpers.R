@@ -71,7 +71,7 @@
   if (is.character(y)) {
     x[, colnames(x) %nin% y]
   } else {
-    x[, seq_length(ncol(x)) %nin% y]
+    x[, seq_len(ncol(x)) %nin% y]
   }
 }
 
@@ -94,13 +94,14 @@
 }
 
 #' @rdname subsetters
+#' @importFrom stats qt 
 #' @export 
 
 `%just%.matrix` <- function(x, y) {
   if (is.character(y)) {
     x[, colnames(x) %in% y]
   } else {
-    x[, seq_length(ncol(x)) %in% y]
+    x[, seq_len(ncol(x)) %in% y]
   }
 }
 
@@ -157,6 +158,7 @@ warn_wrap <- function(..., brk = "\n", call. = FALSE) {
 
 # Like cat_wrap but for errors
 #' @rdname wrap_str
+#' @importFrom crayon red
 #' @export 
 stop_wrap <- function(...,  brk = "\n", call. = FALSE) {
   stop(red(wrap_str(...)), brk, call. = FALSE)

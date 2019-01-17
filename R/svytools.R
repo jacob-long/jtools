@@ -96,7 +96,7 @@
 #' wts <- runif(18, 0, 3)
 #' wgttest(glm.D93, weights = wts)
 #'
-#' @importFrom stats anova reformulate
+#' @importFrom stats anova reformulate update
 #' @export
 
 wgttest <- function(model, weights, data = NULL, model_output = FALSE,
