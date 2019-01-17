@@ -131,6 +131,9 @@ num_print <- function(x, digits = getOption("jtools-digits", 2),
 #'  fit the width of the user's console.
 #' @param ... Objects to print
 #' @param sep Separator between `...`, Default: ''
+#' @param brk What should the last character of the message/warning/error be?
+#'  Default is `"\n"`, meaning the console output ends with a new line.
+#' @param call. Here for legacy reasons. It is ignored.
 #' @rdname wrap_str
 #' @export 
 

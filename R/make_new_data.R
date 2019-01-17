@@ -181,6 +181,10 @@ get_weights <- function(model, data) {
 #' @description These functions get information and data from regression models.
 #' @param model The model (e.g., `lm`, `glm`, `merMod`, `svyglm`)
 #' @param data For `get_weights`, the data used to fit the model.
+#' @param warn For `get_data`, should there be a warning when `model.frame` 
+#'  won't work because of variable transformations? Default is TRUE but this
+#'  may not be desired when `get_data` is used inside of another function or
+#'  used multiple times.
 #' @return 
 #' 
 #' * `get_data()`: The data used to fit the model.
