@@ -608,45 +608,45 @@ predict_mer <- function(model, newdata = NULL, use_re_var = FALSE,
 
 }
 
-# adapted from https://stackoverflow.com/a/49403210/5050156
-pred_terms_merMod <- function(model, newdata = NULL) {
-  tt <- terms(model)
-  beta <- lme4::fixef(model)
+# # adapted from https://stackoverflow.com/a/49403210/5050156
+# pred_terms_merMod <- function(model, newdata = NULL) {
+#   tt <- terms(model)
+#   beta <- lme4::fixef(model)
   
-  if (is.null(newdata)) {
-    newdata <- get_data(model, warn = FALSE)
-  }
+#   if (is.null(newdata)) {
+#     newdata <- get_data(model, warn = FALSE)
+#   }
   
-  mm <- model.matrix(tt, newdata)
-  aa <- attr(mm, "assign")
-  ll <- attr(tt, "term.labels")
-  hasintercept <- attr(tt, "intercept") > 0L
-  if (hasintercept) 
-    ll <- c("(Intercept)", ll)
-  aaa <- factor(aa, labels = ll)
-  asgn <- split(order(aa), aaa)
-  if (hasintercept) {
-    asgn$"(Intercept)" <- NULL
-    avx <- colMeans(mm)
-    termsconst <- sum(avx * beta)
-  }
-  nterms <- length(asgn)
-  if (nterms > 0) {
-    predictor <- matrix(ncol = nterms, nrow = NROW(mm))
-    dimnames(predictor) <- list(rownames(mm), names(asgn))
-    if (hasintercept) 
-      mm <- sweep(mm, 2L, avx, check.margin = FALSE)
-    for (i in seq.int(1L, nterms, length.out = nterms)) {
-      idx <- asgn[[i]]
-      predictor[, i] <- mm[, idx, drop = FALSE] %*% beta[idx]
-    }
-  } else {
-    # Not sure if NROW(mm) is right
-    predictor <- ip <- matrix(0, NROW(mm), 0L)
-  }
-  attr(predictor, "constant") <- if (hasintercept) termsconst else 0
-  predictor
-}
+#   mm <- model.matrix(tt, newdata)
+#   aa <- attr(mm, "assign")
+#   ll <- attr(tt, "term.labels")
+#   hasintercept <- attr(tt, "intercept") > 0L
+#   if (hasintercept) 
+#     ll <- c("(Intercept)", ll)
+#   aaa <- factor(aa, labels = ll)
+#   asgn <- split(order(aa), aaa)
+#   if (hasintercept) {
+#     asgn$"(Intercept)" <- NULL
+#     avx <- colMeans(mm)
+#     termsconst <- sum(avx * beta)
+#   }
+#   nterms <- length(asgn)
+#   if (nterms > 0) {
+#     predictor <- matrix(ncol = nterms, nrow = NROW(mm))
+#     dimnames(predictor) <- list(rownames(mm), names(asgn))
+#     if (hasintercept) 
+#       mm <- sweep(mm, 2L, avx, check.margin = FALSE)
+#     for (i in seq.int(1L, nterms, length.out = nterms)) {
+#       idx <- asgn[[i]]
+#       predictor[, i] <- mm[, idx, drop = FALSE] %*% beta[idx]
+#     }
+#   } else {
+#     # Not sure if NROW(mm) is right
+#     predictor <- ip <- matrix(0, NROW(mm), 0L)
+#   }
+#   attr(predictor, "constant") <- if (hasintercept) termsconst else 0
+#   predictor
+# }
 
 # ### Add random effects to df ################################################
 #
