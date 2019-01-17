@@ -20,10 +20,7 @@
 #' # Create plot with ggplot2
 #' library(ggplot2)
 #' plot <- ggplot(mpg, aes(cty, hwy)) +
-#'   geom_jitter()
-#'
-#' # Add APA theme with defaults
-#' plot + theme_nice()
+#'   geom_jitter() + theme_nice()
 #'
 #'
 #' @export 
@@ -55,7 +52,7 @@ theme_nice <- function(legend.pos = "right",
                    light_dark = "#dddddd")
 
   grid_color <- switch(style[1], 
-                       white = "#eee4da",
+                       white = "#e8e8e8",
                        light = "#bdc3c7",
                        dark_blue = "#46627f",
                        dark_gray = "#777777",
