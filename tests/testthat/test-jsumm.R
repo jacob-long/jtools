@@ -121,7 +121,7 @@ if (requireNamespace("survey")) {
   })
 
   test_that("jsumm: svyglm linear model check works", {
-    expect_is(summ(regmodel, model.check = TRUE), "summ.svyglm")
+    expect_warning(summ(regmodel, model.check = TRUE))
   })
 
   test_that("jsumm: svyglm CIs work", {
@@ -254,12 +254,12 @@ test_that("jsumm: Printing isn't borked", {
   expect_output(print(summ(fitgf, scale = TRUE)))
   if (requireNamespace("survey")) {
     expect_output(print(summ(regmodel, scale = TRUE, n.sd = 2)))
-    expect_output(print(summ(regmodel, model.check = TRUE, vifs = TRUE)))
+    expect_output(print(summ(regmodel, vifs = TRUE)))
     expect_output(print(summ(regmodell, scale = TRUE, n.sd = 2)))
-    expect_output(print(summ(regmodell, model.check = TRUE, vifs = TRUE)))
+    expect_output(print(summ(regmodell, vifs = TRUE)))
   }
   expect_output(print(summ(fit, scale = TRUE, n.sd = 2)))
-  expect_output(print(summ(fit, model.check = TRUE, vifs = TRUE)))
+  expect_output(print(summ(fit, vifs = TRUE)))
   if (requireNamespace("lme4")) {
     expect_output(print(summ(mv, scale = TRUE, n.sd = 2, pvals = FALSE)))
   }
