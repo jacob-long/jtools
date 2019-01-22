@@ -10,15 +10,22 @@
 #' @param sig.digits Should each number be printed with `digits` number of 
 #'  digits or only when there are at least that many significant digits? Default
 #'  is TRUE, meaning only print `digits` number of *significant* digits.
+#' @param align Column alignment: a character vector consisting of ‘'l'’
+#'  (left), ‘'c'’ (center) and/or ‘'r'’ (right). By default or if
+#'  ‘align = NULL’, numeric columns are right-aligned, and other
+#'  columns are left-aligned. 
 #' @inheritParams knitr::kable
 #' @rdname md_table
 #' @export 
 
 md_table <- function(x, format = "markdown",
                      digits = getOption("jtools-digits", 2), sig.digits = TRUE,
-                     row.names = NA, col.names = NA, format.args = list()) {
-  align <- sapply(1:ncol(x), function(y) {is.numeric(x[,y])})
-  align <- ifelse(align, yes = "r", no = "l")
+                     row.names = NA, col.names = NA, format.args = list(),
+                     align = NULL) {
+  if (is.null(align)) {
+    align <- sapply(1:ncol(x), function(y) {is.numeric(x[,y])})
+    align <- ifelse(align, yes = "r", no = "l")
+  }
   if (sig.digits == FALSE) {
     x <- round_df_char(x, digits = digits)
   }
