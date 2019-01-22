@@ -96,6 +96,7 @@ theme_nice <- function(legend.pos = "right",
       panel.grid.major = element_line(linetype='longdash', colour = grid_color),
                                       # colour = "#bdc3c7"),
       panel.grid.minor = element_blank(),
+      panel.spacing.x = ggplot2::unit(2, "lines"),
       axis.text.x = element_text(colour = text_and_line_color),
       axis.text.y = element_text(colour = text_and_line_color)
   )
