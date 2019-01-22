@@ -158,18 +158,45 @@ round_df_char <- function(df, digits, pad = " ", na_vals = NA) {
   return(df)
 }
 
-## This function gets the robust SEs
-
-do_robust <- function(model, robust, cluster, data) {
+#' @title Calculate robust standard errors and produce coefficient tables
+#' @description This function wraps around several \pkg{sandwich}
+#'  and \pkg{lmtest} functions to calculate robust standard errors and returns 
+#'  them in a useful format. 
+#' @param model A regression model, preferably of class `lm` or `glm`
+#' @param type One of `"HC3"`, `"const"`, `"HC"`, `"HC0"`, `"HC1"`,
+#'  `"HC2"`, `"HC4"`, `"HC4m"`, `"HC5"`. See [sandwich::vcovHC()] for some 
+#'  more details on these choices. Note that some of these do not work for
+#'  clustered standard errors (see sandwich::vcovCL()]). 
+#' @param data The data used to fit the model. Default is to just get the 
+#'  `model.frame` from `model`. 
+#' @param cluster If you want clustered standard errors, either a string naming
+#'  the column in `data` that represents the clusters or a vector of clusters
+#'  that is the same length as the number of rows in `data`.
+#' @return 
+#' A list with the following:
+#'
+#'   * `coefs`: a coefficient table with the estimates, standard errors,
+#'    t-statistics, and p-values from `lmtest`. 
+#'   * `ses`: The standard errors from `coefs`.
+#'   * `ts`: The t-statistics from `coefs`. 
+#'   * `ps`: The p-values from `coefs`. 
+#'   * `type`: The argument to `robust`.
+#'   * `use_cluster`: `TRUE` or `FALSE` indicator of whether clusters were used.
+#'   * `cluster`: The clusters or name of cluster variable used, if any.
+#'   * `vcov`: The robust variance-covariance matrix.
+#'   
+#' @export
+#' @rdname get_robust_se
+get_robust_se <- function(model, type = "HC3", cluster = NULL, 
+                          data = model.frame(model)) {
   
   if (!requireNamespace("sandwich", quietly = TRUE)) {
-    stop("When using robust SEs, you need to have the \'sandwich\'",
-         " package.\n Please install it or set robust to FALSE.",
-         call. = FALSE)
+    stop_wrap("When using robust SEs you need to have the \'sandwich\' 
+              package.", call. = FALSE)
   }
   
-  if (robust == TRUE) {
-    robust <- "HC3"
+  if (type == TRUE) {
+    type <- "HC3"
   }
   
   if (is.character(cluster)) {
@@ -188,9 +215,9 @@ do_robust <- function(model, robust, cluster, data) {
     
     if (!is.factor(cluster) & !is.numeric(cluster)) {
       
-      warning("Invalid cluster input. Either use the name of the variable",
-              " in the input data frame\n or provide a numeric/factor vector.",
-              " Cluster is not being used in the reported SEs.")
+      warn_wrap("Invalid cluster input. Either use the name of the variable
+                in the input data frame or provide a numeric/factor vector.
+                Cluster is not being used in the reported SEs.")
       cluster <- NULL
       use_cluster <- FALSE
       
@@ -206,17 +233,17 @@ do_robust <- function(model, robust, cluster, data) {
     
   }
   
-  if (robust %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
+  if (type %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
     # vcovCL only goes up to HC3
-    coefs <- sandwich::vcovHC(model, type = robust)
+    coefs <- sandwich::vcovHC(model, type = type)
     
-  } else if (robust %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
+  } else if (type %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
     
-    stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
+    stop_wrap("If using cluster-robust SEs, robust.type must be HC3 or lower.")
     
   } else {
     
-    coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust)
+    coefs <- sandwich::vcovCL(model, cluster = cluster, type = type)
     
   }
   
@@ -226,9 +253,23 @@ do_robust <- function(model, robust, cluster, data) {
   ts <- coefs[,3]
   ps <- coefs[,4]
   
-  list(coefs = coefs, ses = ses, ts = ts, ps = ps, use_cluster = use_cluster,
-       robust = robust, cluster = cluster, vcov = vcov)
-  
+  out <- list(coefs = coefs, ses = ses, ts = ts, ps = ps,
+              use_cluster = use_cluster, type = type, cluster = cluster,
+              vcov = vcov)
+  class(out) <- "robust_info"
+  return(out)
+}
+
+#' @export
+print.robust_info <- function(x, ...) {
+  print(md_table(x$coefs))
+}
+
+do_robust <- function(model, robust, cluster, data) {
+  out <-
+    get_robust_se(model = model, type = robust, cluster = cluster, data = data)
+  names(out)[names(out) == "type"] <- "robust"
+  return(out)
 }
 
 ## Put together the coefficient table
