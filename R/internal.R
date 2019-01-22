@@ -124,6 +124,12 @@ get_lhs <- function(x) {
   }
 }
 
+is_lhs_transformed <- function(x) {
+  final <- as.character(deparse(get_lhs(x)))
+  bare_vars <- all.vars(get_lhs(x))
+  any(final != bare_vars)
+}
+
 # Adapted from formula.tools
 get_rhs <- function(x) {
   # from operator.tools::operators()
