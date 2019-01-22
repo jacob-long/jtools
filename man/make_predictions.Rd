@@ -8,62 +8,29 @@
 make_predictions(model, ...)
 
 \method{make_predictions}{default}(model, pred, pred.values = NULL,
-  modx = NULL, modx.values = NULL, mod2 = NULL, mod2.values = NULL,
-  centered = "all", data = NULL, plot.points = FALSE,
-  interval = FALSE, int.width = 0.95, outcome.scale = "response",
-  linearity.check = FALSE, robust = FALSE, cluster = NULL,
-  vcov = NULL, set.offset = 1, pred.labels = NULL,
-  modx.labels = NULL, mod2.labels = NULL, int.type = c("confidence",
-  "prediction"), preds.per.level = 100, force.cat = FALSE,
-  facet.modx = linearity.check, ...)
+  at = NULL, data = NULL, center = TRUE, interval = TRUE,
+  int.type = c("confidence", "prediction"), int.width = 0.95,
+  outcome.scale = "response", robust = FALSE, cluster = NULL,
+  vcov = NULL, set.offset = NULL, return.orig.data = FALSE, ...)
 }
 \arguments{
-\item{model}{A regression model. The function is tested with \code{lm},
-\code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
-\code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
-\code{stanreg} models.
-Models from other classes may work as well but are not officially
-supported. The model should include the interaction of interest.}
+\item{model}{The model (e.g., \code{lm}, \code{glm}, \code{merMod}, \code{svyglm})}
 
 \item{...}{Ignored.}
 
-\item{pred}{The name of the predictor variable involved
-in the interaction. This must be a string.}
+\item{pred}{The name of the focal predictor as a string. This is the variable
+for which, if you are plotting, you'd likely have along the x-axis (with
+the dependent variable as the y-axis).}
 
-\item{pred.values}{Which values of the predictor should be included in the
-plot? By default, all levels are included.}
+\item{pred.values}{The values of \code{pred} you want to include. Default is NULL,
+which means a sequence of equi-spaced values over the range of a numeric
+predictor or each level of a non-numeric predictor.}
 
-\item{modx}{The name of the moderator variable involved
-in the interaction. This must be a string.}
-
-\item{modx.values}{For which values of the moderator should lines be plotted?
-Default is \code{NULL}. If \code{NULL}, then the customary +/- 1 standard
-deviation from the mean as well as the mean itself are used for continuous
-moderators. If \code{"plus-minus"}, plots lines when the moderator is at
-+/- 1 standard deviation without the mean. You may also choose \code{"terciles"}
-to split the data into equally-sized groups and choose the point at the
-mean of each of those groups.
-
-If the moderator is a factor variable and \code{modx.values} is
-\code{NULL}, each level of the factor is included. You may specify
-any subset of the factor levels (e.g., \code{c("Level 1", "Level 3")}) as long
-as there is more than 1. The levels will be plotted in the order you
-provide them, so this can be used to reorder levels as well.}
-
-\item{mod2}{Optional. The name of the second moderator
-variable involved in the interaction. This can be a bare name or string.}
-
-\item{mod2.values}{For which values of the second moderator should the plot
-be
-facetted by? That is, there will be a separate plot for each level of this
-moderator. Defaults are the same as \code{modx.values}.}
-
-\item{centered}{A vector of quoted variable names that are to be
-mean-centered. If \code{"all"}, all non-focal predictors are centered. You
-may instead pass a character vector of variables to center. User can
-also use "none" to base all predictions on variables set at 0.
-The response variable, \code{pred}, \code{modx}, and \code{mod2} variables are never
-centered.}
+\item{at}{If you want to manually set the values of other variables in the
+model, do so by providing a named list where the names are the variables
+and the list values are vectors of the values. This can be useful
+especially when you are exploring interactions or other conditional
+predictions.}
 
 \item{data}{Optional, default is NULL. You may provide the data used to
 fit the model. This can be a better way to get mean values for centering
@@ -73,12 +40,16 @@ see a warning if the function detects problems that would likely be
 solved by providing the data with this argument and the function will
 attempt to retrieve the original data from the global environment.}
 
-\item{plot.points}{Logical. If \code{TRUE}, plots the actual data points as
-a scatterplot on top of the interaction lines. The color of the dots will
-be based on their moderator value.}
+\item{center}{Set numeric covariates to their mean? Default is TRUE. You
+may also just provide a vector of names (as strings) of covariates to
+center. Note that for \code{svyglm} models, the survey-weighted means are used.
+For models with weights, these are weighted means.}
 
 \item{interval}{Logical. If \code{TRUE}, plots confidence/prediction
 intervals around the line using \code{\link[ggplot2]{geom_ribbon}}.}
+
+\item{int.type}{Type of interval to plot. Options are "confidence" or
+"prediction". Default is confidence interval.}
 
 \item{int.width}{How large should the interval be, relative to the standard
 error? The default, .95, corresponds to roughly 1.96 standard errors and
@@ -91,14 +62,6 @@ the original scale (e.g., predicted probabilities for logit models)? The
 default is \code{"response"}, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 \code{"link"}.}
-
-\item{linearity.check}{For two-way interactions only. If \code{TRUE}, plots a
-pane for each level of the moderator and superimposes a loess smoothed
-line (in gray) over the plot. This enables you to see if the effect is
-linear through the span of the moderator. See Hainmueller et al. (2016) in
-the references for more details on the intuition behind this. It is
-recommended that you also set \code{plot.points = TRUE} and use
-\code{modx.values = "terciles"} with this option.}
 
 \item{robust}{Should robust standard errors be used to find confidence
 intervals for supported models? Default is FALSE, but you should specify
@@ -120,46 +83,17 @@ offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}
 
-\item{pred.labels}{A character vector of 2 labels for the predictor if it is
-a 2-level factor or a continuous variable with only 2 values. If
-\code{NULL}, the default, the factor labels are used.}
-
-\item{modx.labels}{A character vector of labels for each level of the
-moderator values, provided in the same order as the \code{modx.values}
-argument. If \code{NULL}, the values themselves are used as labels unless
-\code{modx,values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
-are used.}
-
-\item{mod2.labels}{A character vector of labels for each level of the 2nd
-moderator values, provided in the same order as the \code{mod2.values}
-argument. If \code{NULL}, the values themselves are used as labels unless
-\code{mod2.values} is also \code{NULL}. In that case, "+1 SD" and "-1 SD"
-are used.}
-
-\item{int.type}{Type of interval to plot. Options are "confidence" or
-"prediction". Default is confidence interval.}
-
-\item{preds.per.level}{For continuous predictors, a series of equally
-spaced points across the observed range of the predictor are used to
-create the lines for each level of the moderator. Use this to choose
-how many points are used for that. Default is 100, but for complicated
-models larger numbers may better capture the curvature.}
-
-\item{force.cat}{If \code{TRUE}, treats numeric predictor as categorical. This
-can be helpful when you have 0/1 dummy variables that you don't want to
-plot as if intermediate values are possible.}
-
-\item{facet.modx}{Create separate panels for each level of the moderator?
-Default is FALSE, except when \code{linearity.check} is TRUE.}
+\item{return.orig.data}{Instead of returning a just the predicted data frame,
+should the original data be returned as well? If so, then a list will be
+return with both the predicted data (as the first element) and the original
+data (as the second element). Default is FALSE.}
 }
 \description{
 This is an alternate interface to the underlying tools that
-make up \code{\link[=interact_plot]{interact_plot()}}, \code{\link[=effect_plot]{effect_plot()}}, and \code{\link[=cat_plot]{cat_plot()}}.
+make up \code{\link[=effect_plot]{effect_plot()}}, \code{\link[interactions:interact_plot]{interactions::interact_plot()}}, and
+\code{\link[interactions:cat_plot]{interactions::cat_plot()}}.
 \code{make_predictions} creates the data to be plotted and adds information
 to the original data to make it more amenable for plotting with the
 predicted data.
-}
-\seealso{
-Other plotting tools: \code{\link{plot_predictions}}
 }
 \concept{plotting tools}

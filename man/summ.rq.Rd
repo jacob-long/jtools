@@ -10,7 +10,8 @@
   "iid", "ker", "boot"), boot.sims = 1000, boot.method = "xy",
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2),
-  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  pvals = getOption("summ-pvals", TRUE),
+  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
@@ -50,6 +51,8 @@ number.}
 
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}.}
+
+\item{stars}{Show significance stars with p values? Default is FALSE.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
