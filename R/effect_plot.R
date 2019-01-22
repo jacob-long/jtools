@@ -108,7 +108,7 @@
 #'    a good option to show both the predictor and response.
 #'
 #' @param point.size What size should be used for observed data when
-#'   `plot.points` is TRUE? Default is 2.
+#'   `plot.points` is TRUE? Default is 1.
 #'
 #' @param robust Should robust standard errors be used to find confidence
 #'   intervals for supported models? Default is FALSE, but you should specify
@@ -241,7 +241,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   outcome.scale = "response", robust = FALSE, cluster = NULL, vcov = NULL, 
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   main.title = NULL, color.class = "black", line.thickness = 1.1, 
-  point.size = 2.5, jitter = 0, rug = FALSE, rug.sides = "b", force.cat = FALSE,
+  point.size = 1, jitter = 0, rug = FALSE, rug.sides = "b", force.cat = FALSE,
   cat.geom = c("point", "line", "bar", "boxplot"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
   ...) {
