@@ -366,7 +366,7 @@ coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
 
   rval <- cbind(est, se, tval, pval)
   colnames(rval) <- cnames
-  class(rval) <- "coeftest"
+  # class(rval) <- "coeftest"
   attr(rval, "method") <- paste(mthd, "test of coefficients")
   ##  dQuote(class(x)[1]), "object", sQuote(deparse(substitute(x))))
   return(rval)
