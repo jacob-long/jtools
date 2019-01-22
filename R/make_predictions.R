@@ -154,8 +154,14 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
     o <- tibble::as_tibble(pm)
   } else {
     o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(tibble::as_tibble(d <- get_data(model))))
+              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
     attr(o, "weights") <- get_weights(model, d)$weights
+    # If left-hand side is transformed, make new column in original data for
+    # the transformed version and evaluate it
+    if (is_lhs_transformed(formula(model))) {
+      o[[2]][get_response_name(model)] <- 
+        eval(get_lhs(formula(model)), o[[2]])
+    }
   }
   
   return(o)
@@ -223,8 +229,14 @@ make_predictions.svyglm <- function(model, pred, pred.values = NULL, at = NULL,
     o <- tibble::as_tibble(pm)
   } else {
     o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(tibble::as_tibble(d <- get_data(model))))
+              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
     attr(o, "weights") <- get_weights(model, d)$weights
+    # If left-hand side is transformed, make new column in original data for
+    # the transformed version and evaluate it
+    if (is_lhs_transformed(formula(model))) {
+      o[[2]][get_response_name(model)] <- 
+        eval(get_lhs(formula(model)), o[[2]])
+    }
   }
   
   return(o)
@@ -327,8 +339,14 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
     o <- tibble::as_tibble(pm)
   } else {
     o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(tibble::as_tibble(d <- get_data(model))))
+              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
     attr(o, "weights") <- get_weights(model, d)$weights
+    # If left-hand side is transformed, make new column in original data for
+    # the transformed version and evaluate it
+    if (is_lhs_transformed(formula(model))) {
+      o[[2]][get_response_name(model)] <- 
+        eval(get_lhs(formula(model)), o[[2]])
+    }
   }
   
   return(o)
@@ -375,8 +393,14 @@ make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
     o <- tibble::as_tibble(pm)
   } else {
     o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(tibble::as_tibble(d <- get_data(model))))
+              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
     attr(o, "weights") <- get_weights(model, d)$weights
+    # If left-hand side is transformed, make new column in original data for
+    # the transformed version and evaluate it
+    if (is_lhs_transformed(formula(model))) {
+      o[[2]][get_response_name(model)] <- 
+        eval(get_lhs(formula(model)), o[[2]])
+    }
   }
   
   return(o)
@@ -422,8 +446,14 @@ make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
     o <- tibble::as_tibble(pm)
   } else {
     o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(tibble::as_tibble(d <- get_data(model))))
+              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
     attr(o, "weights") <- get_weights(model, d)$weights
+    # If left-hand side is transformed, make new column in original data for
+    # the transformed version and evaluate it
+    if (is_lhs_transformed(formula(model))) {
+      o[[2]][get_response_name(model)] <- 
+        eval(get_lhs(formula(model)), o[[2]])
+    }
   }
   
   return(o)
@@ -461,8 +491,14 @@ make_predictions.rq <- function(model, pred, pred.values = NULL, at = NULL,
     o <- tibble::as_tibble(pm)
   } else {
     o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(tibble::as_tibble(d <- get_data(model))))
+              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
     attr(o, "weights") <- get_weights(model, d)$weights
+    # If left-hand side is transformed, make new column in original data for
+    # the transformed version and evaluate it
+    if (is_lhs_transformed(formula(model))) {
+      o[[2]][get_response_name(model)] <- 
+        eval(get_lhs(formula(model)), o[[2]])
+    }
   }
   
   return(o)
