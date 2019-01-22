@@ -27,28 +27,8 @@ summ <- function(model, ...) {
   UseMethod("summ")
 }
 
-#' Regression summaries with options
-#'
-#' \code{j_summ} is an alias for \code{summ}.
-#' To get specific documentation, choose the appropriate link to the
-#' type of model that you want to summarize from the details section.
-#'
-#' \itemize{
-#'
-#'   \item \code{\link{summ.lm}}
-#'   \item \code{\link{summ.glm}}
-#'   \item \code{\link{summ.svyglm}}
-#'   \item \code{\link{summ.merMod}}
-#'
-#' }
-#'
-#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
-#'   \code{\link[lme4]{merMod}} object.
-#' @param ... Other arguments to be passed to the model.specific function.
-#'
-#'
 #' @export
-#'
+#' @rdname summ
 
 j_summ <- summ
 
