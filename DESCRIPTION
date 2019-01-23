@@ -45,3 +45,4 @@ Suggests:
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
+Remotes: jacob-long/interactions
