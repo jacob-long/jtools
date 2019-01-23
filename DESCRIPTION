@@ -17,7 +17,8 @@ LazyData: true
 Imports: ggplot2,
   crayon,
   cli,
-  magrittr
+  magrittr,
+  tibble
 Suggests:
   boot,
   broom,
@@ -35,6 +36,7 @@ Suggests:
   RColorBrewer,
   rstanarm,
   sandwich,
+  scales,
   stats4,
   survey,
   weights,
