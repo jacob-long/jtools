@@ -450,9 +450,9 @@ make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
     attr(o, "weights") <- get_weights(model, d)$weights
     # If left-hand side is transformed, make new column in original data for
     # the transformed version and evaluate it
-    if (is_lhs_transformed(formula(model))) {
+    if (is_lhs_transformed(as.formula(formula(model)))) {
       o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(formula(model)), o[[2]])
+        eval(get_lhs(as.formula(formula(model))), o[[2]])
     }
   }
   
