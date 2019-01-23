@@ -27,6 +27,7 @@ Suggests:
   ggstance,
   glue,
   huxtable (>= 3.0.0),
+  interactions,
   kableExtra,
   lme4,
   lmerTest,
