@@ -1,10 +1,10 @@
 #' @title Color palettes in `jtools` functions
 #'
-#' @description `jtools` combines several options into the `color.class`
+#' @description `jtools` combines several options into the `colors`
 #'   argument in plotting functions.
 #'
 #' @details
-#'   The argument to `color.class` in functions like `effect_plot`,
+#'   The argument to `colors` in functions like `effect_plot`,
 #'   `plot_coefs`, and others is very flexible but may also
 #'   cause confusion.
 #'
@@ -61,17 +61,23 @@ NULL
 #' @title Get colors for plotting functions
 #' @description This is a helper function that provides hex color codes for 
 #'  `jtools`, `interactions`, and perhaps other packages.
-#' @param color.class The name of the desired color class or a vector of colors.
+#' @param colors The name of the desired color class or a vector of colors.
 #'  See details of [jtools_colors].
-#' @param num_colors How many colors should be returned? Default is 1.
+#' @param num.colors How many colors should be returned? Default is 1.
 #' @param reverse Should the colors be returned in reverse order, compared to
 #'  normal? Default is FALSE.
 #' @param gradient Return endpoints for a gradient? Default is FALSE. If TRUE,
-#'  `num_colors` is ignored.
+#'  `num.colors` is ignored.
 #' @importFrom grDevices rgb
 #' @export
-get_colors <- function(color.class, num_colors = 1, reverse = FALSE,
+get_colors <- function(colors, num.colors = 1, reverse = FALSE,
                        gradient = FALSE) {
+  
+  # Check if just passing through user-specified colors
+  if (length(colors) > 1 & gradient == FALSE) {
+    if (reverse) colors <- rev(colors)
+    return(colors)
+  } 
 
   # Save all valid color brewer names
   ## Sequential palettes get different treatment
@@ -87,33 +93,29 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE,
   viridis <- c("viridis", "magma", "A", "inferno", "B", "plasma", "C",
                "D", "cividis", "E")
 
-  if (length(color.class) == 1 && color.class %in% c(brewers, viridis) &
+  if (length(colors) == 1 && colors %in% c(brewers, viridis) &
       gradient == FALSE) {
 
-    if (color.class %in% sequentials) {
-      colors <- RColorBrewer::brewer.pal(num_colors + 1, color.class)[-1]
-      colors <- colors[seq_len(num_colors)]
-      if (reverse == TRUE) {colors <- rev(colors)}
-      return(colors)
-    } else if (color.class %in% viridis) {
-      colors <- rev(scales::viridis_pal(option = color.class)(num_colors))
-      if (reverse == TRUE) {colors <- rev(colors)}
-      return(colors)
+    if (colors %in% sequentials) {
+      # I drop the lightest color if possible
+      colors <- RColorBrewer::brewer.pal(num.colors + 1, colors)[-1]
+      colors <- colors[seq_len(num.colors)]
+    } else if (colors %in% viridis) {
+      colors <- rev(scales::viridis_pal(option = colors)(num.colors))
     } else {
-      colors <- RColorBrewer::brewer.pal(num_colors, color.class)
-      if (reverse == TRUE) {colors <- rev(colors)}
-      return(colors)
+      colors <- RColorBrewer::brewer.pal(num.colors, colors)
     }
     
-  } else if (length(color.class) == 1 && color.class %in% viridis) {
-    colors <- rev(scales::viridis_pal(option = color.class)(num_colors))
-    if (reverse == TRUE) {colors <- rev(colors)}
-    return(colors)
+  } else if (length(colors) == 1 && colors %in% viridis) {
+    # I order these differently than the default for gradients
+    colors <- rev(scales::viridis_pal(option = colors)(num.colors))
   }
-
+  
+  # My own palettes
   mine <- c("CUD", "CUD Bright", "Rainbow", "Qual1", "Qual3")
-  if (length(color.class) == 1 & color.class %in% mine) {
-
+  if (length(colors) == 1 & colors %in% mine) {
+    
+    # The order of these depends on how many are requested
     cb14 <- c("#4477AA", "#EE6677", "#228833", "#CC8844")
     cb16 <- c("#4477AA", "#66CCEE", "#228833", "#CC8844", "#EE6677",
               "#AA3377")
@@ -139,12 +141,10 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE,
     cud <- c("#D55E00", "#56B4E9", "#009E73", "#CC79A7", "#0072B2", "#E69F00",
              "#F0E442", "#999999")
 
-    # cudb2 <- c("#ff3200", "#5ec1ff", "#009E73", "#fc82be", "#0072B2", "#ffa00a",
-    #          "#F0E442", "#999999")
-
     cudb <- c("#49b7fc", "#ff7b00", "#17d898", "#ff0083", "#0015ff", "#e5d200",
               "#999999")
-
+    
+    # Function to produce rainbow color
     rainbow_col <- function(x) {
       r_num <- .472 - .567*x + 4.05*(x^2)
       r_den <- 1 + 8.72*x - 19.17*(x^2) + 14.1*(x^3)
@@ -160,7 +160,8 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE,
       return(rgb)
 
     }
-
+    
+    # This function gives a vector of the colors of length y
     rainbow_cols <- function(y) {
       y <- seq(from = 0, to = 1, length = y)
       rgbs <- lapply(y, rainbow_col)
@@ -170,119 +171,98 @@ get_colors <- function(color.class, num_colors = 1, reverse = FALSE,
       return(hexs)
     }
 
-    if (color.class == "Qual2") {
+    if (colors == "Qual2") {
 
-      if (num_colors <= 4) {
-        colors <- cb14[seq_len(num_colors)]
-      } else if (num_colors %in% c(5, 6)) {
-        colors <- cb16[seq_len(num_colors)]
+      if (num.colors <= 4) {
+        colors <- cb14[seq_len(num.colors)]
+      } else if (num.colors %in% c(5, 6)) {
+        colors <- cb16[seq_len(num.colors)]
       } else {
-        stop_wrap("Only 6 or fewer colors supported with Qual1 color.class.")
+        stop_wrap("Only 6 or fewer colors supported with the Qual2 color
+                  class.")
       }
 
-    } else if (color.class == "Qual3") {
+    } else if (colors == "Qual3") {
+      
+      if (num.colors > length(cb2)) {
+        stop_wrap("Only ", length(cb2), " or fewer colors are supported with
+                  the Qual3 color class.")
+      }
+      colors <- unlist(cb2[num.colors])
 
-      colors <- unlist(cb2[num_colors])
+    } else if (colors == "Qual1") {
+      
+      if (num.colors > length(cb3)) {
+        stop_wrap("Only ", length(cb3), " or fewer colors are supported with
+                  the Qual1 color class.")
+      }
+      colors <- cb3[seq_len(num.colors)]
 
-    } else if (color.class == "Qual1") {
+    } else if (colors == "CUD Bright") {
+      
+      if (num.colors > length(cudb)) {
+        stop_wrap("Only ", length(cudb), " or fewer colors are supported with
+                  the CUD Bright color class.")
+      }
+      colors <- cudb[seq_len(num.colors)]
 
-      colors <- cb3[seq_len(num_colors)]
+    } else if (colors == "CUD") {
+      
+      if (num.colors > length(cud)) {
+        stop_wrap("Only ", length(cud), " or fewer colors are supported with
+                  the CUD color class.")
+      }
+      colors <- cud[seq_len(num.colors)]
 
-    } else if (color.class == "CUD Bright") {
-
-      colors <- cudb[seq_len(num_colors)]
-
-    } else if (color.class == "CUD") {
-
-      colors <- cud[seq_len(num_colors)]
-
-    } else if (color.class == "Rainbow") {
-
-      colors <- rainbow_cols(num_colors)
-
-    } else if (num_colors == 1) {
-
-      return(color.class)
-
-    } else {
-      stop_wrap("color.class not found.")
+    } else if (colors == "Rainbow") {
+      colors <- rainbow_cols(num.colors)
     }
-
-    if (reverse == TRUE) {colors <- rev(colors)}
-    return(colors)
 
   }
   
-  if (gradient == TRUE) {
-    if (length(color.class) == 1) {
-      if (color.class == "Blues") {
-        colors <- c("#C6DBEF", "#08519C")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "Oranges") {
-        colors <- c("#FDD0A2", "#7F2704")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "Greens") {
-        colors <- c("#C7E9C0", "#00441B")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "Reds") {
-        colors <- c("#FCBBA1", "#67000D")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "Purples") {
-        colors <- c("#DADAEB", "#3F007D")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "Greys") {
-        colors <- c("#D9D9D9", "#000000")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "blue") {
-        # colors <- c("#99bbff", "#003399")
-        colors <- c("#9ed2fa", "#06477a")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "green") {
-        colors <- c("#33ff33", "#004d00")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "red") {
-        colors <- c("#ff9999", "#800000")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "purple") {
-        colors <- c("#cc99ff", "#330066")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "seagreen") {
-        colors <- c("#85e0e0", "#004d4d")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else if (color.class == "blue2") {
-        colors <- c("#C2CEFA", "#33559B")
-        if (reverse) {rev(colors)}
-        return(colors)
-      } else {
-        colors <- RColorBrewer::brewer.pal(num_colors, color.class)
-        if (reverse) {rev(colors)}
-        return(colors)
-      }
+  if (gradient == TRUE & length(colors) == 1) {
+    if (colors == "Blues") {
+      colors <- c("#C6DBEF", "#08519C")
+    } else if (colors == "Oranges") {
+      colors <- c("#FDD0A2", "#7F2704")
+    } else if (colors == "Greens") {
+      colors <- c("#C7E9C0", "#00441B")
+    } else if (colors == "Reds") {
+      colors <- c("#FCBBA1", "#67000D")
+    } else if (colors == "Purples") {
+      colors <- c("#DADAEB", "#3F007D")
+    } else if (colors == "Greys") {
+      colors <- c("#D9D9D9", "#000000")
+    } else if (colors == "blue") {
+      # colors <- c("#99bbff", "#003399")
+      colors <- c("#9ed2fa", "#06477a")
+    } else if (colors == "green") {
+      colors <- c("#33ff33", "#004d00")
+    } else if (colors == "red") {
+      colors <- c("#ff9999", "#800000")
+    } else if (colors == "purple") {
+      colors <- c("#cc99ff", "#330066")
+    } else if (colors == "seagreen") {
+      colors <- c("#85e0e0", "#004d4d")
+    } else if (colors == "blue2") {
+      colors <- c("#C2CEFA", "#33559B")
+    } else if (colors %in% brewers) {
+      colors <- RColorBrewer::brewer.pal(num.colors, colors)
+    } else {
+      stop_wrap(colors, " color class was not found.")
     }
   }
 
-  if (length(color.class) >= num_colors) {
-    colors <- color.class[seq_len(num_colors)]
-    if (reverse == TRUE) {colors <- rev(colors)}
-    return(colors)
-  } else if (length(color.class) == 2 && gradient == TRUE) {
-    colors <- color.class
-    if (reverse == TRUE) {colors <- rev(colors)}
-    return(colors)
+  if (length(colors) >= num.colors) {
+    colors <- colors[seq_len(num.colors)]
+  } else if (length(colors) == 2 && gradient == TRUE) {
+    colors <- colors
   } else {
     stop_wrap("Provided colors vector is not as long as the number of colors
               needed.")
   }
+  
+  if (reverse == TRUE) colors <- rev(colors)
+  return(colors)
 
 }
