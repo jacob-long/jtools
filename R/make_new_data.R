@@ -97,7 +97,11 @@ get_offset_name <- function(model) {
     offname <-
       as.character(getCall(model)$offset)[length(getCall(model)$offset)]
     # Sometimes it's character(0)
-    if (length(offname) == 0) {offname <- NULL}
+    if (length(offname) == 0) {
+      offname <- NULL
+    } else {
+      offname <- all.vars(as.formula(paste("~", offname)))
+    }
     
     if (is.null(offname)) {
       index <- attr(terms(model), "offset")
@@ -162,9 +166,13 @@ get_data <- function(model, warn = TRUE) {
   d <- model.frame(model)
   # Check to see if model.frame names match formula names
   varnames <- names(d)
-  # Drop weights and offsets
+  # Drop weights and offsets placeholder variable names
   varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
-  if (any(varnames %nin% all.vars(as.formula(formula(model))))) {
+  # Get the untransformed variable names
+  raw_vars <- all.vars(as.formula(formula(model)))
+  # Add the offset, if any
+  raw_vars <- c(raw_vars, get_offset_name(model))
+  if (any(raw_vars %nin% varnames)) {
     dat_name <- as.character(deparse(getCall(model)$data))
     
     if (warn == TRUE) {
