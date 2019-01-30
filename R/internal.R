@@ -54,7 +54,23 @@ reg_match <- function(pattern, text, ignore.case = FALSE, perl = FALSE,
 
 }
 
+
+### Handle NA better #########################################################
+# Since I accept data from users and the global environment, there may be 
+# missing cases including in the raw data that weren't used in the model fit.
+# I can't use complete.cases since these data frames may include extra columns.
+# Rather than guess at which variables were used to determine missingness
+# (straightforward with lm, but could have hidden problems with glms/lmer/etc.)
+# I use the model.frame features for doing so.
+drop_missing <- function(model, data) {
+  na_action <- attr(model.frame(model), "na.action")
+  # If no "na.action" attribute, nothing to remove
+  if (is.null(na_action)) {
+    return(data)
   }
+  to_remove <- names(na_action)
+  data <- data[rownames(data) %not% to_remove, ]
+  return(data)
 }
 
 ### Formula helpers ##########################################################
