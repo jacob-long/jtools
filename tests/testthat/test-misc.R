@@ -72,9 +72,11 @@ exposures <- rpois(50, 50)
 counts <- exposures - rpois(50, 25)
 money <- (counts/exposures) + rnorm(50, sd = 1)
 talent <- counts*.5 + rnorm(50, sd = 3)
-poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
-pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
-            family = poisson)
+talent_f <- rbinom(50, 1, .5)
+poisdat <- as.data.frame(cbind(exposures, counts, talent, talent_f, money))
+poisdat$talent_f <- factor(poisdat$talent_f)
+pmod <- glm(counts ~ talent*money + talent_f, offset = log(exposures),
+            data = poisdat, family = poisson)
 
 ### Code used to create brmsfit and stanreg test objects
 # library(brms)
@@ -117,7 +119,7 @@ if (requireNamespace("rstanarm") & requireNamespace("lme4")) {
   library(lme4)
   data(cbpp)
   test_that("stanreg objects are supported", {
-    expect_warning(print(effect_plot(rsfit, pred = "size", interval = TRUE)))
+    expect_message(print(effect_plot(rsfit, pred = "size", interval = TRUE)))
     # expect_silent(print(interact_plot(rsfit, pred = "size",
     #   modx = "period", interval = TRUE, data = cbpp)))
     # expect_is(make_predictions(rsfit, pred = "size", interval = TRUE,
@@ -208,37 +210,27 @@ samps <- sample(1:nrow(diamond), 2000)
 diamond <- diamond[samps,]
 fit <- lm(price ~ cut * color, data = diamond)
 
-set.seed(100)
-exposures <- rpois(50, 50)
-counts <- exposures - rpois(50, 25)
-money <- (counts/exposures) + rnorm(50, sd = 1)
-talent <- rbinom(50, 1, .5)
-poisdat <- as.data.frame(cbind(exposures, counts, talent, money))
-poisdat$talent <- factor(poisdat$talent)
-pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
-            family = poisson)
-
 test_that("effect_plot handles offsets w/ categorical predictors", {
-  expect_s3_class(p <- effect_plot(pmod, pred = talent), "gg")
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f), "gg")
   expect_silent(print(p))
-  expect_s3_class(p <- effect_plot(pmod, pred = talent, plot.points = TRUE), "gg")
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, plot.points = TRUE), "gg")
   expect_silent(print(p))
 })
 
 test_that("effect_plot does line plots", {
-  expect_s3_class(p <- effect_plot(pmod, pred = talent, cat.geom = "line"),
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "line"),
                   "gg")
   expect_silent(print(p))
-  expect_s3_class(p <- effect_plot(pmod, pred = talent, cat.geom = "line",
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "line",
                                    interval = FALSE), "gg")
   expect_silent(print(p))
 })
 
 test_that("effect_plot does bar plots", {
-  expect_s3_class(p <- effect_plot(pmod, pred = talent, cat.geom = "bar"),
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "bar"),
                   "gg")
   expect_silent(print(p))
-  expect_s3_class(p <- effect_plot(pmod, pred = talent, cat.geom = "bar",
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "bar",
                                    interval = FALSE), "gg")
   expect_silent(print(p))
 })
