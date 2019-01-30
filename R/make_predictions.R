@@ -127,9 +127,12 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   set.offset = NULL, new_data = NULL, return.orig.data = FALSE,
   partial.residuals = FALSE, ...) {
   
-  # Get the data ready with make_new_data()
-  pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                      data = data, center = center, set.offset = set.offset)
+  # Check if user provided own new_data
+  if (is.null(new_data)) {
+    # Get the data ready with make_new_data()
+    pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
+                        data = data, center = center, set.offset = set.offset)
+  } else {pm <- new_data}
   
   
   link_or_lm <- ifelse(family(model)$link == "identity",
@@ -208,9 +211,12 @@ make_predictions.svyglm <- function(model, pred, pred.values = NULL, at = NULL,
   outcome.scale = "response", set.offset = NULL, new_data = NULL,
   return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
-  # Get the data ready with make_new_data()
-  pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                      data = data, center = center, set.offset = set.offset)
+  # Check if user provided own new_data
+  if (is.null(new_data)) {
+    # Get the data ready with make_new_data()
+    pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
+                        data = data, center = center, set.offset = set.offset)
+  } else {pm <- new_data}
   
   link_or_lm <- ifelse(family(model)$link == "identity",
                        yes = "response", no = "link")
@@ -276,9 +282,12 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
   new_data = NULL, return.orig.data = FALSE, partial.residuals = FALSE,
   message = TRUE, ...) {
   
-  # Get the data ready with make_new_data()
-  pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                      data = data, center = center, set.offset = set.offset)
+  # Check if user provided own new_data
+  if (is.null(new_data)) {
+    # Get the data ready with make_new_data()
+    pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
+                        data = data, center = center, set.offset = set.offset)
+  } else {pm <- new_data}
   
   resp <- get_response_name(model)
   link_or_lm <- ifelse(family(model)$link == "identity",
@@ -375,12 +384,15 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
 
 make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, estimate = c("mean", "median"), interval = TRUE,
-  # Get the data ready with make_new_data()
-  pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                      data = data, center = center, set.offset = set.offset)
   int.width = .95, re.form = ~0,  set.offset = NULL, new_data = NULL,
   return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
+  # Check if user provided own new_data
+  if (is.null(new_data)) {
+    # Get the data ready with make_new_data()
+    pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
+                        data = data, center = center, set.offset = set.offset)
+  } else {pm <- new_data}
   
   predicted <- 
     rstanarm::posterior_predict(model, 
@@ -418,12 +430,15 @@ make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
 #' @export
 make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, estimate = c("mean", "median"), interval = TRUE,
-  # Get the data ready with make_new_data()
-  pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                      data = data, center = center, set.offset = set.offset)
   int.width = .95, re.form = ~0,  set.offset = NULL, new_data = NULL,
   return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
+  # Check if user provided own new_data
+  if (is.null(new_data)) {
+    # Get the data ready with make_new_data()
+    pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
+                        data = data, center = center, set.offset = set.offset)
+  } else {pm <- new_data}
   
   intw <- c(((1 - int.width)/2), 1 - ((1 - int.width)/2))
   
@@ -469,10 +484,12 @@ make_predictions.rq <- function(model, pred, pred.values = NULL, at = NULL,
   
   se <- match.arg(se, c("nid", "iid", "ker"), several.ok = FALSE)
   
-  # Get the data ready with make_new_data()
-  pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                      data = data, center = center, set.offset = set.offset)
-  
+  # Check if user provided own new_data
+  if (is.null(new_data)) {
+    # Get the data ready with make_new_data()
+    pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
+                        data = data, center = center, set.offset = set.offset)
+  } else {pm <- new_data}
   
   predicted <- as.data.frame(predict(model, newdata = pm,
                                      interval = "confidence",
