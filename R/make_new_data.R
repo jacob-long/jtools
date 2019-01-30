@@ -182,12 +182,13 @@ get_data <- function(model, warn = TRUE) {
         argument.")
     }
     
-    d <- eval(getCall(model)$data)
-    d[all.vars(as.formula(formula(model)))]
+    env <- attr(formula(model), ".Environment")
+    d <- eval(getCall(model)$data, envir = env)
+    tibble::as_tibble(d[raw_vars])
     
   } else {
     
-    d
+    tibble::as_tibble(d)
     
   }
 }
