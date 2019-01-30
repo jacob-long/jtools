@@ -16,7 +16,9 @@
 #'   supported. The model should include the interaction of interest.
 #'
 #' @param pred The name of the predictor variable involved
-#'  in the interaction. This can be a bare name or string.
+#'  in the interaction. This can be a bare name or string. Note that it
+#'  is evaluated using `rlang`, so programmers can use the `!!` syntax
+#'  to pass variables instead of the verbatim names.
 #'
 #' @param centered A vector of quoted variable names that are to be
 #'   mean-centered. If `"all"`, all non-focal predictors are centered. You
@@ -243,6 +245,7 @@
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
 #' @importFrom stats median weights
 #' @import ggplot2
+#' @import rlang
 #' @export effect_plot
 
 effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
@@ -258,8 +261,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   partial.residuals = FALSE, color.class = colors, ...) {
   
   # Evaluate the pred arg
-  pred <- as.character(deparse(substitute(pred)))
-  pred <- gsub("\"", "", pred, fixed = TRUE)
+  pred <- quo_name(enexpr(pred))
   
   # Have a sensible interval default for categorical predictors
   if ("interval" %nin% names(match.call())[-1] &
