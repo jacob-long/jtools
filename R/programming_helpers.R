@@ -17,9 +17,24 @@
 
 #' @export
 #' @rdname subsetters
+#' @usage x %not% y <- value
+`%not%<-` <- function(x, y, value) {
+  UseMethod("%not%<-")
+}
+
+#' @export
+#' @rdname subsetters
 `%just%` <- function(x, y) {
   UseMethod("%just%")
 }
+
+#' @export
+#' @rdname subsetters
+#' @usage x %just% y <- value
+`%just%<-` <- function(x, y, value) {
+  UseMethod("%just%<-")
+}
+
 
 # Automates my most common use of %nin%
 #' @title Subsetting operators
@@ -28,10 +43,15 @@
 #'  details for behavior when `x` is a data frame or matrix.
 #' @param x Object to subset
 #' @param y List of items to include if they are/aren't in `x`
+#' @param value The object(s) to assign to the subsetted `x`
 #' @details 
 #'  The behavior of %not% and %just% are different when you're subsetting 
 #'  data frames or matrices. The subset `y` in this case is interpreted as
-#'  column names or indices. 
+#'  **column** names or indices. 
+#'
+#'  You can also make assignments to the subset in the same way you could if
+#'  subsetting with brackets. 
+#'
 #' @return All of `x` that are in `y` (`%just%`) or all of `x` that are not in
 #'  `y` (`%not%`).
 #' @examples 
@@ -41,9 +61,17 @@
 #'  
 #'  x %just% y # 3 4 5
 #'  x %not% y # 1 2
+#'
+#'  # Assignment works too
+#'  x %just% y <- NA # 1 2 NA NA NA
+#'  x %not% y <- NA # NA NA 3 4 5
 #'  
 #'  mtcars %just% c("mpg", "qsec", "cyl") # keeps only columns with those names
 #'  mtcars %not% 1:5 # drops columns 1 through 5
+#'
+#'  # Assignment works for data frames as well
+#'  mtcars %just% c("mpg", "qsec") <- gscale(mtcars, c("mpg", "qsec"))
+#'  mtcars %not% c("mpg", "qsec") <- gscale(mtcars %not% c("mpg", "qsec"))
 #'  
 #'  
 #' @rdname subsetters
@@ -52,6 +80,15 @@
 `%not%.default` <- function(x, y) {
   x[x %nin% y]
 }
+
+#' @rdname subsetters
+#' @export 
+
+`%not%<-.default` <- function(x, y, value) {
+  x[x %nin% y] <- value
+  x
+}
+
 
 #' @rdname subsetters
 #' @export 
@@ -67,6 +104,18 @@
 #' @rdname subsetters
 #' @export 
 
+`%not%<-.data.frame` <- function(x, y, value) {
+  if (is.character(y)) {
+    x[names(x) %nin% y] <- value
+  } else {
+    x[seq_along(x) %nin% y] <- value
+  }
+  x
+}
+
+#' @rdname subsetters
+#' @export 
+
 `%not%.matrix` <- function(x, y) {
   if (is.character(y)) {
     x[, colnames(x) %nin% y]
@@ -76,10 +125,30 @@
 }
 
 #' @rdname subsetters
+#' @export 
+
+`%not%<-.matrix` <- function(x, y, value) {
+  if (is.character(y)) {
+    x[, colnames(x) %nin% y] <- value
+  } else {
+    x[, seq_len(ncol(x)) %nin% y] <- value
+  }
+  x
+}
+
+#' @rdname subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%.default` <- function(x, y) {
   x[x %in% y]
+}
+
+#' @rdname subsetters
+#' @export
+# Automates my most common use of %in%
+`%just%<-.default` <- function(x, y, value) {
+  x[x %in% y] <- value
+  x
 }
 
 #' @rdname subsetters
@@ -94,7 +163,18 @@
 }
 
 #' @rdname subsetters
-#' @importFrom stats qt 
+#' @export 
+
+`%just%<-.data.frame` <- function(x, y, value) {
+  if (is.character(y)) {
+    x[names(x) %in% y] <- value
+  } else {
+    x[seq_along(x) %in% y] <- value
+  }
+  x
+}
+
+#' @rdname subsetters
 #' @export 
 
 `%just%.matrix` <- function(x, y) {
@@ -103,6 +183,18 @@
   } else {
     x[, seq_len(ncol(x)) %in% y]
   }
+}
+
+#' @rdname subsetters
+#' @export 
+
+`%just%<-.matrix` <- function(x, y, value) {
+  if (is.character(y)) {
+    x[, colnames(x) %in% y] <- value
+  } else {
+    x[, seq_len(ncol(x)) %in% y] <- value
+  }
+  x
 }
 
 
