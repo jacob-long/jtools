@@ -19,3 +19,7 @@
     packageStartupMessage(msg)
   }
 }
+
+.onLoad <- function(libname, pkgname) {
+  pkgconfig::set_config("tibble::rownames" = NA)
+}

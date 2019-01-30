@@ -17,6 +17,7 @@ LazyData: true
 Imports: ggplot2,
   crayon,
   magrittr,
+  pkgconfig,
   rlang,
   tibble
 Suggests:
