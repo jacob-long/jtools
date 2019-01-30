@@ -80,8 +80,10 @@
 #' @param main.title A character object that will be used as an overall title
 #'   for the plot. If \code{NULL}, no main title is used.
 #'
-#' @param color.class See [jtools_colors] for details on the types of arguments
+#' @param colors See [jtools_colors] for details on the types of arguments
 #'    accepted. Default is "black". 
+#' 
+#' @param color.class Deprecated. Now known as `colors`.
 #'
 #' @param line.thickness How thick should the plotted lines be? Default is 1.1;
 #'   ggplot's default is 1.
@@ -162,6 +164,14 @@
 #'  sets the size of the predicted points. Default is 3.5.
 #'  Note the distinction from `point.size`, which refers to the
 #'  observed data points.
+#' @param point.alpha What should the `alpha` aesthetic for plotted points of 
+#'  observed data be? Default is 0.6, and it can range from 0 (transparent) to 
+#'  1 (opaque).
+#' @param point.color What should the `colour` aesthetic for plotted points of 
+#'  observed data be? Default is "black".
+#' @param partial.residuals Instead of plotting the observed data, you may plot
+#'  the partial residuals (controlling for the effects of variables besides 
+#'  `pred`). 
 #'
 #' @details This function provides a means for plotting effects for the
 #'   purpose of exploring regression estimates. You must have the
@@ -240,11 +250,12 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   int.type = c("confidence","prediction"), int.width = .95,
   outcome.scale = "response", robust = FALSE, cluster = NULL, vcov = NULL, 
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
-  main.title = NULL, color.class = "black", line.thickness = 1.1, 
-  point.size = 1, jitter = 0, rug = FALSE, rug.sides = "b", force.cat = FALSE,
-  cat.geom = c("point", "line", "bar", "boxplot"), 
+  main.title = NULL, colors = "black", line.thickness = 1.1, 
+  point.size = 1, point.alpha = 0.6, point.color = "black", jitter = 0,
+  rug = FALSE, rug.sides = "b", 
+  force.cat = FALSE, cat.geom = c("point", "line", "bar", "boxplot"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
-  ...) {
+  partial.residuals = FALSE, color.class = colors, ...) {
   
   # Evaluate the pred arg
   pred <- as.character(deparse(substitute(pred)))
@@ -259,8 +270,11 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   
   if (force.cat == TRUE & is.null(pred.values)) {
     if (is.null(data)) {data <- get_data(model)}
-    pred.values <- sort(unique(suppressWarnings(data[[pred]])))
+    pred.values <- sort(unique(suppressMessages(data[[pred]])))
   }
+  
+  # Deal with legacy color argument
+  if (!all(color.class == colors)) colors <- color.class
   
   pred_out <- make_predictions(model, pred = pred, pred.values = pred.values,
                                at = NULL, center = centered,
@@ -268,7 +282,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                                outcome.scale = outcome.scale, robust = robust,
                                cluster = cluster, vcov = vcov,
                                set.offset = set.offset, return.orig.data = TRUE,
-                               ...)
+                               partial.residuals = partial.residuals, ...)
   
   # Putting these outputs into separate objects
   pm <- pred_out[[1]]
@@ -285,25 +299,28 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   
   if (is.numeric(d[[pred]]) & force.cat == FALSE) {
     plot_effect_continuous(predictions = pm, pred = pred,
-                           plot.points = plot.points, interval = interval,
+                           plot.points = plot.points | partial.residuals,
+                           interval = interval,
                            data = d, x.label = x.label, y.label = y.label,
                            pred.labels = pred.labels, main.title = main.title,
-                           color.class = color.class,
+                           colors = colors,
                            line.thickness = line.thickness, jitter = jitter,
                            resp = get_response_name(model),
                            wts = get_weights(model, d)$weights,
                            rug = rug, rug.sides = rug.sides,
-                           point.size = point.size)
+                           point.size = point.size, point.alpha = point.alpha,
+                           point.color = point.color)
   } else {
     plot_cat(predictions = pm, pred = pred, data = d,  
              geom = cat.geom, pred.values = pred.values,
-             interval = interval, plot.points = plot.points,
+             interval = interval, plot.points = plot.points | partial.residuals,
              pred.labels = pred.labels, x.label = x.label,
              y.label = y.label, main.title = main.title,
-             color.class = color.class, wts = get_weights(model, d)$weights,
+             colors = colors, wts = get_weights(model, d)$weights,
              resp = get_response_name(model), jitter = jitter, 
              interval.geom = cat.interval.geom, line.thickness = line.thickness,
-             point.size = point.size, pred.point.size = cat.pred.point.size)
+             point.size = point.size, pred.point.size = cat.pred.point.size,
+             point.alpha = point.alpha, point.color = point.color)
   }
   
 }
@@ -311,9 +328,9 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
 plot_effect_continuous <- 
   function(predictions, pred, plot.points = FALSE, interval = FALSE, 
            data = NULL, x.label = NULL, y.label = NULL, pred.labels = NULL,
-           main.title = NULL, color.class = NULL, line.thickness = 1.1,
+           main.title = NULL, colors = NULL, line.thickness = 1.1,
            jitter = 0.1, resp = NULL, wts = NULL, rug = FALSE, rug.sides = "b",
-           point.size = 1) {
+           point.size = 1, point.alpha = 0.6, point.color = "black") {
   
   pm <- predictions
   d <- data
@@ -371,7 +388,8 @@ plot_effect_continuous <-
                         position = position_jitter(width = jitter[1],
                                                    height = jitter[2]),
                         inherit.aes = FALSE, show.legend = FALSE,
-                        size = point.size)
+                        size = point.size, alpha = point.alpha,
+                        colour = point.color)
     # Add size aesthetic to avoid giant points
     # p <- p + scale_size(range = c(0.3, 4))
     # p <- p + scale_size_identity()
@@ -421,10 +439,11 @@ plot_effect_continuous <-
 plot_cat <- function(predictions, pred, data = NULL, 
  geom = c("point", "line", "bar", "boxplot"), pred.values = NULL,
  interval = TRUE, plot.points = FALSE, pred.labels = NULL, x.label = NULL,
- y.label = NULL, main.title = NULL, color.class = "black", wts = NULL,
+ y.label = NULL, main.title = NULL, colors = "black", wts = NULL,
  resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL,
  errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
- line.thickness = 1.1, point.size = 1, pred.point.size = 3.5) {
+ line.thickness = 1.1, point.size = 1, pred.point.size = 3.5, 
+ point.alpha = 0.6, point.color = "black") {
   
   pm <- predictions
   d <- data
@@ -473,7 +492,7 @@ plot_cat <- function(predictions, pred, data = NULL,
   }
   
   # Checking if user provided the colors his/herself
-  colors <- suppressWarnings(get_colors(color.class, 1))
+  colors <- suppressWarnings(get_colors(colors, 1))
   
   if (is.null(geom.alpha)) {
     a_level <- 1
@@ -550,7 +569,7 @@ plot_cat <- function(predictions, pred, data = NULL,
                                                jitter.height = jitter[2]),
                         inherit.aes = FALSE,
                         show.legend = FALSE,
-                        alpha = 0.6)
+                        alpha = point.alpha, colour = point.color)
     
     # Add size aesthetic to avoid giant points
     p <- p + scale_size_identity()
