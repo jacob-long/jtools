@@ -62,65 +62,19 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
     data <- get_data(model)
   }
   
-  offname <- get_offset_name(model)
-  weight_info <- get_weights(model, data)
-  weights <- weight_info$weights
-  wname <- weight_info$weights_name
+  # This is where the magic happens
+  values <- get_control_values(model = model, data = data, at = at, 
+                               preds = pred, center = center, design = design,
+                               set.offset = set.offset)
   
-  controls <- as.list(data %not% c(pred, names(at), wname, offname))
-  if (length(controls) > 0) {
-    
-    if (center[1] == TRUE | (length(center) == 1 & center == "all" &
-                             "all" %nin% names(controls))) {
-      center <- names(controls)
-    } else if (center[1] == FALSE | (length(center) == 1 & center == "none" &
-                                     "none" %nin% names(controls))) {
-      center <- NULL
-    }
-    if (length(center) > 0) {
-      controls[center] <- mapply(center_value, d = controls[center],
-                                 name = center,
-                                 MoreArgs = list(design = design,
-                                                 weights = weights),
-                                 SIMPLIFY = FALSE)
-    }
-    
-    not_centered <- names(controls) %not% center
-    if (length(not_centered) > 0) {
-      controls[not_centered] <- lapply(controls[not_centered], zero_or_base)
-    }
-    
-  } else {controls <- list()}
   
-  # dots <- enexprs(...)
-  # lapply(dots, eval_tidy, data = data)
-  
-  values <- controls
   values[[pred]] <- if (is.null(pred.values)) {
     pred_values(data[[pred]], length = num.preds)
   } else {pred.values}
   
-  if (!is.null(at)) {
-    for (n in names(at)) {
-      values[[n]] <- at[[n]]
-    }
-  }
-  
   values[[get_response_name(model)]] <- NA
   
   new_data <- expand.grid(values, stringsAsFactors = FALSE)
-  
-  if (!is.null(offname)) {
-    if (is.null(set.offset)) {
-      offset.num <- median(model.offset(model.frame(model)))
-    } else {
-      offset.num <- set.offset
-    }
-    
-    new_data[[offname]] <- offset.num
-    msg <- paste("Outcome is based on a total of", offset.num, "exposures")
-    message(msg)
-  }
   
   return(tibble::as_tibble(new_data))
   
@@ -233,6 +187,62 @@ get_response_name <- function(model) {
   vars <- as.character(attr(tt, "variables"))[-1] ## [1] is the list call
   response <- attr(tt, "response") # index of response var
   vars[response] 
+}
+
+# formerly built into make_new_data, but I want to use it for other times
+# when I just want the values of non-focal predictors
+get_control_values <- function(model, data, preds, at, center, design = NULL,
+                               set.offset = NULL) {
+
+  offname <- get_offset_name(model)
+  weight_info <- get_weights(model, data)
+  weights <- weight_info$weights
+  wname <- weight_info$weights_name
+
+  controls <- as.list(data %not% c(preds, names(at), wname, offname))
+  if (length(controls) > 0) {
+    
+    if (center[1] == TRUE | (length(center) == 1 & center == "all" &
+                             "all" %nin% names(controls))) {
+      center <- names(controls)
+    } else if (center[1] == FALSE | (length(center) == 1 & center == "none" &
+                                     "none" %nin% names(controls))) {
+      center <- NULL
+    }
+    if (length(center) > 0) {
+      controls[center] <- mapply(center_value, d = controls[center],
+                                 name = center,
+                                 MoreArgs = list(design = design,
+                                                 weights = weights),
+                                 SIMPLIFY = FALSE)
+    }
+    
+    not_centered <- names(controls) %not% center
+    if (length(not_centered) > 0) {
+      controls[not_centered] <- lapply(controls[not_centered], zero_or_base)
+    }
+    
+  } else {controls <- list()}
+
+  if (!is.null(at)) {
+    for (n in names(at)) {
+      controls[[n]] <- at[[n]]
+    }
+  }
+
+  if (!is.null(offname)) {
+    if (is.null(set.offset)) {
+      offset.num <- median(data[[offname]])
+    } else {
+      offset.num <- set.offset
+    }
+    
+    controls[[offname]] <- offset.num
+    msg <- paste("Outcome is based on a total of", offset.num, "exposures")
+    message(msg)
+  }
+
+  return(controls)
 }
 
 ## Centering (w/o data change)
