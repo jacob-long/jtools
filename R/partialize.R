@@ -95,7 +95,8 @@ partialize.default <- function(model, vars = NULL, data = NULL, at = NULL,
                            set.offset = set.offset, ...)
   resp <- get_response_name(model)
   # Add the residuals to the predictions
-  predicted[[resp]] <- predicted[[resp]] + residuals(model, type = "working")
+  resids <- residuals(model, type = "working")
+  predicted[[resp]] <- predicted[[resp]] + resids[!is.na(resids)]
 
   # If we want it on the response scale, we need to transform back to it
   if (scale[1] == "response") {
@@ -116,8 +117,8 @@ partialize.brmsfit <- function(model, vars = NULL, data = NULL, at = NULL,
                            set.offset = set.offset, ...)
   resp <- get_response_name(model)
   # Add the residuals to the predictions
-  predicted[[resp]] <- predicted[[resp]] + 
-                         residuals(model, type = "ordinary")[,"Estimate"]
+  resids <- residuals(model, type = "ordinary")[,"Estimate"]
+  predicted[[resp]] <- predicted[[resp]] + resids[!is.na(resids)]
 
   # If we want it on the link scale, we need to transform back to it
   # brms doesn't do predictions on the link scale, so this is the opposite
@@ -140,7 +141,8 @@ partialize.stanreg <- function(model, vars = NULL, data = NULL, at = NULL,
                            set.offset = set.offset, ...)
   resp <- get_response_name(model)
   # Add the residuals to the predictions
-  predicted[[resp]] <- predicted[[resp]] + residuals(model)
+  resids <- residuals(model)
+  predicted[[resp]] <- predicted[[resp]] + resids[!is.na(resids)]
 
   # If we want it on the link scale, we need to transform back to it
   # brms doesn't do predictions on the link scale, so this is the opposite
@@ -163,7 +165,8 @@ partialize.rq <- function(model, vars = NULL, data = NULL, at = NULL,
                            set.offset = set.offset, ...)
   resp <- get_response_name(model)
   # Add the residuals to the predictions
-  predicted[[resp]] <- predicted[[resp]] + residuals(model, type = "working")
+  resids <- residuals(model, type = "working")
+  predicted[[resp]] <- predicted[[resp]] + resids[!is.na(resids)]
   
   return(tibble::as_tibble(predicted))
   
