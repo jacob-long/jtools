@@ -360,18 +360,8 @@ plot_effect_continuous <-
   
   # Starting plot object
   p <- ggplot(pm, aes_string(x = pred_g, y = resp_g))
-  
-  # Define line thickness
-  p <- p + geom_path(size = line.thickness)
-  
-  # Plot intervals if requested
-  if (interval == TRUE) {
-    p <- p + geom_ribbon(data = pm, aes_string(ymin = "ymin",
-                                               ymax = "ymax"),
-                         alpha = 1/5, show.legend = FALSE)
-  }
-  
-  # Plot observed data
+
+  # Plot observed data — do this first to plot the line over the points
   if (plot.points == TRUE) {
     # Transform weights so they have mean = 1
     const <- length(wts)/sum(wts) # scaling constant
@@ -394,6 +384,16 @@ plot_effect_continuous <-
     # p <- p + scale_size(range = c(0.3, 4))
     # p <- p + scale_size_identity()
     
+  }
+  
+  # Define line thickness
+  p <- p + geom_path(size = line.thickness)
+  
+  # Plot intervals if requested
+  if (interval == TRUE) {
+    p <- p + geom_ribbon(data = pm, aes_string(ymin = "ymin",
+                                               ymax = "ymax"),
+                         alpha = 1/5, show.legend = FALSE)
   }
   
   # Rug plot for marginal distributions
