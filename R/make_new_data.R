@@ -67,6 +67,13 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
                                preds = pred, center = center, design = design,
                                set.offset = set.offset)
   
+  # Check for missing variables
+  all_vars <- c(pred, names(values)) %not% c("(weights)", "(offset)")
+  if (any(all_vars %nin% names(data))) {
+    stop_wrap("The variable(s) ", paste(all_vars %not% names(data),
+                                        collapse = " and "), 
+              " were not found in the data.")
+  }
   
   values[[pred]] <- if (is.null(pred.values)) {
     pred_values(data[[pred]], length = num.preds)
