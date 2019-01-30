@@ -11,7 +11,8 @@ make_predictions(model, ...)
   at = NULL, data = NULL, center = TRUE, interval = TRUE,
   int.type = c("confidence", "prediction"), int.width = 0.95,
   outcome.scale = "response", robust = FALSE, cluster = NULL,
-  vcov = NULL, set.offset = NULL, return.orig.data = FALSE, ...)
+  vcov = NULL, set.offset = NULL, new_data = NULL,
+  return.orig.data = FALSE, partial.residuals = FALSE, ...)
 }
 \arguments{
 \item{model}{The model (e.g., \code{lm}, \code{glm}, \code{merMod}, \code{svyglm})}
@@ -83,10 +84,18 @@ offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.}
 
+\item{new_data}{If you would prefer to generate your own hypothetical
+(or not hypothetical) data rather than have the function make a call to
+\code{\link[=make_new_data]{make_new_data()}}, you can provide it.}
+
 \item{return.orig.data}{Instead of returning a just the predicted data frame,
 should the original data be returned as well? If so, then a list will be
 return with both the predicted data (as the first element) and the original
 data (as the second element). Default is FALSE.}
+
+\item{partial.residuals}{If \code{return.orig.data} is TRUE, should the observed
+dependent variable be replaced with the partial residual? This makes a
+call to \code{\link[=partialize]{partialize()}}, where you can find more details.}
 }
 \description{
 This is an alternate interface to the underlying tools that

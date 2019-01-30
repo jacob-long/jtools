@@ -7,17 +7,17 @@
 \usage{
 plot_summs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
   omit.coefs = "(Intercept)", inner_ci_level = NULL,
-  color.class = "CUD Bright", plot.distributions = FALSE,
+  colors = "CUD Bright", plot.distributions = FALSE,
   rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
   legend.title = "Model", groups = NULL, facet.rows = NULL,
-  facet.cols = NULL, facet.label.pos = "top")
+  facet.cols = NULL, facet.label.pos = "top", color.class = colors)
 
 plot_coefs(..., ci_level = 0.95, inner_ci_level = NULL,
   model.names = NULL, coefs = NULL, omit.coefs = c("(Intercept)",
-  "Intercept"), color.class = "CUD Bright", plot.distributions = FALSE,
+  "Intercept"), colors = "CUD Bright", plot.distributions = FALSE,
   rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
   legend.title = "Model", groups = NULL, facet.rows = NULL,
-  facet.cols = NULL, facet.label.pos = "top")
+  facet.cols = NULL, facet.label.pos = "top", color.class = colors)
 }
 \arguments{
 \item{...}{regression model(s).}
@@ -41,7 +41,7 @@ To include the intercept term, just set omit.coefs to NULL.}
 \item{inner_ci_level}{Plot a thicker line representing some narrower span
 than \code{ci_level}. Default is NULL, but good options are .9, .8, or .5.}
 
-\item{color.class}{See \link{jtools_colors} for more on your color options.
+\item{colors}{See \link{jtools_colors} for more on your color options.
 Default: 'CUD Bright'}
 
 \item{plot.distributions}{Instead of just plotting the ranges, you may
@@ -81,6 +81,8 @@ argument to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}).}
 
 \item{facet.label.pos}{Where to put the facet labels. One of "top" (the
 default), "bottom", "left", or "right".}
+
+\item{color.class}{Deprecated. Now known as \code{colors}.}
 }
 \value{
 A ggplot object.

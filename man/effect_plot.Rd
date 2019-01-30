@@ -9,11 +9,13 @@ effect_plot(model, pred, pred.values = NULL, centered = "all",
   int.type = c("confidence", "prediction"), int.width = 0.95,
   outcome.scale = "response", robust = FALSE, cluster = NULL,
   vcov = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
-  pred.labels = NULL, main.title = NULL, color.class = "black",
-  line.thickness = 1.1, point.size = 1, jitter = 0, rug = FALSE,
-  rug.sides = "b", force.cat = FALSE, cat.geom = c("point", "line",
-  "bar", "boxplot"), cat.interval.geom = c("errorbar", "linerange"),
-  cat.pred.point.size = 3.5, ...)
+  pred.labels = NULL, main.title = NULL, colors = "black",
+  line.thickness = 1.1, point.size = 1, point.alpha = 0.6,
+  point.color = "black", jitter = 0, rug = FALSE, rug.sides = "b",
+  force.cat = FALSE, cat.geom = c("point", "line", "bar", "boxplot"),
+  cat.interval.geom = c("errorbar", "linerange"),
+  cat.pred.point.size = 3.5, partial.residuals = FALSE,
+  color.class = colors, ...)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -24,7 +26,9 @@ Models from other classes may work as well but are not officially
 supported. The model should include the interaction of interest.}
 
 \item{pred}{The name of the predictor variable involved
-in the interaction. This can be a bare name or string.}
+in the interaction. This can be a bare name or string. Note that it
+is evaluated using \code{rlang}, so programmers can use the \code{!!} syntax
+to pass variables instead of the verbatim names.}
 
 \item{pred.values}{Values of \code{pred} to use instead of the equi-spaced
 series by default (for continuous variables) or all unique values (for
@@ -105,7 +109,7 @@ If \code{NULL}, the default, the factor labels are used.}
 \item{main.title}{A character object that will be used as an overall title
 for the plot. If \code{NULL}, no main title is used.}
 
-\item{color.class}{See \link{jtools_colors} for details on the types of arguments
+\item{colors}{See \link{jtools_colors} for details on the types of arguments
 accepted. Default is "black".}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
@@ -113,6 +117,13 @@ ggplot's default is 1.}
 
 \item{point.size}{What size should be used for observed data when
 \code{plot.points} is TRUE? Default is 1.}
+
+\item{point.alpha}{What should the \code{alpha} aesthetic for plotted points of
+observed data be? Default is 0.6, and it can range from 0 (transparent) to
+1 (opaque).}
+
+\item{point.color}{What should the \code{colour} aesthetic for plotted points of
+observed data be? Default is "black".}
 
 \item{jitter}{How much should \code{plot.points} observed values be "jittered"
 via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each
@@ -173,6 +184,12 @@ If TRUE and \code{geom} is \code{"point"} or \code{"line"},
 sets the size of the predicted points. Default is 3.5.
 Note the distinction from \code{point.size}, which refers to the
 observed data points.}
+
+\item{partial.residuals}{Instead of plotting the observed data, you may plot
+the partial residuals (controlling for the effects of variables besides
+\code{pred}).}
+
+\item{color.class}{Deprecated. Now known as \code{colors}.}
 
 \item{...}{extra arguments passed to \code{make_predictions}}
 }

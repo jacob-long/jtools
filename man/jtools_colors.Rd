@@ -4,11 +4,11 @@
 \alias{jtools_colors}
 \title{Color palettes in \code{jtools} functions}
 \description{
-\code{jtools} combines several options into the \code{color.class}
+\code{jtools} combines several options into the \code{colors}
 argument in plotting functions.
 }
 \details{
-The argument to \code{color.class} in functions like \code{effect_plot},
+The argument to \code{colors} in functions like \code{effect_plot},
 \code{plot_coefs}, and others is very flexible but may also
 cause confusion.
 

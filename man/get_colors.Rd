@@ -4,20 +4,19 @@
 \alias{get_colors}
 \title{Get colors for plotting functions}
 \usage{
-get_colors(color.class, num_colors = 1, reverse = FALSE,
-  gradient = FALSE)
+get_colors(colors, num.colors = 1, reverse = FALSE, gradient = FALSE)
 }
 \arguments{
-\item{color.class}{The name of the desired color class or a vector of colors.
+\item{colors}{The name of the desired color class or a vector of colors.
 See details of \link{jtools_colors}.}
 
-\item{num_colors}{How many colors should be returned? Default is 1.}
+\item{num.colors}{How many colors should be returned? Default is 1.}
 
 \item{reverse}{Should the colors be returned in reverse order, compared to
 normal? Default is FALSE.}
 
 \item{gradient}{Return endpoints for a gradient? Default is FALSE. If TRUE,
-\code{num_colors} is ignored.}
+\code{num.colors} is ignored.}
 }
 \description{
 This is a helper function that provides hex color codes for
