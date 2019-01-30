@@ -373,8 +373,9 @@ export_summs <- function(...,
 #'   in the plot, provide them as a vector. This argument is overridden by
 #'   `coefs` if both are provided. By default, the intercept term is omitted.
 #'   To include the intercept term, just set omit.coefs to NULL.
-#' @param color.class See [jtools_colors] for more on your color options.
+#' @param colors See [jtools_colors] for more on your color options.
 #'   Default: 'CUD Bright'
+#' @param color.class Deprecated. Now known as `colors`.
 #' @param plot.distributions Instead of just plotting the ranges, you may
 #'   plot normal distributions representing the width of each estimate. Note
 #'   that these are completely theoretical and not based on a bootstrapping
@@ -454,11 +455,11 @@ export_summs <- function(...,
 
 plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
-                       color.class = "CUD Bright", plot.distributions = FALSE,
+                       colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
                        point.shape = TRUE, legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
-                       facet.label.pos = "top") {
+                       facet.label.pos = "top", color.class = colors) {
 
   # Capture arguments
   dots <- list(...)
@@ -481,12 +482,13 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
   args <- as.list(c(the_summs, ci_level = ci_level,
             model.names = list(model.names), coefs = list(coefs),
             omit.coefs = list(omit.coefs),
-            inner_ci_level = inner_ci_level, color.class = list(color.class),
+            inner_ci_level = inner_ci_level, colors = list(colors),
             plot.distributions = plot.distributions,
             rescale.distributions = rescale.distributions, exp = exp,
             point.shape = point.shape, legend.title = legend.title,
             groups = groups, facet.rows = facet.rows, facet.cols = facet.cols,
-            facet.label.pos = facet.label.pos, ex_args))
+            facet.label.pos = facet.label.pos, color.class = color.class,
+            ex_args))
 
   do.call("plot_coefs", args = args)
 
@@ -500,12 +502,12 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
 plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        model.names = NULL, coefs = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
-                       color.class = "CUD Bright", plot.distributions = FALSE,
+                       colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
                        exp = FALSE, point.shape = TRUE,
                        legend.title = "Model", groups = NULL,
                        facet.rows = NULL, facet.cols = NULL,
-                       facet.label.pos = "top") {
+                       facet.label.pos = "top", color.class = colors) {
 
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
@@ -513,6 +515,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   if (!requireNamespace("ggstance", quietly = TRUE)) {
     stop_wrap("Install the ggstance package to use the plot_coefs function.")
   }
+  
+  if (!all(color.class == colors)) colors <- color.class
 
   # Nasty workaround for R CMD Check warnings for global variable bindings
   model <- term <- estimate <- conf.low <- conf.high <- conf.low.inner <-
@@ -609,10 +613,10 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   }
 
   # Checking if user provided the colors his/herself
-  if (length(color.class) == 1 | length(color.class) != n_models) {
-    colors <- get_colors(color.class, n_models)
+  if (length(colors) == 1 | length(colors) != n_models) {
+    colors <- get_colors(colors, n_models)
   } else {
-    colors <- color.class
+    colors <- colors
   }
 
   # "dodge height" determined by presence of distribution plots
@@ -629,7 +633,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                               group = interaction(term, model), fill = model),
                           alpha = 0.7, show.legend = FALSE) +
     scale_fill_manual(name = legend.title,
-                      values = get_colors(color.class, n_models),
+                      values = get_colors(colors, n_models),
                       breaks = rev(levels(tidies$model)),
                       limits = rev(levels(tidies$model)))
   }
