@@ -176,8 +176,7 @@ get_data <- function(model, warn = TRUE) {
     dat_name <- as.character(deparse(getCall(model)$data))
     
     if (warn == TRUE) {
-      warn_wrap("Variable transformations in the model formula
-        detected. Trying to use ", dat_name, " from global environment. This
+      msg_wrap("Using data ", dat_name, " from global environment. This
         could cause incorrect results if ", dat_name, " has been altered since 
         the model was fit. You can manually provide the data to the \"data =\" 
         argument.")
