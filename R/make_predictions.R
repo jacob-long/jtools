@@ -7,6 +7,36 @@ make_predictions <- function(model, ...) {
   
 }
 
+# Helper for the final output 
+prepare_return_data <- function(model, data, return.orig.data, 
+                                partial.residuals, pm, pred, at, 
+                                center, set.offset) {
+  if (return.orig.data == FALSE & partial.residuals == FALSE) {
+    o <- tibble::as_tibble(pm)
+  } else {
+    if (return.orig.data == TRUE & partial.residuals == FALSE) {
+      o <- list(predictions = tibble::as_tibble(pm), data = 
+                suppressMessages(d <- tibble::as_tibble(get_data(model))))
+      attr(o, "weights") <- get_weights(model, d)$weights
+      # If left-hand side is transformed, make new column in original data for
+      # the transformed version and evaluate it
+      if (is_lhs_transformed(as.formula(formula(model)))) {
+        o[[2]][get_response_name(model)] <- 
+          eval(get_lhs(as.formula(formula(model))), o[[2]])
+      }
+    } else {
+      o <- list(predictions = tibble::as_tibble(pm), data = 
+                  suppressMessages(
+                    partialize(model, vars = pred, at = at, data = data,
+                               center = center, set.offset = set.offset)
+                  )
+                )
+      attr(o, "weights") <- get_weights(model, get_data(model))$weights
+    }
+  }
+  return(o)
+}
+
 #### Default method ########################################################
 
 #' @title Generate predicted data for plotting results of regression models
@@ -72,11 +102,19 @@ make_predictions <- function(model, ...) {
 #'  return with both the predicted data (as the first element) and the original
 #'  data (as the second element). Default is FALSE. 
 #'
+#' @param partial.residuals If `return.orig.data` is TRUE, should the observed
+#'   dependent variable be replaced with the partial residual? This makes a 
+#'   call to [partialize()], where you can find more details.
+#'   
+#' @param new_data If you would prefer to generate your own hypothetical
+#'   (or not hypothetical) data rather than have the function make a call to
+#'   [make_new_data()], you can provide it.
+#'   
 #' @param ... Ignored.
 #'
 #' @family plotting tools
 #' @importFrom stats coef coefficients lm predict sd qnorm getCall model.offset
-#' @importFrom stats median ecdf quantile get_all_vars complete.cases
+#' @importFrom stats median ecdf quantile get_all_vars complete.cases qt
 #' @rdname make_predictions
 #' @export
 #' 
@@ -86,7 +124,8 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, interval = TRUE,
   int.type = c("confidence", "prediction"), int.width = .95,
   outcome.scale = "response", robust = FALSE, cluster = NULL, vcov = NULL,
-  set.offset = NULL, return.orig.data = FALSE, ...) {
+  set.offset = NULL, new_data = NULL, return.orig.data = FALSE,
+  partial.residuals = FALSE, ...) {
   
   # Get the data ready with make_new_data()
   pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
@@ -150,20 +189,12 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
     }
   }
   
-  if (return.orig.data == FALSE) {
-    o <- tibble::as_tibble(pm)
-  } else {
-    o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
-    attr(o, "weights") <- get_weights(model, d)$weights
-    # If left-hand side is transformed, make new column in original data for
-    # the transformed version and evaluate it
-    if (is_lhs_transformed(formula(model))) {
-      o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(formula(model)), o[[2]])
-    }
-  }
-  
+  # Use helper function to prepare the final return object
+  o <- prepare_return_data(model = model, data = data,
+                           return.orig.data = return.orig.data, 
+                           partial.residuals = partial.residuals,
+                           pm = pm, pred = pred, at = at, center = center,
+                           set.offset = set.offset)
   return(o)
   
 }
@@ -174,8 +205,8 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
 make_predictions.svyglm <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, interval = TRUE, 
   int.type = c("confidence", "prediction"), int.width = .95, 
-  outcome.scale = "response", set.offset = NULL, return.orig.data = FALSE,
-  ...) {
+  outcome.scale = "response", set.offset = NULL, new_data = NULL,
+  return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
   # Get the data ready with make_new_data()
   pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
@@ -225,20 +256,12 @@ make_predictions.svyglm <- function(model, pred, pred.values = NULL, at = NULL,
     }
   }
   
-  if (return.orig.data == FALSE) {
-    o <- tibble::as_tibble(pm)
-  } else {
-    o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
-    attr(o, "weights") <- get_weights(model, d)$weights
-    # If left-hand side is transformed, make new column in original data for
-    # the transformed version and evaluate it
-    if (is_lhs_transformed(formula(model))) {
-      o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(formula(model)), o[[2]])
-    }
-  }
-  
+  # Use helper function to prepare the final return object
+  o <- prepare_return_data(model = model, data = data,
+                           return.orig.data = return.orig.data, 
+                           partial.residuals = partial.residuals,
+                           pm = pm, pred = pred, at = at, center = center,
+                           set.offset = set.offset)
   return(o)
   
 }
@@ -249,8 +272,9 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, interval = TRUE, 
   int.type = c("confidence", "prediction"), int.width = .95,
   outcome.scale = "response", re.form = ~0, add.re.variance = FALSE,
-  boot = FALSE, sims = 1000, progress = "txt", set.offset = NULL,
-  return.orig.data = FALSE, message = TRUE, ...) {
+  boot = FALSE, sims = 1000, progress = "txt", set.offset = NULL, 
+  new_data = NULL, return.orig.data = FALSE, partial.residuals = FALSE,
+  message = TRUE, ...) {
   
   # Get the data ready with make_new_data()
   pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
@@ -335,20 +359,12 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
     }
   }
   
-  if (return.orig.data == FALSE) {
-    o <- tibble::as_tibble(pm)
-  } else {
-    o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
-    attr(o, "weights") <- get_weights(model, d)$weights
-    # If left-hand side is transformed, make new column in original data for
-    # the transformed version and evaluate it
-    if (is_lhs_transformed(formula(model))) {
-      o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(formula(model)), o[[2]])
-    }
-  }
-  
+  # Use helper function to prepare the final return object
+  o <- prepare_return_data(model = model, data = data,
+                           return.orig.data = return.orig.data, 
+                           partial.residuals = partial.residuals,
+                           pm = pm, pred = pred, at = at, center = center,
+                           set.offset = set.offset)
   return(o)
   
 }
@@ -359,12 +375,11 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
 
 make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, estimate = c("mean", "median"), interval = TRUE,
-  int.width = .95, re.form = ~0,  set.offset = NULL, return.orig.data = FALSE,
-  ...) {
-  
   # Get the data ready with make_new_data()
   pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
                       data = data, center = center, set.offset = set.offset)
+  int.width = .95, re.form = ~0,  set.offset = NULL, new_data = NULL,
+  return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
   
   predicted <- 
@@ -389,20 +404,12 @@ make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
     
   }
   
-  if (return.orig.data == FALSE) {
-    o <- tibble::as_tibble(pm)
-  } else {
-    o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
-    attr(o, "weights") <- get_weights(model, d)$weights
-    # If left-hand side is transformed, make new column in original data for
-    # the transformed version and evaluate it
-    if (is_lhs_transformed(formula(model))) {
-      o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(formula(model)), o[[2]])
-    }
-  }
-  
+  # Use helper function to prepare the final return object
+  o <- prepare_return_data(model = model, data = data,
+                           return.orig.data = return.orig.data, 
+                           partial.residuals = partial.residuals,
+                           pm = pm, pred = pred, at = at, center = center,
+                           set.offset = set.offset)
   return(o)
   
 }
@@ -411,12 +418,11 @@ make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
 #' @export
 make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, estimate = c("mean", "median"), interval = TRUE,
-  int.width = .95, re.form = ~0,  set.offset = NULL, return.orig.data = FALSE,
-  ...) {
-  
   # Get the data ready with make_new_data()
   pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
                       data = data, center = center, set.offset = set.offset)
+  int.width = .95, re.form = ~0,  set.offset = NULL, new_data = NULL,
+  return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
   
   intw <- c(((1 - int.width)/2), 1 - ((1 - int.width)/2))
@@ -442,20 +448,12 @@ make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
     pm[["ymin"]] <- predicted[[3]]
   }
   
-  if (return.orig.data == FALSE) {
-    o <- tibble::as_tibble(pm)
-  } else {
-    o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
-    attr(o, "weights") <- get_weights(model, d)$weights
-    # If left-hand side is transformed, make new column in original data for
-    # the transformed version and evaluate it
-    if (is_lhs_transformed(as.formula(formula(model)))) {
-      o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(as.formula(formula(model))), o[[2]])
-    }
-  }
-  
+  # Use helper function to prepare the final return object
+  o <- prepare_return_data(model = model, data = data,
+                           return.orig.data = return.orig.data, 
+                           partial.residuals = partial.residuals,
+                           pm = pm, pred = pred, at = at, center = center,
+                           set.offset = set.offset)
   return(o)
   
 }
@@ -466,8 +464,8 @@ make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
 
 make_predictions.rq <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, interval = TRUE, int.width = .95,
-  se = c("nid", "iid", "ker"), set.offset = NULL,
-  return.orig.data = FALSE, ...) {
+  se = c("nid", "iid", "ker"), set.offset = NULL, new_data = NULL,
+  return.orig.data = FALSE, partial.residuals = FALSE, ...) {
   
   se <- match.arg(se, c("nid", "iid", "ker"), several.ok = FALSE)
   
@@ -487,20 +485,12 @@ make_predictions.rq <- function(model, pred, pred.values = NULL, at = NULL,
     pm[["ymin"]] <- predicted[["lower"]]
   }
   
-  if (return.orig.data == FALSE) {
-    o <- tibble::as_tibble(pm)
-  } else {
-    o <- list(tibble::as_tibble(pm), 
-              suppressWarnings(d <- tibble::as_tibble(get_data(model))))
-    attr(o, "weights") <- get_weights(model, d)$weights
-    # If left-hand side is transformed, make new column in original data for
-    # the transformed version and evaluate it
-    if (is_lhs_transformed(formula(model))) {
-      o[[2]][get_response_name(model)] <- 
-        eval(get_lhs(formula(model)), o[[2]])
-    }
-  }
-  
+  # Use helper function to prepare the final return object
+  o <- prepare_return_data(model = model, data = data,
+                           return.orig.data = return.orig.data, 
+                           partial.residuals = partial.residuals,
+                           pm = pm, pred = pred, at = at, center = center,
+                           set.offset = set.offset)
   return(o)
   
 }
