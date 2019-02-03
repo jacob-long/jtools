@@ -31,7 +31,8 @@ prepare_return_data <- function(model, data, return.orig.data,
                                center = center, set.offset = set.offset)
                   )
                 )
-      attr(o, "weights") <- get_weights(model, get_data(model))$weights
+      attr(o, "weights") <- 
+        get_weights(model, get_data(model, warn = FALSE))$weights
     }
   }
   return(o)

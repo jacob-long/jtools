@@ -33,7 +33,8 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
   resp <- get_response_name(model)
   predicted <- make_predictions(
     model = model, pred = NULL, new_data = data, interval = FALSE,
-    outcome.scale = scale, return.orig.data = FALSE, ...
+    outcome.scale = scale, return.orig.data = FALSE, set.offset = set.offset,
+    data = data, ...
   )
   # Add a column to data with the predictions (replace original if it's there)
   data[[resp]] <- predicted[[resp]]

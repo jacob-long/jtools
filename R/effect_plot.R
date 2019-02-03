@@ -284,7 +284,8 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                                outcome.scale = outcome.scale, robust = robust,
                                cluster = cluster, vcov = vcov,
                                set.offset = set.offset, return.orig.data = TRUE,
-                               partial.residuals = partial.residuals, ...)
+                               partial.residuals = partial.residuals, 
+                               data = data, ...)
   
   # Putting these outputs into separate objects
   pm <- pred_out[[1]]
@@ -359,7 +360,7 @@ plot_effect_continuous <-
   
   # If only 1 jitter arg, just duplicate it
   if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
-  
+
   # Starting plot object
   p <- ggplot(pm, aes_string(x = pred_g, y = resp_g))
 
