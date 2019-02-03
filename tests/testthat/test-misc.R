@@ -1,8 +1,8 @@
-context("interactions lm")
+context("effect_plot")
 
 device <- getOption("device")
 options(device = "pdf")
-
+library(ggplot2)
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
 states$o70 <- 0
@@ -21,51 +21,174 @@ fitw <- lm(Income ~ HSGrad*Murder*Illiteracy + o70 + Area, data = states,
 fitl <- lm(Income ~ HSGrad*o70l, data = states)
 fitc <- lm(Income ~ HSGrad*Murder + o70c, data = states)
 
+test_that("effect_plot works for lm", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "all") + ggtitle("All centered"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad") +
+                  ggtitle("HSGrad centered"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot: robust intervals works", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 robust = TRUE) + ggtitle("Robust intervals"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot: rug plots work", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 rug = TRUE) + ggtitle("Rug default"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 rug = TRUE,
+                                 rug.sides = "lb") + ggtitle("Rug sides 'lb'"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot: plot.points works", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 plot.points = TRUE) +
+                  ggtitle("Plot points HSGrad centered"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "all",
+                                 plot.points = TRUE) +
+                  ggtitle("Plot points all centered"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot: partial residuals work", {
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 partial.residuals = TRUE) +
+                  ggtitle("Partial residuals HSGrad centered"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fit,
+                                 pred = Murder,
+                                 centered = "all",
+                                 partial.residuals = TRUE) +
+                  ggtitle("Partial residuals all centered"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot works for weighted lm", {
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "all") + ggtitle("Weighted lm"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "HSGrad") + 
+                  ggtitle("Weighted lm HSGrad centered"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 robust = TRUE,
+                                 interval = TRUE) + 
+                  ggtitle("Weighted lm HSGrad centered and robust intervals"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 robust = TRUE,
+                                 interval = TRUE,
+                                 plot.points = TRUE) + 
+                  ggtitle("Weighted lm HSGrad centered, robust, plot points"))
+  expect_silent(print(p))
+  expect_silent(p <- effect_plot(model = fitw,
+                                 pred = Murder,
+                                 centered = "HSGrad",
+                                 robust = TRUE,
+                                 interval = TRUE,
+                                 partial.residuals = TRUE) + 
+                  ggtitle("Weighted lm HSGrad centered, robust, partial residuals"))
+  expect_silent(print(p))
+})
+
 if (requireNamespace("survey")) {
-  suppressMessages(library(survey, quietly = TRUE))
+  context("effect_plot survey")
+  library(survey, quietly = TRUE)
   data(api)
-  dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw, data = apistrat,
-                      fpc = ~fpc)
+  dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                      data = apistrat, fpc = ~fpc)
   regmodel <- svyglm(api00 ~ ell * meals * both + sch.wide, design = dstrat)
-}
-
-context("effect_plot svyglm")
-
-if (requireNamespace("survey")) {
-
+  svyqb <- svyglm(sch.wide~ell+meals+mobility, design=dstrat,
+                  family=quasibinomial)
+  
   test_that("effect_plot works for svyglm", {
-    expect_silent(p <- effect_plot(regmodel, pred = meals,
-                                centered = "all"))
+    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "all") + 
+                    ggtitle("svyglm"))
     expect_silent(print(p))
-    expect_silent(p <- effect_plot(regmodel, pred = meals,
-                                centered = "ell"))
+    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "ell") +
+                    ggtitle("svyglm ell centered"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "all",
+                                   plot.points = TRUE) + 
+                    ggtitle("svyglm plot points"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "all",
+                                   partial.residuals = TRUE) + 
+                    ggtitle("svyglm partial residuals"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(svyqb, pred = mobility, centered = "all") + 
+                    ggtitle("svyglm binomial"))
     expect_silent(print(p))
   })
 }
-
-context("effect_plot merMod")
 
 if (requireNamespace("lme4")) {
+  context("effect_plot lme4")
   library(lme4, quietly = TRUE)
   data(VerbAgg)
-  VerbAgg$mode_numeric <- as.numeric(VerbAgg$mode)
-  mve <- lmer(Anger ~ Gender * mode + btype +  (1 | item), data = VerbAgg)
-  mv <- lmer(Anger ~ Gender * mode_numeric + btype +  (1 | item),
-             data = VerbAgg)
-  gm <- glmer(incidence ~ period + (1 | herd), family = poisson, data = cbpp,
-              offset = log(size))
-
+  fmVA0 <- glmer(r2 ~ Anger + Gender + btype + situ + (1|id) + (1|item), 
+                 family = binomial, data = VerbAgg, nAGQ=0L)
+  lmVA0 <- lmer(as.numeric(r2 == "Y") ~ Anger + Gender + btype + situ + (1|id) + (1|item), 
+                data = VerbAgg)
+  gm <- glmer(incidence ~ as.numeric(period) + (1 | herd), family = poisson,
+              data = cbpp, offset = log(size))
   test_that("effect_plot works for lme4", {
-    # expect_error(effect_plot(mve, pred = mode))
-    expect_silent(p <- effect_plot(mv, pred = mode_numeric))
+    expect_silent(p <- effect_plot(lmVA0, pred = Anger, data = VerbAgg) +
+                    ggtitle("lmer test"))
     expect_silent(print(p))
-    expect_message(p <- effect_plot(mv, pred = mode_numeric, interval = TRUE))
+    expect_silent(p <- effect_plot(lmVA0, pred = Anger, plot.points = T,
+                                   data = VerbAgg) +
+                    ggtitle("lmer test + plot points"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(lmVA0, pred = Anger, partial.residuals = T,
+                                   data = VerbAgg) +
+                    ggtitle("lmer test + partial residuals"))
+    expect_silent(print(p))
+    expect_silent(p <- effect_plot(fmVA0, pred = Anger, data = VerbAgg) +
+                    ggtitle("glmer test"))
+    expect_silent(print(p))
+    expect_message(p <- effect_plot(gm, pred = period, data = cbpp) +
+                    ggtitle("glmer + offset test"))
     expect_silent(print(p))
   })
-
+  context("lme4 predictions")
+  test_that("predict_mer works with random effects", {
+    expect_equal(head(jtools:::predict_mer(lmVA0, newdata = VerbAgg, 
+                                           type = "response")), 
+                 head(predict(lmVA0, newdata = VerbAgg, type = "response")))
+  })
 }
 
-context("interactions offsets")
+context("effect_plot offsets")
 
 set.seed(100)
 exposures <- rpois(50, 50)
@@ -77,6 +200,63 @@ poisdat <- as.data.frame(cbind(exposures, counts, talent, talent_f, money))
 poisdat$talent_f <- factor(poisdat$talent_f)
 pmod <- glm(counts ~ talent*money + talent_f, offset = log(exposures),
             data = poisdat, family = poisson)
+
+
+test_that("effect_plot handles offsets", {
+  expect_message(p <- effect_plot(pmod, pred = money) + ggtitle("offset"))
+  expect_silent(print(p))
+})
+
+test_that("effect_plot handles plot points with offsets", {
+  expect_message(p <- effect_plot(pmod, pred = money, plot.points = TRUE) +
+                   ggtitle("offset plus plot points"))
+  expect_silent(print(p))
+})
+
+
+test_that("effect_plot handles partial residuals with offsets", {
+  expect_message(p <- effect_plot(pmod, pred = money, partial.residuals = TRUE) +
+                   ggtitle("offset plus partials"))
+  expect_silent(print(p))
+})
+
+
+context("effect_plot categorical predictors")
+
+test_that("effect_plot handles offsets w/ categorical predictors", {
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f) + 
+                    ggtitle("categorical (plus offset)"), "gg")
+  expect_silent(print(p))
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, plot.points = TRUE) +
+                    ggtitle("categorical, offset, plot points"), "gg")
+  expect_silent(print(p))
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f,
+                                   partial.residuals = TRUE) +
+                    ggtitle("categorical, offset, partial residuals"), "gg")
+  expect_silent(print(p))
+})
+
+test_that("effect_plot does line plots", {
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "line") +
+                    ggtitle("categorical line plot"),
+                  "gg")
+  expect_silent(print(p))
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "line",
+                                   interval = FALSE) +
+                    ggtitle("categorical line plot no intervals"), "gg")
+  expect_silent(print(p))
+})
+
+test_that("effect_plot does bar plots", {
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "bar") +
+                    ggtitle("categorical bar plot"),
+                  "gg")
+  expect_silent(print(p))
+  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "bar",
+                                   interval = FALSE) +
+                    ggtitle("categorical bar plot no intervals"), "gg")
+  expect_silent(print(p))
+})
 
 ### Code used to create brmsfit and stanreg test objects
 # library(brms)
@@ -102,7 +282,7 @@ if (requireNamespace("brms")) {
   bfit <- readRDS("brmfit.rds")
   test_that("brmsfit objects are supported", {
     expect_silent(print(effect_plot(bfit, pred = "log_Base4_c",
-                  interval = TRUE)))
+                  interval = TRUE) + ggtitle("brms")))
     # expect_silent(print(cat_plot(bfit, pred = "Trt",
     #               interval = TRUE)))
     # expect_silent(print(interact_plot(bfit, pred = "log_Base4_c", modx = "Trt",
@@ -119,121 +299,14 @@ if (requireNamespace("rstanarm") & requireNamespace("lme4")) {
   library(lme4)
   data(cbpp)
   test_that("stanreg objects are supported", {
-    expect_message(print(effect_plot(rsfit, pred = "size", interval = TRUE)))
+    expect_message(print(effect_plot(rsfit, pred = "size", interval = TRUE) + 
+                           ggtitle("stanreg")))
     # expect_silent(print(interact_plot(rsfit, pred = "size",
     #   modx = "period", interval = TRUE, data = cbpp)))
     # expect_is(make_predictions(rsfit, pred = "size", interval = TRUE,
     #   estimate = "median", data = cbpp), "predictions")
   })
 }
-
-### effect_plot ###############################################################
-
-context("effect_plot")
-
-test_that("effect_plot works for lm", {
-  expect_silent(p <- effect_plot(model = fit,
-                                 pred = Murder,
-                                 centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(model = fit,
-                                 pred = Murder,
-                                 centered = "HSGrad"))
-  expect_silent(print(p))
-})
-
-test_that("effect_plot: robust intervals works", {
-  expect_silent(p <- effect_plot(model = fit,
-                                 pred = Murder,
-                                 centered = "HSGrad",
-                                 robust = TRUE))
-  expect_silent(print(p))
-})
-
-test_that("effect_plot: rug plots work", {
-  expect_silent(p <- effect_plot(model = fit,
-                                 pred = Murder,
-                                 centered = "HSGrad",
-                                 rug = TRUE))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(model = fit,
-                                 pred = Murder,
-                                 centered = "HSGrad",
-                                 rug = TRUE,
-                                 rug.sides = "lb"))
-  expect_silent(print(p))
-})
-
-test_that("effect_plot works for weighted lm", {
-  expect_silent(p <- effect_plot(model = fitw,
-                                 pred = Murder,
-                                 centered = "all"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(model = fitw,
-                                 pred = Murder,
-                                 centered = "HSGrad"))
-  expect_silent(print(p))
-  expect_silent(p <- effect_plot(model = fitw,
-                                 pred = Murder,
-                                 centered = "HSGrad",
-                                 robust = TRUE))
-  expect_silent(print(p))
-})
-
-if (requireNamespace("survey")) {
-  test_that("effect_plot works for svyglm", {
-    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "all"))
-    expect_silent(print(p))
-    expect_silent(p <- effect_plot(regmodel, pred = meals, centered = "ell"))
-    expect_silent(print(p))
-  })
-}
-
-if (requireNamespace("lme4")) {
-  test_that("effect_plot works for lme4", {
-    expect_silent(p <- effect_plot(mv, pred = mode_numeric))
-    expect_silent(print(p))
-  })
-}
-
-test_that("effect_plot handles offsets", {
-  expect_message(p <- effect_plot(pmod, pred = money))
-  expect_silent(print(p))
-})
-
-context("effect_plot with categorical variables")
-library(ggplot2)
-diamond <- diamonds
-diamond <- diamond[diamond$color != "D",]
-set.seed(10)
-samps <- sample(1:nrow(diamond), 2000)
-diamond <- diamond[samps,]
-fit <- lm(price ~ cut * color, data = diamond)
-
-test_that("effect_plot handles offsets w/ categorical predictors", {
-  expect_s3_class(p <- effect_plot(pmod, pred = talent_f), "gg")
-  expect_silent(print(p))
-  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, plot.points = TRUE), "gg")
-  expect_silent(print(p))
-})
-
-test_that("effect_plot does line plots", {
-  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "line"),
-                  "gg")
-  expect_silent(print(p))
-  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "line",
-                                   interval = FALSE), "gg")
-  expect_silent(print(p))
-})
-
-test_that("effect_plot does bar plots", {
-  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "bar"),
-                  "gg")
-  expect_silent(print(p))
-  expect_s3_class(p <- effect_plot(pmod, pred = talent_f, cat.geom = "bar",
-                                   interval = FALSE), "gg")
-  expect_silent(print(p))
-})
 
 options(device = device)
 # dev.off()
