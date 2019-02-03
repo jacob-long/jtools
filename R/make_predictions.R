@@ -301,7 +301,7 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
   }
   
   # Do the predictions using built-in prediction method if robust is FALSE
-  if (interval == FALSE) {
+  if (interval == FALSE & is.null(model.offset(model.frame(model)))) {
     predicted <- as.data.frame(predict(model, newdata = pm,
                                        type = link_or_lm,
                                        re.form = re.form,
