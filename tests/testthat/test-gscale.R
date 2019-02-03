@@ -171,3 +171,13 @@ test_that("gscale: non-standard input is rejected", {
   expect_error(gscale("poop"))
 })
 
+test_that("gscale: weighted contrasts work", {
+  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars2,
+                       binary.inputs = "-0.5/0.5", weights = weights,
+                       apply.weighted.contrasts = TRUE),
+                length(mtcars))
+  expect_length(gscale(c("hp", "wt", "vs"), data = mtcars2,
+                       binary.inputs = "-0.5/0.5", 
+                       apply.weighted.contrasts = TRUE),
+                length(mtcars))
+})
