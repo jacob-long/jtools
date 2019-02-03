@@ -9,6 +9,8 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
 
   # Drop missing observations
   data <- drop_missing(model, data)
+  
+  wname <- get_weights(model, data)$weights_name
 
   # Make sure the vars are in the data
   if (any(vars %nin% names(data))) {
@@ -24,7 +26,8 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
 
   # Get fixed values of non-focal variables 
   controls <- get_control_values(model = model, data = data, preds = vars, 
-                                 at = at, center = center)
+                                 at = at, center = center, 
+                                 set.offset = set.offset)
   # Assign those values to the original data
   for (n in names(controls)) {
     data[[n]] <- controls[[n]]
