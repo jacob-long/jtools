@@ -124,11 +124,27 @@ get_weights <- function(model, data) {
   
   if (("(weights)" %in% names(data) | !is.null(getCall(model)$weights))) {
     weights <- TRUE
-    wname <- as.character(getCall(model)["weights"])
-    if (any(colnames(data) == "(weights)")) {
-      colnames(data)[which(colnames(data) == "(weights)")] <- wname
+    # subset gives bare name
+    wname <-
+      as.character(getCall(model)$weights)[length(getCall(model)$weights)]
+    # Sometimes it's character(0)
+    if (length(wname) == 0) {
+      wname <- NULL
+    } else {
+      wname <- all.vars(as.formula(paste("~", wname)))
     }
-    wts <- data[[wname]]
+    
+    if ("(weights)" %in% colnames(data) & !is.null(wname)) {
+      colnames(data)[which(colnames(data) == "(weights)")] <- wname
+    } else if ("(weights)" %in% colnames(data) & is.null(wname)) {
+      wname <- "(weights)"
+    } 
+    
+    if (wname %in% colnames(data)) {
+      wts <- data[[wname]]
+    } else {
+      wts <- model.weights(model.frame(model))
+    }
     
   } else {
     
@@ -188,6 +204,9 @@ get_data <- function(model, warn = TRUE) {
     
   } else {
     
+    if ("(weights)" %in% names(d)) {
+      names(d) %just% "(weights)" <- get_weights(model, d)$weights_name
+    }
     tibble::as_tibble(d)
     
   }
