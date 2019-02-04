@@ -50,6 +50,8 @@ if (requireNamespace("lme4")) {
   mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 }
 
+options("summ-stars" = TRUE)
+
 test_that("standardize gives deprecated warning", {
   expect_warning(summ(fit, standardize = TRUE))
   expect_warning(summ(fitgf, standardize = TRUE))
@@ -90,6 +92,19 @@ test_that("jsumm: partial correlations work", {
   expect_output(print(summ(fit, part.corr = TRUE)))
   expect_warning(summ(fit, part.corr = TRUE, robust = TRUE))
 })
+
+test_that("summ: knit_print works", {
+  expect_is(jtools:::knit_print.summ.lm(summ(fit)), "knitr_asis")
+  expect_is(jtools:::knit_print.summ.glm(summ(fitgf)), "knitr_asis")
+  if (requireNamespace("lme4")) {
+    expect_is(jtools:::knit_print.summ.merMod(summ(mv)), "knitr_asis")
+  }
+  if (requireNamespace("survey")) {
+    expect_is(jtools:::knit_print.summ.svyglm(summ(regmodel)), "knitr_asis")
+  }
+})
+
+options("summ-stars" FALSE)
 
 # Test handling of singular models
 
@@ -270,7 +285,7 @@ test_that("jsumm: Printing isn't borked", {
 
 set_summ_defaults(digits = 4, model.info = FALSE,
                  model.fit = FALSE, pvals = FALSE, robust = TRUE,
-                 confint = TRUE, ci.width = .90, vifs = TRUE)
+                 confint = TRUE, ci.width = .90, vifs = TRUE, stars = TRUE)
 
 test_that("set_summ_defaults changes options", {
 
@@ -282,6 +297,7 @@ test_that("set_summ_defaults changes options", {
   expect_equal(getOption("summ-confint"), TRUE)
   expect_equal(getOption("summ-ci.width"), .90)
   expect_equal(getOption("summ-vifs"), TRUE)
+  expect_equal(getOption("summ-stars"), TRUE)
 
 })
 
