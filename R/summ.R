@@ -2258,7 +2258,7 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
 set_summ_defaults <- function(digits = NULL, model.info = NULL,
                               model.fit = NULL, pvals = NULL, robust = NULL,
                               confint = NULL, ci.width = NULL, vifs = NULL,
-                              conf.method = NULL) {
+                              conf.method = NULL, stars = NULL) {
 
   if ("confint" %in% names(match.call())) {
     options("summ-confint" = confint)
@@ -2286,6 +2286,9 @@ set_summ_defaults <- function(digits = NULL, model.info = NULL,
   }
   if ("conf.method" %in% names(match.call())) {
     options("summ-conf.method" = pvals)
+  }
+  if ("stars" %in% names(match.call())) {
+    options("summ-stars" = stars)
   }
 
 }
