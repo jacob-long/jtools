@@ -22,7 +22,7 @@ test_that("summ.rq works", {
   expect_is(summ(rfit, se = "boot", boot.sims = 100), "summ.rq")
   expect_is(summ(rfit, vifs = TRUE), "summ.rq")
   expect_is(summ(rfit, confint = TRUE, stars = TRUE, se = "iid"), "summ.rq")
-  expect_is(jtools:::knit_print.summ.rq(summ(rfit)), "knitr_asis")
+  expect_is(jtools:::knit_print.summ.rq(summ(rfit)), "knit_asis")
 })
 
 data(mpg, package = "ggplot2")

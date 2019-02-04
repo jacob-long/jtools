@@ -94,13 +94,13 @@ test_that("jsumm: partial correlations work", {
 })
 
 test_that("summ: knit_print works", {
-  expect_is(jtools:::knit_print.summ.lm(summ(fit)), "knitr_asis")
-  expect_is(jtools:::knit_print.summ.glm(summ(fitgf)), "knitr_asis")
+  expect_is(jtools:::knit_print.summ.lm(summ(fit)), "knit_asis")
+  expect_is(jtools:::knit_print.summ.glm(summ(fitgf)), "knit_asis")
   if (requireNamespace("lme4")) {
-    expect_is(jtools:::knit_print.summ.merMod(summ(mv)), "knitr_asis")
+    expect_is(jtools:::knit_print.summ.merMod(summ(mv)), "knit_asis")
   }
   if (requireNamespace("survey")) {
-    expect_is(jtools:::knit_print.summ.svyglm(summ(regmodel)), "knitr_asis")
+    expect_is(jtools:::knit_print.summ.svyglm(summ(regmodel)), "knit_asis")
   }
 })
 
