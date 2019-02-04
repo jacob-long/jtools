@@ -104,7 +104,7 @@ test_that("summ: knit_print works", {
   }
 })
 
-options("summ-stars" FALSE)
+options("summ-stars" = FALSE)
 
 # Test handling of singular models
 
