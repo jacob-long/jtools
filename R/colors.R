@@ -112,8 +112,8 @@ get_colors <- function(colors, num.colors = 1, reverse = FALSE,
   }
   
   # My own palettes
-  mine <- c("CUD", "CUD Bright", "Rainbow", "Qual1", "Qual3")
-  if (length(colors) == 1 & colors %in% mine) {
+  mine <- c("CUD", "CUD Bright", "Rainbow", "Qual1", "Qual2", "Qual3")
+  if (length(colors) == 1 && colors %in% mine) {
     
     # The order of these depends on how many are requested
     cb14 <- c("#4477AA", "#EE6677", "#228833", "#CC8844")
