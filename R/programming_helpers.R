@@ -95,9 +95,9 @@
 
 `%not%.data.frame` <- function(x, y) {
   if (is.character(y)) {
-    x[names(x) %nin% y]
+    x[names(x) %not% y]
   } else {
-    x[seq_along(x) %nin% y]
+    x[seq_along(x) %not% y]
   }
 }
 
@@ -106,9 +106,9 @@
 
 `%not%<-.data.frame` <- function(x, y, value) {
   if (is.character(y)) {
-    x[names(x) %nin% y] <- value
+    x[names(x) %not% y] <- value
   } else {
-    x[seq_along(x) %nin% y] <- value
+    x[seq_along(x) %not% y] <- value
   }
   x
 }
@@ -118,9 +118,9 @@
 
 `%not%.matrix` <- function(x, y) {
   if (is.character(y)) {
-    x[, colnames(x) %nin% y]
+    x[, colnames(x) %not% y]
   } else {
-    x[, seq_len(ncol(x)) %nin% y]
+    x[, seq_len(ncol(x)) %not% y]
   }
 }
 
@@ -129,9 +129,9 @@
 
 `%not%<-.matrix` <- function(x, y, value) {
   if (is.character(y)) {
-    x[, colnames(x) %nin% y] <- value
+    x[, colnames(x) %not% y] <- value
   } else {
-    x[, seq_len(ncol(x)) %nin% y] <- value
+    x[, seq_len(ncol(x)) %not% y] <- value
   }
   x
 }
@@ -156,9 +156,9 @@
 
 `%just%.data.frame` <- function(x, y) {
   if (is.character(y)) {
-    x[names(x) %in% y]
+    x[y %just% names(x)]
   } else {
-    x[seq_along(x) %in% y]
+    x[y %just% seq_along(x)]
   }
 }
 
@@ -167,9 +167,9 @@
 
 `%just%<-.data.frame` <- function(x, y, value) {
   if (is.character(y)) {
-    x[names(x) %in% y] <- value
+    x[y %just% names(x)] <- value
   } else {
-    x[seq_along(x) %in% y] <- value
+    x[y %just% seq_along(x)] <- value
   }
   x
 }
@@ -179,9 +179,9 @@
 
 `%just%.matrix` <- function(x, y) {
   if (is.character(y)) {
-    x[, colnames(x) %in% y]
+    x[, y %just% colnames(x)]
   } else {
-    x[, seq_len(ncol(x)) %in% y]
+    x[, y %just% seq_len(ncol(x))]
   }
 }
 
@@ -190,9 +190,9 @@
 
 `%just%<-.matrix` <- function(x, y, value) {
   if (is.character(y)) {
-    x[, colnames(x) %in% y] <- value
+    x[, y %just% colnames(x)] <- value
   } else {
-    x[, seq_len(ncol(x)) %in% y] <- value
+    x[, y %just% seq_len(ncol(x))] <- value
   }
   x
 }
