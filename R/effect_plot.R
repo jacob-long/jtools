@@ -112,7 +112,7 @@
 #'    a good option to show both the predictor and response.
 #'
 #' @param point.size What size should be used for observed data when
-#'   `plot.points` is TRUE? Default is 1.
+#'   `plot.points` is TRUE? Default is 1.5.
 #'
 #' @param robust Should robust standard errors be used to find confidence
 #'   intervals for supported models? Default is FALSE, but you should specify
@@ -151,6 +151,7 @@
 #'     does not represent the distribution of the observed data or the
 #'     uncertainty of the predictions very well. It is best to at least use the
 #'     `interval = TRUE` argument with this geom.
+#'     
 #' @param cat.interval.geom For categorical by categorical interactions.
 #'   One of "errorbar" or "linerange". If the former,
 #'   [ggplot2::geom_errorbar()] is used. If the latter,
@@ -248,7 +249,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   outcome.scale = "response", robust = FALSE, cluster = NULL, vcov = NULL, 
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   main.title = NULL, colors = "black", line.thickness = 1.1, 
-  point.size = 1, point.alpha = 0.6, point.color = "black", jitter = 0,
+  point.size = 1.5, point.alpha = 0.6, point.color = "black", jitter = 0,
   rug = FALSE, rug.sides = "b", 
   force.cat = FALSE, cat.geom = c("point", "line", "bar"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
@@ -284,15 +285,6 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   # Putting these outputs into separate objects
   pm <- pred_out[[1]]
   d <- pred_out[[2]]
-  
-  # # Check for factor predictor
-  # if (is.factor(d[[pred]])) {
-  #   # I could assume the factor is properly ordered, but that's too risky
-  #   stop("Focal predictor (\"pred\") cannot be a factor. Either",
-  #        " use it as modx, convert it to a numeric dummy variable,",
-  #        " or use the cat_plot function for factor by factor interaction",
-  #        " plots.")
-  # }
   
   if (is.numeric(d[[pred]]) & force.cat == FALSE) {
     plot_effect_continuous(predictions = pm, pred = pred,
@@ -341,46 +333,32 @@ plot_effect_continuous <-
     y.label <- resp
   }
   
-  # Deal with non-syntactic names
-  if (make.names(pred) !=  pred) {
-    pred_g <- paste0("`", pred, "`")
-  } else {
-    pred_g <- pred
-  }
-  if (make.names(resp) !=  resp) {
-    resp_g <- paste0("`", resp, "`")
-  } else {
-    resp_g <- resp
-  }
+  pred <- sym(pred)
+  resp <- sym(resp)
+  if (!is.null(weights)) {weights <- sym(weights)}
   
   # If only 1 jitter arg, just duplicate it
   if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
 
   # Starting plot object
-  p <- ggplot(pm, aes_string(x = pred_g, y = resp_g))
+  p <- ggplot(pm, aes(x = !! pred, y = !! resp))
 
   # Plot observed data — do this first to plot the line over the points
   if (plot.points == TRUE) {
-    # Transform weights so they have mean = 1
-    const <- length(wts)/sum(wts) # scaling constant
-    # make the range of values larger, but only if there are non-1 weights
-    const <- const * (1 * all(wts == 1) + point.size)
-    wts <- const * wts
-    # Append weights to data
-    d[["the_weights"]] <- wts
-    point.size <- wts
     
-    p <- p + geom_point(data = d,
-                        aes_string(x = pred_g, y = resp_g,
-                                   size = "the_weights"),
-                        position = position_jitter(width = jitter[1],
-                                                   height = jitter[2]),
-                        inherit.aes = FALSE, show.legend = FALSE,
-                        size = point.size, alpha = point.alpha,
-                        colour = point.color)
-    # Add size aesthetic to avoid giant points
-    # p <- p + scale_size(range = c(0.3, 4))
-    # p <- p + scale_size_identity()
+    constants <- list(alpha = point.alpha, colour = point.color)
+    if (is.null(weights)) {
+      # Only use constant size if weights are not used
+      constants$size <- point.size
+    } 
+    # Need to use layer function to programmatically define constant aesthetics
+    p <- p + layer(geom = "point", data = d, stat = "identity",
+                   inherit.aes = FALSE, show.legend = FALSE,
+                   mapping = aes(x = !! pred, y = !! resp, size = !! weights),
+                   position = position_jitter(width = jitter[1], 
+                                              height = jitter[2]),
+                   params = constants) +
+      scale_size(range = c(1 * point.size, 5 * point.size))
     
   }
   
@@ -389,15 +367,15 @@ plot_effect_continuous <-
   
   # Plot intervals if requested
   if (interval == TRUE) {
-    p <- p + geom_ribbon(data = pm, aes_string(ymin = "ymin",
-                                               ymax = "ymax"),
+    p <- p + geom_ribbon(data = pm, 
+                         aes(ymin = !! sym("ymin"),  ymax = !! sym("ymax")),
                          alpha = 1/5, show.legend = FALSE)
   }
   
   # Rug plot for marginal distributions
   if (rug == TRUE) {
     p <- p + geom_rug(data = d,
-                      mapping = aes_string(x = pred_g, y = resp_g), alpha = 0.6,
+                      mapping = aes(x = !! pred, y = !! resp), alpha = 0.6,
                       position = position_jitter(width = jitter[1]),
                       sides = rug.sides, inherit.aes = TRUE)
   }
@@ -410,7 +388,7 @@ plot_effect_continuous <-
   # Getting rid of tick marks for two-level predictor
   if (length(unique(d[[pred]])) == 2) { # Predictor has only two unique values
     # Make sure those values are in increasing order
-    brks <- sort(unique(d[[pred]]), decreasing = F)
+    brks <- sort(unique(d[[pred]]), decreasing = FALSE)
     if (is.null(pred.labels)) {
       p <- p + scale_x_continuous(breaks = brks)
     } else {
@@ -437,7 +415,7 @@ plot_effect_continuous <-
 plot_cat <- function(predictions, pred, data = NULL, 
  geom = c("point", "line", "bar", "boxplot"), pred.values = NULL,
  interval = TRUE, plot.points = FALSE, pred.labels = NULL, x.label = NULL,
- y.label = NULL, main.title = NULL, colors = "black", wts = NULL,
+ y.label = NULL, main.title = NULL, colors = "black", weights = NULL,
  resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL,
  errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
  line.thickness = 1.1, point.size = 1, pred.point.size = 3.5, 
@@ -460,19 +438,6 @@ plot_cat <- function(predictions, pred, data = NULL,
     y.label <- resp
   }
   
-  # Deal with non-syntactic names
-  if (make.names(pred) !=  pred) {
-    pred_g <- paste0("`", pred, "`")
-  } else {
-    pred_g <- pred
-  }
-
-  if (make.names(resp) !=  resp) {
-    resp_g <- paste0("`", resp, "`")
-  } else {
-    resp_g <- resp
-  }
-  
   # Deal with numeric predictors coerced into factors
   if (is.numeric(pm[[pred]])) {
     pred.levels <- if (!is.null(pred.values)) {pred.values} else {
@@ -488,6 +453,11 @@ plot_cat <- function(predictions, pred, data = NULL,
     d <- d[d[[pred]] %in% pred.levels,]
     d[[pred]] <- factor(d[[pred]], levels = pred.levels, labels = pred.labels)
   }
+  
+  # Convert strings to symbols for tidy evaluation
+  pred <- sym(pred)
+  resp <- sym(resp)
+  if (!is.null(weights)) {weights <- sym(weights)}
   
   # Checking if user provided the colors his/herself
   colors <- suppressWarnings(get_colors(colors, 1))
@@ -513,7 +483,7 @@ plot_cat <- function(predictions, pred, data = NULL,
   }
   
 
-  p <- ggplot(pm, aes_string(x = pred_g, y = resp_g, group = 1))
+  p <- ggplot(pm, aes(x = !! pred, y = !! resp, group = 1))
   
   if (geom == "bar") {
     p <- p + geom_bar(stat = "identity", position = "dodge", alpha = a_level,
@@ -531,15 +501,14 @@ plot_cat <- function(predictions, pred, data = NULL,
   }
   
   # Plot intervals if requested
-  if (interval == TRUE && geom != "boxplot" && interval.geom == "errorbar") {
-    p <- p + geom_errorbar(aes_string(ymin = "ymin", ymax = "ymax"),
+  if (interval == TRUE & interval.geom[1] == "errorbar") {
+    p <- p + geom_errorbar(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
                            alpha = 1, show.legend = FALSE,
                            position = position_dodge(dodge.width),
                            width = errorbar.width,
                            size = line.thickness, color = colors)
-  } else if (interval == TRUE && geom != "boxplot" && interval.geom %in%
-             c("line", "linerange")) {
-    p <- p + geom_linerange(aes_string(ymin = "ymin", ymax = "ymax"),
+  } else if (interval == TRUE & interval.geom[1] %in% c("line", "linerange")) {
+    p <- p + geom_linerange(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
                             alpha = 0.8, show.legend = FALSE,
                             position = position_dodge(dodge.width),
                             size = line.thickness, color = colors)
@@ -548,26 +517,20 @@ plot_cat <- function(predictions, pred, data = NULL,
   # For factor vars, plotting the observed points
   # and coloring them by factor looks great
   if (plot.points == TRUE) {
-    # Transform weights so they have mean = 1
-    const <- length(wts) / sum(wts) # scaling constant
-    # make the range of values larger, but only if there are non-1 weights
-    const <- const * (1 * all(wts == 1) * point.size)
-    wts <- const * wts
-    # Append weights to data
-    d[,"the_weights"] <- wts
-
-    p <- p + geom_point(data = d, aes_string(x = pred_g, y = resp_g,
-                                             size = "the_weights"),
-                        position =
-                          position_jitterdodge(dodge.width = dodge.width,
-                                               jitter.width = jitter[1],
-                                               jitter.height = jitter[2]),
-                        inherit.aes = FALSE,
-                        show.legend = FALSE,
-                        alpha = point.alpha, colour = point.color)
-    
-    # Add size aesthetic to avoid giant points
-    p <- p + scale_size_identity()
+  
+    constants <- list(alpha = point.alpha, colour = point.color)
+    if (is.null(weights)) {
+      # Only use constant size if weights are not used
+      constants$size <- point.size
+    } 
+    # Need to use layer function to programmatically define constant aesthetics
+    p <- p + layer(geom = "point", data = d, stat = "identity",
+                   inherit.aes = FALSE, show.legend = FALSE,
+                   mapping = aes(x = !! pred, y = !! resp, size = !! weights),
+                   position = position_jitter(width = jitter[1], 
+                                              height = jitter[2]),
+                   params = constants) +
+      scale_size(range = c(1 * point.size, 5 * point.size))
     
   }
   
