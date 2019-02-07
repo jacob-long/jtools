@@ -151,12 +151,6 @@
 #'     does not represent the distribution of the observed data or the
 #'     uncertainty of the predictions very well. It is best to at least use the
 #'     `interval = TRUE` argument with this geom.
-#'
-#'   * `"boxplot"`: This geom plots a dot and whisker plot. These can be useful
-#'     for understanding the distribution of the observed data without having
-#'     to plot all the observed points (especially helpful with larger data
-#'     sets). **However**, it is important to note the boxplots are not based
-#'     on the model whatsoever.
 #' @param cat.interval.geom For categorical by categorical interactions.
 #'   One of "errorbar" or "linerange". If the former,
 #'   [ggplot2::geom_errorbar()] is used. If the latter,
@@ -256,7 +250,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   main.title = NULL, colors = "black", line.thickness = 1.1, 
   point.size = 1, point.alpha = 0.6, point.color = "black", jitter = 0,
   rug = FALSE, rug.sides = "b", 
-  force.cat = FALSE, cat.geom = c("point", "line", "bar", "boxplot"), 
+  force.cat = FALSE, cat.geom = c("point", "line", "bar"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
   partial.residuals = FALSE, color.class = colors, ...) {
   
@@ -508,7 +502,7 @@ plot_cat <- function(predictions, pred, data = NULL,
   } else {a_level <- geom.alpha}
   
   if (is.null(dodge.width)) {
-    dodge.width <- if (geom %in% c("bar", "point", "boxplot")) {0.9} else {0}
+    dodge.width <- if (geom %in% c("bar", "point")) {0.9} else {0}
   }
   if (is.null(errorbar.width)) {
     errorbar.width <- if (geom == "point") {
@@ -524,9 +518,6 @@ plot_cat <- function(predictions, pred, data = NULL,
   if (geom == "bar") {
     p <- p + geom_bar(stat = "identity", position = "dodge", alpha = a_level,
                       show.legend = FALSE, color = colors)
-  } else if (geom == "boxplot") {
-    p <- ggplot(d, aes_string(x = pred_g, y = resp_g), color = colors) +
-      geom_boxplot(position = position_dodge(dodge.width), show.legend = FALSE)
   } else if (geom %in% c("point", "line")) {
     p <- p + geom_point(size = pred.point.size,
                         position = position_dodge(dodge.width),
