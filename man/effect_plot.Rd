@@ -10,9 +10,9 @@ effect_plot(model, pred, pred.values = NULL, centered = "all",
   outcome.scale = "response", robust = FALSE, cluster = NULL,
   vcov = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
   pred.labels = NULL, main.title = NULL, colors = "black",
-  line.thickness = 1.1, point.size = 1, point.alpha = 0.6,
+  line.thickness = 1.1, point.size = 1.5, point.alpha = 0.6,
   point.color = "black", jitter = 0, rug = FALSE, rug.sides = "b",
-  force.cat = FALSE, cat.geom = c("point", "line", "bar", "boxplot"),
+  force.cat = FALSE, cat.geom = c("point", "line", "bar"),
   cat.interval.geom = c("errorbar", "linerange"),
   cat.pred.point.size = 3.5, partial.residuals = FALSE,
   color.class = colors, ...)
@@ -116,7 +116,7 @@ accepted. Default is "black".}
 ggplot's default is 1.}
 
 \item{point.size}{What size should be used for observed data when
-\code{plot.points} is TRUE? Default is 1.}
+\code{plot.points} is TRUE? Default is 1.5.}
 
 \item{point.alpha}{What should the \code{alpha} aesthetic for plotted points of
 observed data be? Default is 0.6, and it can range from 0 (transparent) to
@@ -167,11 +167,6 @@ Many applied researchers advise against this type of plot because it
 does not represent the distribution of the observed data or the
 uncertainty of the predictions very well. It is best to at least use the
 \code{interval = TRUE} argument with this geom.
-\item \code{"boxplot"}: This geom plots a dot and whisker plot. These can be useful
-for understanding the distribution of the observed data without having
-to plot all the observed points (especially helpful with larger data
-sets). \strong{However}, it is important to note the boxplots are not based
-on the model whatsoever.
 }}
 
 \item{cat.interval.geom}{For categorical by categorical interactions.
