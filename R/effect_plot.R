@@ -106,10 +106,10 @@
 #'    response variable (left/right) in the original data. Default is
 #'    FALSE.
 #'
-#' @param rug.sides On which sides should rug plots appear? Default is "b",
-#'    meaning bottom. "t" and/or "b" show the distribution of the predictor
-#'    while "l" and/or "r" show the distribution of the response. "bl" is
-#'    a good option to show both the predictor and response.
+#' @param rug.sides On which sides should rug plots appear? Default is "lb",
+#'    meaning both left and bottom. "t" and/or "b" show the distribution of
+#'    the predictor
+#'    while "l" and/or "r" show the distribution of the response. 
 #'
 #' @param point.size What size should be used for observed data when
 #'   `plot.points` is TRUE? Default is 1.5.
@@ -250,7 +250,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   main.title = NULL, colors = "black", line.thickness = 1.1, 
   point.size = 1.5, point.alpha = 0.6, point.color = "black", jitter = 0,
-  rug = FALSE, rug.sides = "b", 
+  rug = FALSE, rug.sides = "lb", 
   force.cat = FALSE, cat.geom = c("point", "line", "bar"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
   partial.residuals = FALSE, color.class = colors, ...) {

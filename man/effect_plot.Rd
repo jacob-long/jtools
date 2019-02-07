@@ -11,7 +11,7 @@ effect_plot(model, pred, pred.values = NULL, centered = "all",
   vcov = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
   pred.labels = NULL, main.title = NULL, colors = "black",
   line.thickness = 1.1, point.size = 1.5, point.alpha = 0.6,
-  point.color = "black", jitter = 0, rug = FALSE, rug.sides = "b",
+  point.color = "black", jitter = 0, rug = FALSE, rug.sides = "lb",
   force.cat = FALSE, cat.geom = c("point", "line", "bar"),
   cat.interval.geom = c("errorbar", "linerange"),
   cat.pred.point.size = 3.5, partial.residuals = FALSE,
@@ -141,10 +141,10 @@ to show the distribution of the predictor (top/bottom) and/or
 response variable (left/right) in the original data. Default is
 FALSE.}
 
-\item{rug.sides}{On which sides should rug plots appear? Default is "b",
-meaning bottom. "t" and/or "b" show the distribution of the predictor
-while "l" and/or "r" show the distribution of the response. "bl" is
-a good option to show both the predictor and response.}
+\item{rug.sides}{On which sides should rug plots appear? Default is "lb",
+meaning both left and bottom. "t" and/or "b" show the distribution of
+the predictor
+while "l" and/or "r" show the distribution of the response.}
 
 \item{force.cat}{Force the continuous \code{pred} to be treated as categorical?
 default is FALSE, but this can be useful for things like dummy 0/1
