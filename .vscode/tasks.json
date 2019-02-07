@@ -19,7 +19,10 @@
             "label": "Test package",
             "type": "shell",
             "command": "R --no-restore-data -e devtools::test() -e q()",
-            "group": "test",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "presentation": {
                 "echo": true,
                 "reveal": "always",
