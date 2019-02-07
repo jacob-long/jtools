@@ -229,6 +229,12 @@ get_data <- function(model, warn = TRUE) {
       } 
       raw_vars <- c(raw_vars, wname)
     }
+    # Check for variables from global environment
+    if (any(raw_vars %nin% d)) {
+      global_vars <- raw_vars %not% names(d)
+      # Attach each to data
+      d[global_vars] <- mget(global_vars, envir = env)
+    }
     tibble::as_tibble(d[raw_vars])
     
   } else {
