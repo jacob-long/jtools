@@ -52,13 +52,9 @@
 make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
                           data = NULL, center = TRUE, set.offset = NULL,
                           num.preds = 100) {
+  design <- if ("svyglm" %in% class(model)) model$survey.design else NULL
   
-  if ("svyglm" %in% class(model)) {
-    design <- model$design
-    data <- design$variables[all.vars(as.formula(formula(model)))]
-  } else {design <- NULL}
-  
-  if (is.null(data)) {
+  if (is.null(data) | "svyglm" %in% class(model)) {
     data <- get_data(model)
   }
   
@@ -122,13 +118,18 @@ get_offset_name <- function(model) {
 #' @export 
 get_weights <- function(model, data) {
   
+  if ("svyglm" %in% class(model)) {
+    wname <- "(weights)"
+    weights <- weights(model$survey.design)
+    return(list(weights_name = wname, weights = weights))
+  }
+  
   if (("(weights)" %in% names(data) | !is.null(getCall(model)$weights))) {
     weights <- TRUE
     # subset gives bare name
-    wname <-
-      as.character(getCall(model)$weights)[length(getCall(model)$weights)]
+    wname <- as.character(deparse(getCall(model)$weights))
     # Sometimes it's character(0)
-    if (length(wname) == 0) {
+    if (length(wname) == 0 | wname == "NULL") {
       wname <- NULL
     } else {
       wname <- all.vars(as.formula(paste("~", wname)))
@@ -179,7 +180,13 @@ get_weights <- function(model, data) {
 
 get_data <- function(model, warn = TRUE) {
   
-  d <- model.frame(model)
+  if ("svyglm" %in% class(model)) {
+    d <- model$survey.design$variables
+    wname <- "(weights)"
+    d[wname] <- weights(model$survey.design)
+  } else {
+    d <- model.frame(model)
+  }
   # Check to see if model.frame names match formula names
   varnames <- names(d)
   # Drop weights and offsets placeholder variable names
@@ -188,6 +195,10 @@ get_data <- function(model, warn = TRUE) {
   raw_vars <- all.vars(as.formula(formula(model)))
   # Add the offset, if any
   raw_vars <- c(raw_vars, get_offset_name(model))
+  # If survey, return now
+  if ("svyglm" %in% class(model)) {
+    return(tibble::as_tibble(d[c(raw_vars, wname)]))
+  }
   if (any(raw_vars %nin% varnames)) {
     dat_name <- as.character(deparse(getCall(model)$data))
     
@@ -198,8 +209,26 @@ get_data <- function(model, warn = TRUE) {
         argument.")
     }
     
+    # Get the environment where model was fit --- otherwise tests fail 
     env <- attr(formula(model), ".Environment")
+    # Grab the data from the environment
     d <- eval(getCall(model)$data, envir = env)
+    # Make sure weights are included
+    if (!is.null(model.weights(model.frame(model)))) {
+      # If the weights are transformed, preserve that
+      if (length(getCall(models)$weights) > 1) {
+        wname <- as.character(deparse(getCall(model)$weights))
+        # Make sure weights variable is in the data
+        if (last(as.character(getCall(model)$weights)) %in% names(d)) {
+          d[wname] <- eval(getCall(model)$weights, d)
+        } else { # check calling environment otherwise
+          d[wname] <- eval(getCall(model)$weights, env)
+        }
+      } else {
+        wname <- as.character(getCall(model)$weights)
+      } 
+      raw_vars <- c(raw_vars, wname)
+    }
     tibble::as_tibble(d[raw_vars])
     
   } else {

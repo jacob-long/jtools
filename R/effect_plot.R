@@ -309,7 +309,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                            colors = colors,
                            line.thickness = line.thickness, jitter = jitter,
                            resp = get_response_name(model),
-                           wts = get_weights(model, d)$weights,
+                           weights = get_weights(model, d)$weights_name,
                            rug = rug, rug.sides = rug.sides,
                            point.size = point.size, point.alpha = point.alpha,
                            point.color = point.color)
@@ -319,7 +319,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
              interval = interval, plot.points = plot.points | partial.residuals,
              pred.labels = pred.labels, x.label = x.label,
              y.label = y.label, main.title = main.title,
-             colors = colors, wts = get_weights(model, d)$weights,
+             colors = colors, weights = get_weights(model, d)$weights_name,
              resp = get_response_name(model), jitter = jitter, 
              interval.geom = cat.interval.geom, line.thickness = line.thickness,
              point.size = point.size, pred.point.size = cat.pred.point.size,
@@ -332,7 +332,8 @@ plot_effect_continuous <-
   function(predictions, pred, plot.points = FALSE, interval = FALSE, 
            data = NULL, x.label = NULL, y.label = NULL, pred.labels = NULL,
            main.title = NULL, colors = NULL, line.thickness = 1.1,
-           jitter = 0.1, resp = NULL, wts = NULL, rug = FALSE, rug.sides = "b",
+           jitter = 0.1, resp = NULL, weights = NULL, rug = FALSE,
+           rug.sides = "b",
            point.size = 1, point.alpha = 0.6, point.color = "black") {
   
   pm <- predictions

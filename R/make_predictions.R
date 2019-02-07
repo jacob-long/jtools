@@ -17,7 +17,6 @@ prepare_return_data <- function(model, data, return.orig.data,
     if (return.orig.data == TRUE & partial.residuals == FALSE) {
       o <- list(predictions = tibble::as_tibble(pm), data = 
                 suppressMessages(d <- tibble::as_tibble(get_data(model))))
-      attr(o, "weights") <- get_weights(model, d)$weights
       # If left-hand side is transformed, make new column in original data for
       # the transformed version and evaluate it
       if (is_lhs_transformed(as.formula(formula(model)))) {
@@ -31,8 +30,6 @@ prepare_return_data <- function(model, data, return.orig.data,
                                center = center, set.offset = set.offset)
                   )
                 )
-      attr(o, "weights") <- 
-        get_weights(model, get_data(model, warn = FALSE))$weights
     }
   }
   return(o)
