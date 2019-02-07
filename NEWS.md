@@ -44,6 +44,22 @@ the documentation for more info on this revised syntax.
 `make_new_data` is a new function that supports `make_predictions` by creating
 the data frame of hypothetical values to which the predictions will be added.
 
+## Generate partial residuals for plotting 
+
+I have added a new function, `partialize`, that creates partial residuals for
+the purposes of plotting (e.g., with `effect_plot`). One negative when 
+visualizing predictions alongside original data with `effect_plot` or similar
+tools is that the observed data may be too spread out to pick up on any 
+patterns. However, sometimes your model is controlling for the causes of this
+scattering, especially with multilevel models that have random intercepts. 
+Partial residuals include the effects of all the controlled-for variables 
+and let you see how well your model performs with all of those things accounted
+for. 
+
+You can plot partial residuals instead of the observed data in `effect_plot`
+via the argument `partial.residuals = TRUE` or get the data yourself using
+the `partialize` function. It is also integrated into `make_predictions`.
+
 ## New programming helpers
 
 In keeping with the "tools" focus of this package, I am making available some
@@ -100,6 +116,9 @@ now have a markdown format that might remind you of Stata's coefficient tables.
 * The function that prints those tables mentioned above is called `md_table` 
 and can be used by others if they want. It is based on `knitr`'s `kable` 
 function.
+* `summ` no longer prints significance stars by default. This can be enabled
+with the `stars = TRUE` argument or by setting the `"summ-stars"` option to 
+`TRUE` (also available via `set_summ_defaults`)
 * The `model.check` argument in `summ` has been removed.
 * A function called `get_colors` is now available to users. It retrieves 
 the color palettes used in `jtools` functions.
@@ -109,6 +128,11 @@ but I don't like it as a default since I don't think the APA has defined the
 nicest-looking design guidelines for general use.
 * `effect_plot` now can plot categorical predictors, picking up a functionality
 previously provided by `cat_plot`.
+* `effect_plot` now uses *tidy evaluation* for the `pred` argument (#37).
+This means you can pass a variable that contains the name of `pred`, which is
+most useful if you are creating a function, for loop, etc. If using a variable,
+put a  `!!` from the `rlang` package before it (e.g., `pred = !! variable`). 
+For most users, these changes will not affect their usage.
 
 ### Bugfixes
 
@@ -117,6 +141,9 @@ the `interactions` package) now understands dependent variable transformations
 better. For instance, there shouldn't be issues if your response variable is 
 `log(y)` instead of `y`. When returning the original data frame, these functions
 will append a transformed (e.g., `log(y)`) column as needed. 
+* `lme4` has a bug when generating predictions in models with offsets --- it 
+ignores them when the offset is specified via the `offset =` argument. I have
+created a workaround for this.
 
 # jtools 1.1.1
 
