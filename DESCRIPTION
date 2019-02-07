@@ -31,6 +31,7 @@ Suggests:
   kableExtra,
   lme4,
   lmerTest,
+  MASS,
   methods,
   pbkrtest,
   quantreg,
