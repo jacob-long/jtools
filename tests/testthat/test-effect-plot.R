@@ -265,8 +265,8 @@ test_that("effect_plot does bar plots", {
 #                  data = epilepsy, family = poisson(),
 #                  prior = c(prior(student_t(5,0,10), class = b),
 #                            prior(cauchy(0,2), class = sd)),
-#                  cores = 2, chains = 2, iter = 2000)
-# saveRDS(fit1, "brmfit.rds")
+#                  cores = 2, chains = 1, iter = 500, save_dso = TRUE)
+# saveRDS(fit1, "brmfit.rds", version = 2)
 #
 # library(rstanarm)
 # fitrs <- stan_glmer(incidence ~ size * as.numeric(period) + (1 | herd),
