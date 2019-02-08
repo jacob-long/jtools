@@ -216,7 +216,7 @@ get_data <- function(model, warn = TRUE) {
     # Make sure weights are included
     if (!is.null(model.weights(model.frame(model)))) {
       # If the weights are transformed, preserve that
-      if (length(getCall(models)$weights) > 1) {
+      if (length(getCall(model)$weights) > 1) {
         wname <- as.character(deparse(getCall(model)$weights))
         # Make sure weights variable is in the data
         if (last(as.character(getCall(model)$weights)) %in% names(d)) {
