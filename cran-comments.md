@@ -4,5 +4,11 @@
 * Windows 2012 Server (on Appveyor) R-release, R-devel
 
 ## R CMD check results
-There were no ERRORs, WARNINGs, or NOTEs.
+There were two NOTEs. One is a notice that the package "interactions" 
+listed in Enhances is not available in a mainstream repository. "interactions"
+will be submitted to CRAN as soon as this version of this package is 
+accepted by CRAN, as it is needed for "interactions" to function. 
+
+The other note is what appears to be a spurious 403 for the following URL:
+https://doi.org/10.2307/2533558 which works on my machine.
 

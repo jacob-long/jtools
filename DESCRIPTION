@@ -27,7 +27,6 @@ Suggests:
   cowplot,
   ggstance,
   huxtable (>= 3.0.0),
-  interactions,
   kableExtra,
   lme4,
   lmerTest,
@@ -46,7 +45,8 @@ Suggests:
     rmarkdown,
     rmdformats,
     testthat
+Enhances: 
+  interactions
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-Remotes: jacob-long/interactions
