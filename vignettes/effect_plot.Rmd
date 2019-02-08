@@ -1,12 +1,12 @@
 ---
-title: "Tools for summarizing and visualizing regression models"
+title: "Visualizing regression model predictions"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
 output: 
   rmdformats::html_clean:
     thumbnails: false
 vignette: >
-  %\VignetteIndexEntry{Tools for summarizing and visualizing regression models}
+  %\VignetteIndexEntry{Visualizing regression model predictions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
