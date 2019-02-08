@@ -10,7 +10,7 @@
     ctime <- file.info(find.package(pkgname))$ctime
     days <- as.integer(round(difftime(Sys.time(), ctime, units = "day"), 0))
   } else {days <- 4}
-  if (days < 3) {
+  if (days < 3 & !nzchar(system.file(package = "interactions"))) {
     msg <- wrap_str("The most recent jtools update (to 2.0.0) was a major
     update. Functions dealing with interactions have been moved to a new 
     package called 'interactions'. Please check out 
