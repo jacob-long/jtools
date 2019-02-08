@@ -2,9 +2,12 @@
 % Please edit documentation in R/summ.R
 \name{summ}
 \alias{summ}
+\alias{j_summ}
 \title{Regression summaries with options}
 \usage{
 summ(model, ...)
+
+j_summ(model, ...)
 }
 \arguments{
 \item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},

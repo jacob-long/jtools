@@ -31,10 +31,10 @@ summ(fit, center = TRUE)
 summ(fit, confint = TRUE, digits = 3)
 
 ## ------------------------------------------------------------------------
-summ(fit, confint = TRUE, ci.width = .5, digits = 3)
+summ(fit, confint = TRUE, ci.width = .5)
 
 ## ------------------------------------------------------------------------
-summ(fit, confint = TRUE, pvals = FALSE, digits = 3)
+summ(fit, confint = TRUE, pvals = FALSE)
 
 ## ------------------------------------------------------------------------
 fitg <- glm(vs ~ drat + mpg, data = mtcars, family = binomial)
@@ -49,6 +49,9 @@ library(lme4)
 fm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
 summ(fm1)
+
+## ------------------------------------------------------------------------
+effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE)
 
 ## ------------------------------------------------------------------------
 plot_summs(fit)
@@ -73,25 +76,6 @@ plot_summs(fit, fit2, scale = TRUE, plot.distributions = TRUE)
 ## ------------------------------------------------------------------------
 plot_summs(fit, fit, fit, scale = TRUE, robust = list(FALSE, "HC0", "HC3"),
            model.names = c("OLS", "HC0", "HC3"))
-
-## ------------------------------------------------------------------------
-effect_plot(fit, pred = Illiteracy)
-
-## ------------------------------------------------------------------------
-effect_plot(fit, pred = Illiteracy, interval = TRUE)
-
-## ------------------------------------------------------------------------
-effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE)
-
-## ------------------------------------------------------------------------
-effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE,
-            robust = "HC3")
-
-## ------------------------------------------------------------------------
-effect_plot(fitg, pred = mpg, interval = TRUE)
-
-## ------------------------------------------------------------------------
-effect_plot(fitg, pred = mpg, plot.points = TRUE)
 
 ## ----eval = FALSE--------------------------------------------------------
 #  export_summs(fit, fit2, scale = TRUE)

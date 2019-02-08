@@ -5,14 +5,22 @@ sudo: false
 cache: packages
 latex: false
 
-r:
-  - release
-  - devel
-
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
     packages:
+      - g++-7
       - libnlopt-dev
+
+env:
+  global:
+    - MAKEFLAGS="-j 2"
+
+before_install:
+  - mkdir -p ~/.R/
+  - echo "CXX14 = g++-7 -fPIC -flto=2" >> ~/.R/Makevars
+  - echo "CXX14FLAGS = -mtune=native -march=native -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs -Wno-ignored-attributes -Wno-deprecated-declarations -Wno-attributes -O3" >> ~/.R/Makevars
 
 r_packages:
   - covr

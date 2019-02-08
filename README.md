@@ -18,13 +18,15 @@ Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?bra
 This package consists of a series of functions created by the author
 (Jacob) to automate otherwise tedious research tasks. At this juncture,
 the unifying theme is the more efficient presentation of regression
-analyses. There are a number of functions for visualizing and doing
-inference for interaction terms. Support for the `survey` package’s
+analyses. There are a number of functions for other programming and
+statistical purposes as well. Support for the `survey` package’s
 `svyglm` objects as well as weighted regressions is a common theme
 throughout.
 
-**Note**: This is beta software. Bugs are possible, both in terms of
-code-breaking errors and more pernicious errors of mistaken computation.
+**Notice:** As of `jtools` version 2.0.0, all functions dealing with
+interactions (e.g., `interact_plot`, `sim_slopes`, `johnson_neyman`)
+have been moved to a new package, aptly named
+[`interactions`](https://interactions.jacob-long.com).
 
 ## Installation
 
@@ -58,7 +60,7 @@ section of the repository, especially the “enhancement” tag.
 
 Here’s a synopsis of the current functions in the package:
 
-### Summarizing regressions (`summ`, `plot_summs`, `export_summs`)
+### Console regression summaries (`summ`)
 
 `summ` is a replacement for `summary` that provides the user several
 options for formatting regression summaries. It supports `glm`,
@@ -83,10 +85,12 @@ summ(fit)
     #> Adj. R² = 0.81 
     #> 
     #> Standard errors: OLS
-    #>              Est. S.E. t val.    p    
-    #> (Intercept) 37.23 1.60  23.28 0.00 ***
-    #> hp          -0.03 0.01  -3.52 0.00  **
-    #> wt          -3.88 0.63  -6.13 0.00 ***
+    #> 
+    #> |            |  Est.| S.E.| t val.|    p|
+    #> |:-----------|-----:|----:|------:|----:|
+    #> |(Intercept) | 37.23| 1.60|  23.28| 0.00|
+    #> |hp          | -0.03| 0.01|  -3.52| 0.00|
+    #> |wt          | -3.88| 0.63|  -6.13| 0.00|
 
 It has several conveniences, like re-fitting your model with scaled
 variables (`scale = TRUE`). You have the option to leave the outcome
@@ -117,10 +121,12 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
     #> Adj. R² = 0.81 
     #> 
     #> Standard errors: OLS
-    #>              Est.  2.5% 97.5% t val.  VIF partial.r part.r
-    #> (Intercept) 20.09 19.15 21.03  43.82 <NA>      <NA>   <NA>
-    #> hp          -2.18 -3.44 -0.91  -3.52 1.77     -0.55  -0.27
-    #> wt          -3.79 -5.06 -2.53  -6.13 1.77     -0.75  -0.47
+    #> 
+    #> |            |  Est.|  2.5%| 97.5%| t val.|  VIF| partial.r| part.r|
+    #> |:-----------|-----:|-----:|-----:|------:|----:|---------:|------:|
+    #> |(Intercept) | 20.09| 19.15| 21.03|  43.82|   NA|        NA|     NA|
+    #> |hp          | -2.18| -3.44| -0.91|  -3.52| 1.77|     -0.55|  -0.27|
+    #> |wt          | -3.79| -5.06| -2.53|  -6.13| 1.77|     -0.75|  -0.47|
     #> 
     #> Continuous predictors are mean-centered and scaled by 1 s.d.
 
@@ -143,17 +149,22 @@ summ(fit2, robust = "HC3", cluster = "firm")
     #> Adj. R² = 0.21 
     #> 
     #> Standard errors: Cluster-robust, type = HC3
-    #>             Est. S.E. t val.    p    
-    #> (Intercept) 0.03 0.07   0.44 0.66    
-    #> x           1.03 0.05  20.36 0.00 ***
+    #> 
+    #> |            | Est.| S.E.| t val.|    p|
+    #> |:-----------|----:|----:|------:|----:|
+    #> |(Intercept) | 0.03| 0.07|   0.44| 0.66|
+    #> |x           | 1.03| 0.05|  20.36| 0.00|
 
 Of course, `summ` like `summary` is best-suited for interactive use.
 When it comes to sharing results with others, you want sharper output
-and probably graphics. `jtools` has some options for that, too.
+and probably graphics. `jtools` has some options for that,
+too.
 
-First, for tabular output, `export_summs` is an interface to the
-`huxtable` package’s `huxreg` function that preserves the niceties of
-`summ`, particularly its facilities for robust standard errors and
+### LaTeX-, Word-, and RMarkdown-friendly regression summary tables (`export_summs`)
+
+For tabular output, `export_summs` is an interface to the `huxtable`
+package’s `huxreg` function that preserves the niceties of `summ`,
+particularly its facilities for robust standard errors and
 standardization. It also concatenates multiple models into a single
 table.
 
@@ -167,7 +178,7 @@ coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
 export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
 ```
 
-<table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto; ">
+<table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto;  ">
 
 <col>
 
@@ -179,25 +190,25 @@ export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs =
 
 <tr>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid; border-width: 0.8pt 0pt 0pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 </td>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 Model
 1
 
 </td>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 Model
 2
 
 </td>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 Model
 3
@@ -464,19 +475,19 @@ Constant
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 (0.08)   
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 (0.08)  
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 (0.08)  
 
@@ -514,25 +525,25 @@ N
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: left; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 R2
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 0.83    
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 0.83   
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
 
 0.84   
 
@@ -557,12 +568,13 @@ In RMarkdown documents, using `export_summs` and the chunk option
 output. Using the `to.word = TRUE` argument will create a Microsoft Word
 document with the table in it.
 
+### Plotting regression summaries (`plot_coefs` and `plot_summs`)
+
 Another way to get a quick gist of your regression analysis is to plot
 the values of the coefficients and their corresponding uncertainties
-with `plot_summs` (or the closely related `plot_coefs`). `jtools` has
-made some slight changes to `ggplot2` geoms to make everything look
-nice; and like with `export_summs`, you can still get your scaled models
-and robust standard errors.
+with `plot_summs` (or the closely related `plot_coefs`). Like with
+`export_summs`, you can still get your scaled models and robust standard
+errors.
 
 ``` r
 coef_names <- coef_names[1:4] # Dropping intercept for plots
@@ -591,110 +603,11 @@ estimate.
 arguments like `robust` and `scale`. This enables a wider range of
 models that have support from the `broom` package but not for `summ`.
 
-### Exploring interactions
-
-Unless you have a really keen eye and good familiarity with both the
-underlying mathematics and the scale of your variables, it can be very
-difficult to look at the ouput of regression model that includes an
-interaction and actually understand what the model is telling you.
-
-This package contains several means of aiding understanding and doing
-statistical inference with interactions.
-
-#### Johnson-Neyman intervals and simple slopes analysis
-
-The “classic” way of probing an interaction effect is to calculate the
-slope of the focal predictor at different values of the moderator. When
-the moderator is binary, this is especially informative—e.g., what is
-the slope for men vs. women? But you can also arbitrarily choose points
-for continuous moderators.
-
-With that said, the more statistically rigorous way to explore these
-effects is to find the Johnson-Neyman interval, which tells you the
-range of values of the moderator in which the slope of the predictor is
-significant vs. nonsignificant at a specified alpha level.
-
-The `sim_slopes` function will by default find the Johnson-Neyman
-interval and tell you the predictor’s slope at specified values of the
-moderator; by default either both values of binary predictors or the
-mean and the mean +/- one standard deviation for continuous moderators.
-
-``` r
-fiti <- lm(mpg ~ hp * wt, data = mtcars)
-sim_slopes(fiti, pred = hp, modx = wt, jnplot = TRUE)
-```
-
-    #> JOHNSON-NEYMAN INTERVAL 
-    #> 
-    #> When wt is OUTSIDE the interval [3.69, 5.90], the slope of hp is p <
-    #> .05.
-    #> 
-    #> Note: The range of observed values of wt is [1.51, 5.42]
-
-![](man/figures/j-n-plot-1.png)<!-- -->
-
-    #> SIMPLE SLOPES ANALYSIS 
-    #> 
-    #> Slope of hp when wt = 4.20 (+ 1 SD): 
-    #>   Est. S.E. t val.    p
-    #>  -0.00 0.01  -0.31 0.76
-    #> 
-    #> Slope of hp when wt = 3.22 (Mean): 
-    #>   Est. S.E. t val.    p
-    #>  -0.03 0.01  -4.07 0.00
-    #> 
-    #> Slope of hp when wt = 2.24 (- 1 SD): 
-    #>   Est. S.E. t val.    p
-    #>  -0.06 0.01  -5.66 0.00
-
-The Johnson-Neyman plot can really help you get a handle on what the
-interval is telling you, too. Note that you can look at the
-Johnson-Neyman interval directly with the `johnson_neyman` function.
-
-The above all generalize to three-way interactions, too.
-
-#### Visualizing interaction effects
-
-This function plots two- and three-way interactions using `ggplot2` with
-a similar interface to the aforementioned `sim_slopes` function. Users
-can customize the appearance with familiar `ggplot2` commands. It
-supports several customizations, like confidence intervals.
-
-``` r
-interact_plot(fiti, pred = hp, modx = wt, interval = TRUE)
-```
-
-![](man/figures/interact_plot_continuous-1.png)<!-- -->
-
-You can also plot the observed data for comparison:
-
-``` r
-interact_plot(fiti, pred = hp, modx = wt, plot.points = TRUE)
-```
-
-![](man/figures/interact_plot_continuous_points-1.png)<!-- -->
-
-The function also supports categorical moderators—plotting observed data
-in these cases can reveal striking patterns.
-
-``` r
-fitiris <- lm(Petal.Length ~ Petal.Width * Species, data = iris)
-interact_plot(fitiris, pred = Petal.Width, modx = Species, plot.points = TRUE)
-```
-
-![](man/figures/interact_plot_factor-1.png)<!-- -->
-
-You may also combine the plotting and simple slopes functions by using
-`probe_interaction`, which calls both functions simultaneously.
-Categorical by categorical interactions can be investigated using the
-`cat_plot` function.
-
 ### Other stuff
 
 There are several other things that might interest you.
 
-  - `effect_plot`: Plot predicted lines from regression models without
-    interactions
+  - `effect_plot`: Plot predicted lines from regression models
   - `gscale`: Scale and/or mean-center data, including `svydesign`
     objects
   - `scale_mod` and `center_mod`: Re-fit models with scaled and/or
@@ -703,11 +616,11 @@ There are several other things that might interest you.
     Test the ignorability of sample weights in regression models
   - `svycor`: Generate correlation matrices from `svydesign` objects
   - `theme_apa`: A mostly APA-compliant `ggplot2` theme
+  - `theme_nice`: A nice `ggplot2` theme
   - `add_gridlines` and `drop_gridlines`: `ggplot2` theme-changing
     convenience functions
-  - `make_predictions` and `plot_predictions`: a direct interface to the
-    internals of `interact_plot`, `cat_plot`, and `effect_plot` with
-    some added options
+  - `make_predictions`: an easy way to generate hypothetical predicted
+    data from your regression model for plotting or other purposes.
 
 Details on the arguments can be accessed via the R documentation
 (`?functionname`). There are now vignettes documenting just about

@@ -1,19 +1,10 @@
 
 #### Programming helpers #####################################################
 
-## Making a "opposite of %in%" or "not %in%" function to simplify code
-`%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
-
 ## Quicker way to get last item of vector
 last <- function(x) {return(x[length(x)])}
 ## Just so code reads more clearly when using last(x)
 first <- function(x) {return(x[1])}
-
-## Print rounded numbers with all requested digits, signed zeroes
-num_print <- function(x, digits = getOption("jtools-digits", 2),
-                      format = "f") {
-  formatC(x, digits = digits, format = "f")
-}
 
 check_if_zero_base <- function(x) {
   # this is the default tolerance used in all.equal
@@ -27,36 +18,6 @@ check_if_zero_base <- function(x) {
 
 # This seems to give about a 80%-90% speed boost
 check_if_zero <- Vectorize(check_if_zero_base)
-
-# Automate the addition of newline characters for long strings
-wrap_str <- function(..., sep = "") {
-  paste0(strwrap(paste(..., sep = sep), width = 0.95 * getOption("width", 80)),
-         collapse = "\n")
-}
-
-# Go ahead and wrap the cat function too
-cat_wrap <- function(..., brk = "") {
-  cat(wrap_str(...), brk, sep = "")
-}
-
-# Define orange crayon output
-orange <- crayon::make_style("orange")
-
-# Like cat_wrap but for warnings
-warn_wrap <- function(..., call. = FALSE, brk = "\n") {
-  warning(orange(wrap_str(...)), brk, call. = call.)
-}
-
-# Like cat_wrap but for errors
-stop_wrap <- function(..., call. = FALSE, brk = "\n") {
-  stop(red(wrap_str(...)), brk, call. = call.)
-}
-
-# Like cat_wrap but for messages
-#' @importFrom crayon cyan
-msg_wrap <- function(..., brk = "\n") {
-  message(cyan(wrap_str(...)), brk)
-}
 
 # Try to anticipate which S3 will be called (sloop package should have
 # something like this when it is released)
@@ -93,878 +54,144 @@ reg_match <- function(pattern, text, ignore.case = FALSE, perl = FALSE,
 
 }
 
-# Get levels if they exist, otherwise unique
-ulevels <- function(x) {
-  if (!is.null(levels(x))) {
-    return(levels(x))
+
+### Handle NA better #########################################################
+# Since I accept data from users and the global environment, there may be 
+# missing cases including in the raw data that weren't used in the model fit.
+# I can't use complete.cases since these data frames may include extra columns.
+# Rather than guess at which variables were used to determine missingness
+# (straightforward with lm, but could have hidden problems with glms/lmer/etc.)
+# I use the model.frame features for doing so.
+drop_missing <- function(model, data) {
+  na_action <- attr(model.frame(model), "na.action")
+  # If no "na.action" attribute, nothing to remove
+  if (is.null(na_action)) {
+    return(data)
+  }
+  to_remove <- names(na_action)
+  data <- data[rownames(data) %not% to_remove, ]
+  return(data)
+}
+
+### Formula helpers ##########################################################
+
+any_transforms <- function(formula, rhs.only = TRUE) {
+  if (rhs.only == TRUE) {
+    any(all_vars(formula) %nin% rownames(attr(terms(formula), "factor")))
   } else {
-    if (!is.numeric(x)) {
-      return(unique(x))
-    } else {
-      return(sort(unique(x)))
-    }
+    any(all.vars(formula) %nin% rownames(attr(terms(formula), "factor")))
   }
 }
 
-#### summ helpers ############################################################
-
-## Automates the adding of the significance stars to the output
-## Also rounds the digits and spits out a table from a matrix
-## Since it's doing double duty, also can skip the p vals if requested
-
-add_stars <- function(table, digits, p_vals) {
-
-  if (p_vals == TRUE) { # Only do this if showing p values
-
-    # Grab the unrounded p values
-    pvals <- table[,"p"]
-
-    # Create a NA-filled vector to speed up the loop
-    sigstars <- rep(NA, times = nrow(table))
-
-    # Add the stars
-    for (y in seq_along(pvals)) {
-
-      if (is.na(pvals[y]) || pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-
-    }
-
-  }
-
-  # Round the values
-  table <- round_df_char(table, digits)
-
-  # Can't do this in the first conditional because of the need to round
-  if (p_vals == TRUE) {
-    # Get the colnames so I can fix them after cbinding
-    tnames <- colnames(table)
-    # put in the stars
-    table <- cbind(table, sigstars)
-    # Makes the name for the stars column empty
-    colnames(table) <- c(tnames, "")
-  }
-
-  return(table)
-
+which_terms <- function(formula, var) {
+  terms <- terms(formula)
+  factors <- attr(terms, "factors")
+  names(factors[var,] %not% 0)
 }
 
-## Creates clean data frames for printing. Aligns decimal points,
-## padding extra space with " " (or another value), and rounds values.
-## Outputs a data.frame of character vectors containing the corrected
-## values.
-
-round_df_char <- function(df, digits, pad = " ", na_vals = NA) {
-
-  nas <- is.na(df)
-  if (!is.data.frame(df)) {
-    # Fixes a sneaky error
-    df <- as.data.frame.matrix(df, stringsAsFactors = FALSE)
-
-  }
-
-  rn <- rownames(df)
-  cn <- colnames(df)
-
-  df <- as.data.frame(lapply(df, function(col) {
-    if (suppressWarnings(all(!is.na(as.numeric(as.character(col)))))) {
-      as.numeric(as.character(col))
-    } else {
-      col
-    }
-  }), stringsAsFactors = FALSE)
-
-  nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
-
-  # Using a format function here to force trailing zeroes to be printed
-  # "formatC" allows signed zeros (e.g., "-0.00")
-  df <- as.data.frame(lapply(df, num_print, digits = digits),
-                      stringsAsFactors = FALSE)
-
-  # Convert missings to blank character
-  if (any(nas)) {
-    df[nas] <- ""
-  }
-
-  # Here's where we align the the decimals, thanks to Noah for the magic.
-  for (i in which(nums)) {
-    if (any(grepl(".", df[[i]], fixed = TRUE))) {
-
-      s <- strsplit(df[[i]], ".", fixed = TRUE)
-      lengths <- lengths(s)
-      digits.r.of.. <- sapply(seq_along(s), function(x) {
-
-        if (lengths[x] > 1) {
-          nchar(s[[x]][lengths[x]])
-        } else {
-          0
-        }
-      })
-
-      df[[i]] <- sapply(seq_along(df[[i]]), function(x) {
-        if (df[[i]][x] == "") {
-          ""
-        } else if (lengths[x] <= 1) {
-          paste0(c(df[[i]][x],
-                   rep(".", pad == 0),
-                   rep(pad, max(digits.r.of..) -
-                         digits.r.of..[x] + as.numeric(pad != 0))),
-                 collapse = "")
-        } else {
-          paste0(c(df[[i]][x], rep(pad, max(digits.r.of..) - digits.r.of..[x])),
-                    collapse = "")
-        }
-      })
-    }
-  }
-
-  if (length(rn) > 0) rownames(df) <- rn
-  if (length(cn) > 0) names(df) <- cn
-
-  # Insert NA placeholders
-  df[df == ""] <- na_vals
-
-  return(df)
+original_terms <- function(formula) {
+  o <- all.vars(formula)
+  names(o) <- rownames(attr(terms(formula), "factors"))
+  o
 }
 
-## This function gets the robust SEs
-
-do_robust <- function(model, robust, cluster, data) {
-
-  if (!requireNamespace("sandwich", quietly = TRUE)) {
-    stop("When using robust SEs, you need to have the \'sandwich\'",
-         " package.\n Please install it or set robust to FALSE.",
-         call. = FALSE)
-  }
-
-  if (robust == TRUE) {
-    robust <- "HC3"
-  }
-
-  if (is.character(cluster)) {
-
-    call <- getCall(model)
-    if (is.null(data)) {
-      d <- eval(call$data, envir = environment(formula(model)))
-    } else {
-      d <- data
-    }
-
-    cluster <- d[[cluster]]
-    use_cluster <- TRUE
-
-  } else if (length(cluster) > 1) {
-
-    if (!is.factor(cluster) & !is.numeric(cluster)) {
-
-      warning("Invalid cluster input. Either use the name of the variable",
-              " in the input data frame\n or provide a numeric/factor vector.",
-              " Cluster is not being used in the reported SEs.")
-      cluster <- NULL
-      use_cluster <- FALSE
-
-    } else {
-
-      use_cluster <- TRUE
-
-    }
-
-  } else {
-
-    use_cluster <- FALSE
-
-  }
-
-  if (robust %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
-    # vcovCL only goes up to HC3
-    coefs <- sandwich::vcovHC(model, type = robust)
-
-  } else if (robust %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
-
-    stop("If using cluster-robust SEs, robust.type must be HC3 or lower.")
-
-  } else {
-
-    coefs <- sandwich::vcovCL(model, cluster = cluster, type = robust)
-
-  }
-
-  vcov <- coefs
-  coefs <- coeftest(model, coefs)
-  ses <- coefs[,2]
-  ts <- coefs[,3]
-  ps <- coefs[,4]
-
-  list(coefs = coefs, ses = ses, ts = ts, ps = ps, use_cluster = use_cluster,
-       robust = robust, cluster = cluster, vcov = vcov)
-
-}
-
-## Put together the coefficient table
-
-create_table <- function(params, which.cols, ivs) {
-
-  if (any(which.cols %nin% names(params))) {
-    stop_wrap("One of the requested columns does not exist.")
-  }
-
-  coefs <- params[["Est."]]
-
-  params <- params[unlist(which.cols)]
-
-  mat <- matrix(nrow = length(ivs), ncol = length(which.cols))
-  rownames(mat) <- ivs
-  colnames(mat) <- which.cols
-
-  # Put each column in the return matrix
-  for (i in seq_along(params)) {
-
-    # Handle rank-deficient models
-    if (length(coefs) > length(params[[i]])) {
-      # Creating a vector the length of ucoefs (which has the NAs)
-      temp_vec <- rep(NA, times = length(coefs))
-      # Now I replace only at indices where ucoefs is non-missing
-      temp_vec[which(!is.na(coefs))] <- params[[i]]
-      # Now replace params[[i]] with the vector that includes the missings
-      params[[i]] <- temp_vec
-    }
-
-    mat[,i] <- params[[i]]
-
-  }
-
-  return(mat)
-
-}
-
-## Decide which columns will be included in the output
-
-which_columns <- function(which.cols, margins = FALSE,
-                          confint, ci.labs, vifs, pvals, t.col,
-                          exp = NULL, df = FALSE, others = NULL) {
-
-  if (!is.null(which.cols)) {
-    return(which.cols)
-  } else {
-    if (is.null(exp) || exp == FALSE) {
-      cols <- c("Est.")
-    } else {
-      cols <- c("exp(Est.)")
-    }
-    if (confint == TRUE) {
-      cols <- c(cols, ci.labs)
-    } else {
-      cols <- c(cols, "S.E.")
-    }
-    if (margins == TRUE) {
-      cols <- c(cols, "A.M.E.")
-    }
-    cols <- c(cols, t.col)
-    if (df == TRUE) {cols <- c(cols, "d.f.")}
-    if (pvals == TRUE) {cols <- c(cols, "p")}
-    if (vifs == TRUE) {cols <- c(cols, "VIF")}
-    if (!is.null(others)) {cols <- c(cols, others)}
-    return(cols)
-  }
-
-}
-
-## Partial and semipartial correlation calculations
-
-part_corr <- function(ts, df.int, rsq, robust, n) {
-
-  # Need df
-  ## Using length of t-value vector to get the p for DF calculation
-  p.df <- length(ts) - df.int # If intercept, don't include it
-  df.resid <- n - p.df - 1
-
-  partial_corrs <- ts / sqrt(ts^2 + df.resid)
-  if (df.int == 1) {
-    partial_corrs[1] <- NA # Intercept partial corr. isn't interpretable
-  }
-
-  semipart_corrs <- (ts * sqrt(1 - rsq))/sqrt(df.resid)
-  if (df.int == 1) {
-    semipart_corrs[1] <- NA # Intercept partial corr. isn't interpretable
-  }
-
-  if (!identical(FALSE, robust)) {
-
-    warning("Partial/semipartial correlations calculated based on robust",
-            " t-statistics.\n See summ.lm documentation for cautions on",
-            " \ninterpreting partial and semipartial correlations alongside",
-            " robust standard errors.")
-
-  }
-
-  list(partial_corrs = partial_corrs, semipart_corrs = semipart_corrs)
-
-}
-
-## Checking for presence of deprecated
-
-dep_checks <- function(dots) {
-
-  scale <-  transform.response <- robust <- odds.ratio <- NULL
-
-  if ("standardize" %in% names(dots)) {
-    warn_wrap("The standardize argument is deprecated. Please use 'scale'
-              instead.", call. = FALSE)
-    scale <- dots$standardize
-  }
-
-  if ("standardize.response" %in% names(dots)) {
-    warn_wrap("The standardize.response argument is deprecated. Please use
-              'transform.response' instead.", call. = FALSE)
-    transform.response <- dots$standardize.response
-  }
-
-  if ("scale.response" %in% names(dots)) {
-    warn_wrap("The scale.response argument is deprecated. Please use
-              'transform.response' instead.", call. = FALSE)
-    transform.response <- dots$scale.response
-  }
-
-  if ("center.response" %in% names(dots)) {
-    warn_wrap("The center.response argument is deprecated. Please use
-              'transform.response' instead.", call. = FALSE)
-    transform.response <- dots$center.response
-  }
-
-  if ("robust.type" %in% names(dots)) {
-    warn_wrap("The robust.type argument is deprecated. Please specify the type
-               as the value for the 'robust' argument instead.", call. = FALSE)
-    robust <- dots$robust.type
-  }
-
-  if ("odds.ratio" %in% names(dots)) {
-    warn_wrap("The odds.ratio argument is deprecated. Use 'exp' instead.",
-              call. = FALSE)
-    robust <- dots$robust.type
-  }
-
-  list(scale = scale, transform.response = transform.response, robust = robust,
-       exp = odds.ratio)
-
-}
-
-## Form the sentence that says what happened with variable transformations
-
-scale_statement <- function(scale, center, transform.response, n.sd) {
-  part_1 <- "Continuous "
-  part_2 <- ifelse(transform.response, "variables", "predictors")
-  part_3 <- " are mean-centered"
-  part_4 <- if (scale) { " and scaled by " } else { NULL }
-  part_5 <- if (scale) { paste(n.sd, "s.d") } else { NULL }
-
-  if (scale == FALSE & center == FALSE) {
-    return(NULL)
-  } else {
-    paste0(part_1, part_2, part_3, part_4, part_5, ".")
-  }
-}
-
-## Adapted from car::vif
-vif <- function(mod, vcov = NULL, mod.matrix = NULL, ...) {
-
-  if (any(is.na(coef(mod)))) {
-    stop_wrap("VIFs cannot be calculated because there are aliased
-              coefficients in the model.")
-  }
-
-  if (is.null(vcov)) {
-    v <- vcov(mod)
-  } else {v <- vcov}
-  assign <- if (is.null(mod.matrix)) {
-    attr(model.matrix(mod), "assign")
-  } else {
-    attr(mod.matrix, "assign")
-  }
-
-  if ("(Intercept)" %in% names(coefficients(mod))) {
-    v <- v[-1, -1]
-    assign <- assign[-1]
-  } else {
-    warning("No intercept: VIFs may not be sensible.")
-  }
-
-  terms <- labels(terms(mod))
-  n.terms <- length(terms)
-
-  if (n.terms < 2) {
-    stop_wrap("VIFS cannot be calculated because the model contains fewer
-              than 2 terms.")
-  }
-
-  R <- cov2cor(v)
-  detR <- det(R)
-  result <- matrix(0, n.terms, 3)
-  rownames(result) <- terms
-  colnames(result) <- c("GVIF", "Df", "GVIF^(1/(2*Df))")
-
-  for (term in 1:n.terms) {
-    subs <- which(assign == term)
-    result[term, 1] <- det(as.matrix(R[subs, subs])) *
-      det(as.matrix(R[-subs, -subs])) / detR
-    result[term, 2] <- length(subs)
-  }
-  if (all(result[, 2] == 1)) {
-    result <- result[, 1]
-  } else {
-    result[, 3] <- result[, 1]^(1/(2 * result[, 2]))
-    expand_fun <- function(x) {
-      if ("(Intercept)" %in% names(coefficients(mod))) {
-        rep(x, times = table(attr(model.matrix(mod), "assign")[-1]))
-      } else {
-        rep(x, times = table(attr(model.matrix(mod), "assign")))
-      }
-    }
-    result <- apply(result, MARGIN = 2, FUN = expand_fun)
-  }
-
-  return(result)
-
-}
-
-## Print the model info output
-
-print_mod_info <- function(missing, n, dv, type) {
-  if (is.null(missing) || missing == 0) {
-    cat(underline("MODEL INFO:"), "\n",
-        italic("Observations:"), " ",  n, "\n",
-        italic("Dependent Variable:"), " ", dv, "\n", sep = "")
-  } else {
-    cat(underline("MODEL INFO:"), "\n",
-        italic("Observations:"), " ", n, " (", missing,
-        " missing obs. deleted)", "\n",
-        italic("Dependent Variable:"), " ", dv, "\n", sep = "")
-  }
-  cat(italic("Type:"), type, "\n\n")
-}
-
-## Take model info and save as list
-
-mod_info_list <- function(missing, n, dv, type) {
-  out <- list(dv = dv, n = n, type = type)
-  if (!is.null(missing) && missing != 0) {
-    out$missing <- missing
-  }
-  return(out)
-}
-
-## Print model fit info
-
-print_mod_fit <- function(stats) {
-  cat(underline("MODEL FIT:"), "\n", sep = "")
-  cat(stats, "\n\n")
-}
-
-## Print line about standard errors
-
-print_se_info <- function(robust, use_cluster, manual = NULL, ...) {
-
-  if (identical(FALSE, robust)) {
-
-    cat(italic("Standard errors:",  ifelse(is.null(manual),
-                                           no = manual, yes = "MLE")),
-        "\n", sep = "")
-
-  } else {
-
-    if (robust == TRUE) {robust <- "HC3"}
-
-    cat(italic("Standard errors:"), sep = "")
-
-    if (use_cluster == FALSE) {
-
-      cat(" Robust, ", italic("type = "), robust, "\n", sep = "")
-
-    } else if (use_cluster == TRUE) {
-
-      cat(" Cluster-robust, ", italic("type = "), robust, "\n", sep = "")
-
-    }
-
-  }
-
-}
-
-## Save SE info as string
-
-get_se_info <- function(robust, use_cluster, manual = NULL, ...) {
-
-  if (identical(FALSE, robust)) {
-
-    ifelse(is.null(manual), no = manual, yes = "MLE")
-
-  } else {
-
-    if (robust == TRUE) {robust <- "HC3"}
-
-    if (use_cluster == FALSE) {
-
-      paste0("Robust, type = ", robust)
-
-    } else if (use_cluster == TRUE) {
-
-      paste0("Cluster-robust, type = ", robust)
-
-    }
-
-  }
-
-}
-
-## Create confidence interval column labels
-
-make_ci_labs <- function(ci.width) {
-
-  alpha <- (1 - ci.width) / 2
-
-  lci_lab <- 0 + alpha
-  lci_lab <- paste(round(lci_lab * 100, 1), "%", sep = "")
-
-  uci_lab <- 1 - alpha
-  uci_lab <- paste(round(uci_lab * 100, 1), "%", sep = "")
-
-  list(lci = lci_lab, uci = uci_lab)
-
-}
-
-format_percentiles <- function(probs, digits) {
-  paste0(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
-        "%")
-}
-
-confint_linear <- function (object, parm, level = 0.95, cov = NULL,
-                            df.residual = NULL, ...) {
-  cf <- coef(object)
-  pnames <- names(cf)
-  if (missing(parm))
-    parm <- pnames
-  else if (is.numeric(parm))
-    parm <- pnames[parm]
-  a <- (1 - level)/2
-  a <- c(a, 1 - a)
-  pct <- format_percentiles(a, 3)
-  if (is.null(df.residual)) {
-    fac <- qnorm(a)
-  } else {
-    fac <- qt(a, df.residual)
-  }
-  ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm,
-                                                             pct))
-  if (is.null(vcov)) {
-    ses <- sqrt(diag(vcov(object)))[parm]
-  } else {
-    ses <- sqrt(diag(cov))[parm]
-  }
-  ci[] <- cf[parm] + ses %o% fac
-  ci
-}
-
-mod_rank <- function(model) {
-  preds <- length(attr(terms(model), "order"))
-  int <- attr(terms(model), "intercept")
-  return(preds + int)
-}
-
-# hux_theme <- function(table, align_body = "right", caption = NULL,
-#                       use_colnames = TRUE, width = .2,
-#                       latex = knitr::is_latex_output()) {
-#   # table <- huxtable::theme_striped(table, header_row = FALSE,
-#   #                                  header_col = FALSE)
-#   if (latex) { # don't shade odd rows if latex
-#     table <- huxtable::set_background_color(table, huxtable::odds,
-#                                           huxtable::everywhere,
-#                                           grDevices::grey(0.9))
-#   }
-  
-#   if (use_colnames == TRUE) {
-#     table <- huxtable::add_colnames(table)
-#     table <- huxtable::set_bold(table, row = 1, col = 1:ncol(table),
-#                                 value = TRUE)
-#     table <- huxtable::set_align(table, row = 1, col = 1:ncol(table), "center")
-#     table <- huxtable::set_bottom_border(table, row = 1, col = 1:ncol(table), 1)
-#   }
-
-#   body_rows <- (1 + use_colnames):nrow(table)
-#   table <- huxtable::set_bold(table, row = body_rows, col = 1, value = TRUE)
-#   table <- huxtable::set_align(table, row = body_rows, col = 2:ncol(table),
-#                                align_body)
-#   table <- huxtable::set_align(table, row = body_rows, col = 1, "left")
-
-#   if (!is.null(caption)) {
-#     table <- huxtable::insert_row(table,
-#                                   c(caption, rep(NA, times = ncol(table) - 1)),
-#                                   after = 0)
-#     table <- huxtable::set_colspan(table, row = 1, col = 1, ncol(table))
-#     table <- huxtable::set_background_color(table, 1, huxtable::everywhere,
-#                                             "white")
-#     table <- huxtable::set_bold(table, row = 1, col = 1:ncol(table),
-#                                 value = TRUE)
-#     table <- huxtable::set_align(table, row = 1, col = 1:ncol(table), "center")
-#     table <- huxtable::set_bottom_border(table, row = 1, col = 1:ncol(table), 1)
-#   }
-
-#   table <- huxtable::set_position(table,
-#                                   ifelse(latex, no = "left", yes = "center"))
-#   # table <- huxtable::set_width(table, width)
-
-#   return(table)
+# get_response <- function(formula) {
+#   original_terms(formula)[attr(terms(formula), "response")]
 # }
 
-#' @importFrom magrittr "%>%"
-#' @importFrom magrittr "%<>%"
-to_kable <- function(t, html = !knitr::is_latex_output(), caption = NULL,
-                     cols = NULL, footnote = NULL, row.names = FALSE,
-                     col.names = NA, escape = knitr::is_latex_output(),
-                     format = NULL) {
-  
-  # I've already converted numeric values to character, so I need to
-  # tell kable to right-align them like it would do for numbers
-  if (row.names == TRUE) {
-    numerics <- names(t) %nin% ""
-    align <- ifelse(numerics, yes = "r", no = "l")
-  } else if (ncol(t) == 2) {
-    align <- c("l", "r")
+# Adapted from formula.tools
+two_sided <- function(x, ...) {
+  # from operator.tools::operators()
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  is.name(x[[1]]) && deparse(x[[1]]) %in% operators && length(x) == 3
+}
+
+# Adapted from formula.tools
+one_sided <- function(x, ...) {
+  # from operator.tools::operators()
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  is.name(x[[1]]) && deparse(x[[1]]) %in% operators && length(x) == 2
+}
+
+# Adapted from formula.tools
+get_lhs <- function(x) {
+  if (two_sided(x) == TRUE) {
+    x[[2]] 
+  } else if(one_sided(x)) {
+    NULL   
   } else {
-    align <- NULL
+    stop_wrap(x, "does not appear to be a one- or two-sided formula.")
   }
-  
-  # format <- ifelse(html, yes = "html", no = "latex")
-  t %<>% knitr::kable(format = format, row.names = row.names,
-                      col.names = col.names, escape = escape,
-                      booktabs = TRUE, align = align)
-  
-  if (length(caption) > 0) { # I'm getting a character(0) object here sometimes
-    head <- cols
-    names(head) <- caption
-    t %<>% kableExtra::add_header_above(header = head)
-  }
-  
-  # center <- if (bold) {"left"} else {"center"}
-
-  t %<>%
-    kableExtra::kable_styling(
-      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-      full_width = FALSE,
-      position = "center",
-      latex_options = c("hold_position", "striped")
-    )
-
-  if (html == TRUE) {
-    t %<>% kableExtra::column_spec(1, bold = TRUE)
-  }
-  
-  if (length(footnote) > 0) {
-    t %<>% kableExtra::footnote(general = footnote, 
-                                general_title = "",
-                                threeparttable = TRUE)
-  }
-  
-  return(t)
-    
 }
 
-kableExtra_latex_deps <- list(
-  list(name = "booktabs"),
-  list(name = "longtable"),
-  list(name = "array"),
-  list(name = "multirow"),
-  list(name = "xcolor", options = "table"),
-  list(name = "wrapfig"),
-  list(name = "float"),
-  list(name = "colortbl"),
-  list(name = "pdflscape"),
-  list(name = "tabu"),
-  list(name = "threeparttable"),
-  list(name = "threeparttablex"),
-  list(name = "ulem", options = "ulem"),
-  list(name = "makecell")
-)
-
-## Pandoc converts single asterisks to a black dot
-escape_stars <- function(t) {
-  if (any(colnames(t) == "")) {
-    t[,which(colnames(t) == "")] <- 
-      gsub("^\\*$", "\\\\*", t[,which(colnames(t) =="")])
-  }
-  return(t)
+is_lhs_transformed <- function(x) {
+  final <- as.character(deparse(get_lhs(x)))
+  bare_vars <- all.vars(get_lhs(x))
+  any(final != bare_vars)
 }
 
-### pseudo-R2 ################################################################
-
-## This is taken from pscl package, I don't want to list it as import for
-## this alone. The return object needs tweaking for me anyway
-pR2Work <- function(llh, llhNull, n, object = NULL, objectNull = NULL) {
-  McFadden <- as.numeric(1 - llh / llhNull)
-  G2 <- as.numeric(-2 * (llhNull - llh))
-  r2ML <- as.numeric(1 - exp(-G2 / n))
-  r2ML.max <- as.numeric(1 - exp(llhNull * 2 / n))
-  r2CU <- r2ML / r2ML.max
-
-  out <- NULL
-  out$llh <- llh
-  out$llhNull <- llhNull
-
-  out$G2 <- G2
-  out$McFadden <- McFadden
-  out$r2ML <- r2ML
-  out$r2CU <- r2CU
-
-  if (!is.null(object)) {
-    the_aov <- anova(objectNull, object, test = "Chisq")
-
-    out$chisq <- the_aov$Deviance[2]
-    out$chisq_df <- the_aov$Df[2]
-    out$chisq_p <- the_aov$`Pr(>Chi)`[2]
+# Adapted from formula.tools
+get_rhs <- function(x) {
+  # from operator.tools::operators()
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  
+  if (as.character(x[[1]]) %nin% operators) {
+    stop_wrap(x[[1]], "does not appear to be an operator.")
   }
+  
+  if (two_sided(x) == TRUE) {x[[3]]} else if (one_sided(x) == TRUE) {x[[2]]}
+} 
 
-  out
+all_vars <- function(formula) {
+  if (two_sided(formula)) {
+    c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
+  } else if (one_sided(formula)) {
+    all.vars(get_rhs(formula))
+  }
 }
 
-pR2 <- function(object) {
-
-  llh <- getLL(object)
-
-  if (family(object)$family %in% c("quasibinomial","quasipoisson")) {
-    msg_wrap("Note: Pseudo-R2 for quasibinomial/quasipoisson families is
-             calculated by refitting the fitted and null models as
-             binomial/poisson.")
-  }
-
-  frame <- model.frame(object)
-
-  .weights <- model.weights(frame)
-  .offset <- model.offset(frame)
-
-  dv <- names(frame)[1]
-  form <- as.formula(paste(paste0("`", dv, "`", "~ 1")))
-  # Create new environment
-  e <- new.env()
-  # Add everything from the model's data to this environment
-  lapply(names(frame), function(x, env, f) {env[[x]] <- f[[x]]}, env = e,
-         f = frame)
-  # Add the offset to the environment
-  e$`.offset` <- .offset
-  # Add the weights to the environment
-  e$`.weights` <- .weights
-  # Add the environment to the formula
-  environment(form) <- e
-
-  # Get the model's original call
-  call <- getCall(object)
-  # Replace that call's formula with this new one that includes the modified
-  # environment. Then set the `data` arg of the call to NULL so it looks only
-  # in the new, modified environment
-  call$formula <- form
-  call$data <- NULL
-  # Conditionally add the names of the offset and weights args
-  if (!is.null(.offset)) {
-    call$offset <- quote(.offset)
-  }
-  if (!is.null(.weights)) {
-    call$weights <- quote(.weights)
-  }
-  # Update the model
-  objectNull <- eval(call)
-  # objectNull <- j_update(object, formula = form, weights = .weights,
-  #                        offset = .offset, data = frame)
-
-  llhNull <- getLL(objectNull)
-  n <- dim(object$model)[1]
-  pR2Work(llh, llhNull, n, object, objectNull)
-
-}
-
-# Enabling support for quasi families
-#' @importFrom stats poisson binomial family
-getLL <- function(object) {
-
-  fam <- family(object)
-  link <- fam$link
-  fam <- fam$family
-  quasis <- c("quasibinomial","quasipoisson","quasi")
-  if (fam %nin% quasis) {
-    return(logLik(object))
-  } else {
-    if (fam == "quasipoisson") {
-      poisson_family <- poisson(link = link)
-      logLik(j_update(object, family = poisson_family))
-    } else if (fam == "quasibinomial") {
-      binom_family <- binomial(link = link)
-      logLik(j_update(object, family = binom_family))
-    } else {
-      NA
-    }
-  }
-
-}
-
-### Have to specify data differently than pscl to fix namespace issues
-# pR2 <- function(object) {
-#   llh <- suppressWarnings(logLik(object))
-#   if (class(object)[1] %in% c("svyglm","svrepglm")) {
-#     objectNull <- suppressWarnings(update(object, ~ 1,
-#                                           design = object$survey.design))
+# any_interaction <- function(formula) {
+#   any(attr(terms(formula), "order") > 1)
+# }
+# 
+# get_interactions <- function(formula) {
+#   if (any_interaction(formula)) {
+#     ts <- terms(formula)
+#     labs <- paste("~", attr(ts, "term.labels"))
+#     forms <- lapply(labs, as.formula)
+#     forms <- forms[which(attr(ts, "order") > 1)]
+#     ints <- lapply(forms, all.vars)
+#     names(ints) <- attr(ts, "term.labels")[which(attr(ts, "order") > 1)]
+#     return(ints)
 #   } else {
-#   objectNull <- suppressWarnings(update(object, ~ 1,
-#                                         data = model.frame(object)))
+#     stop_wrap("No interactions found in this formula.")
 #   }
-#   llhNull <- logLik(objectNull)
-#   n <- dim(object$model)[1]
-#   pR2Work(llh,llhNull,n)
 # }
-
-#### Quantile regression helpers ##############################################
-
-# Get R1 (Koenker & Machado, 1999)
-#' @importFrom stats model.response
-R1 <- function(model) {
-  rho_1 <- model$rho
-  null_resids <- model.frame(model)[[1]] - quantile(model.frame(model)[[1]],
-                                                  model$tau)
-
-  rho_0 <- sum(null_resids * (model$tau - (null_resids < 0)))
-
-  return(1 - (rho_1 / rho_0))
-}
-
-rq_model_matrix <- function(object) {
-  mt <- terms(object)
-  m <- model.frame(object)
-  y <- model.response(m)
-  if (object$method == "sfn")
-    x <- object$model$x
-  else x <- model.matrix(mt, m, contrasts = object$contrasts)
-  return(x)
-}
-
-rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
-                      iid = TRUE, interp = TRUE, tcrit = TRUE, ...) {
-
-  rq.fit.br(x, y, tau = tau, alpha = alpha, ci = ci, iid = iid,
-            interp = interp, tcrit = tcrit)
-
-}
 
 #### Weighted helpers ########################################################
 
-wtd.sd <- function(x, w) {
+#' @title Weighted standard deviation calculation
+#' @description This function calculates standard deviations with weights and
+#'  is a counterpart to the built-in `weighted.mean` function.
+#' @param x A vector of values for which you want the standard deviation
+#' @param weights A vector of weights equal in length to `x`
+#' @rdname wtd.sd 
+#' @export 
+
+wtd.sd <- function(x, weights) {
   # Get the mean
-  xm <- weighted.mean(x, w, na.rm = TRUE)
+  xm <- weighted.mean(x, weights, na.rm = TRUE)
   # Squaring the weighted deviations and dividing by weighted N - 1
-  variance <- sum((w * (x - xm)^2) / (sum(w) - 1), na.rm = TRUE)
+  variance <- sum((weights * (x - xm)^2) / (sum(weights) - 1), na.rm = TRUE)
   # Standard deviation is sqrt(variance)
   sd <- sqrt(variance)
   # Return the SD
@@ -995,66 +222,34 @@ wtd.table <- function(x, weights = NULL, na.rm = TRUE) {
 
 }
 
+### weighted effects coding ##################################################
+
+#' @importFrom stats contr.treatment
+
+contr.weighted <- function(x, base = 1, weights = NULL) {
+
+  frequencies <- wtd.table(x, weights = weights)
+  n.cat <- length(frequencies)
+
+  # If base level is named, get the index
+  if (is.character(base)) {
+    base <- which(levels(x) == base)
+  }
+
+  new.contrasts <- contr.treatment(n.cat, base = base)
+  new.contrasts[base, ] <- -1 * frequencies[-base]/frequencies[base]
+  colnames(new.contrasts) <- names(frequencies[-base])
+
+  return(new.contrasts)
+
+}
+
 #### Regex helper ############################################################
 
 # Taken from Hmisc
 escapeRegex <- function(string) {
   gsub('([.|()\\^{}+$*?]|\\[|\\])', '\\\\\\1', string)
 }
-
-#### ncvTest #################################################################
-
-## Taken from car package with modifications so it doesn't break j_summ
-ncvTest <- function(model, ...){
-  UseMethod("ncvTest")
-}
-
-ncvTest.lm <- function(model, var.formula, ...) {
-  # data <- getCall(model)$data
-  # model <- if (!is.null(data)){
-  #   data <- eval(data, envir=environment(formula(model)))
-  #   update(model, formula(model), na.action="na.exclude", data=data)
-  # }
-  # else update(model, formula(model), na.action="na.exclude")
-  sumry <- summary(model)
-  residuals <- residuals(model, type = "pearson")
-  S.sq <- stats::df.residual(model) * (sumry$sigma)^2 / sum(!is.na(residuals))
-  .U <- (residuals^2) / S.sq
-  if (missing(var.formula)) {
-    mod <- lm(.U ~ fitted.values(model))
-    varnames <- "fitted.values"
-    var.formula <- ~ fitted.values
-    df <- 1
-  }
-  else {
-    form <- as.formula(paste0(".U ~ ", as.character(var.formula)[[2]]))
-    mod <- if (!is.null(data)) {
-      data$.U <- .U
-      lm(form, data = data)
-    }
-    else lm(form)
-    df <- sum(!is.na(coefficients(mod))) - 1
-  }
-  SS <- anova(mod)$"Sum Sq"
-  RegSS <- sum(SS) - SS[length(SS)]
-  Chisq <- RegSS/2
-  result <- list(formula = var.formula, formula.name = "Variance",
-                 ChiSquare = Chisq, Df = df,
-                 p = stats::pchisq(Chisq, df, lower.tail = FALSE),
-                 test = "Non-constant Variance Score Test")
-  class(result) <- "chisqTest"
-  result
-}
-
-# print.chisqTest <- function(x, ...) {
-#   title <- if (!is.null(x$test)) x$test else "Chisquare Test"
-#   cat(title,"\n")
-#   if (!is.null(x$formula)) cat(x$formula.name,
-#                                "formula:", as.character(x$formula), "\n")
-#   cat("Chisquare =", x$ChiSquare,"   Df =", x$Df,
-#       "    p =", x$p, "\n")
-#   invisible(x)
-# }
 
 ### Hadley update #############################################################
 # from https://stackoverflow.com/questions/13690184/update-inside-a-function-
@@ -1102,172 +297,6 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
   if (is.null(call.env)) {call.env <- parent.frame()}
 
   eval(call, env, call.env)
-}
-
-
-
-### cut2 ######################################################################
-
-## Taken from Hmisc package to avoid importing for a minor feature
-## Added "levels.median"
-#' @importFrom stats approx
-#'
-cut2 <- function(x, cuts, m = 150, g, levels.mean = FALSE,
-                 levels.median = FALSE, digits,
-                 minmax = TRUE, oneval = TRUE, onlycuts = FALSE) {
-  method <- 1
-  x.unique <- sort(unique(c(x[!is.na(x)], if (!missing(cuts)) cuts)))
-  min.dif <- min(diff(x.unique))/2
-  min.dif.factor <- 1
-  if (missing(digits))
-    digits <- if (levels.mean)
-      5
-  else 3
-  oldopt <- options("digits")
-  options(digits = digits)
-  on.exit(options(oldopt))
-  xlab <- attr(x, "label")
-  if (missing(cuts)) {
-    nnm <- sum(!is.na(x))
-    if (missing(g))
-      g <- max(1, floor(nnm/m))
-    if (g < 1)
-      stop("g must be >=1, m must be positive")
-    options(digits = 15)
-    n <- table(x)
-    xx <- as.double(names(n))
-    options(digits = digits)
-    cum <- cumsum(n)
-    m <- length(xx)
-    y <- as.integer(ifelse(is.na(x), NA, 1))
-    labs <- character(g)
-    cuts <- approx(cum, xx, xout = (1:g) * nnm/g, method = "constant",
-                   rule = 2, f = 1)$y
-    cuts[length(cuts)] <- max(xx)
-    lower <- xx[1]
-    upper <- 1e+45
-    up <- low <- double(g)
-    i <- 0
-    for (j in 1:g) {
-      cj <- if (method == 1 || j == 1)
-        cuts[j]
-      else {
-        if (i == 0)
-          stop("program logic error")
-        s <- if (is.na(lower))
-          FALSE
-        else xx >= lower
-        cum.used <- if (all(s))
-          0
-        else max(cum[!s])
-        if (j == m)
-          max(xx)
-        else if (sum(s) < 2)
-          max(xx)
-        else approx(cum[s] - cum.used, xx[s], xout = (nnm -
-                                                        cum.used)/(g - j + 1),
-                    method = "constant",
-                    rule = 2, f = 1)$y
-      }
-      if (cj == upper)
-        next
-      i <- i + 1
-      upper <- cj
-      y[x >= (lower - min.dif.factor * min.dif)] <- i
-      low[i] <- lower
-      lower <- if (j == g)
-        upper
-      else min(xx[xx > upper])
-      if (is.na(lower))
-        lower <- upper
-      up[i] <- lower
-    }
-    low <- low[1:i]
-    up <- up[1:i]
-    variation <- logical(i)
-    for (ii in 1:i) {
-      r <- range(x[y == ii], na.rm = TRUE)
-      variation[ii] <- diff(r) > 0
-    }
-    if (onlycuts)
-      return(unique(c(low, max(xx))))
-    flow <- format(low)
-    fup <- format(up)
-    bb <- c(rep(")", i - 1), "]")
-    labs <- ifelse(low == up | (oneval & !variation), flow,
-                   paste("[", flow, ",", fup, bb, sep = ""))
-    ss <- y == 0 & !is.na(y)
-    if (any(ss))
-      stop_wrap("categorization error in cut2.  Values of x not appearing in
-                any interval:", paste(format(x[ss], digits = 12),
-                                        collapse = " "),
-                 "Lower endpoints:", paste(format(low, digits = 12),
-                                             collapse = " "),
-                "\nUpper endpoints:", paste(format(up, digits = 12),
-                                            collapse = " "))
-    y <- structure(y, class = "factor", levels = labs)
-  }
-  else {
-    if (minmax) {
-      r <- range(x, na.rm = TRUE)
-      if (r[1] < cuts[1])
-        cuts <- c(r[1], cuts)
-      if (r[2] > max(cuts))
-        cuts <- c(cuts, r[2])
-    }
-    l <- length(cuts)
-    k2 <- cuts - min.dif
-    k2[l] <- cuts[l]
-    y <- cut(x, k2)
-    if (!levels.mean) {
-      brack <- rep(")", l - 1)
-      brack[l - 1] <- "]"
-      fmt <- format(cuts)
-      labs <- paste("[", fmt[1:(l - 1)], ",", fmt[2:l],
-                    brack, sep = "")
-      if (oneval) {
-        nu <- table(cut(x.unique, k2))
-        if (length(nu) != length(levels(y)))
-          stop("program logic error")
-        levels(y) <- ifelse(nu == 1, c(fmt[1:(l - 2)],
-                                       fmt[l]), labs)
-      }
-      else levels(y) <- labs
-    }
-  }
-  if (levels.mean) {
-    means <- tapply(x, y, function(w) mean(w, na.rm = TRUE))
-    levels(y) <- format(means)
-  } else if (levels.median) {
-    medians <- tapply(x, y, function(w) median(w, na.rm = TRUE))
-    levels(y) <- format(medians)
-  }
-  attr(y, "class") <- "factor"
-  # if (length(xlab))
-  #   label(y) <- xlab
-  y
-}
-
-### weighted effects coding ##################################################
-
-#' @importFrom stats contr.treatment
-
-contr.weighted <- function(x, base = 1, weights = NULL) {
-
-  frequencies <- wtd.table(x, weights = weights)
-  n.cat <- length(frequencies)
-
-  # If base level is named, get the index
-  if (is.character(base)) {
-    base <- which(levels(x) == base)
-  }
-
-  new.contrasts <- contr.treatment(n.cat, base = base)
-  new.contrasts[base, ] <- -1 * frequencies[-base]/frequencies[base]
-  colnames(new.contrasts) <- names(frequencies[-base])
-
-  return(new.contrasts)
-
 }
 
 ### coeftest ##################################################################
@@ -1343,7 +372,7 @@ coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
 
   rval <- cbind(est, se, tval, pval)
   colnames(rval) <- cnames
-  class(rval) <- "coeftest"
+  # class(rval) <- "coeftest"
   attr(rval, "method") <- paste(mthd, "test of coefficients")
   ##  dQuote(class(x)[1]), "object", sQuote(deparse(substitute(x))))
   return(rval)
