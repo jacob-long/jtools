@@ -34,7 +34,7 @@ well. Support for the `survey` package's `svyglm` objects as well as weighted
 regressions is a common theme throughout.
 
 **Notice:** As of `jtools` version 2.0.0, all functions dealing with 
-interactions (e.g., `interact_plot`, `sim_slopes, `johnson_neyman`) have been
+interactions (e.g., `interact_plot`, `sim_slopes`, `johnson_neyman`) have been
 moved to a new package, aptly named 
 [`interactions`](https://interactions.jacob-long.com).
 

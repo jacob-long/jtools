@@ -397,7 +397,7 @@ export_summs <- function(...,
 #'   "Model", but you can specify it here since it is rather difficult to
 #'   change later via `ggplot2`'s typical methods.
 #' @param groups If you would like to have facets (i.e., separate panes) for
-#'   different groups of coefficients, you can specifiy those groups with a
+#'   different groups of coefficients, you can specify those groups with a
 #'   list here. See details for more on how to do this.
 #' @param facet.rows The number of rows in the facet grid (the `nrow` argument
 #'   to [ggplot2::facet_wrap()]).

@@ -70,7 +70,7 @@ model from the others? Default is TRUE.}
 change later via \code{ggplot2}'s typical methods.}
 
 \item{groups}{If you would like to have facets (i.e., separate panes) for
-different groups of coefficients, you can specifiy those groups with a
+different groups of coefficients, you can specify those groups with a
 list here. See details for more on how to do this.}
 
 \item{facet.rows}{The number of rows in the facet grid (the \code{nrow} argument

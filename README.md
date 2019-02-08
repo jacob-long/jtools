@@ -24,9 +24,9 @@ statistical purposes as well. Support for the `survey` package’s
 throughout.
 
 **Notice:** As of `jtools` version 2.0.0, all functions dealing with
-interactions (e.g., `interact_plot`, `sim_slopes,`johnson\_neyman`) have
-been moved to a new package, aptly named
-[`interactions\`\](<https://interactions.jacob-long.com>).
+interactions (e.g., `interact_plot`, `sim_slopes`, `johnson_neyman`)
+have been moved to a new package, aptly named
+[`interactions`](https://interactions.jacob-long.com).
 
 ## Installation
 
@@ -178,7 +178,7 @@ coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
 export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
 ```
 
-<table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto; ">
+<table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto;  ">
 
 <col>
 

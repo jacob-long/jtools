@@ -178,7 +178,7 @@ shouldn't have much effect on end users.
 
 # jtools 1.1.0
 
-This release was initally intended to be a bugfix release, but enough other
+This release was initially intended to be a bugfix release, but enough other
 things came up to make it a minor release.
 
 ## Bug fixes
@@ -663,7 +663,7 @@ added. Previously, if the moderator was a factor, you would get very nicely
 colored plotted points when using `plot.points = TRUE`. But if the moderator
 was continuous, the points were just black and it wasn't very informative beyond
 examining the main effect of the focal predictor. With this update, the
-plotted points for continous moderators are shaded along a gradient that matches
+plotted points for continuous moderators are shaded along a gradient that matches
 the colors used for the predicted lines and confidence intervals.
 
 # jtools 0.8.0 (CRAN release)
@@ -801,7 +801,7 @@ interact_plot, then you should enjoy effect_plot. It is a clone of
 interact_plot, but shows a single regression line rather than several. It
 supports GLMs and lme4 models and can plot original, observed data points.
 * pf_sv_test: Another tool for survey researchers to test whether it's okay
-to run unweighted regressions. Named after Pfefferman and Svervchkov, who
+to run unweighted regressions. Named after Pfeffermann and Sverchkov, who
 devised the test.
 * weights_tests: Like probe_interaction does for the interaction functions,
 weights_tests will run the new pf_sv_test as well as wgttest simultaneously
