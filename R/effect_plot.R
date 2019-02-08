@@ -199,9 +199,10 @@
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
-#' @seealso \code{\link[interactions]{interact_plot}} plots interaction effects,
+#' @seealso `interact_plot` from the `interactions` package plots interaction
+#'   effects,
 #'   producing plots like this function but with separate lines for different
-#'   levels of a moderator. \code{\link[interactions]{cat_plot}} does the same
+#'   levels of a moderator. `cat_plot` from `interactions` does the same
 #'   for categorical by categorical interactions.
 #'
 #' @examples

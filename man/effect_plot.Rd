@@ -256,9 +256,10 @@ effect_plot(mv, pred = Anger)
 
 }
 \seealso{
-\code{\link[interactions]{interact_plot}} plots interaction effects,
+\code{interact_plot} from the \code{interactions} package plots interaction
+effects,
 producing plots like this function but with separate lines for different
-levels of a moderator. \code{\link[interactions]{cat_plot}} does the same
+levels of a moderator. \code{cat_plot} from \code{interactions} does the same
 for categorical by categorical interactions.
 }
 \author{

@@ -45,8 +45,6 @@ Suggests:
     rmarkdown,
     rmdformats,
     testthat
-Enhances: 
-  interactions
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

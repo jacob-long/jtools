@@ -1,5 +1,5 @@
 #' @title Deprecated interaction functions
-#' @description These functions are now part of the \pkg{interactions}
+#' @description These functions are now part of the `interactions`
 #'  package. 
 #' @param ... arguments are ignored
 #' @rdname interactions_deprecated
@@ -12,7 +12,9 @@ interact_plot <- function(...) {
     stop_wrap("This function has been moved to the interactions package.
               Please download it and amend your R scripts as necessary.")
   } else {
-    interactions::interact_plot(...)
+    do.call(get("interact_plot", asNamespace("interactions")), 
+            as.list(match.call(get("interact_plot",
+                                   asNamespace("interactions"))))[-1])
   }
 }
 
@@ -26,7 +28,9 @@ cat_plot <- function(...) {
     stop_wrap("This function has been moved to the interactions package.
               Please download it and amend your R scripts as necessary.")
   } else {
-    interactions::cat_plot(...)
+    do.call(get("cat_plot", asNamespace("interactions")), 
+            as.list(match.call(get("cat_plot",
+                                   asNamespace("interactions"))))[-1])
   }
 }
 
@@ -40,7 +44,9 @@ sim_slopes <- function(...) {
     stop_wrap("This function has been moved to the interactions package.
               Please download it and amend your R scripts as necessary.")
   } else {
-    interactions::sim_slopes(...)
+    do.call(get("sim_slopes", asNamespace("interactions")), 
+            as.list(match.call(get("sim_slopes",
+                                   asNamespace("interactions"))))[-1])
   }
 }
 #' @rdname interactions_deprecated
@@ -53,7 +59,9 @@ johnson_neyman <- function(...) {
     stop_wrap("This function has been moved to the interactions package.
               Please download it and amend your R scripts as necessary.")
   } else {
-    interactions::johnson_neyman(...)
+    do.call(get("johnson_neyman", asNamespace("interactions")), 
+            as.list(match.call(get("johnson_neyman",
+                                   asNamespace("interactions"))))[-1])
   }
 }
 
@@ -67,6 +75,8 @@ probe_interaction <- function(...) {
     stop_wrap("This function has been moved to the interactions package.
               Please download it and amend your R scripts as necessary.")
   } else {
-    interactions::probe_interaction(...)
+    do.call(get("probe_interaction", asNamespace("interactions")), 
+            as.list(match.call(get("probe_interaction",
+                                   asNamespace("interactions"))))[-1])
   }
 }
