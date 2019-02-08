@@ -1,3 +1,4 @@
+^CRAN-RELEASE$
 ^data-raw$
 ^.*\.Rproj$
 ^\.Rproj\.user$
