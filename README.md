@@ -3,7 +3,7 @@
 
 # jtools
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version-ago/jtools)](https://cran.r-project.org/package=jtools)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version-ago/jtools)](https://cran.r-project.org/package=jtools)
 [![GitHub
 tag](https://img.shields.io/github/tag/jacob-long/jtools.svg?label=Github)](https://github.com/jacob-long/jtools)
 [![Total
@@ -603,11 +603,36 @@ estimate.
 arguments like `robust` and `scale`. This enables a wider range of
 models that have support from the `broom` package but not for `summ`.
 
+### Plotting model predictions (`effect_plot`)
+
+Sometimes the best way to understand your model is to look at the
+predictions it generates. Rather than look at coefficients,
+`effect_plot` lets you plot predictions across values of a predictor
+variable alongside the observed data.
+
+``` r
+effect_plot(fit_c, pred = hp, interval = TRUE, plot.points = TRUE)
+```
+
+![](man/figures/unnamed-chunk-9-1.png)<!-- -->
+
+And a new feature in version `2.0.0` lets you plot *partial residuals*
+instead of the raw observed data, allowing you to assess model quality
+after accounting for effects of control variables.
+
+``` r
+effect_plot(fit_c, pred = hp, interval = TRUE, partial.residuals = TRUE)
+```
+
+![](man/figures/unnamed-chunk-10-1.png)<!-- -->
+
+Categorical predictors, polynomial terms, (G)LM(M)s, weighted data, and
+much more are supported.
+
 ### Other stuff
 
 There are several other things that might interest you.
 
-  - `effect_plot`: Plot predicted lines from regression models
   - `gscale`: Scale and/or mean-center data, including `svydesign`
     objects
   - `scale_mod` and `center_mod`: Re-fit models with scaled and/or
