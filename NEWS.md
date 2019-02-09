@@ -6,7 +6,8 @@
 
 To reduce the complexity of this package and help people understand what they 
 are getting, I have removed all functions that directly analyze 
-interaction/moderation effects and put them into a new package, `interactions`.
+interaction/moderation effects and put them into a new package, 
+[`interactions`](https://interactions.jacob-long.com).
 There are still some functions in `jtools` that support `interactions`, but
 some users may find that everything they ever used `jtools` for has now moved 
 to `interactions`. The following functions have moved to `interactions`:
