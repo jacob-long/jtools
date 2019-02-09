@@ -11,11 +11,12 @@
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2),
-  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
+  pvals = getOption("summ-pvals", TRUE),
+  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, part.corr = FALSE,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
-  which.cols = NULL, ...)
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
+  ...)
 }
 \arguments{
 \item{model}{A \code{lm} object.}
@@ -57,6 +58,8 @@ number.}
 \item{pvals}{Show p values and significance stars? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}.}
 
+\item{stars}{Show significance stars with p values? Default is FALSE.}
+
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}
 
@@ -81,10 +84,6 @@ standard errors are used.}
 name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of model fit statistics.}
-
-\item{model.check}{Toggles whether to perform Breusch-Pagan test for
-heteroskedasticity
-and print number of high-leverage observations. See details for more info.}
 
 \item{which.cols}{Developmental feature. By providing columns by name,
 you can add/remove/reorder requested columns in the output. Not fully
@@ -147,26 +146,6 @@ statistical publication that validates this type of use. Please
 use these as a heuristic when used alongside robust standard errors; do
 not report the "robust" partial and semipartial correlations in
 publications.
-
-There are two pieces of information given for \code{model.check}, provided
-that the model is an \code{lm} object. First, a Breusch-Pagan test is
-performed with \code{\link[car]{ncvTest}}. This is a
-hypothesis test for which the alternative hypothesis is heteroskedastic
-errors. The test becomes much more likely to be statistically significant
-as the sample size increases; however, the homoskedasticity assumption
-becomes less important to inference as sample size increases (Lumley,
-Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
-graphical checks rather than a definitive decision. Note that the use of
-robust standard errors can account for heteroskedasticity, though some
-oppose this approach (see King & Roberts, 2015).
-
-The second piece of information provided by setting \code{model.check} to
-\code{TRUE} is the number of high leverage observations. There are no hard
-and fast rules for determining high leverage either, but in this case it is
-based on Cook's Distance. All Cook's Distance values greater than (4/N) are
-included in the count. Again, this is not a recommendation to locate and
-remove such observations, but rather to look more closely with graphical
-and other methods.
 }
 \examples{
 # Create lm object

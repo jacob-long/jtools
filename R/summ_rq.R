@@ -56,6 +56,7 @@ summ.rq <- function(model, scale = FALSE,
   boot.sims = 1000, boot.method = "xy",
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
+  stars = getOption("summ-stars", FALSE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
@@ -213,7 +214,7 @@ summ.rq <- function(model, scale = FALSE,
   j <- structure(j, r1 = r1, dv = names(model$model[1]), lmClass = class(model),
                  missing = missing, use_cluster = FALSE,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = "t val.",
+                 test.stat = "t val.", stars = stars,
                  standardize.response = transform.response,
                  scale.response = transform.response,
                  transform.response = transform.response,
@@ -239,7 +240,8 @@ print.summ.rq <- function(x, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
 
@@ -274,7 +276,9 @@ print.summ.rq <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster, manual = se_name)
 
-  print(ctable)
+  cat("\n")
+  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
+        align = "r"))
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -307,7 +311,8 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   options(kableExtra.auto_format = FALSE)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      add_col = TRUE, stars = x$stars)
 
   # context <- huxtable::guess_knitr_output_format()
   # if (context == "") {context <- "screen"}
@@ -377,6 +382,39 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   knitr::asis_output(out)
 
 }
+
+#### Quantile regression helpers ##############################################
+
+# Get R1 (Koenker & Machado, 1999)
+#' @importFrom stats model.response
+R1 <- function(model) {
+  rho_1 <- model$rho
+  null_resids <- model.frame(model)[[1]] - quantile(model.frame(model)[[1]],
+                                                    model$tau)
+  
+  rho_0 <- sum(null_resids * (model$tau - (null_resids < 0)))
+  
+  return(1 - (rho_1 / rho_0))
+}
+
+rq_model_matrix <- function(object) {
+  mt <- terms(object)
+  m <- model.frame(object)
+  y <- model.response(m)
+  if (object$method == "sfn")
+    x <- object$model$x
+  else x <- model.matrix(mt, m, contrasts = object$contrasts)
+  return(x)
+}
+
+rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
+                      iid = TRUE, interp = TRUE, tcrit = TRUE, ...) {
+  
+  rq.fit.br(x, y, tau = tau, alpha = alpha, ci = ci, iid = iid,
+            interp = interp, tcrit = tcrit)
+  
+}
+
 
 #' @rdname glance.summ
 

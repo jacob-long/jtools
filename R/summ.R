@@ -27,28 +27,8 @@ summ <- function(model, ...) {
   UseMethod("summ")
 }
 
-#' Regression summaries with options
-#'
-#' \code{j_summ} is an alias for \code{summ}.
-#' To get specific documentation, choose the appropriate link to the
-#' type of model that you want to summarize from the details section.
-#'
-#' \itemize{
-#'
-#'   \item \code{\link{summ.lm}}
-#'   \item \code{\link{summ.glm}}
-#'   \item \code{\link{summ.svyglm}}
-#'   \item \code{\link{summ.merMod}}
-#'
-#' }
-#'
-#' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}}, or
-#'   \code{\link[lme4]{merMod}} object.
-#' @param ... Other arguments to be passed to the model.specific function.
-#'
-#'
 #' @export
-#'
+#' @rdname summ
 
 j_summ <- summ
 
@@ -97,6 +77,8 @@ j_summ <- summ
 #'
 #' @param pvals Show p values and significance stars? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}.
+#'  
+#' @param stars Show significance stars with p values? Default is FALSE. 
 #'
 #' @param n.sd If \code{scale = TRUE}, how many standard deviations should
 #'  predictors be divided by? Default is 1, though some suggest 2.
@@ -116,10 +98,6 @@ j_summ <- summ
 #'   name of DV, and number of predictors.
 #'
 #' @param model.fit Toggles printing of model fit statistics.
-#'
-#' @param model.check Toggles whether to perform Breusch-Pagan test for
-#'  heteroskedasticity
-#'  and print number of high-leverage observations. See details for more info.
 #'
 #' @param data If you provide the data used to fit the model here, that data
 #'   frame is used to re-fit the model (if `scale` is `TRUE`)
@@ -174,27 +152,6 @@ j_summ <- summ
 #'  not report the "robust" partial and semipartial correlations in
 #'  publications.
 #'
-#'  There are two pieces of information given for \code{model.check}, provided
-#'  that the model is an \code{lm} object. First, a Breusch-Pagan test is
-#'  performed with \code{\link[car]{ncvTest}}. This is a
-#'  hypothesis test for which the alternative hypothesis is heteroskedastic
-#'  errors. The test becomes much more likely to be statistically significant
-#'  as the sample size increases; however, the homoskedasticity assumption
-#'  becomes less important to inference as sample size increases (Lumley,
-#'  Diehr, Emerson, & Lu, 2002). Take the result of the test as a cue to check
-#'  graphical checks rather than a definitive decision. Note that the use of
-#'  robust standard errors can account for heteroskedasticity, though some
-#'  oppose this approach (see King & Roberts, 2015).
-#'
-#'  The second piece of information provided by setting \code{model.check} to
-#'  \code{TRUE} is the number of high leverage observations. There are no hard
-#'  and fast rules for determining high leverage either, but in this case it is
-#'  based on Cook's Distance. All Cook's Distance values greater than (4/N) are
-#'  included in the count. Again, this is not a recommendation to locate and
-#'  remove such observations, but rather to look more closely with graphical
-#'  and other methods.
-#'
-#'
 #' @return If saved, users can access most of the items that are returned in
 #'   the output (and without rounding).
 #'
@@ -246,10 +203,10 @@ summ.lm <- function(
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
+  stars = getOption("summ-stars", FALSE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), model.check = FALSE,
-  which.cols = NULL,  ...) {
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
 
   j <- list()
 
@@ -295,9 +252,8 @@ summ.lm <- function(
 
   j <- structure(j, standardize = scale, vifs = vifs, robust = robust,
                  digits = digits, model.info = model.info,
-                 model.fit = model.fit, model.check = model.check,
-                 n.sd = n.sd, center = center, call = the_call,
-                 env = the_env, scale = scale, data = data,
+                 model.fit = model.fit, n.sd = n.sd, center = center,
+                 call = the_call, env = the_env, scale = scale, data = data,
                  transform.response = transform.response)
 
   # Intercept?
@@ -406,22 +362,11 @@ summ.lm <- function(
                               others = part.corr.arg)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
-  # Implement model checking features
-  if (model.check == TRUE) {
-
-    homoskedp <- ncvTest(model)$p
-    j <- structure(j, homoskedp = homoskedp)
-
-    cd <- table(cooks.distance(model) > 4 / n)
-    j <- structure(j, cooksdf = cd[2])
-
-  }
-
   j <- structure(j, rsq = rsq, arsq = arsq, dv = names(model$model[1]),
                  npreds = model$rank - df.int, lmClass = class(model),
                  missing = missing, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = "t val.",
+                 test.stat = "t val.", stars = stars,
                  standardize.response = transform.response,
                  scale.response = transform.response,
                  transform.response = transform.response,
@@ -447,7 +392,8 @@ print.summ.lm <- function(x, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
     type <- paste("OLS linear regression")
@@ -464,25 +410,11 @@ print.summ.lm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  if (x$model.check == TRUE) {
-    # Since it's lm, we can do Breusch-Pagan test
-    if (x$homoskedp < .05) {
-      homoskedtf <- paste0("Assumption violated (p = ",
-                          round(x$homoskedp,digits = x$digits), ")")
-    } else {
-      homoskedtf <- paste0("Assumption not violated (p = ",
-                          round(x$homoskedp, digits = x$digits), ")")
-    }
-    cat(underline("MODEL CHECKING:"), "\n",
-        "Homoskedasticity (Breusch-Pagan) = ",
-        homoskedtf,
-        "\n", "Number of high-leverage observations = ", x$cooksdf,
-        "\n\n", sep = "")
-  }
-
   print_se_info(x$robust, x$use_cluster, manual = "OLS")
 
-  print(ctable)
+  cat("\n")
+  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
+        align = "r"))
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -517,7 +449,8 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      add_col = TRUE, stars = x$stars)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   o_opt <- getOption("kableExtra.auto_format", NULL)
@@ -672,7 +605,8 @@ summ.glm <- function(
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", default = 2),
-  exp = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
+  exp = FALSE, pvals = getOption("summ-pvals", TRUE),
+  stars = getOption("summ-stars", FALSE), n.sd = 1,
   center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
@@ -700,10 +634,6 @@ summ.glm <- function(
 
   # Check missing obs
   missing <- length(sum$na.action)
-
-  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
-    warning("Model checking is not currently implemented for GLMs")
-  }
 
   # Standardized betas
   if (scale == TRUE) {
@@ -865,7 +795,7 @@ summ.glm <- function(
                  missing = missing, pvals = pvals, robust = robust,
                  robust.type = robust, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = tcol,
+                 test.stat = tcol, stars = stars, 
                  standardize.response = transform.response,
                  exp = exp,
                  scale.response = transform.response,
@@ -890,7 +820,8 @@ print.summ.glm <- function(x, ...) {
   x <- attributes(j)
 
     # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -921,7 +852,9 @@ print.summ.glm <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster)
 
-  print(ctable)
+  cat("\n")
+  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
+        align = "r"))
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -955,7 +888,8 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      add_col = TRUE, stars = x$stars)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   o_opt <- getOption("kableExtra.auto_format", NULL)
@@ -1114,11 +1048,11 @@ summ.svyglm <- function(
   ci.width = getOption("summ-ci.width", .95),
   digits = getOption("jtools-digits", default = 2),
   pvals = getOption("summ-pvals", TRUE),
-  n.sd = 1, center = FALSE, transform.response = FALSE,
+  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE, 
+  transform.response = FALSE,
   exp = FALSE, vifs = getOption("summ-vifs", FALSE),
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE),
-  model.check = FALSE, which.cols = NULL, ...) {
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
 
   j <- list()
 
@@ -1329,17 +1263,6 @@ summ.svyglm <- function(
                               exp = exp)
   mat <- create_table(params = params, which.cols = which.cols, ivs = ivs)
 
-
-  if (model.check == TRUE && linear == TRUE) {
-    cd <- table(cooks.distance(model) > 4 / n)
-    j <- structure(j, cooksdf = cd[2])
-
-    if (model.check == TRUE && linear == FALSE) {
-      warning("Model checking for non-linear models is not ",
-              "yet implemented.")
-    }
-  }
-
   # Extract dispersion parameter
   dispersion <- sum$dispersion
 
@@ -1347,12 +1270,12 @@ summ.svyglm <- function(
                  npreds = model$rank-df.int,
                  dispersion = dispersion, missing = missing,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = tcol,
+                 test.stat = tcol, stars = stars,
                  standardize.response = transform.response,
                  exp = exp,
                  scale.response = transform.response)
 
-  j <- structure(j, lmFamily = model$family, model.check = model.check)
+  j <- structure(j, lmFamily = model$family)
 
   j$coeftable <- mat
   j$model <- model
@@ -1373,7 +1296,8 @@ print.summ.svyglm <- function(x, ...) {
   x <- attributes(j)
 
     # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
     # If it's linear...
@@ -1410,17 +1334,13 @@ print.summ.svyglm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  if (x$model.check == TRUE && x$linear == TRUE) {
-    # Just check outliers
-    cat("MODEL CHECKING:", "\n", "Number of high-leverage observations = ",
-        x$cooksdf, "\n\n", sep = "")
-  }
-
   if (x$linear == TRUE) {
     cat("Standard errors: Robust\n")
   }
 
-  print(ctable)
+  cat("\n")
+  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
+        align = "r"))
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1443,7 +1363,8 @@ print.summ.svyglm <- function(x, ...) {
 
 knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+  if (!nzchar(system.file(package = "kableExtra")) | 
+      getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -1457,7 +1378,8 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
   options(kableExtra.auto_format = FALSE)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      add_col = TRUE, stars = x$stars)
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -1730,7 +1652,8 @@ summ.merMod <- function(
   ci.width = getOption("summ-ci.width", .95),
   conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
   digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
-  pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
+  pvals = getOption("summ-pvals", NULL), 
+  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
@@ -1760,11 +1683,6 @@ summ.merMod <- function(
 
   if ("robust" %in% names(dots) && dots$robust == TRUE) {
     warning("Robust standard errors are not supported for mixed models.")
-  }
-
-  if ("model.check" %in% names(dots) && dots$model.check == TRUE) {
-    warning("Model checking is not currently implemented for mixed ",
-            "models.")
   }
 
   if ("vifs" %in% names(dots) && dots$vifs == TRUE) {
@@ -2035,14 +1953,14 @@ summ.merMod <- function(
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  df = df, p_calc = p_calc, r.squared = r.squared,
-                 failed.rsq = failed.rsq, test.stat = tcol,
+                 failed.rsq = failed.rsq, test.stat = tcol, stars = stars,
                  standardize.response = transform.response,
                  exp = exp, scale.response = transform.response,
                  re.table = re.table, groups.table = groups.table)
 
   j <- structure(j, lmFamily = family(model))
 
-  j$coeftable <- as.table(mat)
+  j$coeftable <- mat
   j$rcoeftable <- tables$rcmat # Random effects table
   j$gvars <- tables$gvmat # Grouping variables table
   j$model <- model
@@ -2063,7 +1981,8 @@ print.summ.merMod <- function(x, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      stars = x$stars)
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -2095,7 +2014,11 @@ print.summ.merMod <- function(x, ...) {
   if ("d.f." %in% names(ctable)) {
     ctable[,"d.f."] <- as.integer(ctable[,"d.f."])
   }
-  print(ctable)
+  
+  cat("\n")
+  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
+        align = "r"))
+  
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
@@ -2136,7 +2059,10 @@ print.summ.merMod <- function(x, ...) {
     cat(underline("\nRANDOM EFFECTS:\n"))
     rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
     #rownames(rtable) <- rep("", times = nrow(rtable))
-    print(rtable, row.names = FALSE)
+    # print(rtable, row.names = FALSE)
+    cat("\n")
+    print(md_table(rtable, format = getOption("summ.table.format", "markdown"),
+          align = "c", row.names = FALSE))
   }
 
   if (x$groups.table == TRUE) {
@@ -2144,7 +2070,10 @@ print.summ.merMod <- function(x, ...) {
     gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
     gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
     #rownames(gtable) <- rep("", times = nrow(gtable))
-    print(gtable, row.names = FALSE)
+    # print(gtable, row.names = FALSE)
+    cat("\n")
+    print(md_table(gtable, format = getOption("summ.table.format", "markdown"),
+          align = "c", row.names = FALSE))
   }
 
   # Notifying user if variables altered from original fit
@@ -2173,7 +2102,8 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals)
+  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
+                      add_col = TRUE, stars = x$stars)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   if (length(format) == 0) {format <- "html"}
@@ -2328,7 +2258,7 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
 set_summ_defaults <- function(digits = NULL, model.info = NULL,
                               model.fit = NULL, pvals = NULL, robust = NULL,
                               confint = NULL, ci.width = NULL, vifs = NULL,
-                              conf.method = NULL) {
+                              conf.method = NULL, stars = NULL) {
 
   if ("confint" %in% names(match.call())) {
     options("summ-confint" = confint)
@@ -2356,6 +2286,9 @@ set_summ_defaults <- function(digits = NULL, model.info = NULL,
   }
   if ("conf.method" %in% names(match.call())) {
     options("summ-conf.method" = pvals)
+  }
+  if ("stars" %in% names(match.call())) {
+    options("summ-stars" = stars)
   }
 
 }

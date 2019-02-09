@@ -2,7 +2,9 @@
 title: "Tools for summarizing and visualizing regression models"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
-output: rmdformats::html_clean
+output: 
+  rmdformats::html_clean:
+    thumbnails: false
 vignette: >
   %\VignetteIndexEntry{Tools for summarizing and visualizing regression models}
   %\VignetteEngine{knitr::rmarkdown}
@@ -24,17 +26,13 @@ of regression models falls into a few broad categories:
 * Generating flexible table output in the console that includes multiple
 standard error specifications, toggles for confidence intervals, VIFs, p values,
 and so on (`summ`)
+* Plotting predicted data from models to aid in substantive interpretation
+and understanding model fit, including models with interactions (`effect_plot`;
+see other vignette)
 * Plotting regression coefficients and their uncertainty in a visually appealing
 way (`plot_coefs`, `plot_summs`)
-* Plotting predicted data from models to aid in substantive interpretation
-and understanding model fit, including models with interactions (`effect_plot`,
-`interact_plot`, `cat_plot`)
 * Exporting regression summaries as tables in PDF/LaTeX and Word formats for
 publication (`export_summs`)
-
-Note that the functions for dealing with interactions (`interact_plot` and
-`cat_plot`) are documented in separate vignettes. There are several other
-interaction-oriented functions not discussed here.
 
 # `summ`
 
@@ -95,10 +93,10 @@ chunk option `render = 'normal_print'`.
 ## Report robust standard errors
 
 One of the problems that originally motivated the creation of this function was
-the desire to efficiently report robust standard errors—while it is easy enough
-for an experienced R user to calculate robust standard errors, there are not 
-many simple ways to include the results in a regression table as is common with
-the likes of Stata, SPSS, etc.
+the desire to efficiently report robust standard errors — while it is easy 
+enough for an experienced R user to calculate robust standard errors, there are
+not  many simple ways to include the results in a regression table as is common
+with the likes of Stata, SPSS, etc.
 
 Robust standard errors require the user to have the `sandwich`
 package installed. It does not need to be loaded.
@@ -173,7 +171,7 @@ You can adjust the width of the confidence intervals, which are by default
 95% CIs.
 
 ```{r}
-summ(fit, confint = TRUE, ci.width = .5, digits = 3)
+summ(fit, confint = TRUE, ci.width = .5)
 ```
 
 ## Removing p values
@@ -181,7 +179,7 @@ summ(fit, confint = TRUE, ci.width = .5, digits = 3)
 You might also want to drop the p-values altogether.
 
 ```{r}
-summ(fit, confint = TRUE, pvals = FALSE, digits = 3)
+summ(fit, confint = TRUE, pvals = FALSE)
 ```
 
 Remember that you can omit p-values regardless of whether you have requested 
@@ -239,6 +237,22 @@ package.
 I won't run through any examples here, but `svyglm` models are supported and
 provide near-equivalent output to what you see here depending on whether they
 are linear models or generalized linear models.
+
+# `effect_plot`
+
+Sometimes to really understand what your model is telling you, you need to 
+see the kind of predictions it will give you. For that, you can use
+`effect_plot`, which does what it sounds like. There is a separate vignette
+available to explore all it can offer, but here's a basic example with our 
+linear model:
+
+```{r}
+effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE)
+```
+
+Now we're really learning something about our model---and it looks like the
+linear fit is basically correct. 
+
 
 # `plot_summs` and `plot_coefs` 
 
@@ -337,68 +351,6 @@ that `summ` does. The tradeoff, though, is that it allows for model types that
 `summ` does not — any model supported by `tidy` from the `broom` package 
 should work. If you provide unsupported model types to `plot_summs`, it just 
 passes them to `plot_coefs`. 
-
-## `effect_plot`
-
-Sometimes to really understand what your model is telling you, you need to 
-see the kind of predictions it will give you. For that, you can use
-`effect_plot`, which is similar to `interact_plot` (see other vignette) but
-for main effects in particular.
-
-Here's the most basic use with our linear model:
-
-```{r}
-effect_plot(fit, pred = Illiteracy)
-```
-
-Okay, not so illuminating. Let's see the uncertainty around this line.
-
-```{r}
-effect_plot(fit, pred = Illiteracy, interval = TRUE)
-```
-
-Now we're getting somewhere.
-
-How does this compare to the observed data? Let's see!
-
-```{r}
-effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE)
-```
-
-Now we're really learning something about our model---and it looks like the
-linear fit is basically correct. 
-
-You can also use robust standard errors for `lm` and `glm` models with 
-`effect_plot`:
-
-```{r}
-effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE,
-            robust = "HC3")
-```
-
-And the interval is a bit wider in this case.
-
-Another time that `effect_plot` is useful is for non-linear (generalized)
-models. Let's plot our logit model from earlier.
-
-```{r}
-effect_plot(fitg, pred = mpg, interval = TRUE)
-```
-
-Aha! A lovely logistic curve. Now you know that when `mpg` is from about 30
-and higher, it no longer is giving any appreciable increase in probability
-because it has already reached 1. 
-
-Next, we'll plot the observed values. 
-
-```{r}
-effect_plot(fitg, pred = mpg, plot.points = TRUE)
-```
-
-Now you can see how at the low and high ends of `mpg`, there are clusters of
-0 and 1 values while near the middle of the range, there are values of both 0 
-and 1. 
-
 
 # Table output for Word and RMarkdown documents
 

@@ -4,12 +4,12 @@
 \alias{jtools_colors}
 \title{Color palettes in \code{jtools} functions}
 \description{
-\code{jtools} combines several options into the \code{color.class}
+\code{jtools} combines several options into the \code{colors}
 argument in plotting functions.
 }
 \details{
-The argument to \code{color.class} in functions like \code{interact_plot},
-\code{cat_plot}, \code{plot_coefs}, and others is very flexible but may also
+The argument to \code{colors} in functions like \code{effect_plot},
+\code{plot_coefs}, and others is very flexible but may also
 cause confusion.
 
 If you provide an argument of length 1, it is assumed that you are naming
@@ -35,9 +35,15 @@ If you provide one of \code{RColorBrewer}'s sequential palettes, like "Blues",
 those scales tend to give one color that is too light to easily
 differentiate against a white background.
 
+For \strong{gradients}, you can use any of the \code{RColorBrewer} sequential palette
+names and get comparable results on a continuous scale. There are also some
+\code{jtools}-specific gradient schemes: \code{"blue"}, \code{"blue2"}, \code{"green"},
+\code{"red"}, \code{"purple"}, \code{"seagreen"}.
+If you want something a little non-standard, I'd suggest taking a look
+at \code{"blue2"} or \code{"seagreen"}.
+
 Lastly, you may provide colors by name. This must be a vector of the
-same length as whatever it is the colors will correspond to (e.g.,
-3 colors for 3 values of the moderator in \code{interact_plot}). The format
+same length as whatever it is the colors will correspond to. The format
 must be one understood by \code{ggplot2}'s manual scale functions. This
 basically means it needs to be in hex format (e.g., "#000000") or
 one of the many names R understands (e.g., "red"; use \code{colors()} to
@@ -45,7 +51,7 @@ see all of those options).
 }
 \references{
 Paul Tol's site is what is used to derive 4 of the 6 \code{jtools}-specific
-palettes: \url{https://personal.sron.nl/~pault/}
+qualitative palettes: \url{https://personal.sron.nl/~pault/}
 
 Okabe and Ito's palette inspired "CUD Bright", though "CUD Bright" is not
 exactly the same. "CUD" is the same.

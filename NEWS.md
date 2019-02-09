@@ -1,3 +1,150 @@
+# jtools 2.0.0
+
+**Big** changes.
+
+## New spinoff package: `interactions`
+
+To reduce the complexity of this package and help people understand what they 
+are getting, I have removed all functions that directly analyze 
+interaction/moderation effects and put them into a new package, `interactions`.
+There are still some functions in `jtools` that support `interactions`, but
+some users may find that everything they ever used `jtools` for has now moved 
+to `interactions`. The following functions have moved to `interactions`:
+
+* `interact_plot`
+* `cat_plot`
+* `sim_slopes`
+* `johnson_neyman`
+* `probe_interaction`
+
+Hopefully moving these items to a separate package called `interactions` will
+help more people discover those functions and reduce confusion about what both
+packages are for. 
+
+## Important changes to `make_predictions` and removal of `plot_predictions`
+
+In the `jtools` 1.0.0 release, I introduced `make_predictions` as a lower-level
+way to emulate the functionality of `effect_plot`, `interact_plot`, and 
+`cat_plot`. This would return a list object with predicted data, the original 
+data, and a bunch of attributes containing information about how to plot it.
+One could then take this object, with class `predictions`, and use it as the 
+main argument to `plot_predictions`, which was another new function that 
+creates the plots you would see in `effect_plot` et al.
+
+I have simplified `make_predictions` to be less specific to those plotting 
+functions and eliminated `plot_predictions`, which was ultimately too complex
+to maintain and caused problems for separating the interaction tools into a 
+separate package. `make_predictions` by default simply creates a new data frame
+of predicted values along a `pred` variable. It no longer accepts `modx` or 
+`mod2` arguments. Instead, it accepts an argument called `at` where a user can
+specify any number of variables and values to generate predictions *at*. This
+syntax is designed to be similar to the `predictions`/`margins` packages. See
+the documentation for more info on this revised syntax. 
+
+`make_new_data` is a new function that supports `make_predictions` by creating
+the data frame of hypothetical values to which the predictions will be added.
+
+## Generate partial residuals for plotting 
+
+I have added a new function, `partialize`, that creates partial residuals for
+the purposes of plotting (e.g., with `effect_plot`). One negative when 
+visualizing predictions alongside original data with `effect_plot` or similar
+tools is that the observed data may be too spread out to pick up on any 
+patterns. However, sometimes your model is controlling for the causes of this
+scattering, especially with multilevel models that have random intercepts. 
+Partial residuals include the effects of all the controlled-for variables 
+and let you see how well your model performs with all of those things accounted
+for. 
+
+You can plot partial residuals instead of the observed data in `effect_plot`
+via the argument `partial.residuals = TRUE` or get the data yourself using
+the `partialize` function. It is also integrated into `make_predictions`.
+
+## New programming helpers
+
+In keeping with the "tools" focus of this package, I am making available some
+of the programming tools that previously had only been used internally inside 
+the `jtools` package. 
+
+### `%nin%`, `%not%`, and `%just%`
+
+Many are familiar with how handy the `%in%` operator is, but sometimes we want
+everything *except* the values in some object. In other words, we might want
+`!(x %in% y)` instead of `x %in% y`. This is where `%nin%` ("not in") acts as a
+useful shortcut. Now, instead of `!(x %in% y)`, you can just use `x %nin% y`.
+Note that the actual implementation of `%nin%` is slightly different to produce
+the same results but more quickly for large data. You may run into some other
+packages that also have a `%nin%` function and they are, to my knowledge,
+functionally the same.
+
+One of my most common uses of both %in% and %nin% is when I want to subset
+an object. For instance, assume `x` is 1 through 5, y is 3 through 7, and I 
+want only the instances of `x` that are not in `y`. Using `%nin%`, I would write
+`x[x %nin% y]`, which leaves you with 1 and 2.
+I really don't like having to write the object's name twice
+in a row like that, so I created something to simplify further: `%not%`. 
+You can now subset `x` to only the parts that are not in `y` like this:
+`x %not% y`. Conversely, you can do the equivalent of `x[x %in% y]` using the
+`%just%` operator: `x %just% y`. 
+
+As special cases for `%not%` and `%just%`, if the left-hand side is a matrix
+or data frame, it is assumed that the right hand side are column indices (if 
+numeric) or column names (if character). For example, if I do 
+`mtcars %just% c("mpg", "qsec")`, I get a data frame that is just the "mpg" and
+"qsec" columns of `mtcars`. It is an S3 method so support can be added for 
+additional object types by other developers. 
+
+### `wrap_str`, `msg_wrap`, `warn_wrap`, and `stop_wrap`
+
+An irritation when writing messages/warnings/errors to users is breaking up the
+long strings without unwanted line breaks in the output. One problem is not 
+knowing how wide the user's console is. `wrap_str` takes any string and inserts
+line breaks at whatever the "width" option is set to, which automatically
+changes according to the actual width in RStudio and in some other setups. 
+This means you can write the error message in a single string across multiple,
+perhaps indented, lines without those line breaks and indentations being part 
+of the console output. `msg_wrap`, `warn_wrap`, and `stop_wrap` are `wrap_str`
+wrappers (pun not intended) around `message`, `warning`, and `stop`, 
+respectively.
+
+### Other changes
+
+* `summ` no longer prints coefficient tables as data frames because this 
+caused RStudio notebook users issues with the output not being printed to the
+console and having the notebook format them in less-than-ideal ways. The tables
+now have a markdown format that might remind you of Stata's coefficient tables.
+* The function that prints those tables mentioned above is called `md_table` 
+and can be used by others if they want. It is based on `knitr`'s `kable` 
+function.
+* `summ` no longer prints significance stars by default. This can be enabled
+with the `stars = TRUE` argument or by setting the `"summ-stars"` option to 
+`TRUE` (also available via `set_summ_defaults`)
+* The `model.check` argument in `summ` has been removed.
+* A function called `get_colors` is now available to users. It retrieves 
+the color palettes used in `jtools` functions.
+* Plots made by `jtools` now have a new theme, which you can use yourself, 
+called `theme_nice`. The previous default, `theme_apa`, is still available
+but I don't like it as a default since I don't think the APA has defined the 
+nicest-looking design guidelines for general use.
+* `effect_plot` now can plot categorical predictors, picking up a functionality
+previously provided by `cat_plot`.
+* `effect_plot` now uses *tidy evaluation* for the `pred` argument (#37).
+This means you can pass a variable that contains the name of `pred`, which is
+most useful if you are creating a function, for loop, etc. If using a variable,
+put a  `!!` from the `rlang` package before it (e.g., `pred = !! variable`). 
+For most users, these changes will not affect their usage.
+
+### Bugfixes
+
+* `make_predictions` (and by extension `effect_plot` and plotting functions in 
+the `interactions` package) now understands dependent variable transformations
+better. For instance, there shouldn't be issues if your response variable is 
+`log(y)` instead of `y`. When returning the original data frame, these functions
+will append a transformed (e.g., `log(y)`) column as needed. 
+* `lme4` has a bug when generating predictions in models with offsets --- it 
+ignores them when the offset is specified via the `offset =` argument. I have
+created a workaround for this.
+
 # jtools 1.1.1
 
 This is a minor release.
@@ -31,7 +178,7 @@ shouldn't have much effect on end users.
 
 # jtools 1.1.0
 
-This release was initally intended to be a bugfix release, but enough other
+This release was initially intended to be a bugfix release, but enough other
 things came up to make it a minor release.
 
 ## Bug fixes
@@ -516,7 +663,7 @@ added. Previously, if the moderator was a factor, you would get very nicely
 colored plotted points when using `plot.points = TRUE`. But if the moderator
 was continuous, the points were just black and it wasn't very informative beyond
 examining the main effect of the focal predictor. With this update, the
-plotted points for continous moderators are shaded along a gradient that matches
+plotted points for continuous moderators are shaded along a gradient that matches
 the colors used for the predicted lines and confidence intervals.
 
 # jtools 0.8.0 (CRAN release)
@@ -654,7 +801,7 @@ interact_plot, then you should enjoy effect_plot. It is a clone of
 interact_plot, but shows a single regression line rather than several. It
 supports GLMs and lme4 models and can plot original, observed data points.
 * pf_sv_test: Another tool for survey researchers to test whether it's okay
-to run unweighted regressions. Named after Pfefferman and Svervchkov, who
+to run unweighted regressions. Named after Pfeffermann and Sverchkov, who
 devised the test.
 * weights_tests: Like probe_interaction does for the interaction functions,
 weights_tests will run the new pf_sv_test as well as wgttest simultaneously

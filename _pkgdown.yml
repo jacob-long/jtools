@@ -17,21 +17,12 @@ reference:
     - plot_coefs
     - effect_plot
     - j_summ
- - title: Probing and visualizing interaction effects
+ - title: Plotting and generating model predictions
    contents:
-    - interact_plot
-    - sim_slopes
-    - probe_interaction
-    - johnson_neyman
-    - cat_plot
+    - effect_plot
     - make_predictions
-    - make_predictions.merMod
-    - make_predictions.rq
-    - make_predictions.brmsfit
-    - make_predictions.stanreg
-    - plot_predictions
-    - as_huxtable.sim_slopes
-    - plot.sim_slopes
+    - make_new_data
+    - partialize
  - title: Data centering and scaling tools
    contents:
     - gscale
@@ -49,15 +40,23 @@ reference:
  - title: Theming
    contents:
     - theme_apa
+    - theme_nice
     - add_gridlines
     - add_x_gridlines
     - add_y_gridlines
     - drop_gridlines
     - drop_x_gridlines
     - drop_y_gridlines
+    - jtools_colors
  - title: Miscellaneous
    contents:
-    - jtools_colors
+    - subsetters
+    - nin
+    - num_print
+    - wrap_str
+    - wtd.sd
+    - model_utils
+    - md_table
     - tidy.summ
     - knit_print.summ.lm
 
@@ -77,10 +76,8 @@ navbar:
       menu:
       -  text: Tools for summarizing and visualizing regression models
          href: articles/summ.html
-      -  text: Exploring interactions with continuous predictors in regression models
-         href: articles/interactions.html
-      -  text: Plotting interactions among categorical variables in regression models
-         href: articles/categorical.html
+      -  text: Visualizing regression model predictions
+         href: articles/effect_plot.html
       -  text: Calculate correlations and correlation tables with complex survey data
          href: articles/svycor.html
   right:
