@@ -1433,7 +1433,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
     stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL) 
 
-  }
+  } else {stats <- NULL}
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
