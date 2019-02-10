@@ -412,7 +412,7 @@ dep_checks <- function(dots) {
   if ("odds.ratio" %in% names(dots)) {
     warn_wrap("The odds.ratio argument is deprecated. Use 'exp' instead.",
               call. = FALSE)
-    robust <- dots$robust.type
+    exp <- dots$odds.ratio
   }
 
   if ("model.check" %in% names(dots)) {
