@@ -197,7 +197,7 @@ get_data <- function(model, warn = TRUE) {
   raw_vars <- c(raw_vars, get_offset_name(model))
   # If survey, return now
   if ("svyglm" %in% class(model)) {
-    return(tibble::as_tibble(d[c(raw_vars, wname)]))
+    return(tibble::as_tibble(d[unique(c(raw_vars, wname))]))
   }
   if (any(raw_vars %nin% varnames)) {
     dat_name <- as.character(deparse(getCall(model)$data))
@@ -233,9 +233,9 @@ get_data <- function(model, warn = TRUE) {
     if (any(raw_vars %nin% d)) {
       global_vars <- raw_vars %not% names(d)
       # Attach each to data
-      d[global_vars] <- mget(global_vars, envir = env)
+      d[unique(global_vars)] <- mget(unique(global_vars), envir = env)
     }
-    tibble::as_tibble(d[raw_vars])
+    tibble::as_tibble(d[unique(raw_vars)])
     
   } else {
     
