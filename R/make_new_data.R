@@ -230,10 +230,12 @@ get_data <- function(model, warn = TRUE) {
       raw_vars <- c(raw_vars, wname)
     }
     # Check for variables from global environment
-    if (any(raw_vars %nin% d)) {
+    if (any(raw_vars %nin% names(d))) {
       global_vars <- raw_vars %not% names(d)
       # Attach each to data
-      d[unique(global_vars)] <- mget(unique(global_vars), envir = env)
+      if (!is.null(env)) { # only if there is an environment
+        d[unique(global_vars)] <- mget(unique(global_vars), envir = env)
+      }
     }
     tibble::as_tibble(d[unique(raw_vars)])
     
