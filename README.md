@@ -8,6 +8,8 @@
 tag](https://img.shields.io/github/tag/jacob-long/jtools.svg?label=Github)](https://github.com/jacob-long/jtools)
 [![Total
 Downloads](https://cranlogs.r-pkg.org/badges/grand-total/jtools)](https://cran.r-project.org/package=jtools)
+[![CII Best
+Practices](https://bestpractices.coreinfrastructure.org/projects/2527/badge)](https://bestpractices.coreinfrastructure.org/projects/2527)
 [![Build
 Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://travis-ci.org/jacob-long/jtools)
 [![AppVeyor Build
