@@ -656,7 +656,9 @@ everything you can do as well.
 I’m happy to receive bug reports, suggestions, questions, and (most of
 all) contributions to fix problems and add features. I prefer you use
 the Github issues system over trying to reach out to me in other ways.
-Pull requests for contributions are encouraged.
+Pull requests for contributions are encouraged. If you are considering
+writing up a bug fix or new feature, please check out the [contributing
+guidelines](CONTRIBUTING.md).
 
 Please note that this project is released with a [Contributor Code of
 Conduct](CONDUCT.md). By participating in this project you agree to
