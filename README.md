@@ -3,7 +3,7 @@
 
 # jtools
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version-ago/jtools)](https://cran.r-project.org/package=jtools)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools)
 [![GitHub
 tag](https://img.shields.io/github/tag/jacob-long/jtools.svg?label=Github)](https://github.com/jacob-long/jtools)
 [![Total
