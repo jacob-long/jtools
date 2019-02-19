@@ -43,7 +43,6 @@ Suggests:
   weights,
     knitr,
     rmarkdown,
-    rmdformats,
     testthat
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr

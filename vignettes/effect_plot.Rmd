@@ -3,8 +3,10 @@ title: "Visualizing regression model predictions"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
 output: 
-  rmdformats::html_clean:
-    thumbnails: false
+  html_document:
+    toc: true
+    toc_float: true
+    theme: "spacelab"
 vignette: >
   %\VignetteIndexEntry{Visualizing regression model predictions}
   %\VignetteEngine{knitr::rmarkdown}

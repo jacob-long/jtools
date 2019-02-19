@@ -3,8 +3,10 @@ title: "Tools for summarizing and visualizing regression models"
 author: "Jacob Long"
 date: "`r Sys.Date()`"
 output: 
-  rmdformats::html_clean:
-    thumbnails: false
+  html_document:
+    toc: true
+    toc_float: true
+    theme: "spacelab"
 vignette: >
   %\VignetteIndexEntry{Tools for summarizing and visualizing regression models}
   %\VignetteEngine{knitr::rmarkdown}
