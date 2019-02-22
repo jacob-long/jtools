@@ -1,7 +1,7 @@
 Package: jtools
 Type: Package
 Title: Analysis and Presentation of Social Scientific Data
-Version: 2.0.0
+Version: 2.0.1.9000
 Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
   role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1582-6214"))
 Description: This is a collection of tools that the author (Jacob) has written
@@ -9,22 +9,21 @@ Description: This is a collection of tools that the author (Jacob) has written
   (primarily) regression analyses. There are also a number of miscellaneous
   functions for statistical and programming purposes. Just about everything 
   supports models from the survey package.
-URL: https://github.com/jacob-long/jtools
+URL: https://jtools.jacob-long.com
 BugReports: https://github.com/jacob-long/jtools/issues 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: ggplot2,
-  crayon,
-  magrittr,
-  pkgconfig,
-  rlang,
-  tibble
+Imports: 
+    ggplot2,
+    crayon,
+    magrittr,
+    pkgconfig,
+    rlang,
+    tibble
 Suggests:
   boot,
   broom,
-  brms,
-  cowplot,
   ggstance,
   huxtable (>= 3.0.0),
   kableExtra,
@@ -33,9 +32,7 @@ Suggests:
   MASS,
   methods,
   pbkrtest,
-  quantreg,
   RColorBrewer,
-  rstanarm,
   sandwich,
   scales,
   survey,
@@ -43,6 +40,10 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
+Enhances:
+  brms,
+  quantreg,
+  rstanarm
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
