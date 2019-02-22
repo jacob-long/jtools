@@ -11,12 +11,16 @@
 \alias{\%not\%<-.data.frame}
 \alias{\%not\%.matrix}
 \alias{\%not\%<-.matrix}
+\alias{\%not\%.list}
+\alias{\%not\%<-.list}
 \alias{\%just\%.default}
 \alias{\%just\%<-.default}
 \alias{\%just\%.data.frame}
 \alias{\%just\%<-.data.frame}
 \alias{\%just\%.matrix}
 \alias{\%just\%<-.matrix}
+\alias{\%just\%.list}
+\alias{\%just\%<-.list}
 \title{Subsetting operators}
 \usage{
 x \%not\% y
@@ -39,6 +43,10 @@ x %just% y <- value
 
 \method{\%not\%}{matrix}(x, y) <- value
 
+\method{\%not\%}{list}(x, y)
+
+\method{\%not\%}{list}(x, y) <- value
+
 \method{\%just\%}{default}(x, y)
 
 \method{\%just\%}{default}(x, y) <- value
@@ -50,6 +58,10 @@ x %just% y <- value
 \method{\%just\%}{matrix}(x, y)
 
 \method{\%just\%}{matrix}(x, y) <- value
+
+\method{\%just\%}{list}(x, y)
+
+\method{\%just\%}{list}(x, y) <- value
 }
 \arguments{
 \item{x}{Object to subset}

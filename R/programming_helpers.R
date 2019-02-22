@@ -137,6 +137,26 @@
 }
 
 #' @rdname subsetters
+#' @export 
+
+`%not%.list` <- function(x, y) {
+  if (is.character(y)) {
+    y <- which(names(x) %in% y)
+  }
+  `%not%.data.frame`(x, y)
+}
+
+#' @rdname subsetters
+#' @export 
+
+`%not%<-.list` <- function(x, y, value) {
+  if (is.character(y)) {
+    y <- which(names(x) %in% y)
+  }
+  `%not%<-.data.frame`(x, y, value)
+}
+
+#' @rdname subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%.default` <- function(x, y) {
@@ -195,6 +215,27 @@
     x[, y %just% seq_len(ncol(x))] <- value
   }
   x
+}
+
+#' @rdname subsetters
+#' @export
+# Automates my most common use of %in%
+`%just%.list` <- function(x, y) {
+  if (is.character(y)) {
+    y <- which(names(x) %in% y)
+  }
+  out <- `%just%.data.frame`(x, y)
+  
+}
+
+#' @rdname subsetters
+#' @export
+# Automates my most common use of %in%
+`%just%<-.list` <- function(x, y, value) {
+  if (is.character(y)) {
+    y <- which(names(x) %in% y)
+  }
+  `%just%<-.data.frame`(x, y, value)
 }
 
 
