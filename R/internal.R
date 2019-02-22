@@ -310,19 +310,10 @@ coeftest <- function(x, vcov. = NULL, df = NULL, ...) {
 #' @importFrom stats pnorm
 
 coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
-  ## use S4 methods if loaded
-  if (requireNamespace("stats4", quietly = TRUE)) {
-    coef0 <- stats4::coef
-    vcov0 <- stats4::vcov
-  } else {
-    coef0 <- coef
-    vcov0 <- vcov
-  }
-
   ## extract coefficients and standard errors
-  est <- coef0(x)
+  est <- coef(x)
   if (is.null(vcov.)) {
-    se <- vcov0(x)
+    se <- vcov(x)
   } else {
     if (is.function(vcov.)) {
       se <- vcov.(x, ...)

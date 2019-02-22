@@ -38,7 +38,6 @@ Suggests:
   rstanarm,
   sandwich,
   scales,
-  stats4,
   survey,
   weights,
     knitr,
