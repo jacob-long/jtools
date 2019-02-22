@@ -8,7 +8,6 @@
 #' @export 
 `%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
 
-
 #' @export
 #' @rdname subsetters
 `%not%` <- function(x, y) {
@@ -88,7 +87,6 @@
   x[x %nin% y] <- value
   x
 }
-
 
 #' @rdname subsetters
 #' @export 
@@ -257,22 +255,106 @@ num_print <- function(x, digits = getOption("jtools-digits", 2),
   }}, USE.NAMES = FALSE)
 }
 
-# Automate the addition of newline characters for long strings
+#### wrap helpers ############################################################
+
+# Let's only do colors if not in RStudio
+is.rstudio = function() {
+  .Platform$GUI == "RStudio"
+}
+# Dummy function to return whatever its given
+give_back <- function(x) {
+  return(x)
+}
+c_orange <- function(...) {
+  if (!is.rstudio()) {
+    orange <- crayon::make_style("orange") 
+    orange(...)
+  } else {
+    give_back(...)
+  }
+}
+c_red <- function(...) {
+  if (!is.rstudio()) {
+    crayon::red(...)
+  } else {
+    give_back(...)
+  }
+}
+c_cyan <- function(...) {
+  if (!is.rstudio()) {
+    crayon::cyan(...)
+  } else {
+    give_back(...)
+  }
+}
+
+dot_processor <- function(...) {
+  dots <- list(...)
+  out <- list(unnamed = NULL, named = NULL)
+  if (!is.null(names(dots))) {
+    out$unnamed <- dots %just% ""
+    out$named <- dots %not% ""
+    lapply(out, function(x) if (length(x) == 0) NULL else x)
+  } else {
+    out$unnamed <- dots
+    out
+  }
+}
+
+#  Automate the addition of newline characters for long strings
 #' @title `cat`, `message`, `warning`, and `stop` wrapped to fit the console's
 #'  width.
 #' @description These are convenience functions that format printed output to
 #'  fit the width of the user's console.
-#' @param ... Objects to print
+#' @param ... Objects to print. For `stop_wrap()`, `warn_wrap()`, and 
+#'  `msg_wrap()`, any named objects are instead diverted to the `...` argument 
+#'  of [rlang::abort()], [rlang::warn()], and [rlang::inform()],
+#'  respectively.
 #' @param sep Separator between `...`, Default: ''
 #' @param brk What should the last character of the message/warning/error be?
 #'  Default is `"\n"`, meaning the console output ends with a new line.
 #' @param call. Here for legacy reasons. It is ignored.
+#' @inheritParams rlang::abort
+#' @details 
+#'  The point of these functions is to allow you to print
+#'  output/messages/warnings/errors to the console without having to figure out
+#'  where to place newline characters. These functions get the width of the
+#'  console from the `"width"` option, which in most editors adjusts dynamically
+#'  as you resize.
+#'  
+#'  So instead of writing a warning like this:
+#'  
+#'  ```
+#'  warning("I have to give you this very important message that may be too\n",
+#'          "wide for your screen")
+#'  ```
+#'  
+#'  You can do it like this:
+#'  
+#'  ```
+#'  warn_wrap("I have to give you this very important message that may be
+#'            too wide for your screen")
+#'  ```
+#'  
+#'  And the function will automatically insert line breaks to fit the console.
+#'  As a note, it will also ignore any newlines you insert. This means you can
+#'  make your own fit your editor's screen and indent in the middle of a string
+#'  without that formatting being carried over into the output.
+#'  
+#'  
 #' @rdname wrap_str
 #' @export 
 
 wrap_str <- function(..., sep = "") {
-  paste0(strwrap(paste(..., sep = sep), width = 0.95 * getOption("width", 80)),
-         collapse = "\n")
+  # Using gsub to delete double spaces after periods when there was originally
+  # a linebreak after the period.
+  gsub("  ", " ",
+       paste0(
+         strwrap(paste(..., sep = sep), width = 0.95 * getOption("width", 80)),
+         collapse = "\n"
+       ),
+       fixed = TRUE
+      )
 }
 
 # Go ahead and wrap the cat function too
@@ -282,28 +364,36 @@ cat_wrap <- function(..., brk = "") {
   cat(wrap_str(...), brk, sep = "")
 }
 
-# Define orange crayon output
-orange <- crayon::make_style("orange")
-
 # Like cat_wrap but for warnings
 #' @rdname wrap_str
 #' @export 
-warn_wrap <- function(..., brk = "\n", call. = FALSE) {
-  warning(orange(wrap_str(...)), brk, call. = FALSE)
+warn_wrap <- function(..., brk = "\n", .subclass = NULL, call. = FALSE) {
+  dots <- dot_processor(...)
+  wrapped <- c_orange(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
+  warn_args <- as.list(c(message = wrapped, .subclass = .subclass, dots$named))
+  do.call(rlang::warn, warn_args)
 }
 
 # Like cat_wrap but for errors
 #' @rdname wrap_str
 #' @importFrom crayon red
 #' @export 
-stop_wrap <- function(...,  brk = "\n", call. = FALSE) {
-  stop(red(wrap_str(...)), brk, call. = FALSE)
+stop_wrap <- function(...,  brk = "\n", trace = rlang::trace_back(bottom = 2),
+                      .subclass = NULL, call. = NULL) {
+  dots <- dot_processor(...)
+  wrapped <- c_red(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
+  abort_args <- as.list(c(message = wrapped, .subclass = .subclass, dots$named,
+                         trace = trace))
+  do.call(rlang::abort, abort_args)
 }
 
 # Like cat_wrap but for messages
 #' @importFrom crayon cyan
 #' @rdname wrap_str
 #' @export 
-msg_wrap <- function(..., brk = "\n") {
-  message(cyan(wrap_str(...)), brk)
+msg_wrap <- function(..., .subclass = NULL, brk = "\n") {
+  dots <- dot_processor(...)
+  wrapped <- c_cyan(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
+  inform_args <- as.list(c(message = wrapped, .subclass = .subclass, dots$named))
+  do.call(rlang::inform, inform_args)
 }

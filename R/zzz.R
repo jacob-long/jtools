@@ -22,4 +22,5 @@
 
 .onLoad <- function(libname, pkgname) {
   pkgconfig::set_config("tibble::rownames" = NA)
+  options("rlang__backtrace_on_error" = "branch")
 }

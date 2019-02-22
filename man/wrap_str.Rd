@@ -13,23 +13,52 @@ wrap_str(..., sep = "")
 
 cat_wrap(..., brk = "")
 
-warn_wrap(..., brk = "\\n", call. = FALSE)
+warn_wrap(..., brk = "\\n", .subclass = NULL, call. = FALSE)
 
-stop_wrap(..., brk = "\\n", call. = FALSE)
+stop_wrap(..., brk = "\\n", trace = rlang::trace_back(bottom = 2),
+  .subclass = NULL, call. = NULL)
 
-msg_wrap(..., brk = "\\n")
+msg_wrap(..., .subclass = NULL, brk = "\\n")
 }
 \arguments{
-\item{...}{Objects to print}
+\item{...}{Objects to print. For \code{stop_wrap()}, \code{warn_wrap()}, and
+\code{msg_wrap()}, any named objects are instead diverted to the \code{...} argument
+of \code{\link[rlang:abort]{rlang::abort()}}, \code{\link[rlang:warn]{rlang::warn()}}, and \code{\link[rlang:inform]{rlang::inform()}},
+respectively.}
 
 \item{sep}{Separator between \code{...}, Default: ''}
 
 \item{brk}{What should the last character of the message/warning/error be?
 Default is \code{"\n"}, meaning the console output ends with a new line.}
 
+\item{.subclass}{Subclass of the condition. This allows your users
+to selectively handle the conditions signalled by your functions.}
+
 \item{call.}{Here for legacy reasons. It is ignored.}
+
+\item{trace}{A \code{trace} object created by \code{\link[=trace_back]{trace_back()}}.}
 }
 \description{
 These are convenience functions that format printed output to
 fit the width of the user's console.
+}
+\details{
+The point of these functions is to allow you to print
+output/messages/warnings/errors to the console without having to figure out
+where to place newline characters. These functions get the width of the
+console from the \code{"width"} option, which in most editors adjusts dynamically
+as you resize.
+
+So instead of writing a warning like this:\preformatted{warning("I have to give you this very important message that may be too\n",
+        "wide for your screen")
+}
+
+You can do it like this:\preformatted{warn_wrap("I have to give you this very important message that may be
+          too wide for your screen")
+}
+
+And the function will automatically insert line breaks to fit the console.
+As a note, it will also ignore any newlines you insert. This means you can
+make your own fit your editor's screen and indent in the middle of a string
+without that formatting being carried over into the output.
 }
