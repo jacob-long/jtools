@@ -1,3 +1,18 @@
+# jtools 2.0.1.9000
+
+Minor release.
+
+Fixes:
+
+* When the deprecated `odds.ratio` argument was given to `summ`, users were 
+correctly warned that it is a deprecated argument but the exponentiated 
+coefficients were not returned as they should have been.
+* Fixed an error in `make_new_data`/`make_predictions`/`effect_plot` when
+offsets are specified in a formula or a variable is included more than once
+in a formula.
+
+Other changes:
+* Added a %just.list% and %not.list% S3 methods. 
 # jtools 2.0.0
 
 **Big** changes.
