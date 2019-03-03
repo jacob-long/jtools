@@ -58,7 +58,6 @@ summ.rq <- function(model, scale = FALSE,
   boot.sims = 1000, boot.method = "xy",
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
-  stars = getOption("summ-stars", FALSE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
