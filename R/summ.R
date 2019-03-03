@@ -36,8 +36,8 @@ j_summ <- summ
 
 #' Linear regression summaries with options
 #'
-#' \code{summ} prints output for a regression model in a fashion similar to
-#' \code{summary}, but formatted differently with more options.
+#' \code{summ()} prints output for a regression model in a fashion similar to
+#' \code{summary()}, but formatted differently with more options.
 #'
 #' @param model A \code{lm} object.
 #'
@@ -121,20 +121,20 @@ j_summ <- summ
 #' }
 #'
 #'  There are several options available for \code{robust}. The heavy
-#'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
+#'  lifting is done by \code{\link[sandwich]{vcovHC()}}, where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
 #'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
 #'  if the goal is to replicate Stata's output. Any option that is understood
-#'  by \code{vcovHC} will be accepted. Cluster-robust standard errors are
+#'  by \code{vcovHC()} will be accepted. Cluster-robust standard errors are
 #'  computed if \code{cluster} is set to the name of the input data's cluster
 #'  variable or is a vector of clusters.
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
-#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
+#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
 #'  mean-centering and scaling.
 #'
 #'  If using \code{part.corr = TRUE}, then you will get these two common
@@ -159,14 +159,16 @@ j_summ <- summ
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_mod}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family summ
+#' 
 #' @examples
 #' # Create lm object
 #' fit <- lm(Income ~ Frost + Illiteracy + Murder,
@@ -502,8 +504,8 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 
 #' Generalized linear regression summaries with options
 #'
-#' \code{summ} prints output for a regression model in a fashion similar to
-#' \code{summary}, but formatted differently with more options.
+#' \code{summ()} prints output for a regression model in a fashion similar to
+#' \code{summary()}, but formatted differently with more options.
 #'
 #' @param model A `glm` object.
 #' @param exp If \code{TRUE}, reports exponentiated coefficients with
@@ -526,20 +528,21 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #' }
 #'
 #'  There are several options available for \code{robust}. The heavy
-#'  lifting is done by \code{\link[sandwich]{vcovHC}}, where those are better
+#'  lifting is done by \code{\link[sandwich]{vcovHC()}}, where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
 #'  \code{"HC3"}. Stata's default is \code{"HC1"}, so that choice may be better
 #'  if the goal is to replicate Stata's output. Any option that is understood by
-#'  \code{vcovHC} will be accepted. Cluster-robust standard errors are computed
+#'  \code{vcovHC()} will be accepted. Cluster-robust standard errors are
+#'  computed
 #'  if \code{cluster} is set to the name of the input data's cluster variable
 #'  or is a vector of clusters.
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_mod}} and \code{\link{center_mod}},
-#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
+#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
 #'  mean-centering and scaling.
 #'
 #' @return If saved, users can access most of the items that are returned in
@@ -551,14 +554,16 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
-#'
+#' 
+#' @family summ
+#'  
 #' @examples
 #'  ## Dobson (1990) Page 93: Randomized Controlled Trial :
 #'  counts <- c(18,17,15,20,10,20,25,13,12)
@@ -865,7 +870,8 @@ print.summ.glm <- function(x, ...) {
 
 knit_print.summ.glm <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+  if (!nzchar(system.file(package = "kableExtra")) | 
+      getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 
@@ -966,8 +972,8 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
 
 #' Complex survey regression summaries with options
 #'
-#' \code{summ} prints output for a regression model in a fashion similar to
-#' \code{summary}, but formatted differently with more options.
+#' \code{summ()} prints output for a regression model in a fashion similar to
+#' \code{summary()}, but formatted differently with more options.
 #'
 #' @param model A `svyglm` object.
 #' @param exp If \code{TRUE}, reports exponentiated coefficients with
@@ -988,10 +994,11 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
 #' }
 #'
 #'  The \code{scale} and \code{center} options are performed via refitting
-#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
-#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
+#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
 #'  mean-centering and scaling. These functions can handle \code{svyglm} objects
-#'  correctly by calling \code{svymean} and \code{svyvar} to compute means and
+#'  correctly by calling \code{svymean()} and \code{svyvar()} to compute means
+#'  and
 #'  standard deviations. Weights are not altered. The fact that the model is
 #'  refit means the runtime will be similar to the original time it took to fit
 #'  the model.
@@ -1005,13 +1012,15 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_lm}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' 
+#' @family summ
 #'
 #' @examples
 #' if (requireNamespace("survey")) {
@@ -1477,13 +1486,13 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #' }
 #'
 #'  The \code{scale} and \code{center} options are performed via refitting
-#'  the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
-#'  respectively. Each of those in turn uses \code{\link{gscale}} for the
+#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
+#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
 #'  mean-centering and scaling.
 #'
 #'  \code{merMod} models are a bit different than the others. The \code{lme4}
 #'  package developers have, for instance, made a decision not to report or
-#'  compute p values for \code{lmer} models. There are good reasons for this,
+#'  compute p values for \code{lmer()} models. There are good reasons for this,
 #'  most notably that the t-values produced are not "accurate" in the sense of
 #'  the Type I error rate. For certain large, balanced samples with many
 #'  groups, this is no big deal. What's
@@ -1497,7 +1506,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'  it is best to just get the \pkg{pbkrtest} package.
 #'
 #'  By default, this function follows \code{lme4}'s lead and does not report
-#'  the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
+#'  the p values for \code{lmer()} models. If the user has \pkg{pbkrtest}
 #'  installed, however, p values are reported using the Kenward-Roger
 #'  d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
 #'  set to something other than \code{NULL}. In publications,
@@ -1509,8 +1518,8 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'  If you're looking for a simple test with no extra packages installed,
 #'  it is better to use the confidence
 #'  intervals and check to see if they exclude zero than use the t-test.
-#'  For users of \code{glmer}, see some of the advice there as well. While
-#'  \code{lme4} and by association \code{summ} does as well, they are
+#'  For users of \code{glmer()}, see some of the advice there as well. While
+#'  \code{lme4} and by association \code{summ()} does as well, they are
 #'  still imperfect.
 #'
 #'  You have some options to customize the output in this regard with the
@@ -1541,7 +1550,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'  understand that it is not an unambiguous measure of model fit.
 #'
 #'  This package calculates R^2 for mixed models using an adapted version
-#'  of \code{\link[piecewiseSEM]{sem.model.fits}} from the \pkg{piecewiseSEM}
+#'  of \code{\link[piecewiseSEM]{sem.model.fits()}} from the \pkg{piecewiseSEM}
 #'  package. This is an implementation of the Nakagawa & Schielzeth (2013)
 #'  procedure with refinements by Johnson (2014). If you choose to report
 #'  the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
@@ -1560,10 +1569,10 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_mod}} can simply perform the standardization if
+#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #'  [pbkrtest::get_ddf_Lb()] gets the Kenward-Roger degrees of
@@ -1574,6 +1583,8 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
+#' @family summ
+#' 
 #' @examples
 #' if (requireNamespace("lme4")) {
 #'   library(lme4, quietly = TRUE)
@@ -2213,14 +2224,15 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
 #'
 #' @description This function is convenience wrapper for manually setting
 #'  options using [options()]. This gives a handy way to, for instance,
-#'  set the arguments to be used in every call to `summ` in your script/session.
+#'  set the arguments to be used in every call to [`summ()`] in your 
+#'  script/session.
 #'
 #'  To make the settings persist across sessions, you can run this in your
 #'  `.Rprofile` file.
 #'
 #'  Note that arguments that do not apply (e.g., `robust` for `merMod` models)
 #'  are silently ignored when those types of models are used.
-#'
+#' @param table.format A format understood by [md_table()]
 #' @inheritParams summ.lm
 #' @inheritParams summ.merMod
 #'

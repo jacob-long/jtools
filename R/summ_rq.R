@@ -1,7 +1,7 @@
 #' @title Quantile regression summaries with options
 #'
-#' @description \code{summ} prints output for a regression model in a fashion
-#'  similar to \code{summary}, but formatted differently with more options.
+#' @description \code{summ()} prints output for a regression model in a fashion
+#'  similar to \code{summary()}, but formatted differently with more options.
 #'
 #' @param model A `rq` model. At this time, `rqs` models (multiple `tau`
 #'  parameters) are not supported.
@@ -28,6 +28,8 @@
 #'  could calculate R-squared for these models, it goes against the underlying
 #'  theoretical rationale for them. Koenker himself is not a big fan of R1
 #'  either, but it's something. See Koenker \& Machado (1999) for more info.
+#'
+#' @family summ
 #'
 #' @references
 #'

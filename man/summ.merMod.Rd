@@ -110,8 +110,8 @@ most useful in cases in which \code{scale = TRUE}.}
 Much other information can be accessed as attributes.
 }
 \description{
-\code{summ} prints output for a regression model in a fashion similar to
-\code{summary}, but formatted differently with more options.
+\code{summ()} prints output for a regression model in a fashion similar to
+\code{summary()}, but formatted differently with more options.
 }
 \details{
 By default, this function will print the following items to the
@@ -124,13 +124,13 @@ console:
 }
 
 The \code{scale} and \code{center} options are performed via refitting
-the model with \code{\link{scale_lm}} and \code{\link{center_lm}},
-respectively. Each of those in turn uses \code{\link{gscale}} for the
+the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
+respectively. Each of those in turn uses \code{\link{gscale()}} for the
 mean-centering and scaling.
 
 \code{merMod} models are a bit different than the others. The \code{lme4}
 package developers have, for instance, made a decision not to report or
-compute p values for \code{lmer} models. There are good reasons for this,
+compute p values for \code{lmer()} models. There are good reasons for this,
 most notably that the t-values produced are not "accurate" in the sense of
 the Type I error rate. For certain large, balanced samples with many
 groups, this is no big deal. What's
@@ -144,7 +144,7 @@ using t-values. If groups are nested or crossed in a linear model,
 it is best to just get the \pkg{pbkrtest} package.
 
 By default, this function follows \code{lme4}'s lead and does not report
-the p values for \code{lmer} models. If the user has \pkg{pbkrtest}
+the p values for \code{lmer()} models. If the user has \pkg{pbkrtest}
 installed, however, p values are reported using the Kenward-Roger
 d.f. approximation unless \code{pvals = FALSE} or \code{t.df} is
 set to something other than \code{NULL}. In publications,
@@ -156,8 +156,8 @@ See \code{\link[lme4]{pvalues}} from the \pkg{lme4} for more details.
 If you're looking for a simple test with no extra packages installed,
 it is better to use the confidence
 intervals and check to see if they exclude zero than use the t-test.
-For users of \code{glmer}, see some of the advice there as well. While
-\code{lme4} and by association \code{summ} does as well, they are
+For users of \code{glmer()}, see some of the advice there as well. While
+\code{lme4} and by association \code{summ()} does as well, they are
 still imperfect.
 
 You have some options to customize the output in this regard with the
@@ -188,7 +188,7 @@ reports one version for your benefit, though you should of course
 understand that it is not an unambiguous measure of model fit.
 
 This package calculates R^2 for mixed models using an adapted version
-of \code{\link[piecewiseSEM]{sem.model.fits}} from the \pkg{piecewiseSEM}
+of \code{\link[piecewiseSEM]{sem.model.fits()}} from the \pkg{piecewiseSEM}
 package. This is an implementation of the Nakagawa & Schielzeth (2013)
 procedure with refinements by Johnson (2014). If you choose to report
 the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
@@ -241,10 +241,10 @@ obtaining $R^2$ from generalized linear mixed-effects models.
 \url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
 }
 \seealso{
-\code{\link{scale_mod}} can simply perform the standardization if
+\code{\link{scale_mod()}} can simply perform the standardization if
 preferred.
 
-\code{\link{gscale}} does the heavy lifting for mean-centering and scaling
+\code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
 \code{\link[pbkrtest:get_ddf_Lb]{pbkrtest::get_ddf_Lb()}} gets the Kenward-Roger degrees of
@@ -252,7 +252,11 @@ freedom if you have \pkg{pbkrtest} installed.
 
 A tweaked version of \code{\link[piecewiseSEM:sem.model.fits]{piecewiseSEM::sem.model.fits()}} is used to
 generate the pseudo-R-squared estimates for linear models.
+
+Other summ: \code{\link{summ.glm}}, \code{\link{summ.lm}},
+  \code{\link{summ.rq}}, \code{\link{summ.svyglm}}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
+\concept{summ}

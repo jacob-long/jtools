@@ -80,8 +80,8 @@ supported, for now.}
 types of models.}
 }
 \description{
-\code{summ} prints output for a regression model in a fashion
-similar to \code{summary}, but formatted differently with more options.
+\code{summ()} prints output for a regression model in a fashion
+similar to \code{summary()}, but formatted differently with more options.
 }
 \details{
 This method implements most of the things I think most users would
@@ -113,3 +113,8 @@ inference processes for quantile regression.
 \emph{Journal of the American Statistical Association}, \emph{94}, 1296–1310.
 https://doi.org/10.1080/01621459.1999.10473882
 }
+\seealso{
+Other summ: \code{\link{summ.glm}}, \code{\link{summ.lm}},
+  \code{\link{summ.merMod}}, \code{\link{summ.svyglm}}
+}
+\concept{summ}
