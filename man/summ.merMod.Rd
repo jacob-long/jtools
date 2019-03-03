@@ -10,11 +10,10 @@
   ci.width = getOption("summ-ci.width", 0.95),
   conf.method = getOption("summ-conf.method", c("Wald", "profile",
   "boot")), digits = getOption("jtools-digits", default = 2),
-  r.squared = TRUE, pvals = getOption("summ-pvals", NULL),
-  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE,
-  transform.response = FALSE, data = NULL, exp = FALSE,
-  t.df = NULL, model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE),
+  r.squared = TRUE, pvals = getOption("summ-pvals", NULL), n.sd = 1,
+  center = FALSE, transform.response = FALSE, data = NULL,
+  exp = FALSE, t.df = NULL, model.info = getOption("summ-model.info",
+  TRUE), model.fit = getOption("summ-model.fit", TRUE),
   re.variance = getOption("summ-re.variance", c("sd", "var")),
   which.cols = NULL, re.table = getOption("summ-re.table", TRUE),
   groups.table = getOption("summ-groups.table", TRUE), ...)
@@ -47,11 +46,9 @@ number.}
 \code{TRUE}, but if it has errors or takes a long time to calculate you
 may want to consider setting to FALSE.}
 
-\item{pvals}{Show p values and significance stars? If \code{FALSE}, these
+\item{pvals}{Show p values? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}, except for merMod objects (see
 details).}
-
-\item{stars}{Show significance stars with p values? Default is FALSE.}
 
 \item{n.sd}{If \code{scale = TRUE}, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.}

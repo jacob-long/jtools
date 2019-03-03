@@ -75,10 +75,8 @@ j_summ <- summ
 #'   \code{options("jtools-digits" = digits)} where digits is the desired
 #'   number.
 #'
-#' @param pvals Show p values and significance stars? If \code{FALSE}, these
+#' @param pvals Show p values? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}.
-#'  
-#' @param stars Show significance stars with p values? Default is FALSE. 
 #'
 #' @param n.sd If \code{scale = TRUE}, how many standard deviations should
 #'  predictors be divided by? Default is 1, though some suggest 2.
@@ -203,7 +201,6 @@ summ.lm <- function(
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
-  stars = getOption("summ-stars", FALSE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
@@ -366,7 +363,7 @@ summ.lm <- function(
                  npreds = model$rank - df.int, lmClass = class(model),
                  missing = missing, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = "t val.", stars = stars,
+                 test.stat = "t val.",
                  standardize.response = transform.response,
                  scale.response = transform.response,
                  transform.response = transform.response,
@@ -391,9 +388,7 @@ print.summ.lm <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      stars = x$stars)
+  ctable <- j$coeftable
 
   if (x$model.info == TRUE) {
     type <- paste("OLS linear regression")
@@ -411,10 +406,8 @@ print.summ.lm <- function(x, ...) {
   }
 
   print_se_info(x$robust, x$use_cluster, manual = "OLS")
-
-  cat("\n")
-  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
-        align = "r"))
+  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                 sig.digits = FALSE))
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -448,9 +441,8 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      add_col = TRUE, stars = x$stars)
+  # Helper function to deal with table rounding 
+  ctable <- round_df_char(table = j$coeftable, digits = x$digits)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   o_opt <- getOption("kableExtra.auto_format", NULL)
@@ -605,8 +597,7 @@ summ.glm <- function(
   robust = getOption("summ-robust", FALSE), cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", default = 2),
-  exp = FALSE, pvals = getOption("summ-pvals", TRUE),
-  stars = getOption("summ-stars", FALSE), n.sd = 1,
+  exp = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
   center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
@@ -795,7 +786,7 @@ summ.glm <- function(
                  missing = missing, pvals = pvals, robust = robust,
                  robust.type = robust, use_cluster = use_cluster,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = tcol, stars = stars, 
+                 test.stat = tcol,
                  standardize.response = transform.response,
                  exp = exp,
                  scale.response = transform.response,
@@ -819,9 +810,7 @@ print.summ.glm <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-    # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      stars = x$stars)
+  ctable <- j$coeftable
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -851,10 +840,8 @@ print.summ.glm <- function(x, ...) {
   }
 
   print_se_info(x$robust, x$use_cluster)
-
-  cat("\n")
-  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
-        align = "r"))
+  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                 sig.digits = FALSE))
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -887,9 +874,8 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      add_col = TRUE, stars = x$stars)
+  # Helper function to deal with table rounding 
+  ctable <- round_df_char(df = j$coeftable, digits = x$digits)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   o_opt <- getOption("kableExtra.auto_format", NULL)
@@ -1047,8 +1033,7 @@ summ.svyglm <- function(
   model, scale = FALSE, confint = getOption("summ-confint", FALSE),
   ci.width = getOption("summ-ci.width", .95),
   digits = getOption("jtools-digits", default = 2),
-  pvals = getOption("summ-pvals", TRUE),
-  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE, 
+  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE, 
   transform.response = FALSE,
   exp = FALSE, vifs = getOption("summ-vifs", FALSE),
   model.info = getOption("summ-model.info", TRUE),
@@ -1270,7 +1255,7 @@ summ.svyglm <- function(
                  npreds = model$rank-df.int,
                  dispersion = dispersion, missing = missing,
                  confint = confint, ci.width = ci.width, pvals = pvals,
-                 test.stat = tcol, stars = stars,
+                 test.stat = tcol,
                  standardize.response = transform.response,
                  exp = exp,
                  scale.response = transform.response)
@@ -1295,9 +1280,7 @@ print.summ.svyglm <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-    # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      stars = x$stars)
+  ctable <- j$coeftable
 
   if (x$model.info == TRUE) {
     # If it's linear...
@@ -1337,10 +1320,8 @@ print.summ.svyglm <- function(x, ...) {
   if (x$linear == TRUE) {
     cat("Standard errors: Robust\n")
   }
-
-  cat("\n")
-  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
-        align = "r"))
+  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                 sig.digits = FALSE))
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1377,9 +1358,8 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
   o_opt <- getOption("kableExtra.auto_format", NULL)
   options(kableExtra.auto_format = FALSE)
 
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      add_col = TRUE, stars = x$stars)
+  # Helper function to deal with table rounding
+  ctable <- round_df_char(df = j$coeftable, digits = x$digits)
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -1458,14 +1438,14 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
 #' Mixed effects regression summaries with options
 #'
-#' \code{summ} prints output for a regression model in a fashion similar to
-#' \code{summary}, but formatted differently with more options.
+#' \code{summ()} prints output for a regression model in a fashion similar to
+#' \code{summary()}, but formatted differently with more options.
 #'
 #' @param model A \code{\link[lme4]{merMod}} object.
 #' @param r.squared Calculate an r-squared model fit statistic? Default is
 #'  \code{TRUE}, but if it has errors or takes a long time to calculate you
 #'  may want to consider setting to FALSE.
-#' @param pvals Show p values and significance stars? If \code{FALSE}, these
+#' @param pvals Show p values? If \code{FALSE}, these
 #'  are not printed. Default is \code{TRUE}, except for merMod objects (see
 #'  details).
 #' @param exp If \code{TRUE}, reports exponentiated coefficients with
@@ -1652,8 +1632,7 @@ summ.merMod <- function(
   ci.width = getOption("summ-ci.width", .95),
   conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
   digits = getOption("jtools-digits", default = 2), r.squared = TRUE,
-  pvals = getOption("summ-pvals", NULL), 
-  stars = getOption("summ-stars", FALSE), n.sd = 1, center = FALSE,
+  pvals = getOption("summ-pvals", NULL), n.sd = 1, center = FALSE,
   transform.response = FALSE, data = NULL, exp = FALSE, t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
@@ -1953,7 +1932,7 @@ summ.merMod <- function(
                  npreds = nrow(mat),
                  confint = confint, ci.width = ci.width, pvals = pvals,
                  df = df, p_calc = p_calc, r.squared = r.squared,
-                 failed.rsq = failed.rsq, test.stat = tcol, stars = stars,
+                 failed.rsq = failed.rsq, test.stat = tcol,
                  standardize.response = transform.response,
                  exp = exp, scale.response = transform.response,
                  re.table = re.table, groups.table = groups.table)
@@ -1980,9 +1959,8 @@ print.summ.merMod <- function(x, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      stars = x$stars)
+  # Helper function to deal with table rounding
+  ctable <- j$coeftable
 
   if (x$model.info == TRUE) {
     if (x$lmFamily[1] == "gaussian" && x$lmFamily[2] == "identity") {
@@ -2015,9 +1993,8 @@ print.summ.merMod <- function(x, ...) {
     ctable[,"d.f."] <- as.integer(ctable[,"d.f."])
   }
   
-  cat("\n")
-  print(md_table(ctable, format = getOption("summ.table.format", "markdown"),
-        align = "r"))
+  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                 sig.digits = FALSE))
   
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
@@ -2060,8 +2037,8 @@ print.summ.merMod <- function(x, ...) {
     rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
     #rownames(rtable) <- rep("", times = nrow(rtable))
     # print(rtable, row.names = FALSE)
-    cat("\n")
-    print(md_table(rtable, format = getOption("summ.table.format", "markdown"),
+    # cat("\n")
+    print(md_table(rtable, format = getOption("summ.table.format", "multiline"),
           align = "c", row.names = FALSE))
   }
 
@@ -2071,8 +2048,8 @@ print.summ.merMod <- function(x, ...) {
     gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
     #rownames(gtable) <- rep("", times = nrow(gtable))
     # print(gtable, row.names = FALSE)
-    cat("\n")
-    print(md_table(gtable, format = getOption("summ.table.format", "markdown"),
+    # cat("\n")
+    print(md_table(gtable, format = getOption("summ.table.format", "multiline"),
           align = "c", row.names = FALSE))
   }
 
@@ -2101,9 +2078,8 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
   # saving attributes as x (this was to make a refactoring easier)
   x <- attributes(j)
 
-  # Helper function to deal with table rounding, significance stars
-  ctable <- add_stars(table = j$coeftable, digits = x$digits, p_vals = x$pvals,
-                      add_col = TRUE, stars = x$stars)
+  # Helper function to deal with table rounding 
+  ctable <- round_df_char(df = j$coeftable, digits = x$digits)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   if (length(format) == 0) {format <- "html"}
@@ -2237,7 +2213,7 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
 
 #### utilities ###############################################################
 
-#' @title Set defaults for `summ` function
+#' @title Set defaults for `summ()` functions
 #'
 #' @description This function is convenience wrapper for manually setting
 #'  options using [options()]. This gives a handy way to, for instance,
@@ -2258,7 +2234,7 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
 set_summ_defaults <- function(digits = NULL, model.info = NULL,
                               model.fit = NULL, pvals = NULL, robust = NULL,
                               confint = NULL, ci.width = NULL, vifs = NULL,
-                              conf.method = NULL, stars = NULL) {
+                              conf.method = NULL, table.format = NULL) {
 
   if ("confint" %in% names(match.call())) {
     options("summ-confint" = confint)
@@ -2287,8 +2263,8 @@ set_summ_defaults <- function(digits = NULL, model.info = NULL,
   if ("conf.method" %in% names(match.call())) {
     options("summ-conf.method" = pvals)
   }
-  if ("stars" %in% names(match.call())) {
-    options("summ-stars" = stars)
+  if ("table.format" %in% names(match.call())) {
+    options("summ.table.format" = table.format)
   }
 
 }

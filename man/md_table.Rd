@@ -4,14 +4,15 @@
 \alias{md_table}
 \title{Print attractive data frames in the console}
 \usage{
-md_table(x, format = "markdown", digits = getOption("jtools-digits",
-  2), sig.digits = TRUE, row.names = NA, col.names = NA,
-  format.args = list(), align = NULL)
+md_table(x, format = getOption("md_table_format", "grid"),
+  digits = getOption("jtools-digits", 2), sig.digits = TRUE,
+  row.names = rownames(x), col.names = colnames(x), align = NULL)
 }
 \arguments{
 \item{x}{A data frame or matrix.}
 
-\item{format}{The style, which can be either "markdown" or "pandoc".
+\item{format}{The style, which can be one of the following: "multiline",
+"grid", "simple" (also "pandoc"), "rmarkdown" (also "markdown").
 Default: "markdown"}
 
 \item{digits}{How many digits to print for numbers.
@@ -21,14 +22,11 @@ Default: 2}
 digits or only when there are at least that many significant digits? Default
 is TRUE, meaning only print \code{digits} number of \emph{significant} digits.}
 
-\item{row.names}{Logical: whether to include row names. By
-default, row names are included if \code{rownames(x)} is neither
-\code{NULL} nor identical to \code{1:nrow(x)}.}
+\item{row.names}{if FALSE, row names are suppressed. A character vector of
+row names can also be specified here. By default, row names are included if
+rownames(t) is neither NULL nor identical to 1:nrow(x).}
 
-\item{col.names}{A character vector of column names to be used in the table.}
-
-\item{format.args}{A list of arguments to be passed to \code{\link{format}()}
-to format table values, e.g. \code{list(big.mark = ',')}.}
+\item{col.names}{a character vector of column names to be used in the table}
 
 \item{align}{Column alignment: a character vector consisting of ‘'l'’
 (left), ‘'c'’ (center) and/or ‘'r'’ (right). By default or if
@@ -37,5 +35,5 @@ columns are left-aligned.}
 }
 \description{
 This function takes data frame input and prints to the console
-as a markdown table for better readability.
+as an ASCII/markdown table for better readability.
 }

@@ -18,6 +18,7 @@ Imports:
     ggplot2,
     crayon,
     magrittr,
+    pander,
     pkgconfig,
     rlang,
     tibble

@@ -13,6 +13,13 @@ in a formula.
 
 Other changes:
 * Added a %just.list% and %not.list% S3 methods. 
+* `summ()` (and `md_table()`) now rely on `pander` to produce plain-text tables
+and use `pander`'s `"multiline"` format by default. Check out `"grid"` for 
+another option.
+* `stars` (i.e., significance stars) are no longer available from `summ()`. 
+This is partially due to the change to printing tables via `pander` but also
+in keeping with statistical best practices.
+
 # jtools 2.0.0
 
 **Big** changes.

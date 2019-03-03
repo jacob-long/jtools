@@ -1,85 +1,5 @@
 #### summ helpers ############################################################
 
-## Automates the adding of the significance stars to the output
-## Also rounds the digits and spits out a table from a matrix
-## Since it's doing double duty, also can skip the p vals if requested
-
-add_stars <- function(table, digits, p_vals, add_col = FALSE, stars = TRUE) {
-  
-  if (p_vals == TRUE) { # Only do this if showing p values
-    
-    # Grab the unrounded p values
-    pvals <- table[,"p"]
-    
-    # Create a NA-filled vector to speed up the loop
-    sigstars <- rep(NA, times = nrow(table))
-    
-    # Add the stars
-    for (y in seq_along(pvals)) {
-      
-      if (is.na(pvals[y]) || pvals[y] > 0.1) {
-        sigstars[y] <- ""
-      } else if (pvals[y] <= 0.1 & pvals[y] > 0.05) {
-        sigstars[y] <- "."
-      } else if (pvals[y] > 0.01 & pvals[y] <= 0.05) {
-        sigstars[y] <- "*"
-      } else if (pvals[y] > 0.001 & pvals[y] <= 0.01) {
-        sigstars[y] <- "**"
-      } else if (pvals[y] <= 0.001) {
-        sigstars[y] <- "***"
-      }
-      
-    }
-    
-  }
-  
-  # Round the values
-  table <- round_df_char(table, digits)
-  
-  # Can't do this in the first conditional because of the need to round
-  if (p_vals == TRUE & stars == TRUE) {
-    # Get the colnames so I can fix them after cbinding
-    tnames <- colnames(table)
-    if (add_col == FALSE) {
-      # Pad the stars and colnames for alignment
-      max_len <- max(nchar(sigstars))
-      for (i in seq_len(length(sigstars))) {
-        # How many characters is this one
-        len <- nchar(sigstars[i])
-        # Generate spaces needed to pad it
-        spaces <- paste0(rep("\u00A0", times = max_len - len), collapse = "")
-        # Append spaces to make length equal to max
-        sigstars[i] <- if (max_len > 0) {
-          paste0("\u00A0", sigstars[i], spaces)
-        } else {
-          paste0(sigstars[i], spaces)
-        }
-      }
-      # Which colname is p?
-      p_i <- which(colnames(table) == "p")
-      # Rename the column to align the same way
-      spaces <- paste0(rep("\u00A0", ifelse(max_len > 0, yes = max_len + 1,
-                                            no = max_len)),
-                       collapse = "")
-      tnames[p_i] <- paste0("p", spaces)
-      # Change the column names
-      colnames(table) <- tnames
-      # Now append the stars to the p values
-      table[,p_i] <- paste0(table[,p_i], sigstars)
-      
-    } else { # This is the legacy behavior and still used for knitted output
-      # put in the stars
-      table <- cbind(table, sigstars)
-      # Makes the name for the stars column empty
-      colnames(table) <- c(tnames, "")
-    }
-    
-  }
-  
-  return(table)
-  
-}
-
 ## Creates clean data frames for printing. Aligns decimal points,
 ## padding extra space with " " (or another value), and rounds values.
 ## Outputs a data.frame of character vectors containing the corrected
@@ -418,6 +338,10 @@ dep_checks <- function(dots) {
   if ("model.check" %in% names(dots)) {
     warn_wrap("The model.check argument is deprecated and has been removed.",
               call. = FALSE)
+  }
+  
+  if ("stars" %in% names(dots)) {
+    warn_wrap("The 'stars' argument is deprecated and has been removed.")
   }
   
   list(scale = scale, transform.response = transform.response, robust = robust,

@@ -2,11 +2,11 @@
 % Please edit documentation in R/summ.R
 \name{set_summ_defaults}
 \alias{set_summ_defaults}
-\title{Set defaults for \code{summ} function}
+\title{Set defaults for \code{summ()} functions}
 \usage{
 set_summ_defaults(digits = NULL, model.info = NULL, model.fit = NULL,
   pvals = NULL, robust = NULL, confint = NULL, ci.width = NULL,
-  vifs = NULL, conf.method = NULL, stars = NULL)
+  vifs = NULL, conf.method = NULL, table.format = NULL)
 }
 \arguments{
 \item{digits}{An integer specifying the number of digits past the decimal to
@@ -20,7 +20,7 @@ name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of model fit statistics.}
 
-\item{pvals}{Show p values and significance stars? If \code{FALSE}, these
+\item{pvals}{Show p values? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}.}
 
 \item{robust}{If not \code{FALSE}, reports heteroskedasticity-robust standard
@@ -49,12 +49,13 @@ is \code{"Wald"}, but \code{"profile"} or \code{"boot"} are better when accuracy
 priority. Be aware that both of the alternate methods are sometimes very
 time-consuming.}
 
-\item{stars}{Show significance stars with p values? Default is FALSE.}
+\item{table.format}{A format understood by \code{\link[=md_table]{md_table()}}}
 }
 \description{
 This function is convenience wrapper for manually setting
 options using \code{\link[=options]{options()}}. This gives a handy way to, for instance,
-set the arguments to be used in every call to \code{summ} in your script/session.
+set the arguments to be used in every call to \code{\link[=summ]{summ()}} in your
+script/session.
 
 To make the settings persist across sessions, you can run this in your
 \code{.Rprofile} file.
