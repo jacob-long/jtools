@@ -115,7 +115,7 @@ p values.
 }
 
 There are several options available for \code{robust}. The heavy
-lifting is done by \code{\link[sandwich]{vcovHC()}}, where those are better
+lifting is done by \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}, where those are better
 described.
 Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 recommendation of the developers of \pkg{sandwich}, the default is set to
@@ -128,8 +128,8 @@ or is a vector of clusters.
 
 The \code{scale} and \code{center} options are performed via
 refitting
-the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-respectively. Each of those in turn uses \code{\link{gscale()}} for the
+the model with \code{\link[=scale_mod]{scale_mod()}} and \code{\link[=center_mod]{center_mod()}},
+respectively. Each of those in turn uses \code{\link[=gscale]{gscale()}} for the
 mean-centering and scaling.
 }
 \examples{
@@ -157,10 +157,10 @@ Public Health}, \emph{23}, 151–169.
 \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
 }
 \seealso{
-\code{\link{scale_mod()}} can simply perform the standardization if
+\code{\link[=scale_mod]{scale_mod()}} can simply perform the standardization if
 preferred.
 
-\code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+\code{\link[=gscale]{gscale()}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
 Other summ: \code{\link{summ.lm}},

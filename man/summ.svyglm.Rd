@@ -93,8 +93,8 @@ p values.
 }
 
 The \code{scale} and \code{center} options are performed via refitting
-the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-respectively. Each of those in turn uses \code{\link{gscale()}} for the
+the model with \code{\link[=scale_mod]{scale_mod()}} and \code{\link[=center_mod]{center_mod()}},
+respectively. Each of those in turn uses \code{\link[=gscale]{gscale()}} for the
 mean-centering and scaling. These functions can handle \code{svyglm} objects
 correctly by calling \code{svymean()} and \code{svyvar()} to compute means
 and
@@ -114,10 +114,10 @@ if (requireNamespace("survey")) {
 }
 }
 \seealso{
-\code{\link{scale_mod()}} can simply perform the standardization if
+\code{\link[=scale_mod]{scale_mod()}} can simply perform the standardization if
 preferred.
 
-\code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+\code{\link[=gscale]{gscale()}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
 Other summ: \code{\link{summ.glm}}, \code{\link{summ.lm}},

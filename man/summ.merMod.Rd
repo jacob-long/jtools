@@ -124,8 +124,8 @@ console:
 }
 
 The \code{scale} and \code{center} options are performed via refitting
-the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-respectively. Each of those in turn uses \code{\link{gscale()}} for the
+the model with \code{\link[=scale_mod]{scale_mod()}} and \code{\link[=center_mod]{center_mod()}},
+respectively. Each of those in turn uses \code{\link[=gscale]{gscale()}} for the
 mean-centering and scaling.
 
 \code{merMod} models are a bit different than the others. The \code{lme4}
@@ -241,10 +241,10 @@ obtaining $R^2$ from generalized linear mixed-effects models.
 \url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
 }
 \seealso{
-\code{\link{scale_mod()}} can simply perform the standardization if
+\code{\link[=scale_mod]{scale_mod()}} can simply perform the standardization if
 preferred.
 
-\code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+\code{\link[=gscale]{gscale()}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
 \code{\link[pbkrtest:get_ddf_Lb]{pbkrtest::get_ddf_Lb()}} gets the Kenward-Roger degrees of

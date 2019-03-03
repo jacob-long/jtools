@@ -121,7 +121,7 @@ j_summ <- summ
 #' }
 #'
 #'  There are several options available for \code{robust}. The heavy
-#'  lifting is done by \code{\link[sandwich]{vcovHC()}}, where those are better
+#'  lifting is done by [sandwich::vcovHC()], where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
@@ -133,8 +133,8 @@ j_summ <- summ
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
+#'  the model with [scale_mod()] and [center_mod()],
+#'  respectively. Each of those in turn uses [gscale()] for the
 #'  mean-centering and scaling.
 #'
 #'  If using \code{part.corr = TRUE}, then you will get these two common
@@ -159,10 +159,10 @@ j_summ <- summ
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
+#' @seealso [scale_mod()] can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+#'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -528,7 +528,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #' }
 #'
 #'  There are several options available for \code{robust}. The heavy
-#'  lifting is done by \code{\link[sandwich]{vcovHC()}}, where those are better
+#'  lifting is done by [sandwich::vcovHC()], where those are better
 #'  described.
 #'  Put simply, you may choose from \code{"HC0"} to \code{"HC5"}. Based on the
 #'  recommendation of the developers of \pkg{sandwich}, the default is set to
@@ -541,8 +541,8 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #'
 #'  The \code{scale} and \code{center} options are performed via
 #'  refitting
-#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
+#'  the model with [scale_mod()] and [center_mod()],
+#'  respectively. Each of those in turn uses [gscale()] for the
 #'  mean-centering and scaling.
 #'
 #' @return If saved, users can access most of the items that are returned in
@@ -554,10 +554,10 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
+#' @seealso [scale_mod()] can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+#'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -994,8 +994,8 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
 #' }
 #'
 #'  The \code{scale} and \code{center} options are performed via refitting
-#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
+#'  the model with [scale_mod()] and [center_mod()],
+#'  respectively. Each of those in turn uses [gscale()] for the
 #'  mean-centering and scaling. These functions can handle \code{svyglm} objects
 #'  correctly by calling \code{svymean()} and \code{svyvar()} to compute means
 #'  and
@@ -1012,10 +1012,10 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
+#' @seealso [scale_mod()] can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+#'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
@@ -1486,8 +1486,8 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #' }
 #'
 #'  The \code{scale} and \code{center} options are performed via refitting
-#'  the model with \code{\link{scale_mod()}} and \code{\link{center_mod()}},
-#'  respectively. Each of those in turn uses \code{\link{gscale()}} for the
+#'  the model with [scale_mod()] and [center_mod()],
+#'  respectively. Each of those in turn uses [gscale()] for the
 #'  mean-centering and scaling.
 #'
 #'  \code{merMod} models are a bit different than the others. The \code{lme4}
@@ -1569,10 +1569,10 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'
 #'  Much other information can be accessed as attributes.
 #'
-#' @seealso \code{\link{scale_mod()}} can simply perform the standardization if
+#' @seealso [scale_mod()] can simply perform the standardization if
 #'  preferred.
 #'
-#'  \code{\link{gscale()}} does the heavy lifting for mean-centering and scaling
+#'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
 #'  [pbkrtest::get_ddf_Lb()] gets the Kenward-Roger degrees of
