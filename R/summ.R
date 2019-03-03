@@ -2261,7 +2261,7 @@ set_summ_defaults <- function(digits = NULL, model.info = NULL,
     options("summ-pvals" = pvals)
   }
   if ("conf.method" %in% names(match.call())) {
-    options("summ-conf.method" = pvals)
+    options("summ-conf.method" = conf.method)
   }
   if ("table.format" %in% names(match.call())) {
     options("summ.table.format" = table.format)
