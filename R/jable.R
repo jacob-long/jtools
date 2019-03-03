@@ -49,8 +49,8 @@ md_table <- function(x, format = getOption("md_table_format", "grid"),
                    "pandoc" = "simple",
                    format)
   out <- pandoc.table.return(x, style = format, row.names = row.names, 
-                             col.names = col.names, format.args = format.args,
-                             justify = align, plain.ascii = TRUE,
+                             col.names = col.names, justify = align,
+                             plain.ascii = TRUE,
                              split.tables = getOption("width", 80),
                              missing = "")
   out <- gsub("Table: Table continues below", "", out, fixed = TRUE)
