@@ -1989,10 +1989,6 @@ print.summ.merMod <- function(x, ...) {
   }
 
   cat(underline("FIXED EFFECTS:\n"))
-  if ("d.f." %in% names(ctable)) {
-    ctable[,"d.f."] <- as.integer(ctable[,"d.f."])
-  }
-  
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
                  sig.digits = FALSE))
   
