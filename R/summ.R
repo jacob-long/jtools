@@ -444,7 +444,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
   x <- attributes(j)
 
   # Helper function to deal with table rounding 
-  ctable <- round_df_char(table = j$coeftable, digits = x$digits)
+  ctable <- round_df_char(df = j$coeftable, digits = x$digits)
 
   format <- ifelse(knitr::is_latex_output(), yes = "latex", no = "html")
   o_opt <- getOption("kableExtra.auto_format", NULL)
