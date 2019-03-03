@@ -285,7 +285,8 @@ test_that("jsumm: Printing isn't borked", {
 
 set_summ_defaults(digits = 4, model.info = FALSE,
                  model.fit = FALSE, pvals = FALSE, robust = TRUE,
-                 confint = TRUE, ci.width = .90, vifs = TRUE, stars = TRUE)
+                 confint = TRUE, ci.width = .90, vifs = TRUE,
+                 table.format = "grid")
 
 test_that("set_summ_defaults changes options", {
 
@@ -297,7 +298,7 @@ test_that("set_summ_defaults changes options", {
   expect_equal(getOption("summ-confint"), TRUE)
   expect_equal(getOption("summ-ci.width"), .90)
   expect_equal(getOption("summ-vifs"), TRUE)
-  expect_equal(getOption("summ-stars"), TRUE)
+  expect_equal(getOption("summ.table.format"), "grid")
 
 })
 
