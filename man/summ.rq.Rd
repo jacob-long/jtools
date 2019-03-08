@@ -75,8 +75,8 @@ name of DV, and number of predictors.}
 you can add/remove/reorder requested columns in the output. Not fully
 supported, for now.}
 
-\item{...}{This just captures extra arguments that may only work for other
-types of models.}
+\item{...}{Among other things, arguments are passed to \code{\link[=scale_mod]{scale_mod()}} or
+\code{\link[=center_mod]{center_mod()}} when \code{center} or \code{scale} is \code{TRUE}.}
 }
 \description{
 \code{summ()} prints output for a regression model in a fashion

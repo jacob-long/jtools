@@ -107,8 +107,8 @@ j_summ <- summ
 #'   you can add/remove/reorder requested columns in the output. Not fully
 #'   supported, for now.
 #'
-#' @param ... This just captures extra arguments that may only work for other
-#'  types of models.
+#' @param ... Among other things, arguments are passed to [scale_mod()] or 
+#'   [center_mod()] when `center` or `scale` is `TRUE`.
 #'
 #' @details By default, this function will print the following items to the
 #'  console:
@@ -512,8 +512,6 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #'  confidence intervals for exponential models like logit and Poisson models.
 #'  This quantity is known as an odds ratio for binary outcomes and incidence
 #'  rate ratio for count models.
-#' @param ... This just captures extra arguments that may only work for other
-#'  types of models.
 #'
 #' @inheritParams summ.lm
 #'

@@ -92,8 +92,8 @@ is TRUE.}
 \item{groups.table}{Show table summarizing the grouping variables? Default
 is TRUE.}
 
-\item{...}{This just captures extra arguments that may only work for other
-types of models.}
+\item{...}{Among other things, arguments are passed to \code{\link[=scale_mod]{scale_mod()}} or
+\code{\link[=center_mod]{center_mod()}} when \code{center} or \code{scale} is \code{TRUE}.}
 }
 \value{
 If saved, users can access most of the items that are returned in
