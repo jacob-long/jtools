@@ -236,14 +236,14 @@ summ.lm <- function(
 
     model <- scale_mod(model, n.sd = n.sd,
                       scale.response = transform.response,
-                      data = data)
+                      data = data, ...)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
     model <- center_mod(model, center.response = transform.response,
-                        data = data)
+                        data = data, ...)
     # Using information from summary()
     sum <- summary(model)
 
@@ -635,14 +635,14 @@ summ.glm <- function(
   if (scale == TRUE) {
 
     model <- scale_mod(model, n.sd = n.sd, scale.response = transform.response,
-                       data = data)
+                       data = data, ...)
     # Using information from summary()
     sum <- summary(model)
 
   } else if (center == TRUE && scale == FALSE) {
 
     model <- center_mod(model, center.response = transform.response,
-                        data = data)
+                        data = data, ...)
     # Using information from summary()
     sum <- summary(model)
 
@@ -1083,13 +1083,13 @@ summ.svyglm <- function(
     if (scale == TRUE) {
 
       model <- scale_mod(model, n.sd = n.sd,
-                         scale.response = transform.response)
+                         scale.response = transform.response, ...)
       # Using information from summary()
       sum <- summary(model)
 
     } else if (center == TRUE && scale == FALSE) {
 
-      model <- center_mod(model, center.response = transform.response)
+      model <- center_mod(model, center.response = transform.response, ...)
       # Using information from summary()
       sum <- summary(model)
 
@@ -1744,12 +1744,12 @@ summ.merMod <- function(
   if (scale == TRUE) {
 
     model <- scale_mod(model, n.sd = n.sd, scale.response = transform.response,
-                       data = data)
+                       data = data, ...)
 
   } else if (center == TRUE && scale == FALSE) {
 
     model <- center_mod(model, center.response = transform.response,
-                        data = data)
+                        data = data, ...)
 
   }
 

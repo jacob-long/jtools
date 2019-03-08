@@ -102,10 +102,10 @@ summ.rq <- function(model, scale = FALSE,
   if (scale == TRUE) {
     model <- scale_mod(model, n.sd = n.sd,
                        scale.response = transform.response,
-                       data = data)
+                       data = data, ... )
   } else if (center == TRUE && scale == FALSE) {
     model <- center_mod(model, center.response = transform.response,
-                        data = data)
+                        data = data, ...)
   }
 
   # Using info from summary.rq
