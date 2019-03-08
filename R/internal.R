@@ -159,24 +159,6 @@ all_vars <- function(formula) {
   }
 }
 
-# any_interaction <- function(formula) {
-#   any(attr(terms(formula), "order") > 1)
-# }
-# 
-# get_interactions <- function(formula) {
-#   if (any_interaction(formula)) {
-#     ts <- terms(formula)
-#     labs <- paste("~", attr(ts, "term.labels"))
-#     forms <- lapply(labs, as.formula)
-#     forms <- forms[which(attr(ts, "order") > 1)]
-#     ints <- lapply(forms, all.vars)
-#     names(ints) <- attr(ts, "term.labels")[which(attr(ts, "order") > 1)]
-#     return(ints)
-#   } else {
-#     stop_wrap("No interactions found in this formula.")
-#   }
-# }
-
 #### Weighted helpers ########################################################
 
 #' @title Weighted standard deviation calculation
