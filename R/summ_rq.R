@@ -275,7 +275,7 @@ print.summ.rq <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster, manual = se_name)
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE))
+                 sig.digits = FALSE, digits = x$digits))
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)

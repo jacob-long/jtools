@@ -409,7 +409,7 @@ print.summ.lm <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster, manual = "OLS")
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE))
+                 sig.digits = FALSE, digits = x$digits))
 
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
@@ -844,7 +844,7 @@ print.summ.glm <- function(x, ...) {
 
   print_se_info(x$robust, x$use_cluster)
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE))
+                 sig.digits = FALSE, digits = x$digits))
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1328,7 +1328,7 @@ print.summ.svyglm <- function(x, ...) {
     cat("Standard errors: Robust\n")
   }
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE))
+                 sig.digits = FALSE, digits = x$digits))
 
   if (x$dispersion != 1) {
     cat("\n")
@@ -1999,7 +1999,7 @@ print.summ.merMod <- function(x, ...) {
 
   cat(underline("FIXED EFFECTS:\n"))
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE))
+                 sig.digits = FALSE, digits = x$digits))
   
   ## Explaining the origin of the p values if they were used
   if (x$pvals == TRUE & lme4::isLMM(j$model)) {
