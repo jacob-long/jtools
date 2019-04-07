@@ -4,15 +4,24 @@ Minor release.
 
 Fixes:
 
+* When Satterthwaite or Kenward-Roger degrees of freedom were used to calculate
+*p* values for linear `merMod` (i.e., `lmerMod`) models with `summ`, the 
+*p* values reported were one-tailed --- half their actual value. *t* statistics
+and standard errors were correct.
 * When the deprecated `odds.ratio` argument was given to `summ()`, users were 
 correctly warned that it is a deprecated argument but the exponentiated 
 coefficients were not returned as they should have been.
 * Fixed an error in `make_new_data()`/`make_predictions()`/`effect_plot()` when
 offsets are specified in a formula or a variable is included more than once
 in a formula.
+* `make_predictions()` and `partialize()` handle missing data more gracefully,
+especially when the original data are a `tibble`.
 
 Other changes:
-* Added %just.list% and %not.list% S3 methods. 
+
+* Added `%just.list%` and `%not.list%` S3 methods. 
+* `%just%` now sorts the matches on the left-hand side in the order they occur
+on the right-hand side.
 * `summ()` (and `md_table()`) now rely on `pander` to produce plain-text tables
 and use `pander`'s `"multiline"` format by default. Check out `"grid"` for 
 another option. You can change the default using `table.format` in 
@@ -20,6 +29,15 @@ another option. You can change the default using `table.format` in
 * `stars` (i.e., significance stars) are no longer available from `summ()`. 
 This is partially due to the change to printing tables via `pander` but also
 in keeping with statistical best practices. 
+* `predict_merMod()`, which is used for generating confidence intervals for 
+`merMod` model predictions in `make_predictions()` and `effect_plot()`, is
+now a user-accessible function. 
+* `stop_wrap()`, `warn_wrap()`, and `msg_wrap()` now interface with 
+the `rlang` package equivalents rather than the base `stop()` and so on.
+End users may also take advantage of the `rlang` sub-classing abilities through
+these functions.
+* `summ()` now passes extra arguments to `center_mod()`/`scale_mod()`, allowing
+you to use those functions' more advanced options.
 
 # jtools 2.0.0
 
