@@ -96,46 +96,46 @@ test_that("data frame subassignment works [by index]", {
   )
 })
 
-df <- as.matrix(df)
+df <- as.matrix(df[1:2])
 
 test_that("matrix subsetting works [by name]", {
   expect_equal(df %just% "A", c("1", "2", "3"))
-  expect_equal(df %not% c("A", "B"), c(" TRUE", "FALSE", " TRUE"))
+  expect_equal(df %not% c("B"), c("1", "2", "3"))
 })
 
-test_that("matirx subsetting works [by index]", {
+test_that("matrix subsetting works [by index]", {
   expect_equal(df %just% 1, c("1", "2", "3"))
-  expect_equal(df %not% c(1, 2), c(" TRUE", "FALSE", " TRUE"))
+  expect_equal(df %not% c(1), c("red", "red", "blue"))
 })
 
 test_that("matrix subassignment works [by name]", {
   df %just% "A" <- c("3", "2", "1")
   expect_equal(df, 
                as.matrix(tibble::tribble(
-                 ~A,      ~B,    ~C,
-                 3,   "red",  TRUE,
-                 2,   "red", FALSE,
-                 1,  "blue",  TRUE
+                 ~A,      ~B, 
+                 3,   "red",
+                 2,   "red",
+                 1,  "blue",
                )))
   df <- as.matrix(tibble::tribble(
-    ~A,      ~B,    ~C,
-    1,   "red",  TRUE,
-    2,   "red", FALSE,
-    3,  "blue",  TRUE
+    ~A,      ~B,  
+    1,   "red",  
+    2,   "red", 
+    3,  "blue", 
   ))
-  df %not% c("A", "B") <- c("FALSE", " TRUE", "FALSE")
+  df %not% c("A") <- c("blue", "blue", "red")
   expect_equal(df, 
                as.matrix(tibble::tribble(
-                 ~A,      ~B,    ~C,
-                 1,   "red",  FALSE,
-                 2,   "red",   TRUE,
-                 3,  "blue",  FALSE
+                 ~A,      ~B, 
+                 1,   "blue",  
+                 2,   "blue",  
+                 3,  "red",  
                )))
   df <- as.matrix(tibble::tribble(
-    ~A,      ~B,    ~C,
-    1,   "red",  TRUE,
-    2,   "red", FALSE,
-    3,  "blue",  TRUE
+    ~A,      ~B,
+    1,   "red",  
+    2,   "red", 
+    3,  "blue",  
   ))
 })
 
@@ -143,29 +143,23 @@ test_that("matrix subassignment works [by index]", {
   df %just% 1 <- c("3", "2", "1")
   expect_equal(df, 
                as.matrix(tibble::tribble(
-                 ~A,      ~B,    ~C,
-                 3,   "red",  TRUE,
-                 2,   "red", FALSE,
-                 1,  "blue",  TRUE
+                 ~A,      ~B,    
+                 3,   "red",  
+                 2,   "red", 
+                 1,  "blue",  
                )))
   df <- as.matrix(tibble::tribble(
-    ~A,      ~B,    ~C,
-    1,   "red",  TRUE,
-    2,   "red", FALSE,
-    3,  "blue",  TRUE
+    ~A,      ~B,  
+    1,   "red",  
+    2,   "red", 
+    3,  "blue",  
   ))
-  df %not% c(1, 2) <- c("FALSE", " TRUE", "FALSE")
+  df %not% c(1) <- c("blue", "blue", "red")
   expect_equal(df, 
                as.matrix(tibble::tribble(
-                 ~A,      ~B,    ~C,
-                 1,   "red",  FALSE,
-                 2,   "red",   TRUE,
-                 3,  "blue",  FALSE
+                 ~A,      ~B,   
+                 1,   "blue",  
+                 2,   "blue",   
+                 3,  "red",  
                )))
-  df <- as.matrix(tibble::tribble(
-    ~A,      ~B,    ~C,
-    1,   "red",  TRUE,
-    2,   "red", FALSE,
-    3,  "blue",  TRUE
-  ))
 })
