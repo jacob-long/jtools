@@ -1823,7 +1823,8 @@ summ.merMod <- function(
   ses <- sum$coefficients[,2]
   ts <- sum$coefficients[,3]
   # Need proper name for test statistic
-  tcol <- colnames(sum$coefficients)[3]
+  tcol <- colnames(sum$coefficients)[which(colnames(sum$coefficients) %in%
+                                             c("t value", "z value"))]
   tcol <- gsub("value", "val.", tcol)
 
   dfs <- NULL
@@ -1853,7 +1854,7 @@ summ.merMod <- function(
       ts <- coefs[!is.na(coefs)] / ses
       dfs <- get_df_kr(model)
       params[["d.f."]] <- dfs
-      ps <- pt(abs(ts), lower.tail = F, dfs)
+      ps <- pt(abs(ts), lower.tail = F, dfs) * 2
       t1 <- Sys.time()
 
       if ((t1 - t0) > 10 & !getOption("pbkr_warned", FALSE)) {
@@ -1875,7 +1876,7 @@ summ.merMod <- function(
         p_calc <- "residual"
       }
 
-      ps <- pt(abs(ts), lower.tail = F, df)
+      ps <- pt(abs(ts), lower.tail = F, df) * 2
 
 
     }
