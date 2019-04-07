@@ -4,8 +4,5 @@
 * Windows 2012 Server (on Appveyor) R-release, R-devel
 
 ## R CMD check results
-There is one NOTE. It is what appears to be a spurious 403 for the following 
-URL: https://doi.org/10.2307/2533558 which works on my machine. On one other
-instance WinBuilder gave a similar NOTE regarding another doi.org URL which also 
-does not replicate on my machine.
+There were no NOTEs, WARNINGs, or ERRORs.
 
