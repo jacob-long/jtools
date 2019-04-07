@@ -19,8 +19,12 @@
   #   packageStartupMessage(msg)
   # }
 }
-
+#' @importFrom utils packageVersion
 .onLoad <- function(libname, pkgname) {
   pkgconfig::set_config("tibble::rownames" = NA)
-  options("rlang__backtrace_on_error" = "branch")
+  if (packageVersion("rlang") < "0.3.2") {
+    options("rlang__backtrace_on_error" = "branch")
+  } else {
+    options("rlang_backtrace_on_error" = "branch")
+  }
 }
