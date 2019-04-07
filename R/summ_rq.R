@@ -436,3 +436,9 @@ nobs.summ.rq <- function(object, ...) {
   return(length(fitted((object$model))))
 
 }
+
+#' @export
+#' @importFrom stats gaussian
+family.rq <- function(object, ...) {
+  gaussian(link = "identity")
+}
