@@ -188,7 +188,7 @@ reports one version for your benefit, though you should of course
 understand that it is not an unambiguous measure of model fit.
 
 This package calculates R^2 for mixed models using an adapted version
-of \code{\link[piecewiseSEM]{sem.model.fits()}} from the \pkg{piecewiseSEM}
+of \code{sem.model.fits()} from the \pkg{piecewiseSEM}
 package. This is an implementation of the Nakagawa & Schielzeth (2013)
 procedure with refinements by Johnson (2014). If you choose to report
 the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
