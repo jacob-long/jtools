@@ -17,3 +17,5 @@
 ^revdep$
 ^_pkgdown\.yml$
 ^CONTRIBUTING.md$
+^\.github$
+^\.vs$
