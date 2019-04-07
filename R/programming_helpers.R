@@ -158,14 +158,14 @@
 #' @export
 # Automates my most common use of %in%
 `%just%.default` <- function(x, y) {
-  x[x %in% y]
+  x[unlist(lapply(y, function(y, x) which(x == y), x = x))]
 }
 
 #' @rdname subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%<-.default` <- function(x, y, value) {
-  x[x %in% y] <- value
+  x[unlist(lapply(y, function(y, x) which(x == y), x = x))] <- value
   x
 }
 
@@ -185,9 +185,9 @@
 
 `%just%<-.data.frame` <- function(x, y, value) {
   if (is.character(y)) {
-    x[y %just% names(x)] <- value
+    x[names(x) %just% y] <- value
   } else {
-    x[y %just% seq_along(x)] <- value
+    x[seq_along(x) %just% y] <- value
   }
   x
 }
@@ -197,9 +197,9 @@
 
 `%just%.matrix` <- function(x, y) {
   if (is.character(y)) {
-    x[, y %just% colnames(x)]
+    x[, colnames(x) %just% y]
   } else {
-    x[, y %just% seq_len(ncol(x))]
+    x[, seq_len(ncol(x)) %just% y]
   }
 }
 
@@ -208,9 +208,9 @@
 
 `%just%<-.matrix` <- function(x, y, value) {
   if (is.character(y)) {
-    x[, y %just% colnames(x)] <- value
+    x[, colnames(x) %just% y] <- value
   } else {
-    x[, y %just% seq_len(ncol(x))] <- value
+    x[, seq_len(ncol(x)) %just% y] <- value
   }
   x
 }
