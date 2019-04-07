@@ -52,7 +52,8 @@
 #'
 #' Okabe and Ito's palette inspired "CUD Bright", though "CUD Bright" is not
 #' exactly the same. "CUD" is the same.
-#' See \url{http://jfly.iam.u-tokyo.ac.jp/color/} for more.
+#' See \url{https://web.archive.org/web/20190216090108/jfly.iam.u-tokyo.ac.jp/color/}
+#' for more.
 #'
 #' @rdname jtools_colors
 #' @name jtools_colors
