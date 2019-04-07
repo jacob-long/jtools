@@ -15,7 +15,7 @@
   transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
-  ...)
+  vcov = NULL, ...)
 }
 \arguments{
 \item{model}{A \code{glm} object.}
@@ -85,6 +85,10 @@ name of DV, and number of predictors.}
 \item{which.cols}{Developmental feature. By providing columns by name,
 you can add/remove/reorder requested columns in the output. Not fully
 supported, for now.}
+
+\item{vcov}{You may provide your own variance-covariance matrix for the
+regression coefficients if you want to calculate standard errors in
+some way not accommodated by the \code{robust} and \code{cluster} options.}
 
 \item{...}{Among other things, arguments are passed to \code{\link[=scale_mod]{scale_mod()}} or
 \code{\link[=center_mod]{center_mod()}} when \code{center} or \code{scale} is \code{TRUE}.}

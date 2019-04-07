@@ -106,6 +106,10 @@ j_summ <- summ
 #' @param which.cols Developmental feature. By providing columns by name,
 #'   you can add/remove/reorder requested columns in the output. Not fully
 #'   supported, for now.
+#'   
+#' @param vcov You may provide your own variance-covariance matrix for the
+#'  regression coefficients if you want to calculate standard errors in 
+#'  some way not accommodated by the `robust` and `cluster` options.
 #'
 #' @param ... Among other things, arguments are passed to [scale_mod()] or 
 #'   [center_mod()] when `center` or `scale` is `TRUE`.
@@ -205,7 +209,8 @@ summ.lm <- function(
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   part.corr = FALSE, model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, 
+  vcov = NULL, ...) {
 
   j <- list()
 
@@ -297,7 +302,7 @@ summ.lm <- function(
   }
 
   # Standard errors and t-statistics
-  if (identical(FALSE, robust)) {
+  if (identical(FALSE, robust) & is.null(vcov)) {
 
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
@@ -307,7 +312,7 @@ summ.lm <- function(
   } else {
 
     # Pass to robust helper function
-    rob_info <- do_robust(model, robust, cluster, data)
+    rob_info <- do_robust(model, robust, cluster, data, vcov)
 
     ses <- rob_info$ses
     ts <- rob_info$ts
@@ -369,7 +374,7 @@ summ.lm <- function(
                  standardize.response = transform.response,
                  scale.response = transform.response,
                  transform.response = transform.response,
-                 exp = FALSE)
+                 exp = FALSE, vcov = vcov)
 
   j$coeftable <- mat
   j$model <- model
@@ -407,7 +412,7 @@ print.summ.lm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  print_se_info(x$robust, x$use_cluster, manual = "OLS")
+  print_se_info(x$robust, x$use_cluster, manual = "OLS", vcov = x$vcov)
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
                  sig.digits = FALSE, digits = x$digits))
 
@@ -481,7 +486,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
     stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
   } else {stats <- NULL}
 
-  se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS")
+  se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS", vcov = x$vcov)
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
@@ -603,7 +608,8 @@ summ.glm <- function(
   exp = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
   center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
+  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
+  vcov = NULL, ...) {
 
   j <- list()
 
@@ -699,7 +705,7 @@ summ.glm <- function(
   }
 
   # Standard errors and t-statistics
-  if (identical(FALSE, robust)) {
+  if (identical(FALSE, robust) & is.null(vcov)) {
 
     ses <- coef(sum)[,2]
     ts <- coef(sum)[,3]
@@ -709,7 +715,7 @@ summ.glm <- function(
   } else {
 
     # Pass to robust helper function
-    rob_info <- do_robust(model, robust, cluster, data)
+    rob_info <- do_robust(model, robust, cluster, data, vcov)
 
     ses <- rob_info$ses
     ts <- rob_info$ts
@@ -793,7 +799,7 @@ summ.glm <- function(
                  standardize.response = transform.response,
                  exp = exp,
                  scale.response = transform.response,
-                 lmFamily = model$family, chisq = chisq)
+                 lmFamily = model$family, chisq = chisq, vcov = vcov)
 
   j$coeftable <- mat
   j$model <- model
@@ -842,7 +848,7 @@ print.summ.glm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  print_se_info(x$robust, x$use_cluster)
+  print_se_info(x$robust, x$use_cluster, vcov = x$vcov)
   print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
                  sig.digits = FALSE, digits = x$digits))
 
@@ -946,7 +952,7 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   
   } else {stats <- NULL}
 
-  se_info <- get_se_info(x$robust, x$use_cluster)
+  se_info <- get_se_info(x$robust, x$use_cluster, vcov = x$vcov)
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
   ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
@@ -2074,7 +2080,8 @@ print.summ.merMod <- function(x, ...) {
 
 knit_print.summ.merMod <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra")) |       getOption("summ-normal-print", FALSE)) {
+  if (!nzchar(system.file(package = "kableExtra")) | 
+      getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
 

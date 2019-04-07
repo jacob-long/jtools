@@ -5,7 +5,7 @@
 \title{Calculate robust standard errors and produce coefficient tables}
 \usage{
 get_robust_se(model, type = "HC3", cluster = NULL,
-  data = model.frame(model))
+  data = model.frame(model), vcov = NULL)
 }
 \arguments{
 \item{model}{A regression model, preferably of class \code{lm} or \code{glm}}
@@ -21,6 +21,10 @@ that is the same length as the number of rows in \code{data}.}
 
 \item{data}{The data used to fit the model. Default is to just get the
 \code{model.frame} from \code{model}.}
+
+\item{vcov}{You may provide the variance-covariance matrix yourself and this
+function will just calculate standard errors, etc. based on that. Default
+is NULL.}
 }
 \value{
 A list with the following:

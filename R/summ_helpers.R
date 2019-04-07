@@ -92,6 +92,9 @@ round_df_char <- function(df, digits, pad = " ", na_vals = NA) {
 #' @param cluster If you want clustered standard errors, either a string naming
 #'  the column in `data` that represents the clusters or a vector of clusters
 #'  that is the same length as the number of rows in `data`.
+#' @param vcov You may provide the variance-covariance matrix yourself and this
+#'  function will just calculate standard errors, etc. based on that. Default
+#'  is NULL.
 #' @return 
 #' A list with the following:
 #'
@@ -108,7 +111,7 @@ round_df_char <- function(df, digits, pad = " ", na_vals = NA) {
 #' @export
 #' @rdname get_robust_se
 get_robust_se <- function(model, type = "HC3", cluster = NULL, 
-                          data = model.frame(model)) {
+                          data = model.frame(model), vcov = NULL) {
   
   if (!requireNamespace("sandwich", quietly = TRUE)) {
     stop_wrap("When using robust SEs you need to have the \'sandwich\' 
@@ -153,19 +156,20 @@ get_robust_se <- function(model, type = "HC3", cluster = NULL,
     
   }
   
-  if (type %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
+  if (is.null(vcov) & type %in% c("HC4", "HC4m", "HC5") & is.null(cluster)) {
     # vcovCL only goes up to HC3
     coefs <- sandwich::vcovHC(model, type = type)
     
-  } else if (type %in% c("HC4", "HC4m", "HC5") & !is.null(cluster)) {
+  } else if (is.null(vcov) & type %in% c("HC4", "HC4m", "HC5") &
+             !is.null(cluster)) {
     
     stop_wrap("If using cluster-robust SEs, robust.type must be HC3 or lower.")
     
-  } else {
+  } else if (is.null(vcov)) {
     
     coefs <- sandwich::vcovCL(model, cluster = cluster, type = type)
     
-  }
+  } else {coefs <- vcov}
   
   vcov <- coefs
   coefs <- coeftest(model, coefs)
@@ -185,9 +189,10 @@ print.robust_info <- function(x, ...) {
   print(md_table(x$coefs))
 }
 
-do_robust <- function(model, robust, cluster, data) {
+do_robust <- function(model, robust, cluster, data, vcov = NULL) {
   out <-
-    get_robust_se(model = model, type = robust, cluster = cluster, data = data)
+    get_robust_se(model = model, type = robust, cluster = cluster, data = data,
+                  vcov = vcov)
   names(out)[names(out) == "type"] <- "robust"
   return(out)
 }
@@ -462,15 +467,15 @@ print_mod_fit <- function(stats) {
 
 ## Print line about standard errors
 
-print_se_info <- function(robust, use_cluster, manual = NULL, ...) {
+print_se_info <- function(robust, use_cluster, manual = NULL, vcov = NULL, ...) {
   
-  if (identical(FALSE, robust)) {
+  if (identical(FALSE, robust) & is.null(vcov)) {
     
     cat(italic("Standard errors:",  ifelse(is.null(manual),
                                            no = manual, yes = "MLE")),
         "\n", sep = "")
     
-  } else {
+  } else if (is.null(vcov)) {
     
     if (robust == TRUE) {robust <- "HC3"}
     
@@ -486,19 +491,21 @@ print_se_info <- function(robust, use_cluster, manual = NULL, ...) {
       
     }
     
+  } else {
+    "User-specified"
   }
   
 }
 
 ## Save SE info as string
 
-get_se_info <- function(robust, use_cluster, manual = NULL, ...) {
+get_se_info <- function(robust, use_cluster, manual = NULL, vcov = NULL, ...) {
   
-  if (identical(FALSE, robust)) {
+  if (identical(FALSE, robust) & is.null(vcov)) {
     
     ifelse(is.null(manual), no = manual, yes = "MLE")
     
-  } else {
+  } else if (is.null(vcov)) {
     
     if (robust == TRUE) {robust <- "HC3"}
     
@@ -512,6 +519,8 @@ get_se_info <- function(robust, use_cluster, manual = NULL, ...) {
       
     }
     
+  } else {
+    "User-specified"
   }
   
 }
