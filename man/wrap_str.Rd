@@ -15,8 +15,8 @@ cat_wrap(..., brk = "")
 
 warn_wrap(..., brk = "\\n", .subclass = NULL, call. = FALSE)
 
-stop_wrap(..., brk = "\\n", trace = rlang::trace_back(bottom = 2),
-  .subclass = NULL, call. = NULL)
+stop_wrap(..., brk = "\\n", trace = rlang::trace_back(bottom =
+  rlang::caller_env()), .subclass = NULL, call. = NULL)
 
 msg_wrap(..., .subclass = NULL, brk = "\\n")
 }

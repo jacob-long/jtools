@@ -378,12 +378,14 @@ warn_wrap <- function(..., brk = "\n", .subclass = NULL, call. = FALSE) {
 #' @rdname wrap_str
 #' @importFrom crayon red
 #' @export 
-stop_wrap <- function(...,  brk = "\n", trace = rlang::trace_back(bottom = 2),
+stop_wrap <- function(...,  brk = "\n",
+                      trace = rlang::trace_back(bottom = rlang::caller_env()),
                       .subclass = NULL, call. = NULL) {
   dots <- dot_processor(...)
   wrapped <- c_red(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
-  abort_args <- as.list(c(message = wrapped, .subclass = .subclass, dots$named,
-                         trace = trace))
+  abort_args <- list(message = wrapped, .subclass = .subclass, dots$named,
+                     trace = trace)
+  abort_args <- abort_args[!sapply(abort_args, is.null)]
   do.call(rlang::abort, abort_args)
 }
 
