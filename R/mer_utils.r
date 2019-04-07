@@ -141,7 +141,7 @@ pR2_merMod <- function(model) {
   ret <- list()
 
   # Get R2 for class == merMod
-  if (any(class(model) %in% c("lmerMod", "merModLmerTest"))) {
+  if (any(class(model) %in% c("lmerMod", "lmerModLmerTest"))) {
 
     # Get variance of fixed effects by multiplying coefficients by design matrix
     varF <- var(as.vector(lme4::fixef(model) %*% t(model@pp$X)))
@@ -337,7 +337,7 @@ get.random.formula <- function(model, rhs) {
   if (class(rhs) == "formula") {rhs <- Reduce(paste, deparse(rhs))}
 
   # Get random formula from model
-  random.formula <- if (any(class(model) %in% c("lmerMod", "merModLmerTest",
+  random.formula <- if (any(class(model) %in% c("lmerMod", "lmerModLmerTest",
                                                 "glmerMod", "glmmTMB"))) {
 
         paste("(", lme4::findbars(formula(model)), ")", collapse = " + ")
@@ -345,7 +345,7 @@ get.random.formula <- function(model, rhs) {
   }
 
   # Get random structure(s)
-  random.structure <- if (any(class(model) %in% c("lmerMod", "merModLmerTest",
+  random.structure <- if (any(class(model) %in% c("lmerMod", "lmerModLmerTest",
                                                   "glmerMod", "glmmTMB"))) {
 
       ran.ef.splt <- strsplit(random.formula, "\\+.")[[1]]
@@ -364,7 +364,7 @@ get.random.formula <- function(model, rhs) {
 
   # Get random slopes in the model list, otherwise return vector of
   # terms to drop
-  random.slopes <- if (any(class(model) %in% c("glmerMod", "merModLmerTest",
+  random.slopes <- if (any(class(model) %in% c("glmerMod", "lmerModLmerTest",
                                                "glmmTMB"))) {
 
     ran.ef <- ifelse(any(class(lme4::ranef(model)) != "list"),
@@ -392,7 +392,7 @@ get.random.formula <- function(model, rhs) {
   # random slopes
   if (length(random.slopes) != 0) {
 
-    if (any(class(model) %in% c("glmerMod", "merModLmerTest", "glmmTMB"))) {
+    if (any(class(model) %in% c("glmerMod", "lmerModLmerTest", "glmmTMB"))) {
 
         paste(
           sapply(random.structure, function(x)
@@ -449,7 +449,9 @@ get_se_kr <- function(model) {
 }
 
 get_all_sat <- function(model) {
-  new_mod <- lmerTest::as_lmerModLmerTest(model)
+  if ("lmerModLmerTest" %nin% class(model)) {
+    new_mod <- lmerTest::as_lmerModLmerTest(model)
+  } else {new_mod <- model}
   coefs <- summary(new_mod)$coefficients
   return(coefs)
 }
