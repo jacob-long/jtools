@@ -260,12 +260,12 @@ test_that("effect_plot does bar plots", {
 
 ### Code used to create brmsfit and stanreg test objects
 # library(brms)
-# fit1 <- brm(count ~ log_Age_c + log_Base4_c * Trt
-#                    + (1 | patient) + (1 | obs),
-#                  data = epilepsy, family = poisson(),
-#                  prior = c(prior(student_t(5,0,10), class = b),
-#                            prior(cauchy(0,2), class = sd)),
-#                  cores = 2, chains = 1, iter = 500, save_dso = TRUE)
+# data(epilepsy)
+# bprior1 <- prior(student_t(5,0,10), class = b) +
+#   prior(cauchy(0,2), class = sd)
+# fit1 <- brm(count ~ zAge + zBase * Trt + (1|patient),
+#             data = epilepsy, family = poisson(), prior = bprior1,
+#             cores = 2, chains = 1, iter = 500, save_dso = FALSE)
 # saveRDS(fit1, "brmfit.rds", version = 2)
 #
 # library(rstanarm)
@@ -281,13 +281,9 @@ if (requireNamespace("brms")) {
   context("brmsfit plots")
   bfit <- readRDS("brmfit.rds")
   test_that("brmsfit objects are supported", {
-    expect_silent(print(effect_plot(bfit, pred = "log_Base4_c",
+    expect_silent(print(effect_plot(bfit, pred = "zBase",
                   interval = TRUE) + ggtitle("brms")))
-    # expect_silent(print(cat_plot(bfit, pred = "Trt",
-    #               interval = TRUE)))
-    # expect_silent(print(interact_plot(bfit, pred = "log_Base4_c", modx = "Trt",
-    #               interval = TRUE)))
-    expect_is(make_predictions(bfit, pred = "log_Base4_c", modx = "Trt",
+    expect_is(make_predictions(bfit, pred = "zBase", at = list("Trt" = c(0,1)),
                                interval = TRUE, estimate = "median"),
                                "data.frame")
   })
