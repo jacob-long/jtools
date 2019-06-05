@@ -72,10 +72,19 @@ pR2 <- function(object) {
   if (!is.null(.weights)) {
     call$weights <- quote(.weights)
   }
+  if ("start" %in% names(call)) {
+    call$start <- NULL
+  } 
   # Update the model
-  objectNull <- eval(call)
-  # objectNull <- j_update(object, formula = form, weights = .weights,
-  #                        offset = .offset, data = frame)
+  objectNull <- try(eval(call))
+  if ("try-error" %in% class(objectNull)) {
+    out <- as.list(rep(NA, 9))
+    names(out) <- c("llh", "llhNull", "G2", "McFadden", "r2ML", "r2CU", 
+                    "chisq", "chisq_df", "chisq_p")
+    warn_wrap("Something went wrong when calculating the pseudo R-squared. 
+              Returning NA instead.")
+    return(out)
+  }
   
   llhNull <- getLL(objectNull)
   n <- dim(object$model)[1]
