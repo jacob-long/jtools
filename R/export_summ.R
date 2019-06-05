@@ -151,17 +151,11 @@ export_summs <- function(...,
                          file.name = NULL) {
 
   if (!requireNamespace("huxtable", quietly = TRUE)) {
-
-    stop("Install the huxtable package to use the export_summs function.",
-         call. = FALSE)
-
+    stop_wrap("Install the huxtable package to use the export_summs function.")
   }
 
   if (!requireNamespace("broom", quietly = TRUE)) {
-
-    stop("Install the broom package to use the export_summs function.",
-         call. = FALSE)
-
+    stop_wrap("Install the broom package to use the export_summs function.")
   }
 
   # Capture arguments
@@ -180,19 +174,13 @@ export_summs <- function(...,
 
   } else {
   # Otherwise assume unnamed arguments are models and everything else is args
-
     if (!is.null(names(dots))) {
-
       mods <- dots[names(dots) == ""]
       dots <- dots[names(dots) != ""]
-
     } else {
-
       mods <- dots
       dots <- NULL
-
     }
-
   }
 
   # # Setting defaults for summ functions I want to add captions about
@@ -356,20 +344,15 @@ export_summs <- function(...,
 }
 
 #' @rdname glance.summ
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(broom::tidy, summ)
-#' } else {
-#'   export(tidy.summ)
-#' }
+#' @export
 
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   if (class(x)[1] != "summ.rq") {
     # Hacky fix for spurious broom warnings with merMod
     suppressWarnings({
-      base <- broom::tidy(x$model, conf.int = conf.int, conf.level = conf.level,
-                          ...)
+      base <- generics::tidy(x$model, conf.int = conf.int,
+                            conf.level = conf.level, ...)
     })
   } else {
     dots <- list(...)
@@ -381,7 +364,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
                       conf.level = conf.level,
                  se.type = attr(x, "se"), dots))
 
-    base <- do.call(broom::tidy, args)
+    base <- do.call(generics::tidy, args)
   }
 
   if ("S.E." %in% colnames(x$coeftable)) {
@@ -483,50 +466,22 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 #'  \code{\link[broom]{glance}}
 #'
 #' @rdname glance.summ
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(broom::glance, summ.lm)
-#' } else {
-#'   export(glance.summ.lm)
-#' }
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(broom::glance, summ.glm)
-#' } else {
-#'   export(glance.summ.glm)
-#' }
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(broom::glance, summ.svyglm)
-#' } else {
-#'   export(glance.summ.svyglm)
-#' }
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(broom::glance, summ.merMod)
-#' } else {
-#'   export(glance.summ.merMod)
-#' }
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(broom::glance, summ.rq)
-#' } else {
-#'   export(glance.summ.rq)
-#' }
+#' @export
 
 
 glance.summ.lm <- function(x, ...) {
 
-  base <- broom::glance(x$model)
+  base <- generics::glance(x$model)
   return(base)
 
 }
 
 #' @rdname glance.summ
+#' @export
 
 glance.summ.glm <- function(x, ...) {
 
-  base <- broom::glance(x$model)
+  base <- generics::glance(x$model)
   base["pseudo.r.squared"] <- attr(x, "rsq")
   base["pseudo.r.squared.mcfadden"] <- attr(x, "rsqmc")
   return(base)
@@ -535,6 +490,7 @@ glance.summ.glm <- function(x, ...) {
 
 #' @importFrom stats deviance df.residual
 #' @rdname glance.summ
+#' @export
 
 glance.summ.svyglm <- function(x, ...) {
 
@@ -572,10 +528,11 @@ glance.summ.svyglm <- function(x, ...) {
 }
 
 #' @rdname glance.summ
+#' @export
 
 glance.summ.merMod <- function(x, ...) {
 
-  base <- broom::glance(x$model)
+  base <- generics::glance(x$model)
   if (lme4::isLMM(x$model)) {base$p.value <- NA}
   # Get attributes
   atts <- attributes(x)
@@ -593,6 +550,14 @@ glance.summ.merMod <- function(x, ...) {
   return(base)
 
 }
+
+#' @importFrom generics tidy
+#' @export
+generics::tidy
+
+#' @importFrom generics glance
+#' @export
+generics::glance
 
 #' @export
 

@@ -22,42 +22,6 @@ if (!nzchar(system.file(package = "interactions"))) {
 }
 
 if (getRversion() >= "3.6.0") {
-  S3method(broom::glance, summ.glm)
-} else {
-  export(glance.summ.glm)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(broom::glance, summ.lm)
-} else {
-  export(glance.summ.lm)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(broom::glance, summ.merMod)
-} else {
-  export(glance.summ.merMod)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(broom::glance, summ.rq)
-} else {
-  export(glance.summ.rq)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(broom::glance, summ.svyglm)
-} else {
-  export(glance.summ.svyglm)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(broom::tidy, summ)
-} else {
-  export(tidy.summ)
-}
-
-if (getRversion() >= "3.6.0") {
   S3method(knitr::knit_print, summ.glm)
 } else {
   export(knit_print.summ.glm)
@@ -104,6 +68,10 @@ S3method("%not%<-",list)
 S3method("%not%<-",matrix)
 S3method(family,rq)
 S3method(getCall,summ)
+S3method(glance,summ.glm)
+S3method(glance,summ.lm)
+S3method(glance,summ.merMod)
+S3method(glance,summ.svyglm)
 S3method(make_predictions,brmsfit)
 S3method(make_predictions,default)
 S3method(make_predictions,merMod)
@@ -135,6 +103,7 @@ S3method(summ,lm)
 S3method(summ,merMod)
 S3method(summ,rq)
 S3method(summ,svyglm)
+S3method(tidy,summ)
 export("%just%")
 export("%just%<-")
 export("%nin%")
@@ -158,6 +127,7 @@ export(get_offset_name)
 export(get_response_name)
 export(get_robust_se)
 export(get_weights)
+export(glance)
 export(gscale)
 export(j_summ)
 export(make_new_data)
@@ -180,6 +150,7 @@ export(svycor)
 export(svysd)
 export(theme_apa)
 export(theme_nice)
+export(tidy)
 export(warn_wrap)
 export(weights_tests)
 export(wgttest)
@@ -192,6 +163,8 @@ importFrom(crayon,inverse)
 importFrom(crayon,italic)
 importFrom(crayon,red)
 importFrom(crayon,underline)
+importFrom(generics,glance)
+importFrom(generics,tidy)
 importFrom(ggplot2,aes_string)
 importFrom(ggplot2,element_blank)
 importFrom(ggplot2,element_line)

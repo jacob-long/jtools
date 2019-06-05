@@ -29,19 +29,15 @@ find_S3_class <- function(generic, ..., package) {
 
   # not going to provide function, just function name as character
   # ch <- deparse(substitute(generic))
-
   f <- X <- function(x, ...) UseMethod("X")
   for (m in .S3methods(generic, envir = getNamespace(package))) {
     assign(sub(generic, "X", m, fixed = TRUE), "body<-"(f, value = m))
   }
 
   char_meth <- tryCatch(X(...), error = function(e) {return(NA)})
-
   if (is.na(char_meth)) {return(char_meth)}
-
   # Return the stub for dispatch to getS3method as class
   return(reg_match("(?<=\\.).*", char_meth, perl = TRUE))
-
 }
 
 # I'm sure stingr/stringi have this, but I don't want to import them

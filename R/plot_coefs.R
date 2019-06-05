@@ -168,9 +168,35 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # Capture arguments
   dots <- list(...)
   
-  if (!is.null(names(dots))) {
-    mods <- dots[names(dots) == ""]
-    ex_args <- dots[names(dots) != ""]
+  # If first element of list is a list, assume the list is a list of models
+  if (inherits(dots[[1]], 'list')) {
+    mods <- dots[[1]]
+    if (is.null(model.names) & !is.null(names(mods))) {
+      if (is.null(model.names)) model.names <- names(mods)
+    }
+    if (length(dots) > 1) {
+      ex_args <- dots[-1]
+    } else {ex_args <- NULL}
+  } else if (!is.null(names(dots))) {
+    if (all(nchar(names(dots))) > 0) {
+      # if all args named, need to figure out which are models
+      models <- !is.na(sapply(dots, function(x) {
+        out <- find_S3_class("tidy", x, package = "generics")
+        if (out %in% c("list", "character", "logical", "numeric", "default")) {
+          out <- NA
+        }
+      }))
+      mods <- dots[models]
+      if (is.null(model.names)) model.names <- names(dots)[models]
+      if (!all(models)) {
+        ex_args <- dots[models]
+      } else {
+        ex_args <- NULL
+      }
+    } else {
+      mods <- dots[names(dots) == ""]
+      ex_args <- dots[names(dots) != ""]
+    }
   } else {
     mods <- dots
     ex_args <- NULL
@@ -245,7 +271,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     }
   }
   
-  p <- ggplot(data = tidies)
+  p <- ggplot(data = tidies, aes(y = term, x = estimate, xmin = conf.low,
+                                 xmax = conf.high, colour = model))
   
   if (!is.null(groups)) {
     if (is.null(facet.rows) & is.null(facet.cols)) {
@@ -274,7 +301,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     p <- p + geom_polygon(data = dist_curves,
                           aes(x = est, y = curve,
                               group = interaction(term, model), fill = model),
-                          alpha = 0.7, show.legend = FALSE) +
+                          alpha = 0.7, show.legend = FALSE,
+                          inherit.aes = FALSE) +
       scale_fill_manual(name = legend.title,
                         values = get_colors(colors, n_models),
                         breaks = rev(levels(tidies$model)),
@@ -367,14 +395,14 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     
     if (!is.null(ex_args)) {
       
-      method_stub <- find_S3_class("tidy", mods[[i]], package = "broom")
+      method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
       if (getRversion() < 3.5) {
         # getS3method() only available in R >= 3.3
-        the_method <- get(paste0("tidy.", method_stub), asNamespace("broom"),
+        the_method <- get(paste0("tidy.", method_stub), asNamespace("generics"),
                           mode = "function")
       } else {
         the_method <- utils::getS3method("tidy", method_stub,
-                                         envir = asNamespace("broom"))
+                                         envir = asNamespace("generics"))
       }
       method_args <- formals(the_method)
       
@@ -392,7 +420,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
                           intervals = TRUE, prob = ci_level,
                           extra_args))
     
-    tidies[[i]] <- do.call(broom::tidy, args = all_args)
+    tidies[[i]] <- do.call(generics::tidy, args = all_args)
     if (!is.null(names(mods)) & any(names(mods) != "")) {
       tidies[[i]]$model <- names(mods)[i]
     } else {
