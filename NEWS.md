@@ -1,3 +1,16 @@
+# jtools 2.0.2
+
+Minor release. 
+
+Fixes:
+
+* Pseudo-R^2 calculations now handle GLMs with start values specified. (#63)
+
+Other changes:
+
+* `plot_coefs()` and `plot_summs()` can now accept a list of models as its 
+input. (#64)
+
 # jtools 2.0.1
 
 Minor release.
