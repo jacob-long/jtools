@@ -925,7 +925,7 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   }
 
   if (x$model.fit == T) {
-    if (format != "latex" && Sys.info()[['sysname']] != "Windows") {
+    if (format != "latex" & Sys.info()[['sysname']] != "Windows") {
       chi <- "\U1D6D8\u00B2("
       # alternately -> "\U0001D712\u00B2("
     } else if (format == "latex") {
