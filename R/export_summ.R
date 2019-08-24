@@ -192,9 +192,9 @@ export_summs <- function(...,
   # For those critical arguments that require a note, see if they were
   # provided by the user and overwrite if so
   if ("robust" %in% names(dots)) {robust <- dots$robust}
-  robust <- ifelse(all(robust) != FALSE, yes = TRUE, no = FALSE)
+  robust <- ifelse(all(robust != FALSE), yes = TRUE, no = FALSE)
   if ("scale" %in% names(dots)) {scale <- dots$scale}
-  scale <- ifelse(all(robust) == TRUE, yes = TRUE, no = FALSE)
+  scale <- ifelse(all(scale == TRUE), yes = TRUE, no = FALSE)
   if ("n.sd" %in% names(dots)) {n.sd <- dots$n.sd}
   n.sd <- ifelse(length(unique(n.sd)) == 1, yes = n.sd[1], no = NULL)
   if (is.null(n.sd)) {scale <- FALSE}
