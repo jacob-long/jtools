@@ -427,8 +427,19 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
       modname <- paste("Model", i)
       tidies[[i]]$model <- modname
     }
+    # Deal with glht with no `term` column
+    if ("term" %nin% names(tidies[[i]]) & "lhs" %in% names(tidies[[i]])) {
+      tidies[[i]]$term <- tidies[[i]]$lhs
+    }
     
   }
+  
+  # Keep only columns common to all models
+  # TODO: replicate dplyr::bind_rows behavior of keeping all columns and 
+  # filling empty rows with NA
+  tidies <- lapply(tidies, function(x) {
+    x[Reduce(intersect, lapply(tidies, names))]
+  })
   
   # Combine the tidy frames into one, long frame
   tidies <- do.call(rbind, tidies)
