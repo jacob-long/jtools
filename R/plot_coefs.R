@@ -446,31 +446,23 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   
   # For consistency in creating the factors apply contrived names to model.names
   if (is.null(model.names)) {
-    
     model.names <- unique(tidies$model)
-    
   }
   
   # Drop omitted coefficients
   if (!is.null(omit.coefs)) {
-    
     tidies <- tidies[tidies$term %nin% omit.coefs,]
-    
   }
   
   # Creating factors with consistent ordering for coefficients too
   if (is.null(coefs)) {
-    
     coefs <- unique(tidies$term)
     names(coefs) <- coefs
-    
   } else {
-    
     tidies <- tidies[tidies$term %in% coefs,]
     if (is.null(names(coefs))) {
       names(coefs) <- coefs
     }
-    
   }
   
   # For some reason, the order of the legend and the dodged colors

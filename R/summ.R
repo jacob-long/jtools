@@ -1831,7 +1831,7 @@ summ.merMod <- function(
   p_calc <- NULL
 
   # lmerMod doesn't have p values, so
-  if (!sum$isLmer) {
+  if (!lme4::isLMM(model)) {
     ps <- sum$coefficients[,4]
     params[["p"]] <- ps
   } else {
