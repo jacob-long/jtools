@@ -271,6 +271,7 @@ get_control_values <- function(model, data, preds, at, center, design = NULL,
   wname <- weight_info$weights_name
 
   controls <- as.list(data %not% c(preds, names(at), wname, offname))
+  controls <- controls %just% all.vars(as.formula(formula(model)))
   if (length(controls) > 0) {
     
     if (center[1] == TRUE | (length(center) == 1 & center == "all" &

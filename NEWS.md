@@ -6,6 +6,8 @@ Fixes:
 
 * Pseudo-R^2 calculations now handle GLMs with start values specified. (#63)
 * `effect_plot()` no longer silently ignores the `at =` argument.
+* `make_new_data()` no longer tries to calculate control values for variables
+included in `data` but not the model.
 
 Other changes:
 
