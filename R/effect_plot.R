@@ -275,7 +275,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   if (!all(color.class == colors)) colors <- color.class
   
   pred_out <- make_predictions(model, pred = pred, pred.values = pred.values,
-                               at = NULL, center = centered,
+                               at = at, center = centered,
                                interval = interval, int.type = int.type, 
                                outcome.scale = outcome.scale, robust = robust,
                                cluster = cluster, vcov = vcov,
