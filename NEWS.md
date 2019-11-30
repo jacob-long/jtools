@@ -10,6 +10,9 @@ Other changes:
 
 * `plot_coefs()` and `plot_summs()` can now accept a list of models as its 
 input. (#64)
+* `make_predictions()` and functions that depend on it (e.g., `effect_plot()`)
+now use `fitted()` to get predicted values from `brmsfit` objects, which 
+provide a smoother predicted line as would be expected.
 
 # jtools 2.0.1
 

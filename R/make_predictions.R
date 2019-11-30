@@ -455,13 +455,13 @@ make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
     predicted <- as.data.frame(fitted(model,
                                  newdata = pm %not% get_response_name(model),
                                  re_formula = re.form, robust = FALSE,
-                                 probs = intw))
+                                 probs = intw, summary = TRUE))
     pm[[get_response_name(model)]] <- predicted[[1]]
   } else if (estimate[1] == "median") {
     predicted <- as.data.frame(fitted(model,
                                  newdata = pm %not% get_response_name(model),
                                  re_formula = re.form, robust = TRUE,
-                                 probs = intw))
+                                 probs = intw, summary = TRUE))
     pm[[get_response_name(model)]] <- predicted[[1]]
   }
   
