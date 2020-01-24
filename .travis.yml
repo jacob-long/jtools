@@ -5,6 +5,10 @@ sudo: false
 cache: packages
 latex: false
 
+r:
+  - release
+  - devel
+
 addons:
   apt:
     sources:
