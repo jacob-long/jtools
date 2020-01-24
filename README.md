@@ -182,6 +182,11 @@ coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
 export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
 ```
 
+    #> Registered S3 methods overwritten by 'broom':
+    #>   method            from  
+    #>   tidy.glht         jtools
+    #>   tidy.summary.glht jtools
+
 <table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto;  ">
 
 <col>
@@ -559,7 +564,8 @@ R2
 
 <td colspan="4" style="vertical-align: top; text-align: left; white-space: normal; padding: 4pt 4pt 4pt 4pt;">
 
-\*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05.
+All continuous predictors are mean-centered and scaled by 1 standard
+deviation. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05.
 
 </td>
 
@@ -663,11 +669,11 @@ all) contributions to fix problems and add features. I prefer you use
 the Github issues system over trying to reach out to me in other ways.
 Pull requests for contributions are encouraged. If you are considering
 writing up a bug fix or new feature, please check out the [contributing
-guidelines](CONTRIBUTING.md).
+guidelines](https://github.com/jacob-long/jtools/blob/master/CONTRIBUTING.md).
 
 Please note that this project is released with a [Contributor Code of
-Conduct](CONDUCT.md). By participating in this project you agree to
-abide by its terms.
+Conduct](https://github.com/jacob-long/jtools/blob/master/CONDUCT.md).
+By participating in this project you agree to abide by its terms.
 
 ## License
 

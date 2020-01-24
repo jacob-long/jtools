@@ -12,9 +12,9 @@ knitr::opts_chunk$set(
   fig.width = 6.5,
   fig.height = 4,
   render = knitr::normal_print,
-  dev.args=list(type="cairo"),
-  # dev = "png",
-  dpi = 300,
+  # dev.args=list(type="cairo"),
+  dev = "CairoPNG",
+  # dpi = 300,
   retina = 1
 )
 library(jtools)
@@ -227,10 +227,10 @@ I'm happy to receive bug reports, suggestions, questions, and (most of all)
 contributions to fix problems and add features. I prefer you use the Github
 issues system over trying to reach out to me in other ways. Pull requests for 
 contributions are encouraged. If you are considering writing up a bug fix
-or new feature, please check out the [contributing guidelines](CONTRIBUTING.md).
+or new feature, please check out the [contributing guidelines](https://github.com/jacob-long/jtools/blob/master/CONTRIBUTING.md).
 
 Please note that this project is released with a 
-[Contributor Code of Conduct](CONDUCT.md). By participating in this project
+[Contributor Code of Conduct](https://github.com/jacob-long/jtools/blob/master/CONDUCT.md). By participating in this project
 you agree to abide by its terms.
 
 ## License
