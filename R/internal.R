@@ -473,6 +473,8 @@ tidy.glht <- function (x, conf.int = FALSE, conf.level = 0.95, ...) {
   }
 }
 
+#' @importFrom tibble tibble as_tibble
+#' @importFrom stats confint
 #' @rawNamespace 
 #' if (getRversion() >= "3.6.0") {
 #'   S3method(generics::tidy, summary.glht)
@@ -485,7 +487,7 @@ tidy.summary.glht <- function (x, conf.int = FALSE, conf.level = 0.95, ...) {
                              "tstat", "pvalues")])
   names(coef) <- c("estimate", "std.error", "statistic", 
                    "p.value")
-  out <- bind_cols(lhs_rhs, coef)
+  out <- as_tibble(cbind(lhs_rhs, coef))
   if (conf.int) {
     confs <- as.data.frame(confint(x, level = conf.level)$confint)
     out$conf.low <- confs$lwr
