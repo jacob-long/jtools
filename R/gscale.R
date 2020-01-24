@@ -76,7 +76,7 @@
 #' center or scale the weights variables defined in the survey design unless
 #' the user specifically requests them in the \code{x =} argument.
 #'
-#' @family standardization, scaling, and centering tools
+#' @family standardization
 #'
 #' @seealso
 #'
@@ -392,7 +392,7 @@ scaler <- function(x, binary.inputs, n.sd = 2, center.only = FALSE,
 #' @details Some more information can be found in the documentation for
 #'   [gscale()]
 #'
-#' @family standardization, scaling, and centering tools
+#' @family standardization
 #' @examples
 #'
 #' # Standardize just the "qsec" variable in mtcars
@@ -420,7 +420,7 @@ standardize <- function(data = NULL, vars = NULL, binary.inputs = "center",
 #' @return A transformed version of the `data` argument.
 #' @details Some more information can be found in the documentation for
 #'   [gscale()]
-#' @family standardization, scaling, and centering tools
+#' @family standardization
 #' @examples
 #'
 #' # Standardize just the "qsec" variable in mtcars

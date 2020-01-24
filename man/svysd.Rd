@@ -51,11 +51,11 @@ if (requireNamespace("survey")) {
 \seealso{
 \code{\link[survey]{svyvar}}
 
-Other \pkg{survey} package extensions: \code{\link{svycor}}
+Other survey package extensions: \code{\link{svycor}}
 
 Other survey tools: \code{\link{pf_sv_test}},
   \code{\link{svycor}}, \code{\link{weights_tests}},
   \code{\link{wgttest}}
 }
-\concept{\pkg{survey} package extensions}
+\concept{survey package extensions}
 \concept{survey tools}

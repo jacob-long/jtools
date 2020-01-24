@@ -98,7 +98,7 @@ if (requireNamespace("survey")) {
 \seealso{
 \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
 
-Other \pkg{survey} package extensions: \code{\link{svysd}}
+Other survey package extensions: \code{\link{svysd}}
 
 Other survey tools: \code{\link{pf_sv_test}},
   \code{\link{svysd}}, \code{\link{weights_tests}},
@@ -107,5 +107,5 @@ Other survey tools: \code{\link{pf_sv_test}},
 \author{
 Jacob Long <\email{long.1377@osu.edu}>
 }
-\concept{\pkg{survey} package extensions}
+\concept{survey package extensions}
 \concept{survey tools}

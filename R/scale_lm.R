@@ -75,7 +75,7 @@ scale_lm <- scale_mod
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
-#' @family standardization, scaling, and centering tools
+#' @family standardization
 #'
 #' @seealso
 #'
@@ -407,7 +407,7 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
-#' @family standardization, scaling, and centering tools
+#' @family standardization
 #'
 #' @seealso
 #'

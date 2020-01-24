@@ -621,7 +621,7 @@ print.weights_tests <- function(x, ...) {
 #'
 #' @author Jacob Long <\email{long.1377@@osu.edu}>
 #'
-#' @family \pkg{survey} package extensions
+#' @family survey package extensions
 #' @family survey tools
 #'
 #' @seealso \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
@@ -787,7 +787,7 @@ print.svycor <- function(x, ...) {
 #' However, if printing and sharing the output, this may be misleading since
 #' the output will say "variance."
 #'
-#' @family \pkg{survey} package extensions
+#' @family survey package extensions
 #' @family survey tools
 #'
 #' @seealso \code{\link[survey]{svyvar}}
