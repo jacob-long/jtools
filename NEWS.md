@@ -8,6 +8,7 @@ Fixes:
 * `effect_plot()` no longer silently ignores the `at =` argument.
 * `make_new_data()` no longer tries to calculate control values for variables
 included in `data` but not the model.
+* A documentation issue was causing errors on CRAN.
 
 Other changes:
 
