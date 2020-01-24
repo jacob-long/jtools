@@ -25,11 +25,11 @@
 \usage{
 x \%not\% y
 
-x %not% y <- value
+x \%not\% y <- value
 
 x \%just\% y
 
-x %just% y <- value
+x \%just\% y <- value
 
 \method{\%not\%}{default}(x, y)
 
@@ -80,7 +80,7 @@ for situations when you would do \code{x[x \%in\% y]} or \code{x[x \%nin\% y]}. 
 details for behavior when \code{x} is a data frame or matrix.
 }
 \details{
-The behavior of %not% and %just% are different when you're subsetting
+The behavior of \code{\%not\%} and \code{\%just\%} are different when you're subsetting
 data frames or matrices. The subset \code{y} in this case is interpreted as
 \strong{column} names or indices.
 

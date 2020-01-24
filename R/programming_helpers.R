@@ -16,7 +16,7 @@
 
 #' @export
 #' @rdname subsetters
-#' @usage x %not% y <- value
+#' @usage x \%not\% y <- value
 `%not%<-` <- function(x, y, value) {
   UseMethod("%not%<-")
 }
@@ -29,7 +29,7 @@
 
 #' @export
 #' @rdname subsetters
-#' @usage x %just% y <- value
+#' @usage x \%just\% y <- value
 `%just%<-` <- function(x, y, value) {
   UseMethod("%just%<-")
 }
@@ -44,7 +44,7 @@
 #' @param y List of items to include if they are/aren't in `x`
 #' @param value The object(s) to assign to the subsetted `x`
 #' @details 
-#'  The behavior of %not% and %just% are different when you're subsetting 
+#'  The behavior of `%not%` and `%just%` are different when you're subsetting 
 #'  data frames or matrices. The subset `y` in this case is interpreted as
 #'  **column** names or indices. 
 #'
