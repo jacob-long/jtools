@@ -103,7 +103,7 @@ proportion. See details for more about offset support.}
 \item{y.label}{A character object specifying the desired x-axis label. If
 \code{NULL}, the variable name is used.}
 
-\item{pred.labels}{A character vector of labels for categorical predicotrs.
+\item{pred.labels}{A character vector of labels for categorical predictors.
 If \code{NULL}, the default, the factor labels are used.}
 
 \item{main.title}{A character object that will be used as an overall title

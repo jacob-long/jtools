@@ -76,7 +76,7 @@
 #' @param y.label A character object specifying the desired x-axis label. If
 #'   \code{NULL}, the variable name is used.
 #'
-#' @param pred.labels A character vector of labels for categorical predicotrs.
+#' @param pred.labels A character vector of labels for categorical predictors.
 #'  If \code{NULL}, the default, the factor labels are used.
 #'
 #' @param main.title A character object that will be used as an overall title
