@@ -5,17 +5,27 @@
 \alias{j_summ.lm}
 \title{Linear regression summaries with options}
 \usage{
-\method{summ}{lm}(model, scale = FALSE,
+\method{summ}{lm}(
+  model,
+  scale = FALSE,
   confint = getOption("summ-confint", FALSE),
   ci.width = getOption("summ-ci.width", 0.95),
-  robust = getOption("summ-robust", FALSE), cluster = NULL,
+  robust = getOption("summ-robust", FALSE),
+  cluster = NULL,
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2),
-  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
-  transform.response = FALSE, data = NULL, part.corr = FALSE,
+  pvals = getOption("summ-pvals", TRUE),
+  n.sd = 1,
+  center = FALSE,
+  transform.response = FALSE,
+  data = NULL,
+  part.corr = FALSE,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
-  vcov = NULL, ...)
+  model.fit = getOption("summ-model.fit", TRUE),
+  which.cols = NULL,
+  vcov = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{A \code{lm} object.}
@@ -177,9 +187,11 @@ preferred.
 \code{\link[=gscale]{gscale()}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
-Other summ: \code{\link{summ.glm}},
-  \code{\link{summ.merMod}}, \code{\link{summ.rq}},
-  \code{\link{summ.svyglm}}
+Other summ: 
+\code{\link{summ.glm}()},
+\code{\link{summ.merMod}()},
+\code{\link{summ.rq}()},
+\code{\link{summ.svyglm}()}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

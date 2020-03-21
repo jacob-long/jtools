@@ -4,17 +4,26 @@
 \alias{summ.rq}
 \title{Quantile regression summaries with options}
 \usage{
-\method{summ}{rq}(model, scale = FALSE,
+\method{summ}{rq}(
+  model,
+  scale = FALSE,
   confint = getOption("summ-confint", FALSE),
-  ci.width = getOption("summ-ci.width", 0.95), se = c("nid", "rank",
-  "iid", "ker", "boot"), boot.sims = 1000, boot.method = "xy",
+  ci.width = getOption("summ-ci.width", 0.95),
+  se = c("nid", "rank", "iid", "ker", "boot"),
+  boot.sims = 1000,
+  boot.method = "xy",
   vifs = getOption("summ-vifs", FALSE),
   digits = getOption("jtools-digits", 2),
-  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
-  transform.response = FALSE, data = NULL,
+  pvals = getOption("summ-pvals", TRUE),
+  n.sd = 1,
+  center = FALSE,
+  transform.response = FALSE,
+  data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
-  ...)
+  model.fit = getOption("summ-model.fit", TRUE),
+  which.cols = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{A \code{rq} model. At this time, \code{rqs} models (multiple \code{tau}
@@ -89,11 +98,11 @@ asking \code{summary.rq} for. \code{hs}, \code{U}, and \code{gamma} are ignored.
 Note that when using \code{se = "rank"}, there are no standard errors,
 test statistics, or p values calculated.
 
-About the R1 fit statistic: Described in Koenker & Machado (1999), this
+About the R1 fit statistic: Described in Koenker \& Machado (1999), this
 offers an interpretation similar to R-squared in OLS regression. While you
 could calculate R-squared for these models, it goes against the underlying
 theoretical rationale for them. Koenker himself is not a big fan of R1
-either, but it's something. See Koenker & Machado (1999) for more info.
+either, but it's something. See Koenker \& Machado (1999) for more info.
 }
 \examples{
 
@@ -113,7 +122,10 @@ inference processes for quantile regression.
 https://doi.org/10.1080/01621459.1999.10473882
 }
 \seealso{
-Other summ: \code{\link{summ.glm}}, \code{\link{summ.lm}},
-  \code{\link{summ.merMod}}, \code{\link{summ.svyglm}}
+Other summ: 
+\code{\link{summ.glm}()},
+\code{\link{summ.lm}()},
+\code{\link{summ.merMod}()},
+\code{\link{summ.svyglm}()}
 }
 \concept{summ}

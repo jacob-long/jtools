@@ -5,18 +5,29 @@
 \alias{j_summ.merMod}
 \title{Mixed effects regression summaries with options}
 \usage{
-\method{summ}{merMod}(model, scale = FALSE,
+\method{summ}{merMod}(
+  model,
+  scale = FALSE,
   confint = getOption("summ-confint", FALSE),
   ci.width = getOption("summ-ci.width", 0.95),
-  conf.method = getOption("summ-conf.method", c("Wald", "profile",
-  "boot")), digits = getOption("jtools-digits", default = 2),
-  r.squared = TRUE, pvals = getOption("summ-pvals", NULL), n.sd = 1,
-  center = FALSE, transform.response = FALSE, data = NULL,
-  exp = FALSE, t.df = NULL, model.info = getOption("summ-model.info",
-  TRUE), model.fit = getOption("summ-model.fit", TRUE),
+  conf.method = getOption("summ-conf.method", c("Wald", "profile", "boot")),
+  digits = getOption("jtools-digits", default = 2),
+  r.squared = TRUE,
+  pvals = getOption("summ-pvals", NULL),
+  n.sd = 1,
+  center = FALSE,
+  transform.response = FALSE,
+  data = NULL,
+  exp = FALSE,
+  t.df = NULL,
+  model.info = getOption("summ-model.info", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE),
   re.variance = getOption("summ-re.variance", c("sd", "var")),
-  which.cols = NULL, re.table = getOption("summ-re.table", TRUE),
-  groups.table = getOption("summ-groups.table", TRUE), ...)
+  which.cols = NULL,
+  re.table = getOption("summ-re.table", TRUE),
+  groups.table = getOption("summ-groups.table", TRUE),
+  ...
+)
 }
 \arguments{
 \item{model}{A \code{\link[lme4]{merMod}} object.}
@@ -253,8 +264,11 @@ freedom if you have \pkg{pbkrtest} installed.
 A tweaked version of \code{\link[piecewiseSEM:rsquared]{piecewiseSEM::rsquared()}} is used to
 generate the pseudo-R-squared estimates for linear models.
 
-Other summ: \code{\link{summ.glm}}, \code{\link{summ.lm}},
-  \code{\link{summ.rq}}, \code{\link{summ.svyglm}}
+Other summ: 
+\code{\link{summ.glm}()},
+\code{\link{summ.lm}()},
+\code{\link{summ.rq}()},
+\code{\link{summ.svyglm}()}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

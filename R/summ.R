@@ -52,7 +52,7 @@ j_summ <- summ
 #'
 #' @param ci.width A number between 0 and 1 that signifies the width of the
 #'   desired confidence interval. Default is \code{.95}, which corresponds
-#'   to a 95\% confidence interval. Ignored if \code{confint = FALSE}.
+#'   to a 95% confidence interval. Ignored if \code{confint = FALSE}.
 #'
 #' @param robust If not `FALSE`, reports heteroskedasticity-robust standard
 #'   errors instead of conventional SEs. These are also known as Huber-White
