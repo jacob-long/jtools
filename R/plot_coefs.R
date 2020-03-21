@@ -1,7 +1,8 @@
 #' @title Plot Regression Summaries
 #' @description `plot_summs` and `plot_coefs` create regression coefficient
 #'   plots with ggplot2.
-#' @param ... regression model(s).
+#' @param ... regression model(s). You may also include arguments to be passed
+#'   to `tidy()`.
 #' @param ci_level The desired width of confidence intervals for the
 #'   coefficients. Default: 0.95
 #' @param inner_ci_level Plot a thicker line representing some narrower span
@@ -48,6 +49,15 @@
 #'   argument to [ggplot2::facet_wrap()]).
 #' @param facet.label.pos Where to put the facet labels. One of "top" (the
 #'   default), "bottom", "left", or "right".
+#' @param resp For any models that are `brmsfit` and have multiple response
+#'   variables, specify them with a vector here. If the model list includes
+#'   other types of models, you do not need to enter `resp` for those models.
+#'   For instance, if I want to plot a `lm` object and two `brmsfit` objects,
+#'   you only need to provide a vector of length 2 for `resp`.
+#' @param dpar For any models that are `brmsfit` and have a distributional 
+#'   dependent variable, that can be specified here. If NULL, it is assumed you 
+#'   want coefficients for the location/mean parameter, not the distributional
+#'   parameter(s).
 #' @return A ggplot object.
 #' @details A note on the distinction between `plot_summs` and `plot_coefs`:
 #'   `plot_summs` only accepts models supported by [summ()] and allows users
@@ -102,7 +112,8 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        rescale.distributions = FALSE, exp = FALSE,
                        point.shape = TRUE, legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
-                       facet.label.pos = "top", color.class = colors) {
+                       facet.label.pos = "top", color.class = colors, 
+                       resp = NULL, dpar = NULL) {
   
   # Capture arguments
   dots <- list(...)
@@ -129,8 +140,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     plot.distributions = plot.distributions,
                     rescale.distributions = rescale.distributions, exp = exp,
                     point.shape = point.shape, legend.title = legend.title,
-                    groups = groups, facet.rows = facet.rows, facet.cols = facet.cols,
-                    facet.label.pos = facet.label.pos, color.class = color.class,
+                    groups = groups, facet.rows = facet.rows,
+                    facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
+                    color.class = color.class, resp = resp, dpar = dpar,
                     ex_args))
   
   do.call("plot_coefs", args = args)
@@ -150,7 +162,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        exp = FALSE, point.shape = TRUE,
                        legend.title = "Model", groups = NULL,
                        facet.rows = NULL, facet.cols = NULL,
-                       facet.label.pos = "top", color.class = colors) {
+                       facet.label.pos = "top", color.class = colors,
+                       resp = NULL, dpar = NULL) {
   
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
@@ -218,7 +231,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # Create tidy data frame combining each model's tidy output
   tidies <- make_tidies(mods = mods, ex_args = ex_args, ci_level = ci_level,
                         model.names = model.names, omit.coefs = omit.coefs,
-                        coefs = coefs)
+                        coefs = coefs, resp = resp, dpar = dpar)
   
   n_models <- length(unique(tidies$model))
   
@@ -387,30 +400,93 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 }
 
 make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
-                        coefs) {
+                        coefs, resp = NULL, dpar = NULL) {
+  
+  # Need to handle complexities of resp and dpar arguments
+  dpars <- NULL
+  dpar_fits <- FALSE
+  resps <- NULL
+  if ("brmsfit" %in% sapply(mods, class)) {
+    
+    if (!requireNamespace("broom.mixed")) {
+      stop_wrap("Please install the broom.mixed package to process `brmsfit`
+                objects.")
+    }
+    
+    mv_fits <- sapply(mods, function(x) "mvbrmsformula" %in% class(formula(x)))
+    if (any(mv_fits)) {
+      if (!is.null(resp) & length(resp) %nin% c(sum(mv_fits), 1)) {
+        stop_wrap("The length of the `resp` argument must be either equal to
+                  the number of multivariate `brmsfit` objects or 1.")
+      } else if (is.null(resp)) { # Need to retrieve first DV
+        resp <- lapply(mods[mv_fits], function(x) names(formula(x)[["forms"]])[1])
+      }
+      # Create new vector that includes the non-multivariate models
+      resps <- as.list(rep(NA, length(mods)))
+      # Now put resp into that vector
+      resps[mv_fits] <- resp
+    } 
+    
+    # Need to detect which models have distributional parameters
+    dpar_fits <- sapply(mods, function(x) {
+      if ("brmsfit" %nin% class(x)) return(FALSE)
+      if ("mvbrmsformula" %in% class(formula(x))) {
+        any(sapply(
+          brms::parse_bf(formula(x))$terms, function(x) length(x$dpars)
+        ) > 1)
+      } else {
+        length(brms::parse_bf(formula(x))$dpars) > 1
+      }
+    })
+    if (!is.null(dpar)) {
+      if (length(dpar) %nin% c(sum(dpar_fits), 1)) {
+        stop_wrap("The length of the `dpar` argument must be either equal to
+                  the number of `brmsfit` objects with a distributional model or
+                  1.")
+      }
+      dpars <- as.list(rep(NA, length(mods)))
+      dpars[dpar_fits] <- dpar 
+    } 
+  }
+  
   # Create empty list to hold tidy frames
   tidies <- as.list(rep(NA, times = length(mods)))
   
   for (i in seq_along(mods)) {
     
+    # Major kludge for methods clash between broom and broom.mixed
+    # Making namespace environment with broom.mixed before generics 
+    # to try to put those methods in the search path
+    # Will drop after update to broom 0.7.0
+    if (requireNamespace("broom.mixed")) {
+      nse <- as.environment(unlist(sapply(c(asNamespace("broom.mixed"), 
+                                            asNamespace("generics")),
+                                          as.list)))
+    } else {
+      nse <- asNamespace("generics")
+    }
+    method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
+    if (getRversion() < 3.5) {
+      # getS3method() only available in R >= 3.3
+      the_method <- get(paste0("tidy.", method_stub), nse,
+                        mode = "function")
+    } else {
+      the_method <- utils::getS3method("tidy", method_stub, envir = nse)
+    }
     if (!is.null(ex_args)) {
-      
-      method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
-      if (getRversion() < 3.5) {
-        # getS3method() only available in R >= 3.3
-        the_method <- get(paste0("tidy.", method_stub), asNamespace("generics"),
-                          mode = "function")
-      } else {
-        the_method <- utils::getS3method("tidy", method_stub,
-                                         envir = asNamespace("generics"))
-      }
       method_args <- formals(the_method)
       
       method_args <-
         method_args[names(method_args) %nin% c("intervals", "prob")]
       
+      if (method_stub == "brmsfit" & "par_type" %nin% ex_args) {
+        ex_args <- c(ex_args, par_type = "non-varying", effects = "fixed")
+      } 
+      
       extra_args <- ex_args[names(ex_args) %in% names(method_args)]
       
+    } else if (method_stub == "brmsfit" & is.null(ex_args)) {
+      extra_args <- list(par_type = "non-varying", effects = "fixed")
     } else {
       extra_args <- NULL
     }
@@ -431,7 +507,41 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     if ("term" %nin% names(tidies[[i]]) & "lhs" %in% names(tidies[[i]])) {
       tidies[[i]]$term <- tidies[[i]]$lhs
     }
-    
+    if ("brmsfit" %in% class(mods[[i]]) & (!is.null(resps) | !is.null(dpars))) {
+      # See if we're selecting a DV in a multivariate model
+      if (!is.null(resps) && !is.na(resps[[i]])) {
+        # Now see if we're also dealing with a distributional outcome
+        if (is.null(dpars) || is.na(dpars[[i]])) {
+          # If not, then just select the terms referring to this DV
+          tidies[[i]] <- tidies[[i]][tidies[[i]]$response == resps[[i]], ]
+        } else {
+          # Otherwise, select those referring to this distributional DV
+          tidies[[i]] <- tidies[[i]][tidies[[i]]$response == dpars[[i]], ]
+          this_dv <- grepl(paste0("^", resps[[i]], "_"), tidies[[i]]$term)
+          tidies[[i]] <- tidies[[i]][this_dv, ]
+          # Also want to manicure those term names because they're confusing
+          tidies[[i]]$term <- 
+            gsub(paste0("^", resps[[i]], "_"), "", tidies[[i]]$term)
+        }
+      } else if (!is.null(dpars) && !is.na(dpars[[i]])) {
+        # Everything's different for non-multivariate models -__-
+        # Prefixed with, e.g., sigma_
+        this_dv <- grepl(paste0("^", dpars[[i]], "_"), tidies[[i]]$term)
+        tidies[[i]] <- tidies[[i]][this_dv, ]
+        # Drop the prefix now
+        tidies[[i]]$term <- 
+          gsub(paste0("^", dpars[[i]], "_"), "", tidies[[i]]$term)
+      }
+    } else if ("brmsfit" %in% class(mods[[i]]) && 
+               any(dpar_fits) && dpar_fits[[i]]) {
+      # Need to drop dpar parameters...first, need to identify them
+      the_dpars <- names(brms::parse_bf(formula(mods[[i]]))$dpars)
+      # Loop through them, other than the first (location) parameter
+      for (the_dpar in the_dpars[-1]) {
+        tidies[[i]] <-
+          tidies[[i]][!grepl(paste0("^", the_dpar, "_"), tidies[[i]]$term),]
+      }
+    }
   }
   
   # Keep only columns common to all models

@@ -274,18 +274,47 @@ test_that("effect_plot does bar plots", {
 #                   # this next line is only to keep the example small in size!
 #                   chains = 2, cores = 2, seed = 12345, iter = 500)
 # saveRDS(fitrs, "rsafit.rds")
+# fitmv <- brm(
+#   bf(mpg ~ cyl + wt, sigma ~ cyl + wt) + bf(wt ~ cyl + mpg, sigma ~ cyl + mpg) +
+#     set_rescor(FALSE),
+#   data = mtcars, chains = 2, cores = 2, iter = 500
+# )
+# saveRDS(fitmv, "mvfit.rds")
 
 #### brms and rstanarm tests #################################################
 
 if (requireNamespace("brms")) {
   context("brmsfit plots")
   bfit <- readRDS("brmfit.rds")
+  mvfit <- readRDS("mvfit.rds")
   test_that("brmsfit objects are supported", {
     expect_silent(print(effect_plot(bfit, pred = "zBase",
                   interval = TRUE) + ggtitle("brms")))
     expect_is(make_predictions(bfit, pred = "zBase", at = list("Trt" = c(0,1)),
                                interval = TRUE, estimate = "median"),
                                "data.frame")
+  })
+  test_that("brmsfit multivariate models work", {
+    expect_silent(print(effect_plot(mvfit, pred = "cyl", interval = TRUE) + 
+                          ggtitle("mv default dv mpg")))
+    expect_silent(print(effect_plot(mvfit, pred = "cyl", interval = TRUE,
+                                    resp = "wt") + 
+                          ggtitle("mv selected dv wt")))
+  })
+  test_that("brmsfit distributional models work", {
+    expect_silent(print(effect_plot(mvfit, pred = "cyl", interval = TRUE,
+                                    dpar = "sigma") + 
+                          ggtitle("mv default dv mpg sigma")))
+    expect_silent(print(effect_plot(mvfit, pred = "cyl", interval = TRUE,
+                                    resp = "wt", dpar = "sigma") + 
+                          ggtitle("mv selected dv wt sigma")))
+    expect_warning(effect_plot(mvfit, pred = "cyl", interval = TRUE,
+                               dpar = "sigma", resp = "mpg", 
+                               plot.points = TRUE) + 
+                          ggtitle("mv select dv mpg sigma warning"))
+    expect_error(make_predictions(mvfit, pred = "cyl", interval = TRUE,
+                                  resp = "mpg", dpar = "sigma",
+                                  partial.residuals = TRUE))
   })
 }
 

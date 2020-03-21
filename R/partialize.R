@@ -1,7 +1,7 @@
 # Avoid duplicating code for the workhorse parts of the S3 method
 do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
                         center = TRUE, scale = c("response", "link"), 
-                        set.offset = 1, ...) {
+                        set.offset = 1, formula = NULL, ...) {
   # Get the original data if new data are not provided
   if (is.null(data)) {
     data <- get_data(model)
@@ -11,6 +11,8 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
   data <- drop_missing(model, data)
   
   wname <- get_weights(model, data)$weights_name
+  
+  if (is.null(formula)) {formula <- get_formula(model, ...)}
 
   # Make sure the vars are in the data
   if (any(vars %nin% names(data))) {
@@ -18,8 +20,8 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
               " not found in the data.")
   }
   # Make sure the vars are in the model
-  if (any(vars %nin% original_terms(as.formula(formula(model))))) {
-    the_terms <- original_terms(as.formula(formula(model)))
+  if (any(vars %nin% original_terms(formula))) {
+    the_terms <- original_terms(formula)
     stop_wrap(paste(vars %not% the_terms, collapse = " and "),
               " not found in the model.")
   }
@@ -27,13 +29,13 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
   # Get fixed values of non-focal variables 
   controls <- get_control_values(model = model, data = data, preds = vars, 
                                  at = at, center = center, 
-                                 set.offset = set.offset)
+                                 set.offset = set.offset, ...)
   # Assign those values to the original data
   for (n in names(controls)) {
     data[[n]] <- controls[[n]]
   }
 
-  resp <- get_response_name(model)
+  resp <- as.character(deparse(get_lhs(formula)))
   predicted <- make_predictions(
     model = model, pred = NULL, new_data = data, interval = FALSE,
     outcome.scale = scale, return.orig.data = FALSE, set.offset = set.offset,
@@ -114,14 +116,16 @@ partialize.default <- function(model, vars = NULL, data = NULL, at = NULL,
 #' @export
 partialize.brmsfit <- function(model, vars = NULL, data = NULL, at = NULL,
                                center = TRUE, scale = c("response", "link"),
-                               set.offset = 1, ...) {
+                               set.offset = 1, formula = NULL, resp = NULL,
+                               dpar = NULL, ...) {
 
   predicted <- do_partials(model, vars = vars, data = data, at = at,
                            center = center, scale = "response",
-                           set.offset = set.offset, ...)
-  resp <- get_response_name(model)
+                           set.offset = set.offset, formula = formula, 
+                           resp = resp, dpar = dpar, ...)
+  resp <- get_response_name(model, resp = resp, dpar = dpar)
   # Add the residuals to the predictions
-  resids <- residuals(model, type = "ordinary")[,"Estimate"]
+  resids <- residuals(model, type = "ordinary", resp = resp)[,"Estimate"]
   predicted[[resp]] <- predicted[[resp]] + resids[!is.na(resids)]
 
   # If we want it on the link scale, we need to transform back to it

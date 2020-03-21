@@ -1,3 +1,15 @@
+# jtools 2.0.3
+
+New features:
+
+* `effect_plot()` and `plot_coefs()` has enhanced support for `brms` models. 
+You may now use the `resp` and `dpar` arguments to select dependent variables
+in multivariate models as well as distributional parameters in distributional
+models.
+* There is a new function, `get_formula()`. This is mostly an internal helper
+function designed to extract formulas from objects like `brmsfit` that have 
+their own class of formula that will break other internal functions.
+
 # jtools 2.0.2
 
 Minor release. 

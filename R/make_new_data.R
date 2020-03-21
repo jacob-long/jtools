@@ -28,6 +28,7 @@
 #'   is used.
 #' @param num.preds The number of predictions to generate. Default is 100. 
 #'   Ignored if `pred.values` is not `NULL`.
+#' @param ... Extra arguments passed to `get_formula()`
 #' @return A data frame.
 #' @details 
 #' 
@@ -51,17 +52,19 @@
 
 make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
                           data = NULL, center = TRUE, set.offset = NULL,
-                          num.preds = 100) {
+                          num.preds = 100, ...) {
   design <- if ("svyglm" %in% class(model)) model$survey.design else NULL
   
   if (is.null(data) | "svyglm" %in% class(model)) {
     data <- get_data(model)
   }
   
+  formula <- get_formula(model, ...)
+  
   # This is where the magic happens
   values <- get_control_values(model = model, data = data, at = at, 
                                preds = pred, center = center, design = design,
-                               set.offset = set.offset)
+                               set.offset = set.offset, formula = formula)
   
   # Check for missing variables
   all_vars <- c(pred, names(values)) %not% c("(weights)", "(offset)")
@@ -75,7 +78,7 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
     pred_values(data[[pred]], length = num.preds)
   } else {pred.values}
   
-  values[[get_response_name(model)]] <- NA
+  values[[get_response_name(model, ...)]] <- NA
   
   new_data <- expand.grid(values, stringsAsFactors = FALSE)
   
@@ -162,11 +165,14 @@ get_weights <- function(model, data) {
 #' @title Utility functions for generating model predictions
 #' @description These functions get information and data from regression models.
 #' @param model The model (e.g., `lm`, `glm`, `merMod`, `svyglm`)
-#' @param data For `get_weights`, the data used to fit the model.
-#' @param warn For `get_data`, should there be a warning when `model.frame` 
+#' @param data For `get_weights()`, the data used to fit the model.
+#' @param warn For `get_data()`, should there be a warning when `model.frame()` 
 #'  won't work because of variable transformations? Default is TRUE but this
-#'  may not be desired when `get_data` is used inside of another function or
+#'  may not be desired when `get_data()` is used inside of another function or
 #'  used multiple times.
+#' @param formula The formula for `model`, if desired. Otherwise `get_formula()`
+#'  is called.
+#' @param ... Arguments passed to `get_formula()`
 #' @return 
 #' 
 #' * `get_data()`: The data used to fit the model.
@@ -178,7 +184,7 @@ get_weights <- function(model, data) {
 #' @rdname model_utils
 #' @export 
 
-get_data <- function(model, warn = TRUE) {
+get_data <- function(model, formula = NULL, warn = TRUE, ...) {
   
   if ("svyglm" %in% class(model)) {
     d <- model$survey.design$variables
@@ -187,14 +193,25 @@ get_data <- function(model, warn = TRUE) {
   } else {
     d <- model.frame(model)
   }
+  # Grab the formula
+  if (is.null(formula)) {
+    formula <- get_formula(model, ...)
+  }
+  # See if we're modeling a distributional DV in brmsfit
+  is_dpar <- "is_dpar" %in% names(attributes(formula))
+  # Get response name (needed for distributional DV)
+  resp <- as.character(deparse(get_lhs(formula)))
+  
   # Check to see if model.frame names match formula names
   varnames <- names(d)
   # Drop weights and offsets placeholder variable names
   varnames <- varnames[varnames %nin% c("(offset)","(weights)")]
   # Get the untransformed variable names
-  raw_vars <- all.vars(as.formula(formula(model)))
+  raw_vars <- all.vars(formula)
   # Add the offset, if any
   raw_vars <- c(raw_vars, get_offset_name(model))
+  # Drop distributional DV
+  if (is_dpar) {raw_vars <- raw_vars %not% resp}
   # If survey, return now
   if ("svyglm" %in% class(model)) {
     return(tibble::as_tibble(d[unique(c(raw_vars, wname))], rownames = NA))
@@ -210,7 +227,7 @@ get_data <- function(model, warn = TRUE) {
     }
     
     # Get the environment where model was fit --- otherwise tests fail 
-    env <- attr(formula(model), ".Environment")
+    env <- attr(formula, ".Environment")
     # Grab the data from the environment
     d <- eval(getCall(model)$data, envir = env)
     # Make sure weights are included
@@ -252,26 +269,128 @@ get_data <- function(model, warn = TRUE) {
 # adapted from https://stackoverflow.com/a/13217607/5050156
 #' @rdname model_utils
 #' @export 
-get_response_name <- function(model) {
-  formula <- as.formula(formula(model))
+get_response_name <- function(model, ...) {
+  formula <- get_formula(model, ...)
   tt <- terms(formula)
   vars <- as.character(attr(tt, "variables"))[-1] ## [1] is the list call
   response <- attr(tt, "response") # index of response var
   vars[response] 
 }
 
+#' @title Retrieve formulas from model objects
+#' 
+#' This function is primarily an internal helper function in `jtools` and
+#' related packages to standardize the different types of formula objects used
+#' by different types of models.
+#' 
+#' @param model The fitted model object.
+#' @param resp For `brmsfit` objects, the response variable for which 
+#'   the formula is desired. `brmsfit` objects may have multiple formulas, so
+#'   this selects a particular one. If `NULL`, the first formula is chosen 
+#'   (unless `dpar` is specified).
+#' @param dpar For `brmsfit` objects, the distributional variable for which 
+#'   the formula is desired. If `NULL`, no distributional parameter is used.
+#'   If there are multiple responses with distributional parameters, then 
+#'   `resp` should be specified or else the first formula will be used by 
+#'   default.
+#' @param ... Ignored.
+#' 
+#' @value A `formula` object.
+#' @examples 
+#' 
+#' data(mtcars)
+#' fit <- lm(mpg ~ cyl, data = mtcars)
+#' get_formula(fit)
+#' 
+#' @export
+#' @rdname get_formula
+get_formula <- function(model, ...) {
+  UseMethod("get_formula")
+}
+
+#' @rdname get_formula
+#' @export
+get_formula.default <- function(model, ...) {
+  formula(model)
+}
+
+#' @rdname get_formula
+#' @export
+get_formula.brmsfit <- function(model, resp = NULL, dpar = NULL, ...) {
+  form <- formula(model)
+  if ("mvbrmsformula" %in% class(form)) {
+    form <- as.list(form)[["forms"]]
+    if (is.null(resp) & is.null(dpar)) {
+      return(as.formula(form[[1]]))
+    } else if (!is.null(resp)) {
+      resps <- lapply(form, function(x) {
+        all.vars(as.formula(paste0("~", get_response_name(x[[1]]))))
+      })
+      if (resp %nin% resps) {
+        stop_wrap(resp, " wasn't found in the model formula.")
+      } else {
+        form <- form[[which(resp == resps)]]
+      }
+    } else {
+      form <- form[[1]]
+    }
+  } else {
+    if (is.null(resp) & is.null(dpar)) return(as.formula(form))
+  }
+  
+  if (!is.null(dpar)) {
+    form <- form[["pforms"]][[dpar]]
+    attr(form, "is_dpar") <- TRUE
+    return(as.formula(form))
+  } else {
+    return(as.formula(form))
+  }
+}
+
+get_family <- function(model, ...) {
+  UseMethod("get_family")
+}
+
+get_family.default <- function(model, ...) {
+  family(model)
+}
+
+get_family.brmsfit <- function(model, resp = NULL, ...) {
+  form <- formula(model)
+  fam <- family(model)
+  if ("mvbrmsformula" %in% class(form)) {
+    form <- as.list(form)[["forms"]]
+    if (is.null(resp)) {
+      return(fam[[1]])
+    } else if (!is.null(resp)) {
+      resps <- lapply(form, function(x) {
+        all.vars(as.formula(paste0("~", get_response_name(x[[1]]))))
+      })
+      if (resp %nin% resps) {
+        stop_wrap(resp, " wasn't found in the model formula.")
+      } else {
+        return(fam[[which(resp == resps)]])
+      }
+    }
+  } else {
+    return(fam)
+  }
+}
+
 # formerly built into make_new_data, but I want to use it for other times
 # when I just want the values of non-focal predictors
 get_control_values <- function(model, data, preds, at, center, design = NULL,
-                               set.offset = NULL) {
+                               set.offset = NULL, formula = NULL, ...) {
 
   offname <- get_offset_name(model)
   weight_info <- get_weights(model, data)
   weights <- weight_info$weights
   wname <- weight_info$weights_name
+  
+  if (is.null(formula)) formula <- get_formula(model, ...)
 
   controls <- as.list(data %not% c(preds, names(at), wname, offname))
-  controls <- controls %just% all.vars(as.formula(formula(model)))
+  controls <- controls %just% all.vars(formula)
   if (length(controls) > 0) {
     
     if (center[1] == TRUE | (length(center) == 1 & center == "all" &

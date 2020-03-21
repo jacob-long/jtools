@@ -10,21 +10,23 @@ make_predictions <- function(model, ...) {
 # Helper for the final output 
 prepare_return_data <- function(model, data, return.orig.data, 
                                 partial.residuals, pm, pred, at, 
-                                center, set.offset) {
+                                center, set.offset, formula = NULL, ...) {
   if (return.orig.data == FALSE & partial.residuals == FALSE) {
     o <- tibble::as_tibble(pm)
   } else {
+    if (is.null(formula)) {formula <- get_formula(model)}
     if (return.orig.data == TRUE & partial.residuals == FALSE) {
       o <- list(predictions = tibble::as_tibble(pm), data = 
-                suppressMessages(d <- get_data(model)))
-      resp <- get_response_name(model)
+                suppressMessages(d <- get_data(model, formula = formula)))
+      if ("is_dpar" %in% names(attributes(formula))) {return(o)}
+      resp <- as.character(deparse(get_lhs(formula)))
       # If left-hand side is transformed, make new column in original data for
       # the transformed version and evaluate it
-      if (is_lhs_transformed(as.formula(formula(model)))) {
-        o[[2]][resp] <- eval(get_lhs(as.formula(formula(model))), o[[2]])
+      if (is_lhs_transformed(formula)) {
+        o[[2]][resp] <- eval(get_lhs(formula), o[[2]])
       }
       # For binomial family, character/logical DVs can cause problems
-      if (family(model)$family == "binomial" &  !is.numeric(d[[resp]])) {
+      if (get_family(model, ...)$family == "binomial" &  !is.numeric(d[[resp]])) {
         if (is.logical(d[[resp]])) {
           o[[2]][[resp]] <- as.numeric(o[[2]][[resp]])
         } else {
@@ -33,10 +35,15 @@ prepare_return_data <- function(model, data, return.orig.data,
         }
       }
     } else {
+      if ("is_dpar" %in% names(attributes(formula))) {
+        stop_wrap("Partial residuals cannot be calculated for distributional
+                  dependent variables.")
+      }
       o <- list(predictions = tibble::as_tibble(pm), data = 
                   suppressMessages(
                     partialize(model, vars = pred, at = at, data = data,
-                               center = center, set.offset = set.offset)
+                               center = center, set.offset = set.offset,
+                               formula = formula, ...)
                   )
                 )
     }
@@ -75,7 +82,7 @@ prepare_return_data <- function(model, data, return.orig.data,
 #' @param int.width How large should the interval be, relative to the standard
 #'   error? The default, .95, corresponds to roughly 1.96 standard errors and
 #'   a .05 alpha level for values outside the range. In other words, for a
-#'   confidence interval, .95 is analogous to a 95\% confidence interval.
+#'   confidence interval, .95 is analogous to a 95% confidence interval.
 #'
 #' @param outcome.scale For nonlinear models (i.e., GLMs), should the outcome
 #'   variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -438,32 +445,31 @@ make_predictions.stanreg <- function(model, pred, pred.values = NULL, at = NULL,
 make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, estimate = c("mean", "median"), interval = TRUE,
   int.width = .95, re.form = ~0,  set.offset = NULL, new_data = NULL,
-  return.orig.data = FALSE, partial.residuals = FALSE, ...) {
+  return.orig.data = FALSE, partial.residuals = FALSE, dpar = NULL, resp = NULL,
+  outcome.scale = c("response", "linear"), ...) {
+  
+  # Translate to brms's interface
+  if (outcome.scale[1] == "link") {outcome.scale <- "linear"}
   
   # Check if user provided own new_data
   if (is.null(new_data)) {
     # Get the data ready with make_new_data()
     pm <- make_new_data(model, pred, pred.values = pred.values, at = at, 
-                        data = data, center = center, set.offset = set.offset)
+                        data = data, center = center, set.offset = set.offset,
+                        dpar = dpar, resp = resp)
   } else {pm <- new_data}
   
   intw <- c(((1 - int.width)/2), 1 - ((1 - int.width)/2))
   
   # the 'ppd' object is a weird pseudo-matrix that misbehaves when
   # I try to make it into a data frame
-  if (estimate[1] == "mean") {
-    predicted <- as.data.frame(fitted(model,
-                                 newdata = pm %not% get_response_name(model),
-                                 re_formula = re.form, robust = FALSE,
-                                 probs = intw, summary = TRUE))
-    pm[[get_response_name(model)]] <- predicted[[1]]
-  } else if (estimate[1] == "median") {
-    predicted <- as.data.frame(fitted(model,
-                                 newdata = pm %not% get_response_name(model),
-                                 re_formula = re.form, robust = TRUE,
-                                 probs = intw, summary = TRUE))
-    pm[[get_response_name(model)]] <- predicted[[1]]
-  }
+  predicted <- as.data.frame(fitted(model,
+                               newdata = pm, re_formula = re.form,
+                               robust = estimate[1] == "median",
+                               probs = intw, summary = TRUE,
+                               resp = get_response_name(model, resp = resp),
+                               dpar = dpar, scale = outcome.scale))
+  pm[[get_response_name(model, resp = resp, dpar = dpar)]] <- predicted[[1]]
   
   if (interval == TRUE) {
     pm[["ymax"]] <- predicted[[4]]
@@ -475,7 +481,8 @@ make_predictions.brmsfit <- function(model, pred, pred.values = NULL, at = NULL,
                            return.orig.data = return.orig.data, 
                            partial.residuals = partial.residuals,
                            pm = pm, pred = pred, at = at, center = center,
-                           set.offset = set.offset)
+                           set.offset = set.offset, 
+                           formula = get_formula(model, dpar = dpar, resp = resp), dpar = dpar, resp = resp)
   return(o)
   
 }

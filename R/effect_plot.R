@@ -48,7 +48,7 @@
 #' @param int.width How large should the interval be, relative to the standard
 #'   error? The default, .95, corresponds to roughly 1.96 standard errors and
 #'   a .05 alpha level for values outside the range. In other words, for a
-#'   confidence interval, .95 is analogous to a 95\% confidence interval.
+#'   confidence interval, .95 is analogous to a 95% confidence interval.
 #'
 #' @param outcome.scale For nonlinear models (i.e., GLMs), should the outcome
 #'   variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -124,7 +124,7 @@
 #'   the cluster variable in the input data frame (as a string). Alternately,
 #'   provide a vector of clusters.
 #'
-#' @param ... extra arguments passed to `make_predictions`
+#' @param ... extra arguments passed to `make_predictions()`
 #' 
 #' @param pred.values Values of `pred` to use instead of the equi-spaced 
 #'   series by default (for continuous variables) or all unique values (for
@@ -287,6 +287,14 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   pm <- pred_out[[1]]
   d <- pred_out[[2]]
   
+  # Check for clashing options "dpar" and "plot.points"
+  dots <- list(...)
+  if (!is.null(dots$dpar) & plot.points == TRUE) {
+    plot.points <- FALSE
+    warn_wrap("The plot.points argument is not compatible with distributional
+              parameters specified in `dpar`.")
+  }
+  
   if (is.numeric(d[[pred]]) & force.cat == FALSE) {
     plot_effect_continuous(predictions = pm, pred = pred,
                            plot.points = plot.points | partial.residuals,
@@ -295,7 +303,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                            pred.labels = pred.labels, main.title = main.title,
                            colors = colors,
                            line.thickness = line.thickness, jitter = jitter,
-                           resp = get_response_name(model),
+                           resp = get_response_name(model, ...),
                            weights = get_weights(model, d)$weights_name,
                            rug = rug, rug.sides = rug.sides,
                            point.size = point.size, point.alpha = point.alpha,
@@ -307,7 +315,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
              pred.labels = pred.labels, x.label = x.label,
              y.label = y.label, main.title = main.title,
              colors = colors, weights = get_weights(model, d)$weights_name,
-             resp = get_response_name(model), jitter = jitter, 
+             resp = get_response_name(model, ...), jitter = jitter, 
              interval.geom = cat.interval.geom, line.thickness = line.thickness,
              point.size = point.size, pred.point.size = cat.pred.point.size,
              point.alpha = point.alpha, point.color = point.color)

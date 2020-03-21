@@ -4,18 +4,42 @@
 \alias{effect_plot}
 \title{Plot simple effects in regression models}
 \usage{
-effect_plot(model, pred, pred.values = NULL, centered = "all",
-  plot.points = FALSE, interval = FALSE, data = NULL, at = NULL,
-  int.type = c("confidence", "prediction"), int.width = 0.95,
-  outcome.scale = "response", robust = FALSE, cluster = NULL,
-  vcov = NULL, set.offset = 1, x.label = NULL, y.label = NULL,
-  pred.labels = NULL, main.title = NULL, colors = "black",
-  line.thickness = 1.1, point.size = 1.5, point.alpha = 0.6,
-  point.color = "black", jitter = 0, rug = FALSE, rug.sides = "lb",
-  force.cat = FALSE, cat.geom = c("point", "line", "bar"),
+effect_plot(
+  model,
+  pred,
+  pred.values = NULL,
+  centered = "all",
+  plot.points = FALSE,
+  interval = FALSE,
+  data = NULL,
+  at = NULL,
+  int.type = c("confidence", "prediction"),
+  int.width = 0.95,
+  outcome.scale = "response",
+  robust = FALSE,
+  cluster = NULL,
+  vcov = NULL,
+  set.offset = 1,
+  x.label = NULL,
+  y.label = NULL,
+  pred.labels = NULL,
+  main.title = NULL,
+  colors = "black",
+  line.thickness = 1.1,
+  point.size = 1.5,
+  point.alpha = 0.6,
+  point.color = "black",
+  jitter = 0,
+  rug = FALSE,
+  rug.sides = "lb",
+  force.cat = FALSE,
+  cat.geom = c("point", "line", "bar"),
   cat.interval.geom = c("errorbar", "linerange"),
-  cat.pred.point.size = 3.5, partial.residuals = FALSE,
-  color.class = colors, ...)
+  cat.pred.point.size = 3.5,
+  partial.residuals = FALSE,
+  color.class = colors,
+  ...
+)
 }
 \arguments{
 \item{model}{A regression model. The function is tested with \code{lm},
@@ -27,7 +51,7 @@ supported. The model should include the interaction of interest.}
 
 \item{pred}{The name of the predictor variable involved
 in the interaction. This can be a bare name or string. Note that it
-is evaluated using \code{rlang}, so programmers can use the \code{!!} syntax
+is evaluated using \code{rlang}, so programmers can use the \verb{!!} syntax
 to pass variables instead of the verbatim names.}
 
 \item{pred.values}{Values of \code{pred} to use instead of the equi-spaced
@@ -186,7 +210,7 @@ the partial residuals (controlling for the effects of variables besides
 
 \item{color.class}{Deprecated. Now known as \code{colors}.}
 
-\item{...}{extra arguments passed to \code{make_predictions}}
+\item{...}{extra arguments passed to \code{make_predictions()}}
 }
 \value{
 The functions returns a \code{ggplot} object, which can be treated
@@ -217,9 +241,9 @@ effects are plotted. \code{lme4} does not provide confidence intervals,
 so they are not supported with this function either.
 
 Note: to use transformed predictors, e.g., \code{log(x)}, or polynomials,
-e.g., \code{poly(x, 2)}, provide the raw variable name (\code{x}) to the \code{pred =}
+e.g., \code{poly(x, 2)}, provide the raw variable name (\code{x}) to the \verb{pred =}
 argument. You will need to input the data frame used to fit the model with
-the \code{data =} argument.
+the \verb{data =} argument.
 }
 \examples{
 # Using a fitted lm model
