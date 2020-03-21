@@ -5,10 +5,13 @@
 \alias{center_lm}
 \title{Center variables in fitted regression models}
 \usage{
-center_mod(model, binary.inputs = "0/1", center.response = FALSE,
+center_mod(
+  model,
+  binary.inputs = "0/1",
+  center.response = FALSE,
   data = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
-  FALSE))
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE)
+)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm}, or
@@ -100,9 +103,11 @@ ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 \code{\link{interact_plot}} creates attractive, user-configurable plots of
 interaction models.
 
-Other standardization: \code{\link{center}},
-  \code{\link{gscale}}, \code{\link{scale_mod}},
-  \code{\link{standardize}}
+Other standardization: 
+\code{\link{center}()},
+\code{\link{gscale}()},
+\code{\link{scale_mod}()},
+\code{\link{standardize}()}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

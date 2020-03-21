@@ -4,10 +4,20 @@
 \alias{predict_merMod}
 \title{Alternative interface for \code{merMod} predictions}
 \usage{
-predict_merMod(object, newdata = NULL, se.fit = FALSE,
-  use.re.var = FALSE, allow.new.levels = FALSE, type = c("link",
-  "response", "terms"), na.action = na.pass, re.form = NULL,
-  boot = FALSE, sims = 100, prog.arg = "none", ...)
+predict_merMod(
+  object,
+  newdata = NULL,
+  se.fit = FALSE,
+  use.re.var = FALSE,
+  allow.new.levels = FALSE,
+  type = c("link", "response", "terms"),
+  na.action = na.pass,
+  re.form = NULL,
+  boot = FALSE,
+  sims = 100,
+  prog.arg = "none",
+  ...
+)
 }
 \arguments{
 \item{object}{a fitted model object}

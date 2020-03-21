@@ -15,8 +15,13 @@ cat_wrap(..., brk = "")
 
 warn_wrap(..., brk = "\\n", .subclass = NULL, call. = FALSE)
 
-stop_wrap(..., brk = "\\n", trace = rlang::trace_back(bottom =
-  rlang::caller_env()), .subclass = NULL, call. = NULL)
+stop_wrap(
+  ...,
+  brk = "\\n",
+  trace = rlang::trace_back(bottom = rlang::caller_env()),
+  .subclass = NULL,
+  call. = NULL
+)
 
 msg_wrap(..., .subclass = NULL, brk = "\\n")
 }
@@ -29,7 +34,7 @@ respectively.}
 \item{sep}{Separator between \code{...}, Default: ''}
 
 \item{brk}{What should the last character of the message/warning/error be?
-Default is \code{"\n"}, meaning the console output ends with a new line.}
+Default is \code{"\\n"}, meaning the console output ends with a new line.}
 
 \item{.subclass}{This argument was renamed to \code{class} in rlang
 0.4.2.  It will be deprecated in the next major version. This is
@@ -38,7 +43,7 @@ documented in \url{https://adv-r.hadley.nz/s3.html#s3-subclassing}.}
 
 \item{call.}{Here for legacy reasons. It is ignored.}
 
-\item{trace}{A \code{trace} object created by \code{\link[=trace_back]{trace_back()}}.}
+\item{trace}{A \code{trace} object created by \code{\link[rlang:trace_back]{trace_back()}}.}
 }
 \description{
 These are convenience functions that format printed output to
@@ -51,7 +56,7 @@ where to place newline characters. These functions get the width of the
 console from the \code{"width"} option, which in most editors adjusts dynamically
 as you resize.
 
-So instead of writing a warning like this:\preformatted{warning("I have to give you this very important message that may be too\n",
+So instead of writing a warning like this:\preformatted{warning("I have to give you this very important message that may be too\\n",
         "wide for your screen")
 }
 

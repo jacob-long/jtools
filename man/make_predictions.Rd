@@ -7,12 +7,26 @@
 \usage{
 make_predictions(model, ...)
 
-\method{make_predictions}{default}(model, pred, pred.values = NULL,
-  at = NULL, data = NULL, center = TRUE, interval = TRUE,
-  int.type = c("confidence", "prediction"), int.width = 0.95,
-  outcome.scale = "response", robust = FALSE, cluster = NULL,
-  vcov = NULL, set.offset = NULL, new_data = NULL,
-  return.orig.data = FALSE, partial.residuals = FALSE, ...)
+\method{make_predictions}{default}(
+  model,
+  pred,
+  pred.values = NULL,
+  at = NULL,
+  data = NULL,
+  center = TRUE,
+  interval = TRUE,
+  int.type = c("confidence", "prediction"),
+  int.width = 0.95,
+  outcome.scale = "response",
+  robust = FALSE,
+  cluster = NULL,
+  vcov = NULL,
+  set.offset = NULL,
+  new_data = NULL,
+  return.orig.data = FALSE,
+  partial.residuals = FALSE,
+  ...
+)
 }
 \arguments{
 \item{model}{The model (e.g., \code{lm}, \code{glm}, \code{merMod}, \code{svyglm})}

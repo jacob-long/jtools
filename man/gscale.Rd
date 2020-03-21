@@ -4,11 +4,19 @@
 \alias{gscale}
 \title{Scale and/or center data, including survey designs}
 \usage{
-gscale(data = NULL, vars = NULL, binary.inputs = "center",
-  binary.factors = TRUE, n.sd = 2, center.only = FALSE,
-  scale.only = FALSE, weights = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
-  FALSE), x = NULL, messages = FALSE)
+gscale(
+  data = NULL,
+  vars = NULL,
+  binary.inputs = "center",
+  binary.factors = TRUE,
+  n.sd = 2,
+  center.only = FALSE,
+  scale.only = FALSE,
+  weights = NULL,
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+  x = NULL,
+  messages = FALSE
+)
 }
 \arguments{
 \item{data}{A data frame or survey design. Only needed if you would like to
@@ -155,9 +163,11 @@ open access)
 regression models. On request, it will center and/or standardize variables
 before printing its output.
 
-Other standardization: \code{\link{center_mod}},
-  \code{\link{center}}, \code{\link{scale_mod}},
-  \code{\link{standardize}}
+Other standardization: 
+\code{\link{center_mod}()},
+\code{\link{center}()},
+\code{\link{scale_mod}()},
+\code{\link{standardize}()}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

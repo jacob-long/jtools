@@ -71,16 +71,16 @@ x \%just\% y <- value
 \item{value}{The object(s) to assign to the subsetted \code{x}}
 }
 \value{
-All of \code{x} that are in \code{y} (\code{\%just\%}) or all of \code{x} that are not in
-\code{y} (\code{\%not\%}).
+All of \code{x} that are in \code{y} (\verb{\%just\%}) or all of \code{x} that are not in
+\code{y} (\verb{\%not\%}).
 }
 \description{
-\code{\%just\%} and \code{\%not\%} are subsetting convenience functions
+\verb{\%just\%} and \verb{\%not\%} are subsetting convenience functions
 for situations when you would do \code{x[x \%in\% y]} or \code{x[x \%nin\% y]}. See
 details for behavior when \code{x} is a data frame or matrix.
 }
 \details{
-The behavior of \code{\%not\%} and \code{\%just\%} are different when you're subsetting
+The behavior of \verb{\%not\%} and \verb{\%just\%} are different when you're subsetting
 data frames or matrices. The subset \code{y} in this case is interpreted as
 \strong{column} names or indices.
 

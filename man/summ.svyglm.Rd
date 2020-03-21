@@ -5,16 +5,23 @@
 \alias{j_summ.svyglm}
 \title{Complex survey regression summaries with options}
 \usage{
-\method{summ}{svyglm}(model, scale = FALSE,
+\method{summ}{svyglm}(
+  model,
+  scale = FALSE,
   confint = getOption("summ-confint", FALSE),
   ci.width = getOption("summ-ci.width", 0.95),
   digits = getOption("jtools-digits", default = 2),
-  pvals = getOption("summ-pvals", TRUE), n.sd = 1, center = FALSE,
-  transform.response = FALSE, exp = FALSE,
+  pvals = getOption("summ-pvals", TRUE),
+  n.sd = 1,
+  center = FALSE,
+  transform.response = FALSE,
+  exp = FALSE,
   vifs = getOption("summ-vifs", FALSE),
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
-  ...)
+  model.fit = getOption("summ-model.fit", TRUE),
+  which.cols = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{A \code{svyglm} object.}
@@ -120,8 +127,11 @@ preferred.
 \code{\link[=gscale]{gscale()}} does the heavy lifting for mean-centering and scaling
 behind the scenes.
 
-Other summ: \code{\link{summ.glm}}, \code{\link{summ.lm}},
-  \code{\link{summ.merMod}}, \code{\link{summ.rq}}
+Other summ: 
+\code{\link{summ.glm}()},
+\code{\link{summ.lm}()},
+\code{\link{summ.merMod}()},
+\code{\link{summ.rq}()}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

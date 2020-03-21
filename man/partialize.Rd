@@ -7,9 +7,16 @@
 \usage{
 partialize(model, ...)
 
-\method{partialize}{default}(model, vars = NULL, data = NULL,
-  at = NULL, center = TRUE, scale = c("response", "link"),
-  set.offset = 1, ...)
+\method{partialize}{default}(
+  model,
+  vars = NULL,
+  data = NULL,
+  at = NULL,
+  center = TRUE,
+  scale = c("response", "link"),
+  set.offset = 1,
+  ...
+)
 }
 \arguments{
 \item{model}{A regression model.}

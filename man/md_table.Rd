@@ -4,9 +4,15 @@
 \alias{md_table}
 \title{Print attractive data frames in the console}
 \usage{
-md_table(x, format = getOption("md_table_format", "grid"),
-  digits = getOption("jtools-digits", 2), sig.digits = TRUE,
-  row.names = rownames(x), col.names = colnames(x), align = NULL)
+md_table(
+  x,
+  format = getOption("md_table_format", "grid"),
+  digits = getOption("jtools-digits", 2),
+  sig.digits = TRUE,
+  row.names = rownames(x),
+  col.names = colnames(x),
+  align = NULL
+)
 }
 \arguments{
 \item{x}{A data frame or matrix.}

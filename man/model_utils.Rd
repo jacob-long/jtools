@@ -11,19 +11,24 @@ get_offset_name(model)
 
 get_weights(model, data)
 
-get_data(model, warn = TRUE)
+get_data(model, formula = NULL, warn = TRUE, ...)
 
-get_response_name(model)
+get_response_name(model, ...)
 }
 \arguments{
 \item{model}{The model (e.g., \code{lm}, \code{glm}, \code{merMod}, \code{svyglm})}
 
-\item{data}{For \code{get_weights}, the data used to fit the model.}
+\item{data}{For \code{get_weights()}, the data used to fit the model.}
 
-\item{warn}{For \code{get_data}, should there be a warning when \code{model.frame}
+\item{formula}{The formula for \code{model}, if desired. Otherwise \code{get_formula()}
+is called.}
+
+\item{warn}{For \code{get_data()}, should there be a warning when \code{model.frame()}
 won't work because of variable transformations? Default is TRUE but this
-may not be desired when \code{get_data} is used inside of another function or
+may not be desired when \code{get_data()} is used inside of another function or
 used multiple times.}
+
+\item{...}{Arguments passed to \code{get_formula()}}
 }
 \value{
 \itemize{

@@ -4,8 +4,13 @@
 \alias{get_robust_se}
 \title{Calculate robust standard errors and produce coefficient tables}
 \usage{
-get_robust_se(model, type = "HC3", cluster = NULL,
-  data = model.frame(model), vcov = NULL)
+get_robust_se(
+  model,
+  type = "HC3",
+  cluster = NULL,
+  data = model.frame(model),
+  vcov = NULL
+)
 }
 \arguments{
 \item{model}{A regression model, preferably of class \code{lm} or \code{glm}}

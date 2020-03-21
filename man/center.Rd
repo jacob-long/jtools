@@ -4,8 +4,13 @@
 \alias{center}
 \title{Mean-center vectors, data frames, and survey designs}
 \usage{
-center(data = NULL, vars = NULL, binary.inputs = "center",
-  binary.factors = TRUE, weights = NULL)
+center(
+  data = NULL,
+  vars = NULL,
+  binary.inputs = "center",
+  binary.factors = TRUE,
+  weights = NULL
+)
 }
 \arguments{
 \item{data}{A data frame or survey design. Only needed if you would like to
@@ -47,8 +52,10 @@ standardize(mtcars, vars = "qsec")
 
 }
 \seealso{
-Other standardization: \code{\link{center_mod}},
-  \code{\link{gscale}}, \code{\link{scale_mod}},
-  \code{\link{standardize}}
+Other standardization: 
+\code{\link{center_mod}()},
+\code{\link{gscale}()},
+\code{\link{scale_mod}()},
+\code{\link{standardize}()}
 }
 \concept{standardization}

@@ -4,8 +4,13 @@
 \alias{svysd}
 \title{Calculate standard deviations with complex survey data}
 \usage{
-svysd(formula, design, na.rm = FALSE,
-  digits = getOption("jtools-digits", default = 3), ...)
+svysd(
+  formula,
+  design,
+  na.rm = FALSE,
+  digits = getOption("jtools-digits", default = 3),
+  ...
+)
 }
 \arguments{
 \item{formula}{A formula (e.g., ~var1+var2) specifying the term(s) of interest.}
@@ -51,11 +56,14 @@ if (requireNamespace("survey")) {
 \seealso{
 \code{\link[survey]{svyvar}}
 
-Other survey package extensions: \code{\link{svycor}}
+Other survey package extensions: 
+\code{\link{svycor}()}
 
-Other survey tools: \code{\link{pf_sv_test}},
-  \code{\link{svycor}}, \code{\link{weights_tests}},
-  \code{\link{wgttest}}
+Other survey tools: 
+\code{\link{pf_sv_test}()},
+\code{\link{svycor}()},
+\code{\link{weights_tests}()},
+\code{\link{wgttest}()}
 }
 \concept{survey package extensions}
 \concept{survey tools}

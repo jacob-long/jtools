@@ -4,8 +4,17 @@
 \alias{make_new_data}
 \title{Make new data for generating predicted data from regression models.}
 \usage{
-make_new_data(model, pred, pred.values = NULL, at = NULL,
-  data = NULL, center = TRUE, set.offset = NULL, num.preds = 100)
+make_new_data(
+  model,
+  pred,
+  pred.values = NULL,
+  at = NULL,
+  data = NULL,
+  center = TRUE,
+  set.offset = NULL,
+  num.preds = 100,
+  ...
+)
 }
 \arguments{
 \item{model}{The model (e.g., \code{lm}, \code{glm}, \code{merMod}, \code{svyglm})}
@@ -40,6 +49,8 @@ is used.}
 
 \item{num.preds}{The number of predictions to generate. Default is 100.
 Ignored if \code{pred.values} is not \code{NULL}.}
+
+\item{...}{Extra arguments passed to \code{get_formula()}}
 }
 \value{
 A data frame.

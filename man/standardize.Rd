@@ -4,8 +4,13 @@
 \alias{standardize}
 \title{Standardize vectors, data frames, and survey designs}
 \usage{
-standardize(data = NULL, vars = NULL, binary.inputs = "center",
-  binary.factors = TRUE, weights = NULL)
+standardize(
+  data = NULL,
+  vars = NULL,
+  binary.inputs = "center",
+  binary.factors = TRUE,
+  weights = NULL
+)
 }
 \arguments{
 \item{data}{A data frame or survey design. Only needed if you would like to
@@ -48,8 +53,10 @@ standardize(mtcars, vars = "qsec")
 
 }
 \seealso{
-Other standardization: \code{\link{center_mod}},
-  \code{\link{center}}, \code{\link{gscale}},
-  \code{\link{scale_mod}}
+Other standardization: 
+\code{\link{center_mod}()},
+\code{\link{center}()},
+\code{\link{gscale}()},
+\code{\link{scale_mod}()}
 }
 \concept{standardization}

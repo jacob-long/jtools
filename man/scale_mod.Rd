@@ -8,11 +8,18 @@
 \usage{
 scale_mod(model, ...)
 
-\method{scale_mod}{default}(model, binary.inputs = "0/1", n.sd = 1,
-  center = TRUE, scale.response = FALSE, center.only = FALSE,
-  data = NULL, vars = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts",
-  FALSE), ...)
+\method{scale_mod}{default}(
+  model,
+  binary.inputs = "0/1",
+  n.sd = 1,
+  center = TRUE,
+  scale.response = FALSE,
+  center.only = FALSE,
+  data = NULL,
+  vars = NULL,
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+  ...
+)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
@@ -123,9 +130,11 @@ ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 \code{\link{interact_plot}} creates attractive, user-configurable plots of
 interaction models.
 
-Other standardization: \code{\link{center_mod}},
-  \code{\link{center}}, \code{\link{gscale}},
-  \code{\link{standardize}}
+Other standardization: 
+\code{\link{center_mod}()},
+\code{\link{center}()},
+\code{\link{gscale}()},
+\code{\link{standardize}()}
 }
 \author{
 Jacob Long <\email{long.1377@osu.edu}>

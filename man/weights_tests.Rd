@@ -4,8 +4,15 @@
 \alias{weights_tests}
 \title{Test whether sampling weights are needed}
 \usage{
-weights_tests(model, weights, data, model_output = TRUE, test = NULL,
-  sims = 1000, digits = getOption("jtools-digits", default = 2))
+weights_tests(
+  model,
+  weights,
+  data,
+  model_output = TRUE,
+  test = NULL,
+  sims = 1000,
+  digits = getOption("jtools-digits", default = 2)
+)
 }
 \arguments{
 \item{model}{The fitted model, without weights}
@@ -76,8 +83,10 @@ estimation of regression models fitted to survey data.
 \emph{Sankhya: The Indian Journal of Statistics}, \emph{61}. 166-186.
 }
 \seealso{
-Other survey tools: \code{\link{pf_sv_test}},
-  \code{\link{svycor}}, \code{\link{svysd}},
-  \code{\link{wgttest}}
+Other survey tools: 
+\code{\link{pf_sv_test}()},
+\code{\link{svycor}()},
+\code{\link{svysd}()},
+\code{\link{wgttest}()}
 }
 \concept{survey tools}

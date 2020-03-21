@@ -4,10 +4,16 @@
 \alias{theme_apa}
 \title{Format ggplot2 figures in APA style}
 \usage{
-theme_apa(legend.pos = "right", legend.use.title = FALSE,
-  legend.font.size = 12, x.font.size = 12, y.font.size = 12,
-  facet.title.size = 12, remove.y.gridlines = TRUE,
-  remove.x.gridlines = TRUE)
+theme_apa(
+  legend.pos = "right",
+  legend.use.title = FALSE,
+  legend.font.size = 12,
+  x.font.size = 12,
+  y.font.size = 12,
+  facet.title.size = 12,
+  remove.y.gridlines = TRUE,
+  remove.x.gridlines = TRUE
+)
 }
 \arguments{
 \item{legend.pos}{One of \code{"right"}, \code{"left"}, \code{"top"}, \code{"bottom"},

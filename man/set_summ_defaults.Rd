@@ -4,9 +4,18 @@
 \alias{set_summ_defaults}
 \title{Set defaults for \code{summ()} functions}
 \usage{
-set_summ_defaults(digits = NULL, model.info = NULL, model.fit = NULL,
-  pvals = NULL, robust = NULL, confint = NULL, ci.width = NULL,
-  vifs = NULL, conf.method = NULL, table.format = NULL)
+set_summ_defaults(
+  digits = NULL,
+  model.info = NULL,
+  model.fit = NULL,
+  pvals = NULL,
+  robust = NULL,
+  confint = NULL,
+  ci.width = NULL,
+  vifs = NULL,
+  conf.method = NULL,
+  table.format = NULL
+)
 }
 \arguments{
 \item{digits}{An integer specifying the number of digits past the decimal to

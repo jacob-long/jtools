@@ -5,22 +5,53 @@
 \alias{plot_coefs}
 \title{Plot Regression Summaries}
 \usage{
-plot_summs(..., ci_level = 0.95, model.names = NULL, coefs = NULL,
-  omit.coefs = "(Intercept)", inner_ci_level = NULL,
-  colors = "CUD Bright", plot.distributions = FALSE,
-  rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
-  legend.title = "Model", groups = NULL, facet.rows = NULL,
-  facet.cols = NULL, facet.label.pos = "top", color.class = colors)
+plot_summs(
+  ...,
+  ci_level = 0.95,
+  model.names = NULL,
+  coefs = NULL,
+  omit.coefs = "(Intercept)",
+  inner_ci_level = NULL,
+  colors = "CUD Bright",
+  plot.distributions = FALSE,
+  rescale.distributions = FALSE,
+  exp = FALSE,
+  point.shape = TRUE,
+  legend.title = "Model",
+  groups = NULL,
+  facet.rows = NULL,
+  facet.cols = NULL,
+  facet.label.pos = "top",
+  color.class = colors,
+  resp = NULL,
+  dpar = NULL
+)
 
-plot_coefs(..., ci_level = 0.95, inner_ci_level = NULL,
-  model.names = NULL, coefs = NULL, omit.coefs = c("(Intercept)",
-  "Intercept"), colors = "CUD Bright", plot.distributions = FALSE,
-  rescale.distributions = FALSE, exp = FALSE, point.shape = TRUE,
-  legend.title = "Model", groups = NULL, facet.rows = NULL,
-  facet.cols = NULL, facet.label.pos = "top", color.class = colors)
+plot_coefs(
+  ...,
+  ci_level = 0.95,
+  inner_ci_level = NULL,
+  model.names = NULL,
+  coefs = NULL,
+  omit.coefs = c("(Intercept)", "Intercept"),
+  colors = "CUD Bright",
+  plot.distributions = FALSE,
+  rescale.distributions = FALSE,
+  exp = FALSE,
+  point.shape = TRUE,
+  legend.title = "Model",
+  groups = NULL,
+  facet.rows = NULL,
+  facet.cols = NULL,
+  facet.label.pos = "top",
+  color.class = colors,
+  resp = NULL,
+  dpar = NULL
+)
 }
 \arguments{
-\item{...}{regression model(s).}
+\item{...}{regression model(s). You may also include arguments to be passed
+to \code{tidy()}.}
 
 \item{ci_level}{The desired width of confidence intervals for the
 coefficients. Default: 0.95}
@@ -83,6 +114,17 @@ argument to \code{\link[ggplot2:facet_wrap]{ggplot2::facet_wrap()}}).}
 default), "bottom", "left", or "right".}
 
 \item{color.class}{Deprecated. Now known as \code{colors}.}
+
+\item{resp}{For any models that are \code{brmsfit} and have multiple response
+variables, specify them with a vector here. If the model list includes
+other types of models, you do not need to enter \code{resp} for those models.
+For instance, if I want to plot a \code{lm} object and two \code{brmsfit} objects,
+you only need to provide a vector of length 2 for \code{resp}.}
+
+\item{dpar}{For any models that are \code{brmsfit} and have a distributional
+dependent variable, that can be specified here. If NULL, it is assumed you
+want coefficients for the location/mean parameter, not the distributional
+parameter(s).}
 }
 \value{
 A ggplot object.

@@ -4,9 +4,14 @@
 \alias{theme_nice}
 \title{A nice, flexible \code{ggplot2} theme}
 \usage{
-theme_nice(legend.pos = "right", style = c("white", "light",
-  "dark_blue", "dark_gray"), base_size = 11, base_family = "",
-  base_line_size = base_size/22, base_rect_size = base_size/22)
+theme_nice(
+  legend.pos = "right",
+  style = c("white", "light", "dark_blue", "dark_gray"),
+  base_size = 11,
+  base_family = "",
+  base_line_size = base_size/22,
+  base_rect_size = base_size/22
+)
 }
 \arguments{
 \item{legend.pos}{One of \code{"right"}, \code{"left"}, \code{"top"}, \code{"bottom"} (outside
