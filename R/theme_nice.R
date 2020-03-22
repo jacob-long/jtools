@@ -102,7 +102,8 @@ theme_nice <- function(legend.pos = "right",
       axis.text.x = element_text(colour = text_and_line_color,
                                  family = base_family),
       axis.text.y = element_text(colour = text_and_line_color,
-                                 family = base_family)
+                                 family = base_family),
+      plot.caption.position = "plot"
   )
   
   # Choose legend position. APA figures generally include legends that

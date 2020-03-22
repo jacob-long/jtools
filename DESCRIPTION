@@ -17,7 +17,7 @@ LazyData: true
 Imports: 
     crayon,
     generics,
-    ggplot2 (>= 3.0.0),
+    ggplot2 (>= 3.3.0),
     magrittr,
     pander,
     pkgconfig,
