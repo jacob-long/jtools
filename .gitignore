@@ -27,6 +27,7 @@ vignettes/*.pdf
 inst/doc
 Simple slopes macro replication.Rmd
 Simple slopes macro replication.nb.html
+/revdep/
 
 *.Rhistory
 
