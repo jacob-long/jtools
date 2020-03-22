@@ -5,6 +5,8 @@ Hotfix release:
 * The latest version of `ggplot2` (3.3.0) broke `theme_apa()`. That's fixed.
 * `theme_nice()` now takes advantage of a new `ggplot2` feature that aligns
 captions in a better way. 
+* `effect_plot()` no longer ignores the `colors` argument. 
+
 # jtools 2.0.3
 
 New features:

@@ -372,7 +372,7 @@ plot_effect_continuous <-
   }
   
   # Define line thickness
-  p <- p + geom_path(size = line.thickness)
+  p <- p + geom_path(size = line.thickness, colour = colors)
   
   # Plot intervals if requested
   if (interval == TRUE) {
