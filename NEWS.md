@@ -1,3 +1,8 @@
+# jtools 2.0.4
+
+Hotfix release:
+
+* The latest version of `ggplot2` (3.3.0) broke `theme_apa()`. That's fixed.
 # jtools 2.0.3
 
 New features:

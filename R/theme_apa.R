@@ -94,7 +94,7 @@ theme_apa <- function(legend.pos = "right", legend.use.title = FALSE,
 
   # Specifying parameters, using theme_bw() as starting point
   plot <- ggplot2::theme_bw() + ggplot2::theme(
-    plot.title = ggplot2::element_text(face = "bold", size = 14),
+    plot.title = ggplot2::element_text(face = "bold", hjust = 0, size = 14),
     axis.title.x = ggplot2::element_text(size = x.font.size),
     axis.title.y = ggplot2::element_text(size = y.font.size,
                                          angle = 90),
@@ -107,7 +107,9 @@ theme_apa <- function(legend.pos = "right", legend.use.title = FALSE,
     strip.text.y = ggplot2::element_text(size = facet.title.size),
     # facet titles
     strip.background = ggplot2::element_rect(colour = "white", fill = "white"),
-    complete = TRUE
+    panel.background = ggplot2::element_rect(fill = "white"),
+    plot.title.position = "panel",
+    # complete = TRUE
   )
 
   # Choose legend position. APA figures generally include legends that
