@@ -19,3 +19,5 @@
 ^CONTRIBUTING.md$
 ^\.github$
 ^\.vs$
+^doc$
+^Meta$

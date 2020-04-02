@@ -40,3 +40,5 @@ docs/
 tests/testthat/Rplots\.pdf
 
 \.directory
+doc
+Meta
