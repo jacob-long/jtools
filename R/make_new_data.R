@@ -78,9 +78,32 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
     pred_values(data[[pred]], length = num.preds)
   } else {pred.values}
   
-  values[[get_response_name(model, ...)]] <- NA
+  # Some packages require the response variable to be in newdata and brms also
+  # gets upset if that response variable is of a different class.
+  the_resp <- get_response_name(model, ...)
+  if (the_resp %in% names(data)) {
+    if (is.numeric(data[[the_resp]])) {
+      values[[the_resp]] <- NaN
+    } else if (is.character(data[[the_resp]])) {
+      values[[the_resp]] <- NA_character_
+    } else {
+      values[[the_resp]] <- NA
+    }
+  } else {
+    values[[the_resp]] <- NA
+  }
   
   new_data <- expand.grid(values, stringsAsFactors = FALSE)
+  
+  # In multivariate/distributional models, brms requires variables in the
+  # non-focal parts of the model to be included in the newdata even though
+  # they are unused.
+  if ("brmsfit" %in% class(model)) {
+    if (any(names(model$data) %nin% names(new_data))) {
+      missing_names <- names(model$data) %not% names(new_data)
+      new_data[missing_names] <- NA
+    }
+  }
   
   return(tibble::as_tibble(new_data))
   
