@@ -1,3 +1,7 @@
+# jtools 2.0.5
+
+Hotfix: Fixing failing tests on CRAN.
+
 # jtools 2.0.4
 
 Hotfix release:

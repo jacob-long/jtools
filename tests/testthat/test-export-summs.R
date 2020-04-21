@@ -292,15 +292,15 @@ if (requireNamespace("brms") & requireNamespace("broom.mixed")) {
   mvfit <- readRDS("mvfit.rds")
   test_that("plot_coefs works with brms", {
     expect_silent(print(plot_coefs(bfit1) + ggtitle("basic brms fit")))
-    expect_silent(print(plot_coefs(mvfit) + ggtitle("default mv brms fit")))
-    expect_silent(print(plot_coefs(mvfit, dpar = "sigma") +
-                          ggtitle("default dv, dpar sigma mv brms fit")))
-    expect_silent(print(plot_coefs(mvfit, resp = "wt", dpar = "sigma") +
-                          ggtitle("select wt dv, dpar sigma mv brms fit")))
-    expect_silent(print(plot_coefs(`MPG DV` = mvfit, `MPG Sigma` = mvfit, 
+    expect_silent(print(suppressWarnings(plot_coefs(mvfit) + ggtitle("default mv brms fit"))))
+    expect_silent(print(suppressWarnings(plot_coefs(mvfit, dpar = "sigma") +
+                          ggtitle("default dv, dpar sigma mv brms fit"))))
+    expect_silent(print(suppressWarnings(plot_coefs(mvfit, resp = "wt", dpar = "sigma") +
+                          ggtitle("select wt dv, dpar sigma mv brms fit"))))
+    expect_silent(print(suppressWarnings(plot_coefs(`MPG DV` = mvfit, `MPG Sigma` = mvfit, 
                                    dpar = c(NA, "sigma"), resp = "mpg") +
                           ggtitle("select mpg dv, dpar sigma separate models
-                                  mv brms fit")))
+                                  mv brms fit"))))
   })
 }
 }
