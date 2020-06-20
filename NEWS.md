@@ -1,3 +1,10 @@
+# jtools 2.0.6
+
+Bugfixes:
+
+* `effect_plot()` no longer ignores the `int.width` argument. Thanks to 
+Marco Giesselmann for reporting. (#82)
+
 # jtools 2.0.5
 
 Hotfix: Fixing failing tests on CRAN.
