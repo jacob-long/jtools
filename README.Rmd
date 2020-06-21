@@ -83,7 +83,8 @@ robust standard errors via the `sandwich` package.
 Basic use:
 
 ```{r}
-fit <- lm(mpg ~ hp + wt, data = mtcars)
+data(movies)
+fit <- lm(metascore ~ budget + us_gross + year, data = movies)
 summ(fit)
 ```
 
@@ -123,25 +124,22 @@ particularly its facilities for robust standard errors and standardization.
 It also concatenates multiple models into a single table.
 
 ```{r eval = F}
-fit <- lm(mpg ~ hp + wt, data = mtcars)
-fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
-fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
-coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
-                "Displacement" = "disp", "Rear axle ratio" = "drat",
-                "Constant" = "(Intercept)")
-export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
+fit <- lm(metascore ~ log(budget), data = movies)
+fit_b <- lm(metascore ~ log(budget) + log(us_gross), data = movies)
+fit_c <- lm(metascore ~ log(budget) + log(us_gross) + runtime, data = movies)
+coef_names <- c("Budget" = "log(budget)", "US Gross" = "log(us_gross)",
+                "Runtime (Hours)" = "runtime", "Constant" = "(Intercept)")
+export_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
 ```{r echo = FALSE, results = 'asis', warning = FALSE, eval = T}
 # huxtable doesn't render right for the github_document, seems to thinks it's
 # in the console
-fit <- lm(mpg ~ hp + wt, data = mtcars)
-fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
-fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
-coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
-                "Displacement" = "disp", "Rear axle ratio" = "drat",
-                "Constant" = "(Intercept)")
-e <- export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE,
-                  coefs = coef_names)
+fit <- lm(metascore ~ log(budget), data = movies)
+fit_b <- lm(metascore ~ log(budget) + log(us_gross), data = movies)
+fit_c <- lm(metascore ~ log(budget) + log(us_gross) + runtime, data = movies)
+coef_names <- c("Budget" = "log(budget)", "US Gross" = "log(us_gross)",
+                "Runtime (Hours)" = "runtime", "Constant" = "(Intercept)")
+e <- export_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 huxtable::print_html(e)
 ```
 
@@ -159,8 +157,8 @@ Like with `export_summs()`, you can still get your scaled
 models and robust standard errors.
 
 ```{r}
-coef_names <- coef_names[1:4] # Dropping intercept for plots
-plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", coefs = coef_names)
+coef_names <- coef_names[1:3] # Dropping intercept for plots
+plot_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
 
 And since you get a `ggplot` object in return, you can tweak and theme as
@@ -170,7 +168,7 @@ Another way to visualize the uncertainty of your coefficients is via the
 `plot.distributions` argument.
 
 ```{r}
-plot_summs(fit_c, scale = TRUE, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
+plot_summs(fit_c, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
 ```
 
 These show the 95% interval width of a normal distribution for each estimate.
@@ -186,7 +184,7 @@ it generates. Rather than look at coefficients, `effect_plot()` lets you plot
 predictions across values of a predictor variable alongside the observed data. 
 
 ```{r}
-effect_plot(fit_c, pred = hp, interval = TRUE, plot.points = TRUE)
+effect_plot(fit_c, pred = runtime, interval = TRUE, plot.points = TRUE)
 ```
 
 And a new feature in version `2.0.0` lets you plot *partial residuals*
@@ -194,7 +192,7 @@ instead of the raw observed data, allowing you to assess model quality after
 accounting for effects of control variables.
 
 ```{r}
-effect_plot(fit_c, pred = hp, interval = TRUE, partial.residuals = TRUE)
+effect_plot(fit_c, pred = runtime, interval = TRUE, partial.residuals = TRUE)
 ```
 
 Categorical predictors, polynomial terms, (G)LM(M)s, weighted data, and much

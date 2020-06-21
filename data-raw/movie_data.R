@@ -32,7 +32,7 @@ library(dplyr)
 mc <- inner_join(imdb_dat, movies, by = c("imdbID" = "imdb_id"))
 
 library(fivethirtyeight)
-mc <- left_join(mc, bechdel, by = c("imdbID" = "imdb"))
+mc <- inner_join(mc, bechdel, by = c("imdbID" = "imdb"))
 
 # comedy, drama, romance, action, [horror, thriller]
 mc$genre <- stringr::str_extract_all(mc$Genre,
@@ -45,26 +45,34 @@ mc$genre[mc$genre %in% c("Horror", "Thriller")] <- "Horror/Thriller"
 mc$genre <- factor(mc$genre,
  levels = c("Action", "Comedy", "Drama", "Horror/Thriller", "Other"))
 
-mc2 <- mc
-mc2 <- filter(mc2, Rated %in% c("G", "PG", "PG-13", "R"))
-mc2$Rated[mc2$Rated %in% c("G", "PG")] <- "G/PG"
+mc2 <- select(mc, title = Title, year = Year, release_date = Released, 
+             runtime = Runtime, genre5 = genre, genre_detailed = Genre, 
+             rated = Rated,
+             director = Director, writer = Writer, actors = Actors, 
+             language = Language, country = Country, metascore = Metascore,
+             imdb_rating = imdbRating, imdb_votes = imdbVotes, imdb_id = imdbID,
+             studio = Production, bechdel_binary = binary,
+             bechdel_ordinal = clean_test, us_gross = domgross_2013,
+             int_gross = intgross_2013, budget = budget_2013,
+             men_lines = men_lines, lines_data = lines_data) %>%
+  filter(rated != "NOT RATED")
 
-fitn <- lm( log(domgross) - log(budget) ~ men_lines + genre + year.y,
- data = filter(mc2, year.y >= 1980))
-summ(fit <- lm( log(domgross) - log(budget) ~ binary * year.y + genre,
- data = filter(mc2, year.y >= 1980)))
-anova(fitn, fit)
+mcf <- mutate(mc2,
+    runtime = as.numeric(stringr::str_extract(runtime, "[0-9]*"))/60,
+    metascore = as.numeric(metascore),
+    year = as.numeric(year),
+    rated = factor(rated, levels = c("G", "PG", "PG-13", "R", "NC-17"), 
+                   ordered = TRUE),
+  ) %>%
+  rowwise() %>%
+  mutate(
+    bechdel_binary = switch(
+      bechdel_binary,
+      "PASS" = TRUE,
+      "FAIL" = FALSE,
+      NA
+    ),
+  ) %>%
+  ungroup()
 
-summ(fitn <- lm(as.numeric(Metascore) ~ men_lines + year + genre,
- data = mc2))
-summ(fit <- lm(as.numeric(Metascore) ~ men_lines + genre + Rated + genre + Rated + genre,
- data = mc2))
-interact_plot(fit, pred = year, modx = men_lines)
-anova(fitn, fit)
-
-summ(fitn <- lm(imdbRating ~ men_lines + genre + imdbVotes,
- data = filter(mc2, year >= 1990)))
-summ(fit <- lm(imdbRating ~ binary * log(budget) + genre ,
- data = filter(mc2, year.y >= 1990)))
-interact_plot(fit, pred = year, modx = men_lines)
-anova(fitn, fit)
+movies <- mcf

@@ -71,28 +71,30 @@ and reporting of robust standard errors via the `sandwich` package.
 Basic use:
 
 ``` r
-fit <- lm(mpg ~ hp + wt, data = mtcars)
+data(movies)
+fit <- lm(metascore ~ budget + us_gross + year, data = movies)
 summ(fit)
 ```
 
     #> MODEL INFO:
-    #> Observations: 32
-    #> Dependent Variable: mpg
+    #> Observations: 831 (10 missing obs. deleted)
+    #> Dependent Variable: metascore
     #> Type: OLS linear regression 
     #> 
     #> MODEL FIT:
-    #> F(2,29) = 69.21, p = 0.00
-    #> R² = 0.83
-    #> Adj. R² = 0.81 
+    #> F(3,827) = 26.23, p = 0.00
+    #> R² = 0.09
+    #> Adj. R² = 0.08 
     #> 
     #> Standard errors: OLS
-    #> ------------------------------------------------
-    #>                      Est.   S.E.   t val.      p
-    #> ----------------- ------- ------ -------- ------
-    #> (Intercept)         37.23   1.60    23.28   0.00
-    #> hp                  -0.03   0.01    -3.52   0.00
-    #> wt                  -3.88   0.63    -6.13   0.00
-    #> ------------------------------------------------
+    #> --------------------------------------------------
+    #>                      Est.     S.E.   t val.      p
+    #> ----------------- ------- -------- -------- ------
+    #> (Intercept)         52.06   139.67     0.37   0.71
+    #> budget              -0.00     0.00    -5.89   0.00
+    #> us_gross             0.00     0.00     7.61   0.00
+    #> year                 0.01     0.07     0.08   0.94
+    #> --------------------------------------------------
 
 It has several conveniences, like re-fitting your model with scaled
 variables (`scale = TRUE`). You have the option to leave the outcome
@@ -113,22 +115,23 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
 ```
 
     #> MODEL INFO:
-    #> Observations: 32
-    #> Dependent Variable: mpg
+    #> Observations: 831 (10 missing obs. deleted)
+    #> Dependent Variable: metascore
     #> Type: OLS linear regression 
     #> 
     #> MODEL FIT:
-    #> F(2,29) = 69.21, p = 0.00
-    #> R² = 0.83
-    #> Adj. R² = 0.81 
+    #> F(3,827) = 26.23, p = 0.00
+    #> R² = 0.09
+    #> Adj. R² = 0.08 
     #> 
     #> Standard errors: OLS
     #> ------------------------------------------------------------------------------
     #>                      Est.    2.5%   97.5%   t val.    VIF   partial.r   part.r
     #> ----------------- ------- ------- ------- -------- ------ ----------- --------
-    #> (Intercept)         20.09   19.15   21.03    43.82                            
-    #> hp                  -2.18   -3.44   -0.91    -3.52   1.77       -0.55    -0.27
-    #> wt                  -3.79   -5.06   -2.53    -6.13   1.77       -0.75    -0.47
+    #> (Intercept)         63.01   61.91   64.11   112.23                            
+    #> budget              -3.78   -5.05   -2.52    -5.89   1.31       -0.20    -0.20
+    #> us_gross             5.28    3.92    6.64     7.61   1.52        0.26     0.25
+    #> year                 0.05   -1.18    1.28     0.08   1.24        0.00     0.00
     #> ------------------------------------------------------------------------------
     #> 
     #> Continuous predictors are mean-centered and scaled by 1 s.d.
@@ -173,13 +176,12 @@ standardization. It also concatenates multiple models into a single
 table.
 
 ``` r
-fit <- lm(mpg ~ hp + wt, data = mtcars)
-fit_b <- lm(mpg ~ hp + wt + disp, data = mtcars)
-fit_c <- lm(mpg ~ hp + wt + disp + drat, data = mtcars)
-coef_names <- c("Horsepower" = "hp", "Weight (tons)" = "wt",
-                "Displacement" = "disp", "Rear axle ratio" = "drat",
-                "Constant" = "(Intercept)")
-export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs = coef_names)
+fit <- lm(metascore ~ log(budget), data = movies)
+fit_b <- lm(metascore ~ log(budget) + log(us_gross), data = movies)
+fit_c <- lm(metascore ~ log(budget) + log(us_gross) + runtime, data = movies)
+coef_names <- c("Budget" = "log(budget)", "US Gross" = "log(us_gross)",
+                "Runtime (Hours)" = "runtime", "Constant" = "(Intercept)")
+export_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
 
     #> Registered S3 methods overwritten by 'broom':
@@ -187,7 +189,7 @@ export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs =
     #>   tidy.glht         jtools
     #>   tidy.summary.glht jtools
 
-<table class="huxtable" style="border-collapse: collapse; margin-bottom: 2em; margin-top: 2em; width: 50%; margin-left: auto; margin-right: auto;  ">
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-6">
 
 <col>
 
@@ -199,143 +201,59 @@ export_summs(fit, fit_b, fit_c, scale = TRUE, transform.response = TRUE, coefs =
 
 <tr>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
 Model
 1
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
 Model
 2
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: center; white-space: nowrap; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: center; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
 Model
 3
 
-</td>
+</th>
 
 </tr>
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-Horsepower
+Budget
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-\-0.36
-\*\* 
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-\-0.35
-\* 
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-\-0.40
-\*\*
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.10)   
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.13)  
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.13)  
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-Weight
-(tons)
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-\-0.63
+\-2.43
 \*\*\*
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-\-0.62
-\*\*
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-\-0.56
-\*\*
+\-5.16
+\*\*\*
 
 </td>
 
-</tr>
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-<tr>
-
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.10)   
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.17)  
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.18)  
+\-6.70
+\*\*\*
 
 </td>
 
@@ -343,27 +261,56 @@ Weight
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-Displacement
+</th>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(0.44)   
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(0.62)   
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(0.67)   
+
+</td>
+
+</tr>
+
+<tr>
+
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+US
+Gross
+
+</th>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
        
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-\-0.02   
+3.96
+\*\*\*
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-0.08   
+3.85
+\*\*\*
 
 </td>
 
@@ -371,25 +318,25 @@ Displacement
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
        
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-(0.21)  
+(0.51)   
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-(0.22)  
+(0.48)   
 
 </td>
 
@@ -397,54 +344,29 @@ Displacement
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-Rear axle
-ratio
+Runtime
+(Hours)
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
        
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-      
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-0.16   
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
        
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-      
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-(0.12)  
+14.29
+\*\*\*
 
 </td>
 
@@ -452,53 +374,56 @@ ratio
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+</th>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+       
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+       
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(1.63)   
+
+</td>
+
+</tr>
+
+<tr>
+
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
 Constant
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-0.00    
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-0.00   
+105.29
+\*\*\*
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-0.00   
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+81.84
+\*\*\*
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-(0.08)   
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
-
-(0.08)  
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt; padding: 4pt 4pt 4pt 4pt;">
-
-(0.08)  
+83.35
+\*\*\*
 
 </td>
 
@@ -506,27 +431,53 @@ Constant
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+</th>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(7.65)   
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(8.66)   
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+(8.82)   
+
+</td>
+
+</tr>
+
+<tr>
+
+<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
 N
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-32       
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
-
-32      
+831       
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-32      
+831       
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+831       
 
 </td>
 
@@ -534,27 +485,27 @@ N
 
 <tr>
 
-<td style="vertical-align: top; text-align: left; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
 R2
 
-</td>
+</th>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-0.83    
-
-</td>
-
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
-
-0.83   
+0.03    
 
 </td>
 
-<td style="vertical-align: top; text-align: right; white-space: nowrap; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt; padding: 4pt 4pt 4pt 4pt;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-0.84   
+0.09    
+
+</td>
+
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.8pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+
+0.17    
 
 </td>
 
@@ -562,12 +513,12 @@ R2
 
 <tr>
 
-<td colspan="4" style="vertical-align: top; text-align: left; white-space: normal; padding: 4pt 4pt 4pt 4pt;">
+<th colspan="4" style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 
-All continuous predictors are mean-centered and scaled by 1 standard
-deviation. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05.
+Standard errors are heteroskedasticity robust. \*\*\* p \< 0.001; \*\* p
+\< 0.01; \* p \< 0.05.
 
-</td>
+</th>
 
 </tr>
 
@@ -587,8 +538,8 @@ with `plot_summs()` (or the closely related `plot_coefs()`). Like with
 standard errors.
 
 ``` r
-coef_names <- coef_names[1:4] # Dropping intercept for plots
-plot_summs(fit, fit_b, fit_c, scale = TRUE, robust = "HC3", coefs = coef_names)
+coef_names <- coef_names[1:3] # Dropping intercept for plots
+plot_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
 
 ![](man/figures/unnamed-chunk-7-1.png)<!-- -->
@@ -601,7 +552,7 @@ Another way to visualize the uncertainty of your coefficients is via the
 argument.
 
 ``` r
-plot_summs(fit_c, scale = TRUE, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
+plot_summs(fit_c, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
 ```
 
 ![](man/figures/unnamed-chunk-8-1.png)<!-- -->
@@ -618,21 +569,33 @@ models that have support from the `broom` package but not for `summ()`.
 Sometimes the best way to understand your model is to look at the
 predictions it generates. Rather than look at coefficients,
 `effect_plot()` lets you plot predictions across values of a predictor
-variable alongside the observed data.
+variable alongside the observed
+    data.
 
 ``` r
-effect_plot(fit_c, pred = hp, interval = TRUE, plot.points = TRUE)
+effect_plot(fit_c, pred = runtime, interval = TRUE, plot.points = TRUE)
 ```
+
+    #> Using data movies from global environment. This could cause incorrect
+    #> results if movies has been altered since the model was fit. You can
+    #> manually provide the data to the "data =" argument.
+
+    #> Warning: Removed 10 rows containing missing values (geom_point).
 
 ![](man/figures/unnamed-chunk-9-1.png)<!-- -->
 
 And a new feature in version `2.0.0` lets you plot *partial residuals*
 instead of the raw observed data, allowing you to assess model quality
-after accounting for effects of control variables.
+after accounting for effects of control
+variables.
 
 ``` r
-effect_plot(fit_c, pred = hp, interval = TRUE, partial.residuals = TRUE)
+effect_plot(fit_c, pred = runtime, interval = TRUE, partial.residuals = TRUE)
 ```
+
+    #> Using data movies from global environment. This could cause incorrect
+    #> results if movies has been altered since the model was fit. You can
+    #> manually provide the data to the "data =" argument.
 
 ![](man/figures/unnamed-chunk-10-1.png)<!-- -->
 
