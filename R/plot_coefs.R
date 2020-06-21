@@ -432,10 +432,10 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
       if ("brmsfit" %nin% class(x)) return(FALSE)
       if ("mvbrmsformula" %in% class(formula(x))) {
         any(sapply(
-          brms::parse_bf(formula(x))$terms, function(x) length(x$dpars)
+          brms::brmsterms(formula(x))$terms, function(x) length(x$dpars)
         ) > 1)
       } else {
-        length(brms::parse_bf(formula(x))$dpars) > 1
+        length(brms::brmsterms(formula(x))$dpars) > 1
       }
     })
     if (!is.null(dpar)) {
@@ -535,7 +535,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     } else if ("brmsfit" %in% class(mods[[i]]) && 
                any(dpar_fits) && dpar_fits[[i]]) {
       # Need to drop dpar parameters...first, need to identify them
-      the_dpars <- names(brms::parse_bf(formula(mods[[i]]))$dpars)
+      the_dpars <- names(brms::brmsterms(formula(mods[[i]]))$dpars)
       # Loop through them, other than the first (location) parameter
       for (the_dpar in the_dpars[-1]) {
         tidies[[i]] <-

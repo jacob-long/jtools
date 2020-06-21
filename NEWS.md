@@ -4,6 +4,7 @@ Bugfixes:
 
 * `effect_plot()` no longer ignores the `int.width` argument. Thanks to 
 Marco Giesselmann for reporting. (#82)
+* Fixed failing CRAN test due to `brms` deprecating the `bf_parse()` function.
 
 # jtools 2.0.5
 
