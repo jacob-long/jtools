@@ -105,6 +105,18 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
     }
   }
   
+  # When a user provides a matrix column variable, most commonly the result
+  # of using the `scale()` function, the `predict()` functions fail if the
+  # new data use a numeric variable instead.
+  var_classes <- sapply(names(new_data), function(x) {
+    "matrix" %in% class(data[[x]])
+  })
+  if (any(var_classes)) {
+    for (var in names(var_classes)[var_classes]) {
+      new_data[[var]] <- as.matrix(new_data[[var]])
+    }
+  }
+  
   return(tibble::as_tibble(new_data))
   
 }

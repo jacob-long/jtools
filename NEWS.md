@@ -6,6 +6,10 @@ Bugfixes:
 Marco Giesselmann for reporting. (#82)
 * Fixed failing CRAN test due to `brms` deprecating the `bf_parse()` function.
 * Addressed breaking changes in upcoming `broom` 0.7.0 release. (#83)
+* `make_predictions()` and its associated dependencies in this and other 
+packages now handles `scale()`'d variables correctly. (Issue
+[#33](https://github.com/jacob-long/interactions/issues/33) for the 
+`interactions` package)
 
 # jtools 2.0.5
 
