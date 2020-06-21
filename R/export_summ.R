@@ -344,17 +344,22 @@ export_summs <- function(...,
 }
 
 #' @rdname glance.summ
-#' @export
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::tidy, summ)
+#' } else {
+#'  export(tidy.summ)
+#' }
 
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
-  if (class(x)[1] != "summ.rq") {
+  if (all(c("summ.rq", "summ.svyglm") %nin% class(x))) {
     # Hacky fix for spurious broom warnings with merMod
     suppressWarnings({
       base <- generics::tidy(x$model, conf.int = conf.int,
                             conf.level = conf.level, ...)
     })
-  } else {
+  } else if ("summ.rq" %in% class(x)) {
     dots <- list(...)
     dots <- dots[names(dots) %in% c(names(formals("rq")),
                                     names(formals("rq.fit.br")),
@@ -365,6 +370,9 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
                  se.type = attr(x, "se"), dots))
 
     base <- do.call(generics::tidy, args)
+  } else {
+    base <- generics::tidy(x$model, conf.int = conf.int, 
+                           conf.level = conf.level)
   }
 
   if ("S.E." %in% colnames(x$coeftable)) {
@@ -466,7 +474,30 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 #'  \code{\link[broom]{glance}}
 #'
 #' @rdname glance.summ
-#' @export
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::glance, summ.lm)
+#' } else {
+#'  export(glance.summ.lm)
+#' }
+#' 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::glance, summ.glm)
+#' } else {
+#'  export(glance.summ.glm)
+#' }
+#' 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::glance, summ.svyglm)
+#' } else {
+#'  export(glance.summ.svyglm)
+#' }
+#' 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::glance, summ.merMod)
+#' } else {
+#'  export(glance.summ.merMod)
+#' }
 
 
 glance.summ.lm <- function(x, ...) {

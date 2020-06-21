@@ -413,6 +413,12 @@ rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
 
 
 #' @rdname glance.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::glance, summ.rq)
+#' } else {
+#'  export(glance.summ.rq)
+#' }
 
 glance.summ.rq <- function(x, ...) {
 

@@ -5,6 +5,7 @@ Bugfixes:
 * `effect_plot()` no longer ignores the `int.width` argument. Thanks to 
 Marco Giesselmann for reporting. (#82)
 * Fixed failing CRAN test due to `brms` deprecating the `bf_parse()` function.
+* Addressed breaking changes in upcoming `broom` 0.7.0 release. (#83)
 
 # jtools 2.0.5
 
