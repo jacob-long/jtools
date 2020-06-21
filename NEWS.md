@@ -10,6 +10,9 @@ Marco Giesselmann for reporting. (#82)
 packages now handles `scale()`'d variables correctly. (Issue
 [#33](https://github.com/jacob-long/interactions/issues/33) for the 
 `interactions` package)
+* Several functions now more sensibly handle survey data with replicate weights,
+which also stops errors with survey data with classes from the `srvyr` package.
+Thanks to Mark White for reporting. (#84)
 
 # jtools 2.0.5
 

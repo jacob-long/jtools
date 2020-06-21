@@ -224,7 +224,7 @@ get_data <- function(model, formula = NULL, warn = TRUE, ...) {
   if ("svyglm" %in% class(model)) {
     d <- model$survey.design$variables
     wname <- "(weights)"
-    d[wname] <- weights(model$survey.design)
+    d[wname] <- weights(model$survey.design, type = "sampling")
   } else {
     d <- model.frame(model)
   }
