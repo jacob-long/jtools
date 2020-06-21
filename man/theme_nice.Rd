@@ -23,7 +23,7 @@ area).}
 \code{"white"} sets the background to white, \code{"light"} to light gray,
 \code{"dark_gray"} to dark gray, \code{"dark_blue"} to dark blue.}
 
-\item{base_size}{base font size}
+\item{base_size}{base font size, given in pts.}
 
 \item{base_family}{base font family}
 

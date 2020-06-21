@@ -45,7 +45,7 @@ standard errors? Default is FALSE.}
     with missing values for fixed effects in \code{newdata}.
     The default is to predict \code{NA}: see \code{\link{na.pass}}.}
 
-\item{re.form}{formula for random effects to condition on.  If \code{NULL},
+\item{re.form}{(formula, \code{NULL}, or \code{NA}) specify which random effects to condition on when predicting.  If \code{NULL},
     include all random effects; if \code{NA} or \code{~0},
     include no random effects.}
 
