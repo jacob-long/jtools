@@ -522,7 +522,11 @@ pred_values <- function(x, length = 100) {
   if (is.numeric(x)) {
     seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = length)
   } else {
-    unique(x) %not% NA
+    if (is.factor(x)) {
+      factor(levels(x), levels = levels(x))
+    } else {
+        unique(x) %not% NA
+    }
   }
 }
 
