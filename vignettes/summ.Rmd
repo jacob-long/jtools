@@ -17,8 +17,8 @@ vignette: >
 required <- c("survey", "huxtable", "broom", "lme4", "quantreg")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
-knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 5,
-                      dpi = 150, render = knitr::normal_print)
+knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 4,
+                      dpi = 100, render = knitr::normal_print)
 library(jtools)
 ```
 

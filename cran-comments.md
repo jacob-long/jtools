@@ -4,5 +4,5 @@
 * Windows 2012 Server (on Appveyor) R-release, R-devel
 
 ## R CMD check results
-There were no NOTEs, WARNINGs, or ERRORs.
+Sometimes the Windows check will wrongly complain about a broken doi.org link.
 
