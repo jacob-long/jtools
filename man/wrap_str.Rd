@@ -28,7 +28,7 @@ msg_wrap(..., .subclass = NULL, brk = "\\n")
 \arguments{
 \item{...}{Objects to print. For \code{stop_wrap()}, \code{warn_wrap()}, and
 \code{msg_wrap()}, any named objects are instead diverted to the \code{...} argument
-of \code{\link[rlang:abort]{rlang::abort()}}, \code{\link[rlang:warn]{rlang::warn()}}, and \code{\link[rlang:inform]{rlang::inform()}},
+of \code{\link[rlang:abort]{rlang::abort()}}, \code{\link[rlang:abort]{rlang::warn()}}, and \code{\link[rlang:abort]{rlang::inform()}},
 respectively.}
 
 \item{sep}{Separator between \code{...}, Default: ''}

@@ -23,7 +23,7 @@ scale_mod(model, ...)
 }
 \arguments{
 \item{model}{A regression model of type \code{lm}, \code{glm},
-\code{\link[survey]{svyglm}}, or \link[lme4:merMod]{lme4::merMod}. Other model types
+\code{\link[survey]{svyglm}}, or \link[lme4:merMod-class]{lme4::merMod}. Other model types
 may work as well but are not tested.}
 
 \item{...}{Ignored.}

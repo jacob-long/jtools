@@ -49,8 +49,8 @@ where the names are the preferred coefficient names. See details for more.}
 
 \item{to.file}{Export the table to a Microsoft Word, PDF, or HTML document?
 This functionality relies on \code{huxtable}'s \code{quick_} functions
-(\code{\link[huxtable:quick_docx]{huxtable::quick_docx()}}, \code{\link[huxtable:quick_pdf]{huxtable::quick_pdf()}},
-\code{\link[huxtable:quick_html]{huxtable::quick_html()}}, \code{\link[huxtable:quick_xlsx]{huxtable::quick_xlsx()}}). Acceptable arguments
+(\code{\link[huxtable:quick-output]{huxtable::quick_docx()}}, \code{\link[huxtable:quick-output]{huxtable::quick_pdf()}},
+\code{\link[huxtable:quick-output]{huxtable::quick_html()}}, \code{\link[huxtable:quick-output]{huxtable::quick_xlsx()}}). Acceptable arguments
 are "Word" or "docx" (equivalent), "pdf", "html", or "xlsx". All are
 case insensitive. Default is NULL, meaning the table is not saved.}
 
@@ -97,7 +97,7 @@ model statistics are available via \code{glance}. If you want no
 model summary statistics, set the argument to \code{character(0)}.
 
 You have a few options for the \code{error_format} argument.
-You can include anything returned by \code{\link[broom:tidy]{broom::tidy()}}
+You can include anything returned by \code{\link[broom:reexports]{broom::tidy()}}
 (see also \code{\link[=tidy.summ]{tidy.summ()}}). For the most part, you will
 be interested in \code{std.error} (standard error), \code{statistic}
 (test statistic, e.g. t-value or z-value), \code{p.value}, or

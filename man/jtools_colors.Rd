@@ -28,7 +28,7 @@ scheme (see references). \code{"CUD Bright"} is the default for qualitative
 scales in \code{jtools} functions.
 
 You may also provide any color palette supported by \code{RColorBrewer}.
-See all of those options at \code{\link[RColorBrewer:brewer.pal]{RColorBrewer::brewer.pal()}}'s documentation.
+See all of those options at \code{\link[RColorBrewer:ColorBrewer]{RColorBrewer::brewer.pal()}}'s documentation.
 If you provide one of \code{RColorBrewer}'s sequential palettes, like "Blues",
 \code{jtools} automatically requests one more color than needed from
 \code{brewer.pal} and then drops the lightest color. My experience is that

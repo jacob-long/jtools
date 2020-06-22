@@ -138,7 +138,7 @@ A note on the distinction between \code{plot_summs} and \code{plot_coefs}:
 \code{plot_summs} only accepts models supported by \code{\link[=summ]{summ()}} and allows users
 to take advantage of the standardization and robust standard error features
 (among others as may be relevant). \code{plot_coefs} supports any models that
-have a \code{\link[broom:tidy]{broom::tidy()}} method defined in the broom package, but of course
+have a \code{\link[broom:reexports]{broom::tidy()}} method defined in the broom package, but of course
 lacks any additional features like robust standard errors. To get a mix
 of the two, you can pass \code{summ} objects to \code{plot_coefs} too.
 
