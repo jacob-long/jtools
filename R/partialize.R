@@ -80,7 +80,7 @@ partialize <- function(model, ...) {
 #' 
 #'  I advise consulting Fox and Weisberg (available free) for more details 
 #'  on what partial residuals are. This function is designed to produce 
-#'  data in a similar format to [effects::Effect()] when that function has 
+#'  data in a similar format to `effects::Effect()` when that function has 
 #'  `residuals` set to `TRUE` and is plotted. I wanted a more modular function
 #'  to produce the data separately. To be clear, the developers of the `effects`
 #'  package have nothing to do with this function; `partialize`` is merely

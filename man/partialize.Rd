@@ -69,7 +69,7 @@ variables other than the one on the x-axis.
 
 I advise consulting Fox and Weisberg (available free) for more details
 on what partial residuals are. This function is designed to produce
-data in a similar format to \code{\link[effects:Effect]{effects::Effect()}} when that function has
+data in a similar format to \code{effects::Effect()} when that function has
 \code{residuals} set to \code{TRUE} and is plotted. I wanted a more modular function
 to produce the data separately. To be clear, the developers of the \code{effects}
 package have nothing to do with this function; `partialize`` is merely
