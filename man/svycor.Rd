@@ -43,7 +43,7 @@ errors be calculated as if the number of rows in your dataset is the total
 number of observations (TRUE) or as if the sum of the weights in your
 dataset is the total number of observations (FALSE)?}
 
-\item{...}{Additional arguments passed to \code{\link[survey]{svyvar}}.}
+\item{...}{Additional arguments passed to \code{\link[survey:surveysummary]{svyvar()}}.}
 }
 \value{
 If significance tests are not requested, there is one returned value:
@@ -103,7 +103,7 @@ if (requireNamespace("survey")) {
 
 }
 \seealso{
-\code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
+\code{\link[weights]{wtd.cor}}, \code{\link[survey:surveysummary]{svymean()}}
 
 Other survey package extensions: 
 \code{\link{svysd}()}

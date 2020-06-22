@@ -41,5 +41,5 @@ functions to facilitate use with huxreg, thereby making
 \code{\link{export_summs}} works.
 }
 \seealso{
-\code{\link[broom]{glance}}
+\code{\link[generics]{glance}}
 }

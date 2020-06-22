@@ -11,7 +11,7 @@ j_summ(model, ...)
 }
 \arguments{
 \item{model}{A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},
-\code{\link[lme4]{merMod}}, \code{\link[quantreg]{rq}} object.}
+\code{\link[lme4:`merMod-class]{merMod}}, \code{\link[quantreg]{rq}} object.}
 
 \item{...}{Other arguments to be passed to the model-specific function.}
 }

@@ -9,7 +9,8 @@
 #'  \code{ggplot2} rather than base graphics, which some similar functions use.
 #'
 #' @param model A regression model. The function is tested with \code{lm},
-#'   \code{glm}, \code{\link[survey]{svyglm}}, \code{\link[lme4]{merMod}},
+#'   \code{glm}, \code{\link[survey]{svyglm}}, 
+#'   [`merMod`][lme4::`merMod-class`],
 #'   \code{\link[quantreg]{rq}}, \code{\link[brms]{brmsfit}},
 #'   \code{stanreg} models.
 #'   Models from other classes may work as well but are not officially

@@ -70,8 +70,8 @@
 #'
 #' For those dealing with survey data, if you provide a \code{survey.design}
 #' object you can rest assured that the mean-centering and scaling is performed
-#' with help from the \code{\link[survey]{svymean}} and
-#' \code{\link[survey]{svyvar}} functions, respectively. It was among the
+#' with help from the [`svymean()`][survey::surveysummary] and
+#' [`svyvar()`][survey::surveysummary] functions, respectively. It was among the
 #' primary motivations for creating this function. \code{gscale()} will not
 #' center or scale the weights variables defined in the survey design unless
 #' the user specifically requests them in the \code{x =} argument.

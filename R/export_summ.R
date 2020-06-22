@@ -471,7 +471,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 #' type per \code{glance} documentation.
 #'
 #' @seealso
-#'  \code{\link[broom]{glance}}
+#'  \code{\link[generics]{glance}}
 #'
 #' @rdname glance.summ
 #' @rawNamespace 

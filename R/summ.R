@@ -14,7 +14,7 @@
 #' }
 #'
 #' @param model A \code{lm}, \code{glm}, \code{\link[survey]{svyglm}},
-#'   \code{\link[lme4]{merMod}}, \code{\link[quantreg]{rq}} object.
+#'   [`merMod`][lme4::`merMod-class`], \code{\link[quantreg]{rq}} object.
 #' @param ... Other arguments to be passed to the model-specific function.
 #'
 #'
@@ -1454,7 +1454,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #' \code{summ()} prints output for a regression model in a fashion similar to
 #' \code{summary()}, but formatted differently with more options.
 #'
-#' @param model A \code{\link[lme4]{merMod}} object.
+#' @param model A [`merMod`][lme4::`merMod-class`] object.
 #' @param r.squared Calculate an r-squared model fit statistic? Default is
 #'  \code{TRUE}, but if it has errors or takes a long time to calculate you
 #'  may want to consider setting to FALSE.

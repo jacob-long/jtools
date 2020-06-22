@@ -589,7 +589,7 @@ print.weights_tests <- function(x, ...) {
 #'   number of observations (TRUE) or as if the sum of the weights in your
 #'   dataset is the total number of observations (FALSE)?
 #'
-#' @param ... Additional arguments passed to \code{\link[survey]{svyvar}}.
+#' @param ... Additional arguments passed to [`svyvar()`][survey::surveysummary].
 #'
 #' @details
 #'   This function extends the \code{survey} package by calculating the
@@ -624,7 +624,7 @@ print.weights_tests <- function(x, ...) {
 #' @family survey package extensions
 #' @family survey tools
 #'
-#' @seealso \code{\link[weights]{wtd.cor}}, \code{\link[survey]{svyvar}}
+#' @seealso \code{\link[weights]{wtd.cor}}, [`svymean()`][survey::surveysummary]
 #'
 #' @note This function was designed in part on the procedure recommended by
 #'  Thomas Lumley, the author of the survey package, on
@@ -779,7 +779,7 @@ print.svycor <- function(x, ...) {
 #'   digits for all jtools functions with
 #'   \code{options("jtools-digits" = digits)} where digits is the desired number.
 #'
-#' @param ... Additional arguments passed to \code{\link[survey]{svyvar}}.
+#' @param ... Additional arguments passed to [`svyvar()`][survey::surveysummary].
 #'
 #' @details
 #'
@@ -790,7 +790,7 @@ print.svycor <- function(x, ...) {
 #' @family survey package extensions
 #' @family survey tools
 #'
-#' @seealso \code{\link[survey]{svyvar}}
+#' @seealso [`svyvar()`][survey::surveysummary]
 #'
 #' @note This function was designed independent of the \pkg{survey} package and
 #'  is neither endorsed nor known to its authors.

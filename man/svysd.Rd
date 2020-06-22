@@ -24,7 +24,7 @@ report in the output. Default is 3. You can change the default number of
 digits for all jtools functions with
 \code{options("jtools-digits" = digits)} where digits is the desired number.}
 
-\item{...}{Additional arguments passed to \code{\link[survey]{svyvar}}.}
+\item{...}{Additional arguments passed to \code{\link[survey:surveysummary]{svyvar()}}.}
 }
 \description{
 \code{svysd} extends the \code{survey} package by calculating standard
@@ -54,7 +54,7 @@ if (requireNamespace("survey")) {
 
 }
 \seealso{
-\code{\link[survey]{svyvar}}
+\code{\link[survey:surveysummary]{svyvar()}}
 
 Other survey package extensions: 
 \code{\link{svycor}()}
