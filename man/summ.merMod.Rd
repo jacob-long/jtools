@@ -30,7 +30,7 @@
 )
 }
 \arguments{
-\item{model}{A \code{\link[lme4:`merMod-class]{merMod}} object.}
+\item{model}{A \code{\link[lme4:merMod-class]{merMod}} object.}
 
 \item{scale}{If \code{TRUE}, reports standardized regression
 coefficients. Default is \code{FALSE}.}
