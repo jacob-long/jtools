@@ -1,4 +1,9 @@
-# jtools 2.0.6
+# jtools 2.1.0
+
+New:
+
+* A new dataset, `movies`, has been added. I will be gradually updating examples
+to use `movies` rather than R's much-used, built-in data.
 
 Bugfixes:
 
