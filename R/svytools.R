@@ -766,7 +766,7 @@ print.svycor <- function(x, ...) {
 #'
 #' \code{svysd} extends the \code{survey} package by calculating standard
 #' deviations with syntax similar to the original package, which provides
-#' only a \code{\link[survey]{svyvar}} function.
+#' only a [`svyvar()`][survey::surveysummary] function.
 #'
 #' @param formula A formula (e.g., ~var1+var2) specifying the term(s) of interest.
 #'

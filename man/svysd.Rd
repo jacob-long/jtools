@@ -29,7 +29,7 @@ digits for all jtools functions with
 \description{
 \code{svysd} extends the \code{survey} package by calculating standard
 deviations with syntax similar to the original package, which provides
-only a \code{\link[survey]{svyvar}} function.
+only a \code{\link[survey:surveysummary]{svyvar()}} function.
 }
 \details{
 An alternative is to simply do \code{sqrt(svyvar(~term, design = design))}.
