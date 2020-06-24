@@ -10,7 +10,7 @@ Description: This is a collection of tools that the author (Jacob) has written
   functions for statistical and programming purposes. Just about everything 
   supports models from the survey package.
 URL: https://jtools.jacob-long.com
-BugReports: https://github.com/jacob-long/jtools/issues 
+BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
