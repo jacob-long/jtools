@@ -1,3 +1,9 @@
+# jtools 2.1.1
+
+Bugfixes:
+
+* Fixed error when writing to file with `export_summs()`. (#85)
+
 # jtools 2.1.0
 
 New:

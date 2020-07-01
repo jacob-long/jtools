@@ -324,13 +324,23 @@ export_summs <- function(...,
       warn_wrap('to.file must be one of "docx", "html", "pdf", or "xlsx" if
                 you want to write to a file. File not written.')
     }
+    if (to.file %in% c("docx", "xlsx")) {
+      if (!requireNamespace("officer")) {
+        stop_wrap("You need the 'officer' package to write to 
+                  Microsoft Word or Excel.")
+      }
+      if (!requireNamespace("flextable")) {
+        stop_wrap("You need the 'flextable' package to write to 
+                  Microsoft Word or Excel.")
+      }
+    }
     if (is.null(file.name)) {
       msg_wrap("You did not provide a file name, so it will be called
                untitled.", to.file)
       file.name <- paste0("untitled.", to.file)
     }
     # Weird header is included in Word files
-    if (to.file == "docx") {out$header <- NULL}
+    # if (to.file == "docx") {out$header <- NULL}
     # Create the function name based on file type
     fun_name <- paste0("quick_", to.file)
     # Call the function
