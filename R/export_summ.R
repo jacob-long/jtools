@@ -250,7 +250,7 @@ export_summs <- function(...,
     # Keep just the unique entries
     statistics <- stats[!duplicated(stats)]
 
-  } else if (statistics == "all") {
+  } else if (identical(statistics,"all")) {
 
     statistics <- NULL
 
