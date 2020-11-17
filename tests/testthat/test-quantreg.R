@@ -18,7 +18,7 @@ test_that("summ.rq works", {
   expect_is(summ(rfit), "summ.rq")
   expect_is(summ(rfiti), "summ.rq")
   expect_is(summ(rfit, scale = TRUE), "summ.rq")
-  expect_is(summ(rfiti, center = TRUE), "summ.rq")
+  expect_is(suppressWarnings(summ(rfiti, center = TRUE)), "summ.rq")
   expect_is(summ(rfit, se = "boot", boot.sims = 100), "summ.rq")
   expect_is(summ(rfit, vifs = TRUE), "summ.rq")
   expect_warning(summ(rfit, confint = TRUE, stars = TRUE, se = "iid"))
@@ -50,9 +50,9 @@ test_that("rq plotters work", {
 
 test_that("export_summs et al.", {
   expect_is(export_summs(rfit, rfiti), "huxtable")
-  expect_is(export_summs(rfit, rfiti, scale = TRUE), "huxtable")
+  expect_is(suppressWarnings(export_summs(rfit, rfiti, scale = TRUE)), "huxtable")
   expect_silent(plot_summs(rfit, rfiti))
-  expect_silent(plot_summs(rfit, rfiti, scale = TRUE))
+  expect_silent(suppressWarnings(plot_summs(rfit, rfiti, scale = TRUE)))
 })
 
 }
