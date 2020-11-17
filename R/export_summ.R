@@ -325,11 +325,11 @@ export_summs <- function(...,
                 you want to write to a file. File not written.')
     }
     if (to.file %in% c("docx", "xlsx")) {
-      if (!requireNamespace("officer")) {
+      if (!nzchar(system.file(package = "officer"))) {
         stop_wrap("You need the 'officer' package to write to 
                   Microsoft Word or Excel.")
       }
-      if (!requireNamespace("flextable")) {
+      if (!nzchar(system.file(package = "flextable"))) {
         stop_wrap("You need the 'flextable' package to write to 
                   Microsoft Word or Excel.")
       }
