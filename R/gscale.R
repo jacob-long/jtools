@@ -47,7 +47,7 @@
 #'   to TRUE, the argument will apply weighted effects coding to all factors.
 #'   This is similar to the R default effects coding, but weights according to
 #'   how many observations are at each level. An adapted version of
-#'   [wec::contr.wec()] from the \pkg{wec} package is used to do this. See
+#'   `contr.wec()` from the `wec` package is used to do this. See
 #'   that package's documentation and/or Grotenhuis et al. (2016) for more
 #'   info.
 #'
@@ -59,8 +59,8 @@
 #'
 #' @details
 #'
-#' This function is adapted from the \code{\link[arm]{rescale}} function of
-#' the \pkg{arm} package. It is named \code{gscale()} after the
+#' This function is adapted from the `rescale` function of
+#' the `arm` package. It is named \code{gscale()} after the
 #' popularizer of this scaling method, Andrew \strong{G}elman. By default, it
 #' works just like \code{rescale}. But it contains many additional options and
 #' can also accept multiple types of input without breaking a sweat.

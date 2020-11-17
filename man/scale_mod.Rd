@@ -62,7 +62,7 @@ reflect the true mean (assuming all other variables are centered). If set
 to TRUE, the argument will apply weighted effects coding to all factors.
 This is similar to the R default effects coding, but weights according to
 how many observations are at each level. An adapted version of
-\code{\link[wec:contr.wec]{wec::contr.wec()}} from the \pkg{wec} package is used to do this. See
+\code{contr.wec()} from the \code{wec} package is used to do this. See
 that package's documentation and/or Grotenhuis et al. (2016) for more
 info.}
 }

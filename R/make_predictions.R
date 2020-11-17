@@ -56,8 +56,8 @@ prepare_return_data <- function(model, data, return.orig.data,
 #' @title Generate predicted data for plotting results of regression models
 #'
 #' @description This is an alternate interface to the underlying tools that
-#'   make up [effect_plot()] as well as [interactions::interact_plot()] and
-#'   [interactions::cat_plot()] from the \pkg{interactions} package.
+#'   make up [effect_plot()] as well as `interactions::interact_plot()` and
+#'   `interactions::cat_plot()` from the `interactions` package.
 #'   `make_predictions()` creates the data to be plotted and adds information
 #'   to the original data to make it more amenable for plotting with the
 #'   predicted data.

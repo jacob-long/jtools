@@ -1,5 +1,5 @@
 #' @title Deprecated interaction functions
-#' @description These functions are now part of the \pkg{interactions}
+#' @description These functions are now part of the `interactions`
 #'  package. 
 #' @param ... arguments are ignored
 #' @rdname interactions_deprecated

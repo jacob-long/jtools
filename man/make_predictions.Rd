@@ -113,8 +113,8 @@ call to \code{\link[=partialize]{partialize()}}, where you can find more details
 }
 \description{
 This is an alternate interface to the underlying tools that
-make up \code{\link[=effect_plot]{effect_plot()}} as well as \code{\link[interactions:interact_plot]{interactions::interact_plot()}} and
-\code{\link[interactions:cat_plot]{interactions::cat_plot()}} from the \pkg{interactions} package.
+make up \code{\link[=effect_plot]{effect_plot()}} as well as \code{interactions::interact_plot()} and
+\code{interactions::cat_plot()} from the \code{interactions} package.
 \code{make_predictions()} creates the data to be plotted and adds information
 to the original data to make it more amenable for plotting with the
 predicted data.

@@ -22,6 +22,6 @@ probe_interaction(...)
 \item{...}{arguments are ignored}
 }
 \description{
-These functions are now part of the \pkg{interactions}
+These functions are now part of the \code{interactions}
 package.
 }

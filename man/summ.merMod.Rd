@@ -199,7 +199,7 @@ reports one version for your benefit, though you should of course
 understand that it is not an unambiguous measure of model fit.
 
 This package calculates R^2 for mixed models using an adapted version
-of \code{rsquared()} from the \pkg{piecewiseSEM}
+of \code{rsquared()} from the \code{piecewiseSEM}
 package. This is an implementation of the Nakagawa & Schielzeth (2013)
 procedure with refinements by Johnson (2014). If you choose to report
 the pseudo-R^2 in a publication, you should cite Nakagawa & Schielzeth
@@ -261,7 +261,7 @@ behind the scenes.
 \code{\link[pbkrtest:get_ddf_Lb]{pbkrtest::get_ddf_Lb()}} gets the Kenward-Roger degrees of
 freedom if you have \pkg{pbkrtest} installed.
 
-A tweaked version of \code{\link[piecewiseSEM:rsquared]{piecewiseSEM::rsquared()}} is used to
+A tweaked version of \code{piecewiseSEM::rsquared()} is used to
 generate the pseudo-R-squared estimates for linear models.
 
 Other summ: 
