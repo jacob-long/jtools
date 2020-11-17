@@ -22,7 +22,7 @@ For many, it saves you from needing to use commercial software for research that
 survey data. However, it lacks one function that many academic researchers often 
 need to report in publications: correlations. The `svycor` function in `jtools` helps to fill that gap. 
 
-A note, however, is necessary. The initial motivation to add this feature comes from a [response to a question](http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088) about
+A note, however, is necessary. The initial motivation to add this feature comes from a [response to a question](https://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088) about
 calculating correlations with the `survey` package written by Thomas Lumley, the `survey`
 package author. All that is good about this function should be attributed to Dr. Lumley;
 all that is wrong with it should be attributed to me (Jacob).

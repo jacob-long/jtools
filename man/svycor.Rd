@@ -80,7 +80,7 @@ reporting in scientific publications the method should be spelled out.
 \note{
 This function was designed in part on the procedure recommended by
 Thomas Lumley, the author of the survey package, on
-\href{http://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has
+\href{https://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088}{Stack Overflow}. However, he has
 not reviewed or endorsed this implementation.
 All defects are attributed to the author.
 }

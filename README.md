@@ -14,7 +14,7 @@ Status](https://travis-ci.org/jacob-long/jtools.svg?branch=master)](https://trav
 Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools)
 [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools)
 <!-- [![GitHub tag](https://img.shields.io/github/tag/jacob-long/jtools.svg?label=Github)](https://github.com/jacob-long/jtools) -->
-<!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT) -->
+<!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT) -->
 
 This package consists of a series of functions created by the author
 (Jacob) to automate otherwise tedious research tasks. At this juncture,
@@ -641,4 +641,4 @@ By participating in this project you agree to abide by its terms.
 ## License
 
 The source code of this package is licensed under the [MIT
-License](http://opensource.org/licenses/mit-license.php).
+License](https://opensource.org/licenses/mit-license.php).
