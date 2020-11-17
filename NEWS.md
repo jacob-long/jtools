@@ -3,6 +3,7 @@
 Bugfixes:
 
 * Fixed error when writing to file with `export_summs()`. (#85)
+* Fixed CRAN check issues from changes in the `quantreg` package.
 
 # jtools 2.1.0
 

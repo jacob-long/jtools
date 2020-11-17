@@ -1,8 +1,8 @@
 Package: jtools
 Type: Package
 Title: Analysis and Presentation of Social Scientific Data
-Version: 2.1.1.9000
-Authors@R: person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
+Version: 2.1.1
+Authors@R: person(c("Jacob","A."), "Long", email = "jacob.long@sc.edu",
   role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1582-6214"))
 Description: This is a collection of tools that the author (Jacob) has written
   for the purpose of more efficiently understanding and sharing the results of
@@ -47,7 +47,7 @@ Enhances:
   brms,
   quantreg,
   rstanarm
-RoxygenNote: 7.1.0.9000
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Depends: 
