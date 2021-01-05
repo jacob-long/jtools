@@ -2316,7 +2316,7 @@ update_summ <- function(summ, call.env, ...) {
   call <- getCall(summ)
 
   # Now get the argument names for that version of summ
-  summ_formals <- formals(getFromNamespace(class(summ), "jtools"))
+  summ_formals <- formals(getFromNamespace(class(summ)[1], "jtools"))
 
   extras <- as.list(match.call())
   indices <- which(names(extras) %in% names(summ_formals))

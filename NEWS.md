@@ -1,3 +1,7 @@
+# jtools 2.1.2
+
+* Fixed minor error in upcoming version of R.
+
 # jtools 2.1.1
 
 Bugfixes:
