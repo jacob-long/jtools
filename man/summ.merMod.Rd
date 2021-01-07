@@ -230,26 +230,26 @@ if (requireNamespace("lme4")) {
 \references{
 Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth's
 $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
-Evolution}, \emph{5}, 944–946. \url{https://doi.org/10.1111/2041-210X.12225}
+Evolution}, \emph{5}, 944–946. \doi{10.1111/2041-210X.12225}
 
 Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
 effects from restricted maximum likelihood. \emph{Biometrics},
 \emph{53}, 983.
-\url{https://doi.org/10.2307/2533558}
+\doi{10.2307/2533558}
 
 Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017). lmerTest
 package: Tests in linear mixed effects models.
 \emph{Journal of Statistical Software}, \emph{82}.
-\url{https://doi.org/10.18637/jss.v082.i13}
+\doi{10.18637/jss.v082.i13}
 
 Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
-\url{https://doi.org/10.3758/s13428-016-0809-y}
+\doi{10.3758/s13428-016-0809-y}
 
 Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
 obtaining $R^2$ from generalized linear mixed-effects models.
 \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
-\url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
+\doi{10.1111/j.2041-210x.2012.00261.x}
 }
 \seealso{
 \code{\link[=scale_mod]{scale_mod()}} can simply perform the standardization if

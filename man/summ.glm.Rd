@@ -162,13 +162,13 @@ mean-centering and scaling.
 King, G., & Roberts, M. E. (2015). How robust standard errors expose
 methodological problems they do not fix, and what to do about it.
 \emph{Political Analysis}, \emph{23}(2), 159–179.
-\url{https://doi.org/10.1093/pan/mpu015}
+\doi{10.1093/pan/mpu015}
 
 Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
 Normality Assumption in Large Public Health Data Sets. \emph{Annual Review
 of
 Public Health}, \emph{23}, 151–169.
-\url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
+\doi{10.1146/annurev.publhealth.23.100901.140546}
 }
 \seealso{
 \code{\link[=scale_mod]{scale_mod()}} can simply perform the standardization if

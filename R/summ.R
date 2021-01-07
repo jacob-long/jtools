@@ -187,13 +187,13 @@ j_summ <- summ
 #'  methodological
 #'  problems they do not fix, and what to do about it. \emph{Political
 #'   Analysis},
-#'   \emph{23}(2), 159–179. \url{https://doi.org/10.1093/pan/mpu015}
+#'   \emph{23}(2), 159–179. \doi{10.1093/pan/mpu015}
 #'
 #' Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
 #' Normality Assumption in Large Public Health Data Sets.
 #'  \emph{Annual Review of
 #'  Public Health}, \emph{23}, 151–169.
-#'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
+#'  \doi{10.1146/annurev.publhealth.23.100901.140546}
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
@@ -583,13 +583,13 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #' King, G., & Roberts, M. E. (2015). How robust standard errors expose
 #'  methodological problems they do not fix, and what to do about it.
 #'  \emph{Political Analysis}, \emph{23}(2), 159–179.
-#'  \url{https://doi.org/10.1093/pan/mpu015}
+#'  \doi{10.1093/pan/mpu015}
 #'
 #' Lumley, T., Diehr, P., Emerson, S., & Chen, L. (2002). The Importance of the
 #' Normality Assumption in Large Public Health Data Sets. \emph{Annual Review
 #'  of
 #'  Public Health}, \emph{23}, 151–169.
-#'  \url{https://doi.org/10.1146/annurev.publhealth.23.100901.140546}
+#'  \doi{10.1146/annurev.publhealth.23.100901.140546}
 #'
 #'
 #'
@@ -1614,26 +1614,26 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'
 #' Johnson, P. C. D. (2014). Extension of Nakagawa & Schielzeth's
 #'  $R^{2}_{GLMM}$ to random slopes models. \emph{Methods in Ecology and
-#'  Evolution}, \emph{5}, 944–946. \url{https://doi.org/10.1111/2041-210X.12225}
+#'  Evolution}, \emph{5}, 944–946. \doi{10.1111/2041-210X.12225}
 #'
 #' Kenward, M. G., & Roger, J. H. (1997). Small sample inference for fixed
 #'  effects from restricted maximum likelihood. \emph{Biometrics},
 #'  \emph{53}, 983.
-#'  \url{https://doi.org/10.2307/2533558}
+#'  \doi{10.2307/2533558}
 #'
 #' Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. B. (2017). lmerTest
 #'  package: Tests in linear mixed effects models.
 #'  *Journal of Statistical Software*, *82*.
-#'  \url{https://doi.org/10.18637/jss.v082.i13}
+#'  \doi{10.18637/jss.v082.i13}
 #'
 #' Luke, S. G. (2017). Evaluating significance in linear mixed-effects models
 #'  in R. \emph{Behavior Research Methods}, \emph{49}, 1494–1502.
-#'  \url{https://doi.org/10.3758/s13428-016-0809-y}
+#'  \doi{10.3758/s13428-016-0809-y}
 #'
 #' Nakagawa, S., & Schielzeth, H. (2013). A general and simple method for
 #'  obtaining $R^2$ from generalized linear mixed-effects models.
 #'  \emph{Methods in Ecology and Evolution}, \emph{4}, 133–142.
-#'  \url{https://doi.org/10.1111/j.2041-210x.2012.00261.x}
+#'  \doi{10.1111/j.2041-210x.2012.00261.x}
 #'
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
