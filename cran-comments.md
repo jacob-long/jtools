@@ -1,5 +1,5 @@
 ## Test environments
-* Local Windows 10 install, R 4.0.2
+* Local Windows 10 install, R 4.0.3
 * Ubuntu (Trusty) (on Travis-CI), R-release, R-devel
 * Windows 2012 Server (on Appveyor) R-release, R-devel
 

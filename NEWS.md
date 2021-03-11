@@ -1,3 +1,7 @@
+# jtools 2.1.3
+
+* Fixed an encoding error in the `movies` dataset.
+
 # jtools 2.1.2
 
 * Fixed minor error in upcoming version of R.

@@ -76,3 +76,7 @@ mcf <- mutate(mc2,
   ungroup()
 
 movies <- mcf
+
+# Added to convert to ASCII encoding
+movies[sapply(movies, is.character)] <- 
+  lapply(movies[sapply(movies, is.character)], iconv, from = "UTF-8", to = "ASCII")
