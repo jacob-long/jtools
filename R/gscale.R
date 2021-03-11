@@ -3,7 +3,7 @@
 #' \code{gscale} standardizes variables by dividing them by 2 standard
 #' deviations and mean-centering them by default. It contains options for
 #' handling binary variables separately. \code{gscale()} is a fork of
-#' \code{\link[arm]{rescale}} from the \pkg{arm} package---the key feature
+#' \code{rescale} from the \code{arm} package---the key feature
 #' difference is that \code{gscale()} will perform the same functions for
 #' variables in \code{\link[survey]{svydesign}} objects. \code{gscale()} is
 #' also more user-friendly in that it is more flexible in how it accepts input.
@@ -27,7 +27,7 @@
 #'   functions to them? Default is TRUE.
 #'
 #' @param n.sd By how many standard deviations should the variables be divided
-#'   by? Default for `gscale` is 2, like \pkg{arm}'s \code{\link[arm]{rescale}}.
+#'   by? Default for `gscale` is 2, like \code{arm}'s \code{rescale}.
 #'   1 is the more typical standardization scheme.
 #'
 #' @param center.only A logical value indicating whether you would like to mean
