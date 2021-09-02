@@ -1,3 +1,7 @@
+# jtools 2.1.4
+
+* Fixed a test error.
+
 # jtools 2.1.3
 
 * Fixed an encoding error in the `movies` dataset.

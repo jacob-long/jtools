@@ -291,7 +291,7 @@ if (requireNamespace("brms") & requireNamespace("broom.mixed")) {
   bfit1 <- readRDS("brmfit.rds")
   mvfit <- readRDS("mvfit.rds")
   test_that("plot_coefs works with brms", {
-    expect_silent(print(plot_coefs(bfit1) + ggtitle("basic brms fit")))
+    expect_silent(print(suppressWarnings(plot_coefs(bfit1) + ggtitle("basic brms fit"))))
     expect_silent(print(suppressWarnings(plot_coefs(mvfit) + ggtitle("default mv brms fit"))))
     expect_silent(print(suppressWarnings(plot_coefs(mvfit, dpar = "sigma") +
                           ggtitle("default dv, dpar sigma mv brms fit"))))
