@@ -33,7 +33,7 @@ used multiple times.}
 \value{
 \itemize{
 \item \code{get_data()}: The data used to fit the model.
-\item \code{get_response()}: The name of the response variable.
+\item \code{get_response_name()}: The name of the response variable.
 \item \code{get_offset_name()}: The name of the offset variable.
 \item \code{get_weights()}: A list with \code{weights_name}, the name of the weighting
 variable, and \code{weights}, the weights themselves (or all 1 when there are
