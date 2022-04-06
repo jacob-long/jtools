@@ -227,6 +227,7 @@ test_that("effect_plot handles offsets w/ categorical predictors", {
   expect_s3_class(p <- effect_plot(pmod, pred = talent_f) + 
                     ggtitle("categorical (plus offset)"), "gg")
   expect_silent(print(p))
+  expect_error(p <- effect_plot(pmod, pred = talent_f, int.type = "prediction"))
   expect_s3_class(p <- effect_plot(pmod, pred = talent_f, plot.points = TRUE) +
                     ggtitle("categorical, offset, plot points"), "gg")
   expect_silent(print(p))

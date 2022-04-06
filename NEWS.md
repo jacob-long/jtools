@@ -1,3 +1,7 @@
+# jtools 2.1.5.9000
+
+* `make_predictions()` no longer ignores `int.type` (#116).
+
 # jtools 2.1.4
 
 * Fixed a test error.

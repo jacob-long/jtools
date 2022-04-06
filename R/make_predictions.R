@@ -189,8 +189,12 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   }
   
   # See minimum and maximum values for plotting intervals
-  if (interval) { # only create SE columns if intervals are needed
-    if (robust) {
+  if (interval == TRUE) { # only create SE columns if intervals are requested
+    if ("fit.lwr" %nin% names(predicted)) { # Okay this is funky but...
+      if (int.type[1] == "prediction") {
+        stop_wrap("R does not compute prediction intervals for this kind of
+                  model.")
+      }
       pm[["ymax"]] <- pm[[get_response_name(model)]] + (predicted[["se.fit"]]) * ses
       pm[["ymin"]] <- pm[[get_response_name(model)]] - (predicted[["se.fit"]]) * ses
     } else {
