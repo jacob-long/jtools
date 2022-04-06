@@ -284,7 +284,6 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                                set.offset = set.offset, return.orig.data = TRUE,
                                partial.residuals = partial.residuals, 
                                data = data, ...)
-  
   # Putting these outputs into separate objects
   pm <- pred_out[[1]]
   d <- pred_out[[2]]

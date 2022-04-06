@@ -189,9 +189,14 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   }
   
   # See minimum and maximum values for plotting intervals
-  if (interval == TRUE) { # only create SE columns if intervals are needed
-    pm[["ymax"]] <- pm[[get_response_name(model)]] + (predicted[["se.fit"]]) * ses
-    pm[["ymin"]] <- pm[[get_response_name(model)]] - (predicted[["se.fit"]]) * ses
+  if (interval) { # only create SE columns if intervals are needed
+    if (robust) {
+      pm[["ymax"]] <- pm[[get_response_name(model)]] + (predicted[["se.fit"]]) * ses
+      pm[["ymin"]] <- pm[[get_response_name(model)]] - (predicted[["se.fit"]]) * ses
+    } else {
+      pm[["ymin"]] <- predicted[["fit.lwr"]]
+      pm[["ymax"]] <- predicted[["fit.upr"]]
+    }
   } else {
     # Do nothing
   }

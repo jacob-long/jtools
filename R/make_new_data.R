@@ -211,7 +211,7 @@ get_weights <- function(model, data) {
 #' @return 
 #' 
 #' * `get_data()`: The data used to fit the model.
-#' * `get_response()`: The name of the response variable.
+#' * `get_response_name()`: The name of the response variable.
 #' * `get_offset_name()`: The name of the offset variable.
 #' * `get_weights()`: A list with `weights_name`, the name of the weighting
 #'  variable, and `weights`, the weights themselves (or all 1 when there are
