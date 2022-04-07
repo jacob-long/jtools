@@ -180,6 +180,11 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
                            "(?=($|~|\\s|\\*|\\+))", sep = "")
     backtick_name <- paste("`", var, "`", sep = "")
     formc <- gsub(regex_pattern, backtick_name, formc, perl = T)
+    # Need a separate regex to escape the dependent variable
+    regex_pattern <- paste("^", escapeRegex(var),
+                           "(?=($|~|\\s|\\*|\\+))", sep = "")
+    backtick_name <- paste("`", var, "`", sep = "")
+    formc <- gsub(regex_pattern, backtick_name, formc, perl = T)
 
   }
 
