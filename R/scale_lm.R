@@ -126,8 +126,8 @@ scale_lm <- scale_mod
 #'
 
 scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
-   center = TRUE, scale.response = FALSE, center.only = FALSE, data = NULL,
-   vars = NULL,
+   center = TRUE, scale.response = FALSE, center.only = FALSE, 
+   scale.only = FALSE, data = NULL, vars = NULL,
    apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
    ...) {
 

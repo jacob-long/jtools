@@ -6,6 +6,8 @@ points using the `point.size` argument. (#120)
 * `gscale()` (and therefore `scale_mod()` and `center_mod()`) no longer convert
 binary factor variables to numeric variables by default. This behavior can be
 requested by setting `binary.factor = TRUE`. (#114)
+* `summ()` now has a `scale.only` argument for supported models, allowing you
+to scale continuous variables without mean-centering them. (#104)
 
 # jtools 2.1.4
 

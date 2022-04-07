@@ -356,11 +356,15 @@ dep_checks <- function(dots) {
 
 ## Form the sentence that says what happened with variable transformations
 
-scale_statement <- function(scale, center, transform.response, n.sd) {
+scale_statement <- function(scale, center, transform.response, n.sd, scale.only) {
   part_1 <- "Continuous "
   part_2 <- ifelse(transform.response, "variables", "predictors")
-  part_3 <- " are mean-centered"
-  part_4 <- if (scale) { " and scaled by " } else { NULL }
+  part_3 <- if (!scale.only) {" are mean-centered"} else {NULL}
+  part_4 <- if (scale & !scale.only) { 
+    " and scaled by " 
+  } else if (scale) {
+    " are scaled by "
+  } else { NULL }
   part_5 <- if (scale) { paste(n.sd, "s.d") } else { NULL }
   
   if (scale == FALSE & center == FALSE) {

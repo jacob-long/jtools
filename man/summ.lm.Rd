@@ -18,6 +18,7 @@
   n.sd = 1,
   center = FALSE,
   transform.response = FALSE,
+  scale.only = FALSE,
   data = NULL,
   part.corr = FALSE,
   model.info = getOption("summ-model.info", TRUE),
@@ -31,7 +32,8 @@
 \item{model}{A \code{lm} object.}
 
 \item{scale}{If \code{TRUE}, reports standardized regression
-coefficients. Default is \code{FALSE}.}
+coefficients by scaling and mean-centering input data (the latter can be
+changed via the \code{scale.only} argument). Default is \code{FALSE}.}
 
 \item{confint}{Show confidence intervals instead of standard errors? Default
 is \code{FALSE}.}
@@ -71,10 +73,16 @@ are not printed. Default is \code{TRUE}.}
 predictors be divided by? Default is 1, though some suggest 2.}
 
 \item{center}{If you want coefficients for mean-centered variables but don't
-want to standardize, set this to \code{TRUE}.}
+want to standardize, set this to \code{TRUE}. Note that setting this to
+false does not affect whether \code{scale} mean-centers variables. Use
+\code{scale.only} for that.}
 
 \item{transform.response}{Should scaling/centering apply to response
 variable? Default is \code{FALSE}.}
+
+\item{scale.only}{If you want to scale but not center, set this to \code{TRUE}.
+Note that for legacy reasons, setting \code{scale = TRUE} and \code{center = FALSE}
+will not achieve the same effect. Default is \code{FALSE}.}
 
 \item{data}{If you provide the data used to fit the model here, that data
 frame is used to re-fit the model (if \code{scale} is \code{TRUE})
