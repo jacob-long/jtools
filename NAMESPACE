@@ -98,6 +98,12 @@ if (getRversion() >= "3.6.0") {
 } else {
  export(tidy.summ)
 }
+
+if (getRversion() >= "3.6.0") {
+ S3method(generics::tidy, summ.merMod)
+} else {
+ export(tidy.summ.merMod)
+}
 S3method("%just%",data.frame)
 S3method("%just%",default)
 S3method("%just%",list)

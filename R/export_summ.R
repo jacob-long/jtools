@@ -364,11 +364,8 @@ export_summs <- function(...,
 tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   if (all(c("summ.rq", "summ.svyglm") %nin% class(x))) {
-    # Hacky fix for spurious broom warnings with merMod
-    suppressWarnings({
-      base <- generics::tidy(x$model, conf.int = conf.int,
-                            conf.level = conf.level, ...)
-    })
+    base <- generics::tidy(x$model, conf.int = conf.int,
+                          conf.level = conf.level, ...)
   } else if ("summ.rq" %in% class(x)) {
     dots <- list(...)
     dots <- dots[names(dots) %in% c(names(formals("rq")),
@@ -407,12 +404,6 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
   } else if (!("p.value" %in% names(base))) {
 
     base[["p.value"]] <- NA
-
-  }
-
-  if ("statistic" %in% names(base) && any(is.na(base[["statistic"]]))) {
-
-    base <- base[!is.na(base$statistic),]
 
   }
 
@@ -458,6 +449,13 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
   if (attr(x, "vifs") == TRUE) {
     base$vif <- x$coeftable[,"VIF"]
   }
+  
+  # Moved later to avoid errors when there are undefined coefficients
+  if ("statistic" %in% names(base) && any(is.na(base[["statistic"]]))) {
+    
+    base <- base[!is.na(base$statistic),]
+    
+  }
 
   num_cols <- sapply(base, is.numeric)
   zeroes <- check_if_zero(base[num_cols])
@@ -469,6 +467,100 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   return(base)
 
+}
+
+#' @rdname glance.summ
+#' @rawNamespace 
+#' if (getRversion() >= "3.6.0") {
+#'  S3method(generics::tidy, summ.merMod)
+#' } else {
+#'  export(tidy.summ.merMod)
+#' }
+
+tidy.summ.merMod <- function(x, conf.int = FALSE, conf.level = .95, ...) {
+
+  base <- generics::tidy(x$model, conf.int = conf.int,
+                         conf.level = conf.level, ...)
+  
+  # Deleting random effects
+  if ("statistic" %in% names(base) && any(is.na(base[["statistic"]]))) {
+    base <- base[!is.na(base$statistic),]
+  }
+  
+  if ("S.E." %in% colnames(x$coeftable)) {
+    # If conf.int == TRUE, summ does not have a S.E. column
+    base$std.error[!is.na(base$std.error)] <- x$coeftable[,"S.E."]
+    
+  }
+  
+  # Need to find the statistic column without knowing what it will be called
+  stat_col <- attributes(x)$test.stat
+  
+  # Filtering to not NA avoids issues with NAs being filled with
+  # repetitive values due to replacement being multiple of its length
+  if ("statistic" %in% names(base)) {
+    base$statistic[!is.na(base$statistic)] <- x$coeftable[,stat_col]
+  }
+  
+  if ("p" %in% colnames(x$coeftable)) {
+    
+    base[["p.value"]][!is.na(base$statistic)] <- x$coeftable[,"p"]
+    
+  } else if (!("p.value" %in% names(base))) {
+    
+    base[["p.value"]] <- NA
+    
+  }
+  
+  if (attr(x, "exp") == TRUE) {
+    
+    base$estimate <- x$coeftable[,"exp(Est.)"]
+    
+  }
+  
+  if (attributes(x)$confint == TRUE | conf.int == TRUE) {
+    
+    labs <- make_ci_labs(conf.level)
+    lci_lab <- labs$lci
+    uci_lab <- labs$uci
+    
+    if (attributes(x)$confint == TRUE & attributes(x)$ci.width == conf.level) {
+      base$conf.low <- x$coeftable[,lci_lab]
+      base$conf.high <- x$coeftable[,uci_lab]
+    } else {
+      conf.level <- as.numeric(deparse(conf.level))
+      e <- environment()
+      x <- update_summ(x, confint = TRUE, ci.width = conf.level, call.env = e)
+      base$conf.low <- x$coeftable[,lci_lab]
+      base$conf.high <- x$coeftable[,uci_lab]
+    }
+    
+  }
+  
+  if (!is.null(attr(x, "coef_export"))) {
+    
+    the_coefs <- attr(x, "coef_export")
+    base <- base[base$term %in% the_coefs,]
+    if (!is.null(names(the_coefs))) {
+      for (i in seq_along(the_coefs)) {
+        if (names(the_coefs[i]) != "") {
+          base$term[base$term == the_coefs[i]] <- names(the_coefs[i])
+        }
+      }
+    }
+    
+  }
+  
+  num_cols <- sapply(base, is.numeric)
+  zeroes <- check_if_zero(base[num_cols])
+  if (any(zeroes == TRUE)) {
+    basenums <- base[num_cols]
+    basenums[zeroes] <- 0
+    base[num_cols] <- basenums
+  }
+  
+  return(base)
+  
 }
 
 #' @title Broom extensions for summ objects
