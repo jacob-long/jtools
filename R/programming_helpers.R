@@ -5,17 +5,20 @@
 #' @param table The object you want see if `x` is not in
 #' @return A logical vector
 #' @rdname nin
+#' @family subsetters
 #' @export 
 `%nin%` <- function(x, table) is.na(match(x, table, nomatch = NA_integer_))
 
 #' @export
 #' @rdname subsetters
+#' @family subsetters
 `%not%` <- function(x, y) {
   UseMethod("%not%")
 }
 
 #' @export
 #' @rdname subsetters
+#' @family subsetters
 #' @usage x \%not\% y <- value
 `%not%<-` <- function(x, y, value) {
   UseMethod("%not%<-")
@@ -23,12 +26,14 @@
 
 #' @export
 #' @rdname subsetters
+#' @family subsetters
 `%just%` <- function(x, y) {
   UseMethod("%just%")
 }
 
 #' @export
 #' @rdname subsetters
+#' @family subsetters
 #' @usage x \%just\% y <- value
 `%just%<-` <- function(x, y, value) {
   UseMethod("%just%<-")
@@ -74,6 +79,7 @@
 #'  
 #'  
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%.default` <- function(x, y) {
@@ -81,6 +87,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%<-.default` <- function(x, y, value) {
@@ -89,6 +96,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%.data.frame` <- function(x, y) {
@@ -100,6 +108,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%<-.data.frame` <- function(x, y, value) {
@@ -112,6 +121,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%.matrix` <- function(x, y) {
@@ -123,6 +133,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%<-.matrix` <- function(x, y, value) {
@@ -135,6 +146,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%.list` <- function(x, y) {
@@ -145,6 +157,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%not%<-.list` <- function(x, y, value) {
@@ -155,6 +168,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%.default` <- function(x, y) {
@@ -162,6 +176,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%<-.default` <- function(x, y, value) {
@@ -170,6 +185,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%just%.data.frame` <- function(x, y) {
@@ -181,6 +197,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%just%<-.data.frame` <- function(x, y, value) {
@@ -193,6 +210,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%just%.matrix` <- function(x, y) {
@@ -204,6 +222,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export 
 
 `%just%<-.matrix` <- function(x, y, value) {
@@ -216,6 +235,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%.list` <- function(x, y) {
@@ -227,6 +247,7 @@
 }
 
 #' @rdname subsetters
+#' @family subsetters
 #' @export
 # Automates my most common use of %in%
 `%just%<-.list` <- function(x, y, value) {

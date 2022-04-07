@@ -134,6 +134,6 @@ Other summ:
 \code{\link{summ.rq}()}
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }
 \concept{summ}

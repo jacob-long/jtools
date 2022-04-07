@@ -43,7 +43,7 @@ errors be calculated as if the number of rows in your dataset is the total
 number of observations (TRUE) or as if the sum of the weights in your
 dataset is the total number of observations (FALSE)?}
 
-\item{...}{Additional arguments passed to \code{\link[survey:surveysummary]{svyvar()}}.}
+\item{...}{Additional arguments passed to \code{\link[survey:svyglm]{svyvar()}}.}
 }
 \value{
 If significance tests are not requested, there is one returned value:
@@ -115,7 +115,7 @@ Other survey tools:
 \code{\link{wgttest}()}
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }
 \concept{survey package extensions}
 \concept{survey tools}

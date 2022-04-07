@@ -73,7 +73,7 @@ scale_lm <- scale_mod
 #' @return The functions returns a re-fitted model object, inheriting
 #'   from whichever class was supplied.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @family standardization
 #'
@@ -405,7 +405,7 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 #' @return The functions returns a \code{lm} or \code{glm} object, inheriting
 #'   from whichever class was supplied.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @family standardization
 #'

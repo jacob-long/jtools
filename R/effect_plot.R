@@ -198,7 +198,7 @@
 #'   like
 #'   a user-created plot and expanded upon as such.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @seealso `interact_plot` from the `interactions` package plots interaction
 #'   effects,

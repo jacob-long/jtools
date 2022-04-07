@@ -169,7 +169,7 @@ j_summ <- summ
 #'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @family summ
 #' 
@@ -563,7 +563,7 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
 #'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #' 
 #' @family summ
 #'  
@@ -1022,7 +1022,7 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
 #'  [gscale()] does the heavy lifting for mean-centering and scaling
 #'  behind the scenes.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #' 
 #' @family summ
 #'
@@ -1585,7 +1585,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'  A tweaked version of `piecewiseSEM::rsquared()` is used to
 #'  generate the pseudo-R-squared estimates for linear models.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @family summ
 #' 

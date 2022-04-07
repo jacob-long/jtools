@@ -288,5 +288,5 @@ levels of a moderator. \code{cat_plot} from \code{interactions} does the same
 for categorical by categorical interactions.
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }

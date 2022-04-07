@@ -589,7 +589,7 @@ print.weights_tests <- function(x, ...) {
 #'   number of observations (TRUE) or as if the sum of the weights in your
 #'   dataset is the total number of observations (FALSE)?
 #'
-#' @param ... Additional arguments passed to [`svyvar()`][survey::surveysummary].
+#' @param ... Additional arguments passed to [`svyvar()`][survey::summary.svyglm].
 #'
 #' @details
 #'   This function extends the \code{survey} package by calculating the
@@ -619,12 +619,12 @@ print.weights_tests <- function(x, ...) {
 #'  \item{t.values}{A matrix of t values}
 #'  \item{std.err}{A matrix of standard errors}
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @family survey package extensions
 #' @family survey tools
 #'
-#' @seealso \code{\link[weights]{wtd.cor}}, [`svymean()`][survey::surveysummary]
+#' @seealso \code{\link[weights]{wtd.cor}}, [`svymean()`][survey::svymean]
 #'
 #' @note This function was designed in part on the procedure recommended by
 #'  Thomas Lumley, the author of the survey package, on
@@ -766,7 +766,7 @@ print.svycor <- function(x, ...) {
 #'
 #' \code{svysd} extends the \code{survey} package by calculating standard
 #' deviations with syntax similar to the original package, which provides
-#' only a [`svyvar()`][survey::surveysummary] function.
+#' only a [`svyvar()`][survey::svyvar] function.
 #'
 #' @param formula A formula (e.g., ~var1+var2) specifying the term(s) of interest.
 #'
@@ -779,7 +779,7 @@ print.svycor <- function(x, ...) {
 #'   digits for all jtools functions with
 #'   \code{options("jtools-digits" = digits)} where digits is the desired number.
 #'
-#' @param ... Additional arguments passed to [`svyvar()`][survey::surveysummary].
+#' @param ... Additional arguments passed to [`svyvar()`][survey::svyvar].
 #'
 #' @details
 #'
@@ -790,7 +790,7 @@ print.svycor <- function(x, ...) {
 #' @family survey package extensions
 #' @family survey tools
 #'
-#' @seealso [`svyvar()`][survey::surveysummary]
+#' @seealso [`svyvar()`][survey::svyvar]
 #'
 #' @note This function was designed independent of the \pkg{survey} package and
 #'  is neither endorsed nor known to its authors.

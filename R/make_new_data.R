@@ -122,6 +122,7 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
 }
 
 #' @rdname model_utils
+#' @family model_utils
 #' @export 
 get_offset_name <- function(model) {
   
@@ -153,6 +154,7 @@ get_offset_name <- function(model) {
 }
 
 #' @rdname model_utils
+#' @family model_utils
 #' @export 
 get_weights <- function(model, data) {
   
@@ -217,6 +219,7 @@ get_weights <- function(model, data) {
 #'  variable, and `weights`, the weights themselves (or all 1 when there are
 #'  no weights).
 #' @rdname model_utils
+#' @family model_utils
 #' @export 
 
 get_data <- function(model, formula = NULL, warn = TRUE, ...) {
@@ -303,6 +306,7 @@ get_data <- function(model, formula = NULL, warn = TRUE, ...) {
 
 # adapted from https://stackoverflow.com/a/13217607/5050156
 #' @rdname model_utils
+#' @family model_utils
 #' @export 
 get_response_name <- function(model, ...) {
   formula <- get_formula(model, ...)
@@ -330,7 +334,7 @@ get_response_name <- function(model, ...) {
 #'   default.
 #' @param ... Ignored.
 #' 
-#' @value A `formula` object.
+#' @return A `formula` object.
 #' @examples 
 #' 
 #' data(mtcars)

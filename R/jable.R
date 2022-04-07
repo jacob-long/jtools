@@ -19,7 +19,6 @@
 #'  row names can also be specified here. By default, row names are included if 
 #'  rownames(t) is neither NULL nor identical to 1:nrow(x).
 #' @param col.names a character vector of column names to be used in the table
-#' @inheritParams knitr::kable
 #' @importFrom pander pandoc.table.return
 #' @rdname md_table
 #' @export 

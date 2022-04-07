@@ -103,5 +103,5 @@ D.C.: American Psychological Association.
 \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{theme}}
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }

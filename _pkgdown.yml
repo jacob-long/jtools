@@ -50,15 +50,20 @@ reference:
     - jtools_colors
  - title: Miscellaneous
    contents:
-    - subsetters
-    - nin
+    - has_concept("subsetters")
     - num_print
     - wrap_str
     - wtd.sd
-    - model_utils
+    - has_concept("model_utils")
     - md_table
     - tidy.summ
     - knit_print.summ.lm
+    - get_colors
+    - get_formula
+    - get_robust_se
+    - interact_plot
+    - predict_merMod
+    - movies
 
 
 navbar:

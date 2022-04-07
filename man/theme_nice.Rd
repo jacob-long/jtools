@@ -44,5 +44,5 @@ plot <- ggplot(mpg, aes(cty, hwy)) +
 
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }

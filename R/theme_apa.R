@@ -61,7 +61,7 @@
 #'   required updating for newer versions of \code{ggplot2} and adaptations for
 #'   APA style.
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @seealso \code{\link[ggplot2]{ggplot}}, \code{\link[ggplot2]{theme}}
 #'

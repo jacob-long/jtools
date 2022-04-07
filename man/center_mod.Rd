@@ -110,6 +110,6 @@ Other standardization:
 \code{\link{standardize}()}
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }
 \concept{standardization}

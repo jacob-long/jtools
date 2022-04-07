@@ -17,3 +17,8 @@ A logical vector
 \description{
 This function does the very opposite of \code{\%in\%}
 }
+\seealso{
+Other subsetters: 
+\code{\link{\%not\%}()}
+}
+\concept{subsetters}

@@ -14,7 +14,7 @@
 #' 
 #' @inheritParams ggplot2::theme_grey
 #'
-#' @author Jacob Long <\email{long.1377@@osu.edu}>
+#' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
 #' @examples
 #' # Create plot with ggplot2

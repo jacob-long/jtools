@@ -43,3 +43,4 @@ no weights).
 \description{
 These functions get information and data from regression models.
 }
+\concept{model_utils}

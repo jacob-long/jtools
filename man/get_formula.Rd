@@ -32,6 +32,9 @@ If there are multiple responses with distributional parameters, then
 \code{resp} should be specified or else the first formula will be used by
 default.}
 }
+\value{
+A \code{formula} object.
+}
 \description{
 Retrieve formulas from model objects
 

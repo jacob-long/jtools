@@ -108,3 +108,65 @@ subsetting with brackets.
  
  
 }
+\seealso{
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+
+Other subsetters: 
+\code{\link{\%nin\%}()}
+}
+\concept{subsetters}

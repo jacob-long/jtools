@@ -184,6 +184,6 @@ Other summ:
 \code{\link{summ.svyglm}()}
 }
 \author{
-Jacob Long <\email{long.1377@osu.edu}>
+Jacob Long \email{jacob.long@sc.edu}
 }
 \concept{summ}
