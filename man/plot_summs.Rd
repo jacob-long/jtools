@@ -17,6 +17,7 @@ plot_summs(
   rescale.distributions = FALSE,
   exp = FALSE,
   point.shape = TRUE,
+  point.size = 3,
   legend.title = "Model",
   groups = NULL,
   facet.rows = NULL,
@@ -39,6 +40,7 @@ plot_coefs(
   rescale.distributions = FALSE,
   exp = FALSE,
   point.shape = TRUE,
+  point.size = 3,
   legend.title = "Model",
   groups = NULL,
   facet.rows = NULL,
@@ -95,6 +97,8 @@ also moved to 1 instead of 0.}
 \item{point.shape}{When using multiple models, should each model's point
 estimates use a different point shape to visually differentiate each
 model from the others? Default is TRUE.}
+
+\item{point.size}{Change the size of the points. Default is 3.}
 
 \item{legend.title}{What should the title for the legend be? Default is
 "Model", but you can specify it here since it is rather difficult to

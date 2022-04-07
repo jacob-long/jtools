@@ -3,6 +3,9 @@
 * `make_predictions()` no longer ignores `int.type`. (#116)
 * `plot_coefs()` and `plot_summs()` now allow you to change the size of the 
 points using the `point.size` argument. (#120)
+* `gscale()` (and therefore `scale_mod()` and `center_mod()`) no longer convert
+binary factor variables to numeric variables by default. This behavior can be
+requested by setting `binary.factor = TRUE`. (#114)
 
 # jtools 2.1.4
 

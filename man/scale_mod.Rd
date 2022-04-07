@@ -26,7 +26,7 @@ scale_mod(model, ...)
 \code{\link[survey]{svyglm}}, or \link[lme4:merMod-class]{lme4::merMod}. Other model types
 may work as well but are not tested.}
 
-\item{...}{Ignored.}
+\item{...}{Arguments passed on to \code{\link[=gscale]{gscale()}}.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{"0/1"};
 \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5

@@ -10,7 +10,8 @@ center_mod(
   binary.inputs = "0/1",
   center.response = FALSE,
   data = NULL,
-  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE)
+  apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
+  ...
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ how many observations are at each level. An adapted version of
 \code{contr.wec()} from the \code{wec} package is used to do this. See
 that package's documentation and/or Grotenhuis et al. (2016) for more
 info.}
+
+\item{...}{Arguments passed on to \code{\link[=gscale]{gscale()}}.}
 }
 \value{
 The functions returns a \code{lm} or \code{glm} object, inheriting

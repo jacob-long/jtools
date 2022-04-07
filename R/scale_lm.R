@@ -53,7 +53,7 @@ scale_lm <- scale_mod
 #' @param vars A character vector of variable names that you want to be
 #'   scaled. If NULL, the default, it is all predictors.
 #'
-#' @param ... Ignored.
+#' @param ... Arguments passed on to [gscale()].
 #'
 #' @inheritParams gscale
 #'
@@ -226,7 +226,7 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
   mf <- gscale(vars = all_vars, data = mf, binary.inputs = binary.inputs,
                n.sd = n.sd, scale.only = !center,
                center.only = center.only, weights = the_weights,
-               apply.weighted.contrasts = apply.weighted.contrasts)
+               apply.weighted.contrasts = apply.weighted.contrasts, ...)
 
   form <- as.formula(formc)
 
@@ -357,7 +357,7 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   # Call gscale()
   design <- gscale(vars = all_vars, data = design, n.sd = n.sd,
-                   scale.only = !center, center.only = center.only)
+                   scale.only = !center, center.only = center.only, ...)
 
   call$design <- quote(design)
 
@@ -453,12 +453,13 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
 center_mod <- center_lm <- function(model, binary.inputs = "0/1",
     center.response = FALSE, data = NULL,
-    apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE)) {
+    apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE), 
+    ...) {
 
   out <- scale_mod(model, binary.inputs = binary.inputs,
                   scale.response = center.response, center.only = TRUE,
                   data = data,
-                  apply.weighted.contrasts = apply.weighted.contrasts)
+                  apply.weighted.contrasts = apply.weighted.contrasts, ...)
 
   return(out)
 
