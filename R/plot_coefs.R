@@ -37,6 +37,7 @@
 #' @param point.shape When using multiple models, should each model's point
 #'   estimates use a different point shape to visually differentiate each
 #'   model from the others? Default is TRUE.
+#' @param point.size Change the size of the points. Default is 3.
 #' @param legend.title What should the title for the legend be? Default is
 #'   "Model", but you can specify it here since it is rather difficult to
 #'   change later via `ggplot2`'s typical methods.
@@ -110,7 +111,8 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
-                       point.shape = TRUE, legend.title = "Model",
+                       point.shape = TRUE, point.size = 3, 
+                       legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors, 
                        resp = NULL, dpar = NULL) {
@@ -139,7 +141,8 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     inner_ci_level = inner_ci_level, colors = list(colors),
                     plot.distributions = plot.distributions,
                     rescale.distributions = rescale.distributions, exp = exp,
-                    point.shape = point.shape, legend.title = legend.title,
+                    point.shape = point.shape, point.size = point.size, 
+                    legend.title = legend.title,
                     groups = groups, facet.rows = facet.rows,
                     facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
                     color.class = color.class, resp = resp, dpar = dpar,
@@ -159,7 +162,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
-                       exp = FALSE, point.shape = TRUE,
+                       exp = FALSE, point.shape = TRUE, point.size = 3,
                        legend.title = "Model", groups = NULL,
                        facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors,
@@ -339,12 +342,12 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
       aes(y = term, x = estimate, xmin = conf.low,
           xmax = conf.high, colour = model, shape = model),
       position = ggstance::position_dodgev(height = dh),
-      fill = "white", fatten = 3, size = 0.8,
+      fill = "white", fatten = point.size, size = 0.8,
       show.legend = length(mods) > 1) # omit legend if just a single model
   } else {
     p <- p + geom_point(
       aes(y = term, x = estimate, colour = model, shape = model),
-      fill = "white", size = 3, stroke = 1, show.legend = TRUE)
+      fill = "white", size = point.size, stroke = 1, show.legend = TRUE)
   }
   
   # To set the shape aesthetic, I prefer the points that can be filled. But

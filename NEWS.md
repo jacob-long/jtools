@@ -1,6 +1,8 @@
 # jtools 2.1.5.9000
 
-* `make_predictions()` no longer ignores `int.type` (#116).
+* `make_predictions()` no longer ignores `int.type`. (#116)
+* `plot_coefs()` and `plot_summs()` now allow you to change the size of the 
+points using the `point.size` argument. (#120)
 
 # jtools 2.1.4
 
