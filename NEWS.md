@@ -8,6 +8,9 @@ binary factor variables to numeric variables by default. This behavior can be
 requested by setting `binary.factor = TRUE`. (#114)
 * `summ()` now has a `scale.only` argument for supported models, allowing you
 to scale continuous variables without mean-centering them. (#104)
+* `scale_mod()`/`center_mod()`, as well as `summ()`'s `scale` feature, no longer
+error when the left-hand side of the model formula contains a transformation.
+(#101)
 
 # jtools 2.1.4
 
