@@ -1101,6 +1101,7 @@ summ.svyglm <- function(
   } else {
 
     design <- model$survey.design
+    sum <- summary(model)
 
   }
 
@@ -1148,7 +1149,8 @@ summ.svyglm <- function(
     r <- sqrt(w) * r
     ## Final calculations
     rsq <- mss/(mss + rss)
-    arsq <- 1 - (1 - rsq) * ((n - df.int)/model$df.residual)
+    sumnull <- summary(update(model, . ~ 1, design = model$survey.design))
+    arsq <- 1 - (sum$dispersion / (sum$df.residual)) / (sumnull$dispersion / (sumnull$df.residual))
     j <- structure(j, rsq = rsq, arsq = arsq)
 
   } else { # If not linear, calculate pseudo-rsq
