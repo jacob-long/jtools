@@ -388,10 +388,10 @@ cat_wrap <- function(..., brk = "") {
 # Like cat_wrap but for warnings
 #' @rdname wrap_str
 #' @export 
-warn_wrap <- function(..., brk = "\n", .subclass = NULL, call. = FALSE) {
+warn_wrap <- function(..., brk = "\n", class = NULL, call. = FALSE) {
   dots <- dot_processor(...)
   wrapped <- c_orange(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
-  warn_args <- as.list(c(message = wrapped, .subclass = .subclass, dots$named))
+  warn_args <- as.list(c(message = wrapped, class = class, dots$named))
   do.call(rlang::warn, warn_args)
 }
 
@@ -401,10 +401,10 @@ warn_wrap <- function(..., brk = "\n", .subclass = NULL, call. = FALSE) {
 #' @export 
 stop_wrap <- function(...,  brk = "\n",
                       trace = rlang::trace_back(bottom = rlang::caller_env()),
-                      .subclass = NULL, call. = NULL) {
+                      class = NULL, call. = NULL) {
   dots <- dot_processor(...)
   wrapped <- c_red(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
-  abort_args <- list(message = wrapped, .subclass = .subclass, dots$named,
+  abort_args <- list(message = wrapped, class = class, dots$named,
                      trace = trace)
   abort_args <- abort_args[!sapply(abort_args, is.null)]
   do.call(rlang::abort, abort_args)
@@ -414,9 +414,9 @@ stop_wrap <- function(...,  brk = "\n",
 #' @importFrom crayon cyan
 #' @rdname wrap_str
 #' @export 
-msg_wrap <- function(..., .subclass = NULL, brk = "\n") {
+msg_wrap <- function(..., class = NULL, brk = "\n") {
   dots <- dot_processor(...)
   wrapped <- c_cyan(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
-  inform_args <- as.list(c(message = wrapped, .subclass = .subclass, dots$named))
+  inform_args <- as.list(c(message = wrapped, class = class, dots$named))
   do.call(rlang::inform, inform_args)
 }
