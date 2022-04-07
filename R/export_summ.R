@@ -376,8 +376,7 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
                                     "alpha")]
 
     args <- as.list(c(list(x$model), conf.int = conf.int,
-                      conf.level = conf.level,
-                 se.type = attr(x, "se"), dots))
+                      conf.level = conf.level, se.type = attr(x, "se"), dots))
 
     base <- do.call(generics::tidy, args)
   } else {
@@ -454,6 +453,10 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
       }
     }
 
+  }
+  
+  if (attr(x, "vifs") == TRUE) {
+    base$vif <- x$coeftable[,"VIF"]
   }
 
   num_cols <- sapply(base, is.numeric)
