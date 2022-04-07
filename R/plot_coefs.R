@@ -489,15 +489,13 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
       extra_args <- ex_args[names(ex_args) %in% names(method_args)]
       
     } else if (method_stub == "brmsfit" & is.null(ex_args)) {
-      extra_args <- list(par_type = "non-varying", effects = "fixed")
+      extra_args <- list(effects = "fixed")
     } else {
       extra_args <- NULL
     }
     
     all_args <- as.list(c(x = list(mods[[i]]), conf.int = TRUE,
-                          conf.level = ci_level,
-                          intervals = TRUE, prob = ci_level,
-                          extra_args))
+                          conf.level = ci_level, extra_args))
     
     tidies[[i]] <- do.call(generics::tidy, args = all_args)
     if (!is.null(names(mods)) & any(names(mods) != "")) {
