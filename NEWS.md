@@ -20,6 +20,8 @@ set to `FALSE`. (#93)
 * **Important bugfix**: `pf_sv_test()` was calculating standard errors 
 incorrectly in previous versions of `jtools`. This has been corrected. Thanks
 to Rebecca Andridge for noticing this. (#89)
+* `wtd.sd()` now gives correct results when data is missing in `x` but not in
+the weights. Thanks to Klaus Langohr for reporting the issue.
 
 # jtools 2.1.4
 
