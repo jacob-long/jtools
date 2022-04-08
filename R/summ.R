@@ -68,7 +68,9 @@ j_summ <- summ
 #'
 #' @param cluster For clustered standard errors, provide the column name of
 #'   the cluster variable in the input data frame (as a string). Alternately,
-#'   provide a vector of clusters.
+#'   provide a vector of clusters. Note that you must set `robust` to either
+#'   "HC1", "HC2", or "HC3" in order to have clustered standard errors ("HC4"
+#'   and "HC5" are not supported.  
 #'
 #' @param digits An integer specifying the number of digits past the decimal to
 #'   report in the output. Default is 2. You can change the default number of
@@ -309,6 +311,11 @@ summ.lm <- function(
     params[["VIF"]] <- tvifs
   }
 
+  if (!is.null(cluster) & identical(FALSE, robust)) {
+    warn_wrap("Cluster argument is being ignored. To have clustered standard
+              errors, you must set the 'robust' argument to 'HC1', 'HC2', or
+              'HC3'.")
+  }
   # Standard errors and t-statistics
   if (identical(FALSE, robust) & is.null(vcov)) {
 
@@ -715,6 +722,11 @@ summ.glm <- function(
   }
 
   # Standard errors and t-statistics
+  if (!is.null(cluster) & identical(FALSE, robust)) {
+    warn_wrap("Cluster argument is being ignored. To have clustered standard
+              errors, you must set the 'robust' argument to 'HC1', 'HC2', or
+              'HC3'.")
+  }
   if (identical(FALSE, robust) & is.null(vcov)) {
 
     ses <- coef(sum)[,2]

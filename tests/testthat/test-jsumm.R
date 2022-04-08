@@ -256,6 +256,7 @@ test_that("jsumm: lm cluster-robust SEs work", {
   expect_is(summ(fit, robust = "HC3", cluster = "Population"), "summ.lm")
   expect_output(print(summ(fit, robust = "HC3", cluster = "Population")))
   expect_error(summ(fit, robust = "HC4m", cluster = "Population"))
+  expect_warning(summ(fit, cluster = "Population"))
 })
 
 test_that("jsumm: glm cluster-robust SEs work", {

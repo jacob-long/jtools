@@ -55,7 +55,9 @@ standard errors.}
 
 \item{cluster}{For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
-provide a vector of clusters.}
+provide a vector of clusters. Note that you must set \code{robust} to either
+"HC1", "HC2", or "HC3" in order to have clustered standard errors ("HC4"
+and "HC5" are not supported.}
 
 \item{vifs}{If \code{TRUE}, adds a column to output with variance inflation
 factors (VIF). Default is \code{FALSE}.}

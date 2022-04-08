@@ -13,6 +13,8 @@ error when the left-hand side of the model formula contains a transformation.
 (#101)
 * `effect_plot()` and `make_predictions()` now handle binomial GLMs with a
 two-column response variable. (#100)
+* `summ()` no longer silently ignores the `cluster` argument when `robust` is
+set to `FALSE`. (#93)
 
 # jtools 2.1.4
 
