@@ -17,6 +17,9 @@ two-column response variable. (#100)
 set to `FALSE`. (#93)
 * Pseudo-R^2 calculations now work when `family` is given as a string to the 
 `glm()` function. (#92)
+* **Important bugfix**: `pf_sv_test()` was calculating standard errors 
+incorrectly in previous versions of `jtools`. This has been corrected. Thanks
+to Rebecca Andridge for noticing this. (#89)
 
 # jtools 2.1.4
 
