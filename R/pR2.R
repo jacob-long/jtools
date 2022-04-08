@@ -33,7 +33,7 @@ pR2 <- function(object) {
   
   llh <- getLL(object)
   
-  if (family(object)$family %in% c("quasibinomial","quasipoisson")) {
+  if (get_family(object)$family %in% c("quasibinomial","quasipoisson")) {
     msg_wrap("Note: Pseudo-R2 for quasibinomial/quasipoisson families is
              calculated by refitting the fitted and null models as
              binomial/poisson.")
@@ -75,6 +75,7 @@ pR2 <- function(object) {
   if ("start" %in% names(call)) {
     call$start <- NULL
   } 
+  call$family <- get_family(object)
   # Update the model
   objectNull <- try(eval(call))
   if ("try-error" %in% class(objectNull)) {
@@ -96,7 +97,7 @@ pR2 <- function(object) {
 #' @importFrom stats poisson binomial family
 getLL <- function(object) {
   
-  fam <- family(object)
+  fam <- get_family(object)
   link <- fam$link
   fam <- fam$family
   quasis <- c("quasibinomial","quasipoisson","quasi")

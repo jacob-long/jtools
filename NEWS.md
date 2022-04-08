@@ -15,6 +15,8 @@ error when the left-hand side of the model formula contains a transformation.
 two-column response variable. (#100)
 * `summ()` no longer silently ignores the `cluster` argument when `robust` is
 set to `FALSE`. (#93)
+* Pseudo-R^2 calculations now work when `family` is given as a string to the 
+`glm()` function. (#92)
 
 # jtools 2.1.4
 
