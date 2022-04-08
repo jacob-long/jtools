@@ -144,7 +144,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     rescale.distributions = rescale.distributions, exp = exp,
                     point.shape = list(point.shape), point.size = point.size, 
                     legend.title = legend.title,
-                    groups = groups, facet.rows = facet.rows,
+                    groups = list(groups), facet.rows = facet.rows,
                     facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
                     color.class = color.class, resp = resp, dpar = dpar,
                     ex_args))

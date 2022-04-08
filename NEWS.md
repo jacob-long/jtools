@@ -24,6 +24,7 @@ to Rebecca Andridge for noticing this. (#89)
 the weights. Thanks to Klaus Langohr for reporting the issue.
 * Users may now choose their own points in `plot_coefs()` and `plot_summs()`
 by passing a vector of shapes to the `point.shape` argument. (#71)
+* Facetting now works in `plot_summs()` as it always had in `plot_coefs()`. (#88)
 
 # jtools 2.1.4
 
