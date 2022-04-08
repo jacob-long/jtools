@@ -4,6 +4,7 @@
 \alias{get_formula}
 \alias{get_formula.default}
 \alias{get_formula.brmsfit}
+\alias{get_formula.panelmodel}
 \title{Retrieve formulas from model objects
 
 This function is primarily an internal helper function in \code{jtools} and
@@ -15,6 +16,8 @@ get_formula(model, ...)
 \method{get_formula}{default}(model, ...)
 
 \method{get_formula}{brmsfit}(model, resp = NULL, dpar = NULL, ...)
+
+\method{get_formula}{panelmodel}(model, ...)
 }
 \arguments{
 \item{model}{The fitted model object.}

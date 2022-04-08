@@ -152,7 +152,7 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   } else {pm <- new_data}
   
   
-  link_or_lm <- ifelse(family(model)$link == "identity",
+  link_or_lm <- ifelse(get_family(model)$link == "identity",
                        yes = "response", no = "link")
   
   # Do the predictions using built-in prediction method if robust is FALSE
@@ -211,10 +211,10 @@ make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   # Back-convert the predictions to the response scale
   if (outcome.scale == "response") {
     pm[[get_response_name(model)]] <-
-      family(model)$linkinv(pm[[get_response_name(model)]])
+      get_family(model)$linkinv(pm[[get_response_name(model)]])
     if (interval == TRUE) {
-      pm[["ymax"]] <- family(model)$linkinv(pm[["ymax"]])
-      pm[["ymin"]] <- family(model)$linkinv(pm[["ymin"]])
+      pm[["ymax"]] <- get_family(model)$linkinv(pm[["ymax"]])
+      pm[["ymin"]] <- get_family(model)$linkinv(pm[["ymin"]])
     }
   }
   

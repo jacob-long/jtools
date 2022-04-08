@@ -386,6 +386,14 @@ get_formula.brmsfit <- function(model, resp = NULL, dpar = NULL, ...) {
   }
 }
 
+#' @rdname get_formula
+#' @export
+get_formula.panelmodel <- function(model, ...) {
+  f <- formula(model)
+  class(f) <- class(f) %not% "Formula"
+  f
+}
+
 get_family <- function(model, ...) {
   UseMethod("get_family")
 }
@@ -414,6 +422,11 @@ get_family.brmsfit <- function(model, resp = NULL, ...) {
   } else {
     return(fam)
   }
+}
+
+#' @importFrom stats gaussian
+get_family.plm <- function(model, ...) {
+  gaussian(link = "identity")
 }
 
 # formerly built into make_new_data, but I want to use it for other times
