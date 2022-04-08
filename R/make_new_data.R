@@ -545,7 +545,8 @@ zero_or_base <- function(x) {
 }
 
 check_two_col <- function(model) {
-  attr(terms(model),"dataClasses")[1] %in% c("nmatrix.2")  
+  r <- attr(terms(model),"dataClasses")[1] %in% c("nmatrix.2")
+  if (length(r) == 0) {return(FALSE)} else {return(r)} 
 }
 
 get_two_col <- function(model) {
