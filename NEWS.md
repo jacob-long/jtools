@@ -11,6 +11,8 @@ to scale continuous variables without mean-centering them. (#104)
 * `scale_mod()`/`center_mod()`, as well as `summ()`'s `scale` feature, no longer
 error when the left-hand side of the model formula contains a transformation.
 (#101)
+* `effect_plot()` and `make_predictions()` now handle binomial GLMs with a
+two-column response variable. (#100)
 
 # jtools 2.1.4
 

@@ -23,10 +23,13 @@ prepare_return_data <- function(model, data, return.orig.data,
       # If left-hand side is transformed, make new column in original data for
       # the transformed version and evaluate it
       if (is_lhs_transformed(formula)) {
-        o[[2]][resp] <- eval(get_lhs(formula), o[[2]])
+        if (!check_two_col(model)) {
+          o[[2]][resp] <- eval(get_lhs(formula), o[[2]])
+        } 
       }
       # For binomial family, character/logical DVs can cause problems
-      if (get_family(model, ...)$family == "binomial" &  !is.numeric(d[[resp]])) {
+      if (get_family(model, ...)$family == "binomial" & !is.numeric(d[[resp]]) &
+          !check_two_col(model)) {
         if (is.logical(d[[resp]])) {
           o[[2]][[resp]] <- as.numeric(o[[2]][[resp]])
         } else {

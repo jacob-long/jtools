@@ -543,3 +543,13 @@ zero_or_base <- function(x) {
     FALSE
   }
 }
+
+check_two_col <- function(model) {
+  attr(terms(model),"dataClasses")[1] %in% c("nmatrix.2")  
+}
+
+get_two_col <- function(model) {
+  all.vars(terms(formula(paste("~", get_response_name(model)))))
+}
+
+
