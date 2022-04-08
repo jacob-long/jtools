@@ -356,7 +356,8 @@ dep_checks <- function(dots) {
 
 ## Form the sentence that says what happened with variable transformations
 
-scale_statement <- function(scale, center, transform.response, n.sd, scale.only) {
+scale_statement <- function(scale, center, transform.response, n.sd, 
+                            scale.only = FALSE) {
   part_1 <- "Continuous "
   part_2 <- ifelse(transform.response, "variables", "predictors")
   part_3 <- if (!scale.only) {" are mean-centered"} else {NULL}
