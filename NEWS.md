@@ -1,30 +1,37 @@
-# jtools 2.1.5.9000
+# jtools 2.2.0.9000
 
-* `make_predictions()` no longer ignores `int.type`. (#116)
-* `plot_coefs()` and `plot_summs()` now allow you to change the size of the 
-points using the `point.size` argument. (#61, #120)
-* `gscale()` (and therefore `scale_mod()` and `center_mod()`) no longer convert
-binary factor variables to numeric variables by default. This behavior can be
-requested by setting `binary.factor = TRUE`. (#114)
-* `summ()` now has a `scale.only` argument for supported models, allowing you
-to scale continuous variables without mean-centering them. (#104)
-* `scale_mod()`/`center_mod()`, as well as `summ()`'s `scale` feature, no longer
-error when the left-hand side of the model formula contains a transformation.
-(#101)
-* `effect_plot()` and `make_predictions()` now handle binomial GLMs with a
-two-column response variable. (#100)
-* `summ()` no longer silently ignores the `cluster` argument when `robust` is
-set to `FALSE`. (#93)
-* Pseudo-R^2 calculations now work when `family` is given as a string to the 
-`glm()` function. (#92)
-* **Important bugfix**: `pf_sv_test()` was calculating standard errors 
+Accuracy bug fixes:
+* `pf_sv_test()` was calculating standard errors 
 incorrectly in previous versions of `jtools`. This has been corrected. Thanks
 to Rebecca Andridge for noticing this. (#89)
 * `wtd.sd()` now gives correct results when data is missing in `x` but not in
 the weights. Thanks to Klaus Langohr for reporting the issue.
+
+Other bug fixes:
+* `make_predictions()` no longer ignores `int.type`. (#116)
+* `scale_mod()`/`center_mod()`, as well as `summ()`'s `scale` feature, no longer
+error when the left-hand side of the model formula contains a transformation.
+(#101)
+* Pseudo-R^2 calculations now work when `family` is given as a string to the 
+`glm()` function. (#92)
+* Facetting now works in `plot_summs()` as it always had in `plot_coefs()`. (#88)
+
+Enhancements:
+* `plot_coefs()` and `plot_summs()` now allow you to change the size of the 
+points using the `point.size` argument. (#61, #120)
+* `summ()` now has a `scale.only` argument for supported models, allowing you
+to scale continuous variables without mean-centering them. (#104)
+* `effect_plot()` and `make_predictions()` now handle binomial GLMs with a
+two-column response variable. (#100)
 * Users may now choose their own points in `plot_coefs()` and `plot_summs()`
 by passing a vector of shapes to the `point.shape` argument. (#71)
-* Facetting now works in `plot_summs()` as it always had in `plot_coefs()`. (#88)
+
+Miscellaneous changes:
+* `gscale()` (and therefore `scale_mod()` and `center_mod()`) no longer convert
+binary factor variables to numeric variables by default. This behavior can be
+requested by setting `binary.factor = TRUE`. (#114)
+* `summ()` no longer silently ignores the `cluster` argument when `robust` is
+set to `FALSE`. (#93)
 
 # jtools 2.1.4
 
