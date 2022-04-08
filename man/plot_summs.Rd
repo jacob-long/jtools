@@ -96,7 +96,8 @@ also moved to 1 instead of 0.}
 
 \item{point.shape}{When using multiple models, should each model's point
 estimates use a different point shape to visually differentiate each
-model from the others? Default is TRUE.}
+model from the others? Default is TRUE. You may also pass a vector of
+shapes to specify shapes yourself.}
 
 \item{point.size}{Change the size of the points. Default is 3.}
 

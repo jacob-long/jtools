@@ -36,7 +36,8 @@
 #'   also moved to 1 instead of 0.
 #' @param point.shape When using multiple models, should each model's point
 #'   estimates use a different point shape to visually differentiate each
-#'   model from the others? Default is TRUE.
+#'   model from the others? Default is TRUE. You may also pass a vector of
+#'   shapes to specify shapes yourself.
 #' @param point.size Change the size of the points. Default is 3.
 #' @param legend.title What should the title for the legend be? Default is
 #'   "Model", but you can specify it here since it is rather difficult to
@@ -141,7 +142,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     inner_ci_level = inner_ci_level, colors = list(colors),
                     plot.distributions = plot.distributions,
                     rescale.distributions = rescale.distributions, exp = exp,
-                    point.shape = point.shape, point.size = point.size, 
+                    point.shape = list(point.shape), point.size = point.size, 
                     legend.title = legend.title,
                     groups = groups, facet.rows = facet.rows,
                     facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
@@ -352,11 +353,21 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   
   # To set the shape aesthetic, I prefer the points that can be filled. But
   # there are only 6 such shapes, so I need to check how many models there are.
-  if (point.shape == TRUE) {
+  if (length(point.shape) == 1 && point.shape == TRUE) {
     oshapes <- c(21:25, 15:18, 3, 4, 8)
     shapes <- oshapes[seq_len(n_models)]
-  } else if (point.shape == FALSE) {
+  } else if (length(point.shape) == 1 && is.logical(point.shape[1]) &
+             point.shape[1] == FALSE) {
     shapes <- rep(21, times = n_models)
+  } else {
+    if (length(point.shape) != n_models & length(point.shape) != 1) {
+      stop_wrap("You must provide the same number of point shapes as the
+                number of models.")
+    } else if (length(point.shape) == 1) {
+      shapes <- rep(point.shape, times = n_models)
+    } else {
+      shapes <- point.shape
+    }
   }
   
   p <- p +
