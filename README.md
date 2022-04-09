@@ -1,9 +1,9 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# jtools
+# jtools <img src="https://jacob-long.com/img/jtools_hex.png" alt="jtools" height="250px" align="right" />
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools)
 [![Total
 Downloads](https://cranlogs.r-pkg.org/badges/grand-total/jtools)](https://cran.r-project.org/package=jtools)
 [![CII Best
@@ -342,8 +342,8 @@ R2
 </tr>
 <tr>
 <th colspan="4" style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
-Standard errors are heteroskedasticity robust. \*\*\* p &lt; 0.001; \*\*
-p &lt; 0.01; \* p &lt; 0.05.
+Standard errors are heteroskedasticity robust. \*\*\* p \< 0.001; \*\* p
+\< 0.01; \* p \< 0.05.
 </th>
 </tr>
 </table>
