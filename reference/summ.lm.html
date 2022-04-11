@@ -18,7 +18,7 @@ summary(), but formatted differently with more options."><!-- mathjax --><script
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">jtools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.5.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.2.0.9000</span>
       </span>
     </div>
 
@@ -102,6 +102,7 @@ summary(), but formatted differently with more options."><!-- mathjax --><script
   n.sd <span class="op">=</span> <span class="fl">1</span>,
   center <span class="op">=</span> <span class="cn">FALSE</span>,
   transform.response <span class="op">=</span> <span class="cn">FALSE</span>,
+  scale.only <span class="op">=</span> <span class="cn">FALSE</span>,
   data <span class="op">=</span> <span class="cn">NULL</span>,
   part.corr <span class="op">=</span> <span class="cn">FALSE</span>,
   model.info <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"summ-model.info"</span>, <span class="cn">TRUE</span><span class="op">)</span>,
@@ -118,7 +119,8 @@ summary(), but formatted differently with more options."><!-- mathjax --><script
 <dd><p>A <code>lm</code> object.</p></dd>
 <dt>scale</dt>
 <dd><p>If <code>TRUE</code>, reports standardized regression
-coefficients. Default is <code>FALSE</code>.</p></dd>
+coefficients by scaling and mean-centering input data (the latter can be
+changed via the <code>scale.only</code> argument). Default is <code>FALSE</code>.</p></dd>
 <dt>confint</dt>
 <dd><p>Show confidence intervals instead of standard errors? Default
 is <code>FALSE</code>.</p></dd>
@@ -138,7 +140,9 @@ standard errors.</p></dd>
 <dt>cluster</dt>
 <dd><p>For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
-provide a vector of clusters.</p></dd>
+provide a vector of clusters. Note that you must set <code>robust</code> to either
+"HC1", "HC2", or "HC3" in order to have clustered standard errors ("HC4"
+and "HC5" are not supported.</p></dd>
 <dt>vifs</dt>
 <dd><p>If <code>TRUE</code>, adds a column to output with variance inflation
 factors (VIF). Default is <code>FALSE</code>.</p></dd>
@@ -156,10 +160,16 @@ are not printed. Default is <code>TRUE</code>.</p></dd>
 predictors be divided by? Default is 1, though some suggest 2.</p></dd>
 <dt>center</dt>
 <dd><p>If you want coefficients for mean-centered variables but don't
-want to standardize, set this to <code>TRUE</code>.</p></dd>
+want to standardize, set this to <code>TRUE</code>. Note that setting this to
+false does not affect whether <code>scale</code> mean-centers variables. Use
+<code>scale.only</code> for that.</p></dd>
 <dt>transform.response</dt>
 <dd><p>Should scaling/centering apply to response
 variable? Default is <code>FALSE</code>.</p></dd>
+<dt>scale.only</dt>
+<dd><p>If you want to scale but not center, set this to <code>TRUE</code>.
+Note that for legacy reasons, setting <code>scale = TRUE</code> and <code>center = FALSE</code>
+will not achieve the same effect. Default is <code>FALSE</code>.</p></dd>
 <dt>data</dt>
 <dd><p>If you provide the data used to fit the model here, that data
 frame is used to re-fit the model (if <code>scale</code> is <code>TRUE</code>)

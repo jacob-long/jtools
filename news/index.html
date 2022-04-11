@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">jtools</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.5.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.2.0.9000</span>
       </span>
     </div>
 
@@ -81,10 +81,12 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="2.1.5.9000" id="jtools-2159000">jtools 2.1.5.9000<a class="anchor" aria-label="anchor" href="#jtools-2159000"></a></h2>
-<ul><li>
-<code><a href="../reference/make_predictions.html">make_predictions()</a></code> no longer ignores <code>int.type</code> (<a href="https://github.com/jacob-long/jtools/issues/116" class="external-link">#116</a>).</li>
-</ul></div>
+<h2 class="page-header" data-toc-text="2.2.0.9000" id="jtools-2209000">jtools 2.2.0.9000<a class="anchor" aria-label="anchor" href="#jtools-2209000"></a></h2>
+<p>Accuracy bug fixes: * <code><a href="../reference/pf_sv_test.html">pf_sv_test()</a></code> was calculating standard errors incorrectly in previous versions of <code>jtools</code>. This has been corrected. Thanks to Rebecca Andridge for noticing this. (<a href="https://github.com/jacob-long/jtools/issues/89" class="external-link">#89</a>) * <code><a href="../reference/wtd.sd.html">wtd.sd()</a></code> now gives correct results when data is missing in <code>x</code> but not in the weights. Thanks to Klaus Langohr for reporting the issue.</p>
+<p>Other bug fixes: * <code><a href="../reference/make_predictions.html">make_predictions()</a></code> no longer ignores <code>int.type</code>. (<a href="https://github.com/jacob-long/jtools/issues/116" class="external-link">#116</a>) * <code><a href="../reference/scale_mod.html">scale_mod()</a></code>/<code><a href="../reference/center_mod.html">center_mod()</a></code>, as well as <code><a href="../reference/summ.html">summ()</a></code>’s <code>scale</code> feature, no longer error when the left-hand side of the model formula contains a transformation. (<a href="https://github.com/jacob-long/jtools/issues/101" class="external-link">#101</a>) * Pseudo-R^2 calculations now work when <code>family</code> is given as a string to the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> function. (<a href="https://github.com/jacob-long/jtools/issues/92" class="external-link">#92</a>) * Facetting now works in <code><a href="../reference/plot_summs.html">plot_summs()</a></code> as it always had in <code><a href="../reference/plot_summs.html">plot_coefs()</a></code>. (<a href="https://github.com/jacob-long/jtools/issues/88" class="external-link">#88</a>)</p>
+<p>Enhancements: * <code><a href="../reference/plot_summs.html">plot_coefs()</a></code> and <code><a href="../reference/plot_summs.html">plot_summs()</a></code> now allow you to change the size of the points using the <code>point.size</code> argument. (<a href="https://github.com/jacob-long/jtools/issues/61" class="external-link">#61</a>, <a href="https://github.com/jacob-long/jtools/issues/120" class="external-link">#120</a>) * <code><a href="../reference/summ.html">summ()</a></code> now has a <code>scale.only</code> argument for supported models, allowing you to scale continuous variables without mean-centering them. (<a href="https://github.com/jacob-long/jtools/issues/104" class="external-link">#104</a>) * <code><a href="../reference/effect_plot.html">effect_plot()</a></code> and <code><a href="../reference/make_predictions.html">make_predictions()</a></code> now handle binomial GLMs with a two-column response variable. (<a href="https://github.com/jacob-long/jtools/issues/100" class="external-link">#100</a>) * Users may now choose their own points in <code><a href="../reference/plot_summs.html">plot_coefs()</a></code> and <code><a href="../reference/plot_summs.html">plot_summs()</a></code> by passing a vector of shapes to the <code>point.shape</code> argument. (<a href="https://github.com/jacob-long/jtools/issues/71" class="external-link">#71</a>)</p>
+<p>Miscellaneous changes: * <code><a href="../reference/gscale.html">gscale()</a></code> (and therefore <code><a href="../reference/scale_mod.html">scale_mod()</a></code> and <code><a href="../reference/center_mod.html">center_mod()</a></code>) no longer convert binary factor variables to numeric variables by default. This behavior can be requested by setting <code>binary.factor = TRUE</code>. (<a href="https://github.com/jacob-long/jtools/issues/114" class="external-link">#114</a>) * <code><a href="../reference/summ.html">summ()</a></code> no longer silently ignores the <code>cluster</code> argument when <code>robust</code> is set to <code>FALSE</code>. (<a href="https://github.com/jacob-long/jtools/issues/93" class="external-link">#93</a>)</p>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="2.1.4" id="jtools-214">jtools 2.1.4<small>2021-09-03</small><a class="anchor" aria-label="anchor" href="#jtools-214"></a></h2>
 <ul><li>Fixed a test error.</li>
