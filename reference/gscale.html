@@ -215,30 +215,30 @@ before printing its output.</p>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Basic use</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.5870996 -0.5921794  0.4665445 -0.3419228  0.5604872 -0.2209896</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7]  0.1007372 -0.3571336  0.1340485  0.8375075</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  0.06266663 -0.24172528 -0.33944613 -0.30935973  1.01135585  0.67282587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] -0.68063233 -0.12072951  0.07700517 -0.13196054</span>
 <span class="r-in"><span class="co"># Normal standardization</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x</span>, n.sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -1.1741992 -1.1843588  0.9330891 -0.6838457  1.1209745 -0.4419791</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7]  0.2014744 -0.7142672  0.2680970  1.6750150</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  0.1253333 -0.4834506 -0.6788923 -0.6187195  2.0227117  1.3456517</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] -1.3612647 -0.2414590  0.1540103 -0.2639211</span>
 <span class="r-in"><span class="co"># Scale only</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x</span>, scale.only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.3334740 0.3283942 1.3871181 0.5786508 1.4810608 0.6995840 1.0213108</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] 0.5634400 1.0546221 1.7580811</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.8345462 0.5301543 0.4324334 0.4625198 1.7832354 1.4447054 0.0912472</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] 0.6511500 0.8488847 0.6399190</span>
 <span class="r-in"><span class="co"># Center only</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x</span>, center.only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -1.3403407 -1.3519378  1.0651151 -0.7806054  1.2795850 -0.5045163</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7]  0.2299817 -0.8153313  0.3060309  1.9120187</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  0.1794558 -0.6922186 -0.9720578 -0.8859006  2.8961777  1.9267435</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] -1.9490986 -0.3457281  0.2205165 -0.3778899</span>
 <span class="r-in"><span class="co"># Binary inputs</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x2</span>, binary.inputs <span class="op">=</span> <span class="st">"0/1"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 1 1 1 0 1 1 0 1 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0 1 1 0 0 0 1 1 1 1</span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x2</span>, binary.inputs <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span> <span class="co"># treats it like a continous var</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.7245688  0.3105295  0.3105295  0.3105295 -0.7245688  0.3105295</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7]  0.3105295 -0.7245688  0.3105295  0.3105295</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.5809475  0.3872983  0.3872983 -0.5809475 -0.5809475 -0.5809475</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7]  0.3872983  0.3872983  0.3872983  0.3872983</span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x2</span>, binary.inputs <span class="op">=</span> <span class="st">"-0.5/0.5"</span><span class="op">)</span> <span class="co"># keep scale, center at zero</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.5  0.5  0.5  0.5 -0.5  0.5  0.5 -0.5  0.5  0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.5  0.5  0.5 -0.5 -0.5 -0.5  0.5  0.5  0.5  0.5</span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x2</span>, binary.inputs <span class="op">=</span> <span class="st">"center"</span><span class="op">)</span> <span class="co"># mean center it</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.7  0.3  0.3  0.3 -0.7  0.3  0.3 -0.7  0.3  0.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.6  0.4  0.4 -0.6 -0.6 -0.6  0.4  0.4  0.4  0.4</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Data frame as input</span></span>
 <span class="r-in"><span class="co"># loops through each numeric column</span></span>
@@ -383,178 +383,178 @@ before printing its output.</p>
 <span class="r-in"></span>
 <span class="r-in"><span class="va">wts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">x</span>, weights <span class="op">=</span> <span class="va">wts</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] -0.45513014 -0.46023310  0.60331805 -0.20883551  0.69768908 -0.08735084</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7]  0.23584284 -0.22411562  0.26930599  0.97597242</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1]  0.11648267 -0.14515428 -0.22914923 -0.20328878  0.93191875  0.64093878</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] -0.52241234 -0.04115360  0.12880721 -0.05080712</span>
 <span class="r-in"><span class="co"># If using a weights column of data frame, give its name</span></span>
 <span class="r-in"><span class="va">mtcars</span><span class="op">$</span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">mtcars</span>, weights <span class="op">=</span> <span class="va">weights</span><span class="op">)</span> <span class="co"># will skip over mtcars$weights</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             mpg         cyl        disp          hp        drat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4            0.02744366 -0.04701765 -0.29981555 -0.26008415  0.36779570</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag        0.02744366 -0.04701765 -0.29981555 -0.26008415  0.36779570</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710           0.17843965 -0.59511290 -0.50730373 -0.39304923  0.31886398</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive       0.06099832 -0.04701765  0.09121987 -0.26008415 -0.43468455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   -0.16549566  0.50107760  0.49821591  0.24831177 -0.36618014</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant             -0.21582766 -0.04701765 -0.04045532 -0.29919153 -0.74784757</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360          -0.53459698  0.50107760  0.49821591  0.79581507 -0.30746207</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D            0.31265831 -0.59511290 -0.35288464 -0.63551498  0.16228246</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230             0.17843965 -0.59511290 -0.37642657 -0.37740628  0.38736839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280            -0.12355233 -0.04701765 -0.26949035 -0.15840496  0.38736839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C           -0.24099366 -0.04701765 -0.26949035 -0.15840496  0.38736839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE          -0.35843499  0.50107760  0.16224467  0.28741915 -0.44447089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL          -0.28293699  0.50107760  0.16224467  0.28741915 -0.44447089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC         -0.45909898  0.50107760  0.16224467  0.28741915 -0.44447089</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood  -0.86175496  0.50107760  0.94511353  0.48295604 -0.58147971</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental -0.86175496  0.50107760  0.89723164  0.56117080 -0.51297530</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial   -0.50104231  0.50107760  0.81742850  0.67849293 -0.28788938</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128             0.98375161 -0.59511290 -0.62421534 -0.60422908  0.54394990</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic          0.81597829 -0.59511290 -0.63618581 -0.71372974  1.37578918</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla       1.10958160 -0.59511290 -0.65454053 -0.61205055  0.68095872</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona        0.06938699 -0.59511290 -0.45902283 -0.36176333  0.17206881</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    -0.43393298  0.50107760  0.33062931  0.05277488 -0.74784757</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         -0.45909898  0.50107760  0.27476710  0.05277488 -0.36618014</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28          -0.61848364  0.50107760  0.45831434  0.79581507  0.20142784</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    -0.12355233  0.50107760  0.65782220  0.24831177 -0.43468455</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9            0.55592963 -0.59511290 -0.62301829 -0.60422908  0.54394990</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2        0.44687697 -0.59511290 -0.45822479 -0.40869219  0.88647195</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa         0.81597829 -0.59511290 -0.55877676 -0.23661972  0.24057322</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L      -0.40876699  0.50107760  0.46230450  0.94442310  0.68095872</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        -0.08160900 -0.04701765 -0.35966791  0.24831177  0.09377805</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       -0.47587632  0.50107760  0.26279663  1.49974787  0.01548730</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E           0.06099832 -0.59511290 -0.45543168 -0.26790562  0.57330893</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                wt         qsec         vs         am       gear</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           -3.039446e-01 -0.398527663 -0.4620765  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       -1.737108e-01 -0.249954370 -0.4620765  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710          -4.571608e-01  0.171887657  0.5379235  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive      -6.582239e-05  0.392094501  0.5379235 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout    1.148463e-01 -0.249954370 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant              1.250607e-01  0.599035872  0.5379235 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360           1.812400e-01 -0.563019522 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D           -1.283384e-02  0.540667793  0.5379235 -0.4028778  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230            -3.326266e-02  1.310065201  0.5379235 -0.4028778  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280             1.148463e-01  0.089641727  0.5379235 -0.4028778  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C            1.148463e-01  0.248827397  0.5379235 -0.4028778  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE           4.366003e-01 -0.149136779 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL           2.629553e-01 -0.096074889 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC          2.884913e-01  0.010048892 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood   1.039251e+00  0.004742703 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental  1.128116e+00 -0.037706810 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial    1.087769e+00 -0.143830590 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128            -5.184473e-01  0.400053784  0.5379235  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic         -8.172188e-01  0.148009806  0.5379235  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla      -7.048603e-01  0.514136848  0.5379235  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona       -3.831063e-01  0.543320888  0.5379235 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger     1.557040e-01 -0.289750788 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin          1.122927e-01 -0.175667724 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28           3.191346e-01 -0.677102586 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird     3.216882e-01 -0.241995087 -0.4620765 -0.4028778 -0.4309269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9           -6.537882e-01  0.248827397  0.5379235  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       -5.490905e-01 -0.334853394 -0.4620765  0.5971222  0.8646614</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa        -8.693124e-01 -0.281791504  0.5379235  0.5971222  0.8646614</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L      -2.304825e-02 -0.918534186 -0.4620765  0.5971222  0.8646614</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        -2.273365e-01 -0.653224735 -0.4620765  0.5971222  0.8646614</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora        1.812400e-01 -0.892003241 -0.4620765  0.5971222  0.8646614</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          -2.222293e-01  0.169234562  0.5379235  0.5971222  0.2168672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                           carb     weights</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4            0.5136538  0.35492438</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag        0.5136538 -0.92762721</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710          -0.5171830 -0.61535339</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive      -0.5171830  0.57830594</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   -0.1735707  0.21454027</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant             -0.5171830  0.03632008</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360           0.5136538 -1.01592756</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D           -0.1735707 -0.13417920</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230            -0.1735707 -0.23584247</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280             0.5136538 -0.67141575</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C            0.5136538 -1.30972304</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE           0.1700416  0.24103049</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL           0.1700416 -0.40527335</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC          0.1700416 -0.73949030</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood   0.5136538 -1.19336561</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental  0.5136538 -0.17340194</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial    0.5136538  0.07929381</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128            -0.5171830  0.66715935</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic         -0.1735707 -1.29046938</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla      -0.5171830 -0.58214068</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona       -0.5171830 -0.27937735</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    -0.1735707  0.03331590</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         -0.1735707 -1.11343960</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28           0.5136538 -1.28744568</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    -0.1735707  0.38183839</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9           -0.5171830 -0.82668546</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       -0.1735707 -0.90700733</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa        -0.1735707  0.33775026</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L       0.5136538  0.53347239</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino         1.2008784 -0.62591781</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora        1.8881030 -0.93366894</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          -0.1735707 -0.14544317</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4            0.01452972 -0.03052172 -0.24319408 -0.22078436  0.19370739</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag        0.01452972 -0.03052172 -0.24319408 -0.22078436  0.19370739</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710           0.15552096 -0.57739867 -0.45338241 -0.33320502  0.15212632</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive       0.04586110 -0.03052172  0.15293009 -0.22078436 -0.48822212</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   -0.16562576  0.51635523  0.56522259  0.20905936 -0.43000863</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant             -0.21262285 -0.03052172  0.01954134 -0.25384926 -0.75434095</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360          -0.51027103  0.51635523  0.56522259  0.67196798 -0.38011135</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D            0.28084651 -0.57739867 -0.29695379 -0.53820741  0.01906690</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230             0.15552096 -0.57739867 -0.32080208 -0.31997906  0.21033981</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280            -0.12646153 -0.03052172 -0.21247425 -0.13481561  0.21033981</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C           -0.23612139 -0.03052172 -0.21247425 -0.13481561  0.21033981</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE          -0.34578124  0.51635523  0.22487917  0.24212426 -0.49653833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL          -0.27528562  0.51635523  0.22487917  0.24212426 -0.49653833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC         -0.43977541  0.51635523  0.22487917  0.24212426 -0.49653833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood  -0.81575206  0.51635523  1.01793593  0.40744877 -0.61296532</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental -0.81575206  0.51635523  0.96943093  0.47357857 -0.55475183</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial   -0.47893964  0.51635523  0.88858926  0.57277328 -0.36347892</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128             0.90747427 -0.57739867 -0.57181546 -0.51175549  0.34339923</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic          0.75081733 -0.57739867 -0.58394171 -0.60433721  1.05027738</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla       1.02496697 -0.57739867 -0.60253529 -0.51836847  0.45982622</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona        0.05369395 -0.57739867 -0.40447320 -0.30675310  0.02738312</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    -0.41627687  0.51635523  0.39545509  0.04373486 -0.75434095</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         -0.43977541  0.51635523  0.33886593  0.04373486 -0.43000863</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28          -0.58859950  0.51635523  0.52480176  0.67196798  0.05233176</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    -0.12646153  0.51635523  0.72690593  0.20905936 -0.48822212</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9            0.50799907 -0.57739867 -0.57060283 -0.51175549  0.34339923</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2        0.40617206 -0.57739867 -0.40366479 -0.34643098  0.63446670</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa         0.75081733 -0.57739867 -0.50552529 -0.20094542  0.08559661</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L      -0.39277833  0.51635523  0.52884384  0.79761461  0.45982622</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        -0.08729730 -0.03052172 -0.30382533  0.20905936 -0.03914659</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       -0.45544110  0.51635523  0.32673968  1.26713621 -0.10567630</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E           0.04586110 -0.57739867 -0.40083533 -0.22739734  0.36834787</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              wt         qsec        vs         am       gear</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           -0.24154326 -0.390494047 -0.474526  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       -0.10750766 -0.226722357 -0.474526  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710          -0.39923220  0.238272264  0.525474  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive       0.07120648  0.481005305  0.525474 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout    0.18947318 -0.226722357 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant              0.19998578  0.709115874  0.525474 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360           0.25780506 -0.571812705 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D            0.05806573  0.644776996  0.525474 -0.5020858  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230             0.03704054  1.492880392  0.525474 -0.5020858  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280             0.18947318  0.147612935  0.525474 -0.5020858  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C            0.18947318  0.323082604  0.525474 -0.5020858  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE           0.52061996 -0.115591567 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL           0.34190583 -0.057101678 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC          0.36818732  0.059878101 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood   1.14086313  0.054029112 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental  1.23232271  0.007237201 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial    1.19079796 -0.109742578 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128            -0.46230777  0.489778789  0.525474  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic         -0.76980121  0.211951814  0.525474  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla      -0.65416265  0.615532051  0.525474  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona       -0.32301588  0.647701490  0.525474 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger     0.23152357 -0.270589774 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin          0.18684503 -0.144836512 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28           0.39972510 -0.697565967 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird     0.40235325 -0.217948874 -0.474526 -0.5020858 -0.5025649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9           -0.60159967  0.323082604  0.525474  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       -0.49384556 -0.320306180 -0.474526  0.4979142  0.8598570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa        -0.82341545 -0.261816291  0.525474  0.4979142  0.8598570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L       0.04755314 -0.963694964 -0.474526  0.4979142  0.8598570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        -0.16269879 -0.671245517 -0.474526  0.4979142  0.8598570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora        0.25780506 -0.934450019 -0.474526  0.4979142  0.8598570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          -0.15744249  0.235347769  0.525474  0.4979142  0.1786461</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            carb     weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4            0.36608160 -0.31199083</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag        0.36608160 -0.10893821</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710          -0.50640168 -0.84230860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive      -0.50640168  0.08776748</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   -0.21557392 -1.19645015</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant             -0.50640168 -0.14601258</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360           0.36608160  0.14000762</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D           -0.21557392 -0.63685223</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230            -0.21557392 -0.99450210</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280             0.36608160 -0.45667320</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C            0.36608160 -0.45956586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE           0.07525384 -0.76603625</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL           0.07525384  0.54037361</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC          0.07525384 -0.65815056</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood   0.36608160 -0.41507768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental  0.36608160 -1.03175144</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial    0.36608160 -0.35840551</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128            -0.50640168 -0.20651620</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic         -0.21557392  0.59258026</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla      -0.50640168  0.23041210</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona       -0.50640168 -0.80207663</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    -0.21557392 -0.49367749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         -0.21557392  0.30975509</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28           0.36608160 -1.23350144</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    -0.21557392 -0.09080772</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9           -0.50640168  0.58474302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       -0.21557392 -0.62290064</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa        -0.21557392 -0.69377010</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L       0.36608160  0.43038657</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino         0.94773712 -0.72505902</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora        1.52939263  0.05024933</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          -0.21557392  0.69149916</span>
 <span class="r-in"><span class="co"># If using a weights column of data frame, can still select variables</span></span>
 <span class="r-in"><span class="fu">gscale</span><span class="op">(</span><span class="va">mtcars</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"hp"</span>, <span class="st">"wt"</span>, <span class="st">"vs"</span><span class="op">)</span>, weights <span class="op">=</span> <span class="va">weights</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                      mpg cyl  disp          hp drat            wt  qsec</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           21.0   6 160.0 -0.26008415 3.90 -3.039446e-01 16.46</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       21.0   6 160.0 -0.26008415 3.90 -1.737108e-01 17.02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710          22.8   4 108.0 -0.39304923 3.85 -4.571608e-01 18.61</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive      21.4   6 258.0 -0.26008415 3.08 -6.582239e-05 19.44</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   18.7   8 360.0  0.24831177 3.15  1.148463e-01 17.02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant             18.1   6 225.0 -0.29919153 2.76  1.250607e-01 20.22</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360          14.3   8 360.0  0.79581507 3.21  1.812400e-01 15.84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D           24.4   4 146.7 -0.63551498 3.69 -1.283384e-02 20.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230            22.8   4 140.8 -0.37740628 3.92 -3.326266e-02 22.90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280            19.2   6 167.6 -0.15840496 3.92  1.148463e-01 18.30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C           17.8   6 167.6 -0.15840496 3.92  1.148463e-01 18.90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE          16.4   8 275.8  0.28741915 3.07  4.366003e-01 17.40</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL          17.3   8 275.8  0.28741915 3.07  2.629553e-01 17.60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC         15.2   8 275.8  0.28741915 3.07  2.884913e-01 18.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood  10.4   8 472.0  0.48295604 2.93  1.039251e+00 17.98</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental 10.4   8 460.0  0.56117080 3.00  1.128116e+00 17.82</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial   14.7   8 440.0  0.67849293 3.23  1.087769e+00 17.42</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128            32.4   4  78.7 -0.60422908 4.08 -5.184473e-01 19.47</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic         30.4   4  75.7 -0.71372974 4.93 -8.172188e-01 18.52</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla      33.9   4  71.1 -0.61205055 4.22 -7.048603e-01 19.90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona       21.5   4 120.1 -0.36176333 3.70 -3.831063e-01 20.01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    15.5   8 318.0  0.05277488 2.76  1.557040e-01 16.87</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         15.2   8 304.0  0.05277488 3.15  1.122927e-01 17.30</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28          13.3   8 350.0  0.79581507 3.73  3.191346e-01 15.41</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    19.2   8 400.0  0.24831177 3.08  3.216882e-01 17.05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9           27.3   4  79.0 -0.60422908 4.08 -6.537882e-01 18.90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       26.0   4 120.3 -0.40869219 4.43 -5.490905e-01 16.70</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa        30.4   4  95.1 -0.23661972 3.77 -8.693124e-01 16.90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L      15.8   8 351.0  0.94442310 4.22 -2.304825e-02 14.50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        19.7   6 145.0  0.24831177 3.62 -2.273365e-01 15.50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       15.0   8 301.0  1.49974787 3.54  1.812400e-01 14.60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          21.4   4 121.0 -0.26790562 4.11 -2.222293e-01 18.60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             vs am gear carb    weights</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           -0.4620765  1    4    4 0.76137552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       -0.4620765  1    4    4 0.18493965</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710           0.5379235  1    4    1 0.32528943</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive       0.5379235  0    3    1 0.86177315</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   -0.4620765  0    3    2 0.69828064</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant              0.5379235  0    3    1 0.61818054</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360          -0.4620765  0    3    4 0.14525354</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D            0.5379235  0    4    2 0.54155057</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230             0.5379235  0    4    2 0.49585856</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280             0.5379235  0    4    4 0.30009251</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C            0.5379235  0    4    4 0.01320875</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE          -0.4620765  0    3    3 0.71018653</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL          -0.4620765  0    3    3 0.41970877</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC         -0.4620765  0    3    3 0.26949677</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood  -0.4620765  0    3    4 0.06550497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental -0.4620765  0    3    4 0.52392212</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial   -0.4620765  0    3    4 0.63749485</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128             0.5379235  1    4    1 0.90170784</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic          0.5379235  1    4    2 0.02186220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla       0.5379235  1    4    1 0.34021671</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona        0.5379235  0    3    1 0.47629204</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    -0.4620765  0    3    2 0.61683033</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         -0.4620765  0    3    2 0.10142728</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28          -0.4620765  0    3    4 0.02322119</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    -0.4620765  0    3    2 0.77347188</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9            0.5379235  1    4    1 0.23030738</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       -0.4620765  1    5    2 0.19420715</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa         0.5379235  1    5    2 0.75365671</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L      -0.4620765  1    5    4 0.84162296</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        -0.4620765  1    5    6 0.32054131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       -0.4620765  1    5    8 0.18222423</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E           0.5379235  1    4    2 0.53648803</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      mpg cyl  disp          hp drat          wt  qsec        vs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           21.0   6 160.0 -0.22078436 3.90 -0.24154326 16.46 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       21.0   6 160.0 -0.22078436 3.90 -0.10750766 17.02 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710          22.8   4 108.0 -0.33320502 3.85 -0.39923220 18.61  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive      21.4   6 258.0 -0.22078436 3.08  0.07120648 19.44  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout   18.7   8 360.0  0.20905936 3.15  0.18947318 17.02 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant             18.1   6 225.0 -0.25384926 2.76  0.19998578 20.22  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360          14.3   8 360.0  0.67196798 3.21  0.25780506 15.84 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D           24.4   4 146.7 -0.53820741 3.69  0.05806573 20.00  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230            22.8   4 140.8 -0.31997906 3.92  0.03704054 22.90  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280            19.2   6 167.6 -0.13481561 3.92  0.18947318 18.30  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C           17.8   6 167.6 -0.13481561 3.92  0.18947318 18.90  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE          16.4   8 275.8  0.24212426 3.07  0.52061996 17.40 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL          17.3   8 275.8  0.24212426 3.07  0.34190583 17.60 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC         15.2   8 275.8  0.24212426 3.07  0.36818732 18.00 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood  10.4   8 472.0  0.40744877 2.93  1.14086313 17.98 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental 10.4   8 460.0  0.47357857 3.00  1.23232271 17.82 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial   14.7   8 440.0  0.57277328 3.23  1.19079796 17.42 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128            32.4   4  78.7 -0.51175549 4.08 -0.46230777 19.47  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic         30.4   4  75.7 -0.60433721 4.93 -0.76980121 18.52  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla      33.9   4  71.1 -0.51836847 4.22 -0.65416265 19.90  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona       21.5   4 120.1 -0.30675310 3.70 -0.32301588 20.01  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger    15.5   8 318.0  0.04373486 2.76  0.23152357 16.87 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin         15.2   8 304.0  0.04373486 3.15  0.18684503 17.30 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28          13.3   8 350.0  0.67196798 3.73  0.39972510 15.41 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird    19.2   8 400.0  0.20905936 3.08  0.40235325 17.05 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9           27.3   4  79.0 -0.51175549 4.08 -0.60159967 18.90  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2       26.0   4 120.3 -0.34643098 4.43 -0.49384556 16.70 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa        30.4   4  95.1 -0.20094542 3.77 -0.82341545 16.90  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L      15.8   8 351.0  0.79761461 4.22  0.04755314 14.50 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        19.7   6 145.0  0.20905936 3.62 -0.16269879 15.50 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       15.0   8 301.0  1.26713621 3.54  0.25780506 14.60 -0.474526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          21.4   4 121.0 -0.22739734 4.11 -0.15744249 18.60  0.525474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                     am gear carb    weights</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4            1    4    4 0.45196378</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag        1    4    4 0.54807749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Datsun 710           1    4    1 0.20094111</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive       0    3    1 0.64118692</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout    0    3    2 0.03331039</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Valiant              0    3    1 0.53052857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Duster 360           0    3    4 0.66591447</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 240D            0    4    2 0.29819263</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 230             0    4    2 0.12890126</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280             0    4    4 0.38347926</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 280C            0    4    4 0.38211005</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SE           0    3    3 0.23704416</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SL           0    3    3 0.85542526</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Merc 450SLC          0    3    3 0.28811119</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cadillac Fleetwood   0    3    4 0.40316825</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lincoln Continental  0    3    4 0.11126951</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chrysler Imperial    0    3    4 0.42999368</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat 128             1    4    1 0.50188955</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Honda Civic          1    4    2 0.88013696</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corolla       1    4    1 0.70870688</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Toyota Corona        0    3    1 0.21998467</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dodge Challenger     0    3    2 0.36596351</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> AMC Javelin          0    3    2 0.74626340</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Camaro Z28           0    3    4 0.01577239</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Pontiac Firebird     0    3    2 0.55665945</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Fiat X1-9            1    4    1 0.87642724</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Porsche 914-2        1    5    2 0.30479653</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Lotus Europa         1    5    2 0.27125091</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ford Pantera L       1    5    4 0.80336357</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino         1    5    6 0.25644049</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora        1    5    8 0.62342794</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E           1    4    2 0.92695961</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Survey designs</span></span>
 <span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"survey"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
