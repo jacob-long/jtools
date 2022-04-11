@@ -52,16 +52,16 @@ if (requireNamespace("lme4")) {
 
 options("summ-stars" = TRUE)
 
-test_that("standardize gives deprecated warning", {
-  expect_warning(summ(fit, standardize = TRUE))
-  expect_warning(summ(fitgf, standardize = TRUE))
-  if (requireNamespace("lme4")) {
-    expect_warning(summ(mv, standardize = TRUE))
-  }
-  if (requireNamespace("survey")) {
-    expect_warning(summ(regmodel, standardize = TRUE))
-  }
-})
+# test_that("standardize gives deprecated warning", {
+#   expect_warning(summ(fit, standardize = TRUE))
+#   expect_warning(summ(fitgf, standardize = TRUE))
+#   if (requireNamespace("lme4")) {
+#     expect_warning(summ(mv, standardize = TRUE))
+#   }
+#   if (requireNamespace("survey")) {
+#     expect_warning(summ(regmodel, standardize = TRUE))
+#   }
+# })
 
 test_that("jsumm: GLMs work", {
   expect_is(summ(fitgf), "summ.glm")
@@ -256,6 +256,7 @@ test_that("jsumm: lm cluster-robust SEs work", {
   expect_is(summ(fit, robust = "HC3", cluster = "Population"), "summ.lm")
   expect_output(print(summ(fit, robust = "HC3", cluster = "Population")))
   expect_error(summ(fit, robust = "HC4m", cluster = "Population"))
+  expect_warning(summ(fit, cluster = "Population"))
 })
 
 test_that("jsumm: glm cluster-robust SEs work", {

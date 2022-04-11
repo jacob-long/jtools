@@ -13,17 +13,17 @@ wrap_str(..., sep = "")
 
 cat_wrap(..., brk = "")
 
-warn_wrap(..., brk = "\\n", .subclass = NULL, call. = FALSE)
+warn_wrap(..., brk = "\\n", class = NULL, call. = FALSE)
 
 stop_wrap(
   ...,
   brk = "\\n",
   trace = rlang::trace_back(bottom = rlang::caller_env()),
-  .subclass = NULL,
+  class = NULL,
   call. = NULL
 )
 
-msg_wrap(..., .subclass = NULL, brk = "\\n")
+msg_wrap(..., class = NULL, brk = "\\n")
 }
 \arguments{
 \item{...}{Objects to print. For \code{stop_wrap()}, \code{warn_wrap()}, and
@@ -36,10 +36,7 @@ respectively.}
 \item{brk}{What should the last character of the message/warning/error be?
 Default is \code{"\\n"}, meaning the console output ends with a new line.}
 
-\item{.subclass}{This argument was renamed to \code{class} in rlang
-0.4.2.  It will be deprecated in the next major version. This is
-for consistency with our conventions for class constructors
-documented in \url{https://adv-r.hadley.nz/s3.html#s3-subclassing}.}
+\item{class}{Subclass of the condition.}
 
 \item{call.}{Here for legacy reasons. It is ignored.}
 

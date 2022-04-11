@@ -386,6 +386,14 @@ get_formula.brmsfit <- function(model, resp = NULL, dpar = NULL, ...) {
   }
 }
 
+#' @rdname get_formula
+#' @export
+get_formula.panelmodel <- function(model, ...) {
+  f <- formula(model)
+  class(f) <- class(f) %not% "Formula"
+  f
+}
+
 get_family <- function(model, ...) {
   UseMethod("get_family")
 }
@@ -414,6 +422,11 @@ get_family.brmsfit <- function(model, resp = NULL, ...) {
   } else {
     return(fam)
   }
+}
+
+#' @importFrom stats gaussian
+get_family.plm <- function(model, ...) {
+  gaussian(link = "identity")
 }
 
 # formerly built into make_new_data, but I want to use it for other times
@@ -543,3 +556,14 @@ zero_or_base <- function(x) {
     FALSE
   }
 }
+
+check_two_col <- function(model) {
+  r <- attr(terms(get_formula(model)),"dataClasses")[1] %in% c("nmatrix.2")
+  if (length(r) == 0) {return(FALSE)} else {return(r)} 
+}
+
+get_two_col <- function(model) {
+  all.vars(terms(formula(paste("~", get_response_name(model)))))
+}
+
+

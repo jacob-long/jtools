@@ -15,6 +15,7 @@ scale_mod(model, ...)
   center = TRUE,
   scale.response = FALSE,
   center.only = FALSE,
+  scale.only = FALSE,
   data = NULL,
   vars = NULL,
   apply.weighted.contrasts = getOption("jtools-weighted.contrasts", FALSE),
@@ -26,7 +27,7 @@ scale_mod(model, ...)
 \code{\link[survey]{svyglm}}, or \link[lme4:merMod-class]{lme4::merMod}. Other model types
 may work as well but are not tested.}
 
-\item{...}{Ignored.}
+\item{...}{Arguments passed on to \code{\link[=gscale]{gscale()}}.}
 
 \item{binary.inputs}{Options for binary variables. Default is \code{"0/1"};
 \code{"0/1"} keeps original scale; \code{"-0.5,0.5"} rescales 0 as -0.5
@@ -47,6 +48,9 @@ is \code{FALSE}.}
 
 \item{center.only}{Rather than actually scale predictors, just mean-center
 them.}
+
+\item{scale.only}{A logical value indicating whether you would like to scale
+the values, but not mean-center them.}
 
 \item{data}{If you provide the data used to fit the model here, that data
 frame is used to re-fit the model instead of the \code{\link[stats:model.frame]{stats::model.frame()}}

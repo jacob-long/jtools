@@ -169,7 +169,7 @@ wtd.sd <- function(x, weights) {
   # Get the mean
   xm <- weighted.mean(x, weights, na.rm = TRUE)
   # Squaring the weighted deviations and dividing by weighted N - 1
-  variance <- sum((weights * (x - xm)^2) / (sum(weights) - 1), na.rm = TRUE)
+  variance <- sum((weights * (x - xm)^2) / (sum(weights[!is.na(x)]) - 1), na.rm = TRUE)
   # Standard deviation is sqrt(variance)
   sd <- sqrt(variance)
   # Return the SD

@@ -397,9 +397,9 @@ pf_sv_test <- function(model, data = NULL, weights, sims = 1000,
 
   # Getting the bootstrapped SD of the correlation, but transforming to
   # Fisher's Z first
-  sd1 <- sd(atanh(bo$t[,1]))
-  sd2 <- sd(atanh(bo$t[,2]))
-  sd3 <- sd(atanh(bo$t[,3]))
+  sd1 <- sd(bo$t[,1])
+  sd2 <- sd(bo$t[,2])
+  sd3 <- sd(bo$t[,3])
 
   # Calculating the test statistics
   t1 <- z1/sd1

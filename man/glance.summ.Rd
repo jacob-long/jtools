@@ -2,6 +2,7 @@
 % Please edit documentation in R/export_summ.R, R/summ_rq.R
 \name{tidy.summ}
 \alias{tidy.summ}
+\alias{tidy.summ.merMod}
 \alias{glance.summ.lm}
 \alias{glance.summ.glm}
 \alias{glance.summ.svyglm}
@@ -10,6 +11,8 @@
 \title{Broom extensions for summ objects}
 \usage{
 \method{tidy}{summ}(x, conf.int = FALSE, conf.level = 0.95, ...)
+
+\method{tidy}{summ.merMod}(x, conf.int = FALSE, conf.level = 0.95, ...)
 
 \method{glance}{summ.lm}(x, ...)
 

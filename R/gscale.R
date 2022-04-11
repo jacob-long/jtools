@@ -24,7 +24,7 @@
 #'   mean and divides by 2 sd.
 #'
 #' @param binary.factors Coerce two-level factors to numeric and apply scaling
-#'   functions to them? Default is TRUE.
+#'   functions to them? Default is FALSE.
 #'
 #' @param n.sd By how many standard deviations should the variables be divided
 #'   by? Default for `gscale` is 2, like \code{arm}'s \code{rescale}.
@@ -155,7 +155,7 @@
 
 
 gscale <- function(data = NULL, vars = NULL, binary.inputs = "center",
-                   binary.factors = TRUE, n.sd = 2,
+                   binary.factors = FALSE, n.sd = 2,
                    center.only = FALSE, scale.only = FALSE, weights = NULL,
                    apply.weighted.contrasts =
                      getOption("jtools-weighted.contrasts", FALSE),
@@ -402,7 +402,7 @@ scaler <- function(x, binary.inputs, n.sd = 2, center.only = FALSE,
 #' @export
 
 standardize <- function(data = NULL, vars = NULL, binary.inputs = "center",
-                        binary.factors = TRUE, weights = NULL) {
+                        binary.factors = FALSE, weights = NULL) {
 
   gscale(data = data, vars = vars, binary.inputs = binary.inputs,
          binary.factors = binary.factors, n.sd = 1,
@@ -430,7 +430,7 @@ standardize <- function(data = NULL, vars = NULL, binary.inputs = "center",
 #' @export
 
 center <- function(data = NULL, vars = NULL, binary.inputs = "center",
-                        binary.factors = TRUE, weights = NULL) {
+                        binary.factors = FALSE, weights = NULL) {
 
   gscale(data = data, vars = vars, binary.inputs = binary.inputs,
          binary.factors = binary.factors, n.sd = 1,

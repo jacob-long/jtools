@@ -1,14 +1,14 @@
 Package: jtools
 Type: Package
 Title: Analysis and Presentation of Social Scientific Data
-Version: 2.1.5.9000
+Version: 2.2.0.9000
 Authors@R: person(c("Jacob","A."), "Long", email = "jacob.long@sc.edu",
   role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1582-6214"))
-Description: This is a collection of tools that the author (Jacob) has written
-  for the purpose of more efficiently understanding and sharing the results of
-  (primarily) regression analyses. There are also a number of miscellaneous
-  functions for statistical and programming purposes. Just about everything 
-  supports models from the survey package.
+Description: This is a collection of tools for more efficiently understanding 
+  and sharing the results of (primarily) regression analyses. There are also a
+  number of miscellaneous functions for statistical and programming purposes. 
+  Support for models produced by the survey and lme4 packages are points of 
+  emphasis.
 URL: https://jtools.jacob-long.com
 BugReports: https://github.com/jacob-long/jtools/issues
 License: MIT + file LICENSE
@@ -42,7 +42,8 @@ Suggests:
   weights,
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    vdiffr
 Enhances:
   brms,
   quantreg,

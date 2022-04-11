@@ -21,3 +21,5 @@
 ^\.vs$
 ^doc$
 ^Meta$
+^make_hex\.R$
+^hex\.png$

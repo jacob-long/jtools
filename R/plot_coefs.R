@@ -36,7 +36,9 @@
 #'   also moved to 1 instead of 0.
 #' @param point.shape When using multiple models, should each model's point
 #'   estimates use a different point shape to visually differentiate each
-#'   model from the others? Default is TRUE.
+#'   model from the others? Default is TRUE. You may also pass a vector of
+#'   shapes to specify shapes yourself.
+#' @param point.size Change the size of the points. Default is 3.
 #' @param legend.title What should the title for the legend be? Default is
 #'   "Model", but you can specify it here since it is rather difficult to
 #'   change later via `ggplot2`'s typical methods.
@@ -110,7 +112,8 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
-                       point.shape = TRUE, legend.title = "Model",
+                       point.shape = TRUE, point.size = 3, 
+                       legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors, 
                        resp = NULL, dpar = NULL) {
@@ -139,8 +142,9 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     inner_ci_level = inner_ci_level, colors = list(colors),
                     plot.distributions = plot.distributions,
                     rescale.distributions = rescale.distributions, exp = exp,
-                    point.shape = point.shape, legend.title = legend.title,
-                    groups = groups, facet.rows = facet.rows,
+                    point.shape = list(point.shape), point.size = point.size, 
+                    legend.title = legend.title,
+                    groups = list(groups), facet.rows = facet.rows,
                     facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
                     color.class = color.class, resp = resp, dpar = dpar,
                     ex_args))
@@ -159,7 +163,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
-                       exp = FALSE, point.shape = TRUE,
+                       exp = FALSE, point.shape = TRUE, point.size = 3,
                        legend.title = "Model", groups = NULL,
                        facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors,
@@ -339,21 +343,31 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
       aes(y = term, x = estimate, xmin = conf.low,
           xmax = conf.high, colour = model, shape = model),
       position = ggstance::position_dodgev(height = dh),
-      fill = "white", fatten = 3, size = 0.8,
+      fill = "white", fatten = point.size, size = 0.8,
       show.legend = length(mods) > 1) # omit legend if just a single model
   } else {
     p <- p + geom_point(
       aes(y = term, x = estimate, colour = model, shape = model),
-      fill = "white", size = 3, stroke = 1, show.legend = TRUE)
+      fill = "white", size = point.size, stroke = 1, show.legend = TRUE)
   }
   
   # To set the shape aesthetic, I prefer the points that can be filled. But
   # there are only 6 such shapes, so I need to check how many models there are.
-  if (point.shape == TRUE) {
+  if (length(point.shape) == 1 && point.shape == TRUE) {
     oshapes <- c(21:25, 15:18, 3, 4, 8)
     shapes <- oshapes[seq_len(n_models)]
-  } else if (point.shape == FALSE) {
+  } else if (length(point.shape) == 1 && is.logical(point.shape[1]) &
+             point.shape[1] == FALSE) {
     shapes <- rep(21, times = n_models)
+  } else {
+    if (length(point.shape) != n_models & length(point.shape) != 1) {
+      stop_wrap("You must provide the same number of point shapes as the
+                number of models.")
+    } else if (length(point.shape) == 1) {
+      shapes <- rep(point.shape, times = n_models)
+    } else {
+      shapes <- point.shape
+    }
   }
   
   p <- p +
@@ -486,15 +500,13 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
       extra_args <- ex_args[names(ex_args) %in% names(method_args)]
       
     } else if (method_stub == "brmsfit" & is.null(ex_args)) {
-      extra_args <- list(par_type = "non-varying", effects = "fixed")
+      extra_args <- list(effects = "fixed")
     } else {
       extra_args <- NULL
     }
     
     all_args <- as.list(c(x = list(mods[[i]]), conf.int = TRUE,
-                          conf.level = ci_level,
-                          intervals = TRUE, prob = ci_level,
-                          extra_args))
+                          conf.level = ci_level, extra_args))
     
     tidies[[i]] <- do.call(generics::tidy, args = all_args)
     if (!is.null(names(mods)) & any(names(mods) != "")) {
