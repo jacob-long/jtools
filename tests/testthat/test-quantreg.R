@@ -1,8 +1,5 @@
 context("quantreg compatibility")
 
-device <- getOption("device")
-options(device = "pdf")
-
 if (requireNamespace("quantreg", quietly = TRUE)) {
 
 library(quantreg)
@@ -57,5 +54,3 @@ test_that("export_summs et al.", {
 
 }
 
-options(device = device)
-dev.off()
