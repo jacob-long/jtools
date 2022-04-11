@@ -5,11 +5,7 @@
 \alias{get_formula.default}
 \alias{get_formula.brmsfit}
 \alias{get_formula.panelmodel}
-\title{Retrieve formulas from model objects
-
-This function is primarily an internal helper function in \code{jtools} and
-related packages to standardize the different types of formula objects used
-by different types of models.}
+\title{Retrieve formulas from model objects}
 \usage{
 get_formula(model, ...)
 
@@ -39,8 +35,6 @@ default.}
 A \code{formula} object.
 }
 \description{
-Retrieve formulas from model objects
-
 This function is primarily an internal helper function in \code{jtools} and
 related packages to standardize the different types of formula objects used
 by different types of models.

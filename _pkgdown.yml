@@ -1,6 +1,20 @@
 template:
   params:
     bootswatch: flatly
+  bootstrap: 5
+  bslib:
+    bg: "#ffffff"
+    fg: "#000000"
+    primary: "#570008"
+    link-color: "#73000a"
+    success: "#466A9F"
+    base_font: {google: "Lato"}
+    heading_font: {google: "Raleway"}
+    code_font: {google: "IBM Plex Mono"}
+    h1-font-size: 2.5rem
+    h2-font-size: 2rem
+    h3-font-size: 1.5rem
+
 
 reference:
  - title: Summarizing and visualizing regression models

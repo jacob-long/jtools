@@ -1,10 +1,10 @@
 bibentry(
   bibtype = "Manual",
   title = "jtools: Analysis and Presentation of Social Scientific Data",
-  author =  person(c("Jacob","A."), "Long", email = "long.1377@osu.edu",
+  author =  person(c("Jacob","A."), "Long", email = "jacob.long@sc.edu",
                     role = c("aut", "cre")),
-  year = "2020",
-  note = "R package version 2.1.0",
+  year = "2022",
+  note = "R package version 2.2.0",
   url = "https://cran.r-project.org/package=jtools",
   key = "jtools"
 )

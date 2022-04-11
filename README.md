@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# jtools <img src="https://jacob-long.com/img/jtools_hex.png" alt="jtools" height="250px" align="right" />
+# jtools <img src="man/figures/logo.png" alt="" height="250px" align="right" />
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/jtools)](https://cran.r-project.org/package=jtools)
 [![Total

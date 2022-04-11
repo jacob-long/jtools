@@ -318,7 +318,7 @@ get_response_name <- function(model, ...) {
 
 #' @title Retrieve formulas from model objects
 #' 
-#' This function is primarily an internal helper function in `jtools` and
+#' @description This function is primarily an internal helper function in `jtools` and
 #' related packages to standardize the different types of formula objects used
 #' by different types of models.
 #' 
@@ -433,7 +433,7 @@ get_family.plm <- function(model, ...) {
 # when I just want the values of non-focal predictors
 get_control_values <- function(model, data, preds, at, center, design = NULL,
                                set.offset = NULL, formula = NULL, ...) {
-                                 
+
   offname <- get_offset_name(model)
   weight_info <- get_weights(model, data)
   weights <- weight_info$weights

@@ -1,6 +1,7 @@
 # jtools 2.2.0.9000
 
 Accuracy bug fixes:
+
 * `pf_sv_test()` was calculating standard errors 
 incorrectly in previous versions of `jtools`. This has been corrected. Thanks
 to Rebecca Andridge for noticing this. (#89)
@@ -8,6 +9,7 @@ to Rebecca Andridge for noticing this. (#89)
 the weights. Thanks to Klaus Langohr for reporting the issue.
 
 Other bug fixes:
+
 * `make_predictions()` no longer ignores `int.type`. (#116)
 * `scale_mod()`/`center_mod()`, as well as `summ()`'s `scale` feature, no longer
 error when the left-hand side of the model formula contains a transformation.
@@ -17,6 +19,7 @@ error when the left-hand side of the model formula contains a transformation.
 * Facetting now works in `plot_summs()` as it always had in `plot_coefs()`. (#88)
 
 Enhancements:
+
 * `plot_coefs()` and `plot_summs()` now allow you to change the size of the 
 points using the `point.size` argument. (#61, #120)
 * `summ()` now has a `scale.only` argument for supported models, allowing you
@@ -27,6 +30,7 @@ two-column response variable. (#100)
 by passing a vector of shapes to the `point.shape` argument. (#71)
 
 Miscellaneous changes:
+
 * `gscale()` (and therefore `scale_mod()` and `center_mod()`) no longer convert
 binary factor variables to numeric variables by default. This behavior can be
 requested by setting `binary.factor = TRUE`. (#114)

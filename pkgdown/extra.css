@@ -1,0 +1,28 @@
+.page-header {
+    min-height:25px !important;
+}
+
+.template-home img.logo {
+    width: 200px;
+}
+
+.text-muted {
+    color: #ced4da !important;
+}
+
+.bg-primary .navbar-nav .nav-link:hover, .bg-primary .navbar-nav .nav-link:hover {
+    color: #ced4da !important;
+}
+
+.huxtable tr, .huxtable th, .huxtable td {
+    border-style: none;
+}
+
+aside h2 {
+    margin-top: 2rem;
+}
+
+.page-header {
+    margin-top: 2rem;
+    border-bottom: none;
+}
