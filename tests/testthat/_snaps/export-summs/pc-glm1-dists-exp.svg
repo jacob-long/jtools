@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' data-engine-version='2.0' width='720.00pt' height='576.00pt' viewBox='0 0 720.00 576.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA='>
+    <rect x='0.00' y='0.00' width='720.00' height='576.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<rect x='0.00' y='0.00' width='720.00' height='576.00' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
+</g>
+<defs>
+  <clipPath id='cpNzUuNDV8NzE0LjUyfDM3Ljk1fDUzNy4zNA=='>
+    <rect x='75.45' y='37.95' width='639.07' height='499.40' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpNzUuNDV8NzE0LjUyfDM3Ljk1fDUzNy4zNA==)'>
+<rect x='75.45' y='37.95' width='639.07' height='499.40' style='stroke-width: 0.00; stroke: #FFFFFF; fill: #FFFFFF;' />
+<polyline points='138.73,537.34 138.73,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
+<polyline points='307.42,537.34 307.42,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
+<polyline points='476.12,537.34 476.12,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
+<polyline points='644.82,537.34 644.82,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
+<line x1='283.13' y1='443.70' x2='318.49' y2='443.70' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
+<line x1='104.49' y1='287.64' x2='685.47' y2='287.64' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
+<line x1='355.06' y1='131.58' x2='417.67' y2='131.58' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
+<circle cx='300.83' cy='443.70' r='3.27' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<circle cx='369.90' cy='287.64' r='3.27' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<circle cx='385.92' cy='131.58' r='3.27' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<line x1='307.42' y1='537.34' x2='307.42' y2='37.95' style='stroke-width: 0.53; stroke-dasharray: 4.00,4.00; stroke-linecap: butt;' />
+</g>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<text x='39.09' y='447.15' text-anchor='middle' style='font-size: 10.00px; fill: #34495E; font-family: sans;' textLength='57.26px' lengthAdjust='spacingAndGlyphs'>talent:money</text>
+<text x='39.09' y='291.08' text-anchor='middle' style='font-size: 10.00px; fill: #34495E; font-family: sans;' textLength='30.02px' lengthAdjust='spacingAndGlyphs'>money</text>
+<text x='39.09' y='135.02' text-anchor='middle' style='font-size: 10.00px; fill: #34495E; font-family: sans;' textLength='24.46px' lengthAdjust='spacingAndGlyphs'>talent</text>
+<text x='138.73' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.9</text>
+<text x='307.42' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>1.0</text>
+<text x='476.12' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>1.1</text>
+<text x='644.82' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>1.2</text>
+<text x='394.98' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='67.87px' lengthAdjust='spacingAndGlyphs'>exp(Estimate)</text>
+<text x='75.45' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='110.50px' lengthAdjust='spacingAndGlyphs'>pc-glm1-dists-exp</text>
+</g>
+</svg>

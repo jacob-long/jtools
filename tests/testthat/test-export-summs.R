@@ -1,9 +1,7 @@
 library(jtools)
+library(vdiffr)
 
 context("export_summs")
-
-device <- getOption("device")
-options(device = "pdf")
 
 states <- as.data.frame(state.x77)
 states$HSGrad <- states$`HS Grad`
@@ -39,8 +37,6 @@ if (requireNamespace("lme4")) {
   mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 }
 
-# library(broom)
-# library(huxtable)
 if (requireNamespace("huxtable") & requireNamespace("broom")) {
 
 test_that("Export doesn't fail with lm", {
@@ -177,132 +173,140 @@ context("plot_summs")
 if (requireNamespace("broom")) {
 
 test_that("plot_summs doesn't fail with lm", {
-  expect_is(p <- plot_summs(fit, fit2, fitw), "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(fit, fit2, fitw)
+  expect_doppelganger("lm3", p)
 })
 
 test_that("plot_summs accepts summ args with lm", {
-  expect_is(p <- plot_summs(fit, fit2, fitw, scale = T, robust = T,
-                            n.sd = 2, digits = 2),
-   "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(fit, fit2, fitw, scale = T, robust = T, n.sd = 2, digits = 2)
+  expect_doppelganger("lm3-summ-args", p)
 })
 
 test_that("plot_summs works with glm", {
-  expect_is(p <- plot_summs(pmod, pmod_a), "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(pmod, pmod_a)
+  expect_doppelganger("glm2", p)
 })
 
 test_that("plot_summs accepts summ args with glm", {
-  expect_is(p <- plot_summs(pmod, pmod_a, scale = T, robust = T),
-   "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(pmod, pmod_a, scale = T, robust = T)
+  expect_doppelganger("glm2-summ-args", p)
 })
 
 test_that("plot_summs accepts odds ratios with glm", {
-  expect_is(p <- plot_summs(pmod, pmod_a, scale = T, robust = T,
-                            exp = TRUE, model.names = c("Mod1", "Mod2")),
-   "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(pmod, pmod_a, scale = T, robust = T, exp = TRUE,
+    model.names = c("Mod1", "Mod2"))
+  expect_doppelganger("glm2-odds-modnames", p)
 })
 
 if (requireNamespace("survey")) {
   test_that("plot_summs works with svyglm", {
-    expect_is(p <- plot_summs(regmodel), "ggplot")
-    expect_silent(print(p))
+    p <- plot_summs(regmodel)
+    expect_doppelganger("svyglm", p)
   })
 
   test_that("plot_summs accepts summ args with svyglm", {
-    expect_is(p <- plot_summs(regmodel, scale = T), "ggplot")
-    expect_silent(print(p))
+    p <- plot_summs(regmodel, scale = T)
+    expect_doppelganger("svyglm-summ-arg", p)
   })
 }
 
 if (requireNamespace("lme4")) {
   test_that("plot_summs works with lmer", {
-    expect_is(p <- plot_summs(mv), "ggplot")
-    expect_silent(print(p))
+    p <- plot_summs(mv)
+    expect_doppelganger("lmer", p)
   })
 
   test_that("plot_summs accepts summ args with lmer", {
-    expect_is(p <- plot_summs(mv, scale = T), "ggplot")
-    expect_silent(print(p))
+    p <- plot_summs(mv, scale = T)
+    expect_doppelganger("lmer-summ-arg", p)
   })
 }
 
 test_that("plot_summs can take manual coefficient names", {
-  expect_is(p <- plot_summs(fit, fit2, fitw,
-                         coefs = c("HS Grad %" = "HSGrad",
-                          "Murder Rate" = "Murder")), "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(fit, fit2, fitw, 
+    coefs = c("HS Grad %" = "HSGrad", "Murder Rate" = "Murder"))
+  expect_doppelganger("lm3-coef-names", p)
 })
 
 test_that("plot_summs can omit coefficients", {
-  expect_is(p <- plot_summs(fit, fit2, fitw,
-                         coefs = c("HSGrad", "Murder")), "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(fit, fit2, fitw, coefs = c("HSGrad", "Murder"))
+  expect_doppelganger("lm3-coef-omit", p)
 })
 
 test_that("plot_summs can facet", {
-  expect_is(p <- plot_summs(fit, fit2, fitw,
-                            coefs = c("HSGrad", "Murder"),
-                            groups = list(c("HSGrad"), c("Murder"))), "ggplot")
-  expect_silent(print(p))
+  p <- plot_summs(fit, fit2, fitw, coefs = c("HSGrad", "Murder"),
+    groups = list(c("HSGrad"), c("Murder")))
+  expect_doppelganger("lm3-coef-omit-facet", p)
 })
 
 context("plot_coefs")
 
 test_that("plot_coefs works", {
-  expect_is(p <- plot_coefs(fit, pmod, model.names = c("Mod1", "Mod2")),
-    "ggplot")
-  expect_silent(print(p))
+  p <- plot_coefs(fit, pmod, model.names = c("Mod1", "Mod2"))
+  expect_doppelganger("pc-lm-modnames", p)
 })
 
 test_that("plot_coefs can take manual coefficient names", {
-  expect_is(p <- plot_coefs(fit, fit2, fitw,
-                         coefs = c("HS Grad %" = "HSGrad",
-                          "Murder Rate" = "Murder")), "ggplot")
-  expect_silent(print(p))
+  p <- plot_coefs(fit, fit2, fitw, coefs = c("HS Grad %" = "HSGrad",
+                                             "Murder Rate" = "Murder"))
+  expect_doppelganger("pc-lm3-coefnames", p)
 })
 
 test_that("plot_coefs can omit coefficients", {
-  expect_is(p <- plot_coefs(fit, fit2, fitw,
-                         coefs = c("HSGrad", "Murder")), "ggplot")
-  expect_silent(print(p))
+  p <- plot_coefs(fit, fit2, fitw, coefs = c("HSGrad", "Murder"))
+  expect_doppelganger("pc-lm3-coef-omit", p)
 })
 
 test_that("inner_ci_level works", {
-  expect_silent(print(plot_coefs(fit, fitw, inner_ci_level = 0.9)))
+  p <- plot_coefs(fit, fitw, inner_ci_level = 0.9)
+  expect_doppelganger("pc-lm2-inner-ci", p)
 })
 
 test_that("plot.distributions works", {
-  expect_message(print(plot_coefs(fit, plot.distributions = TRUE)))
-  expect_silent(print(plot_summs(fit, plot.distributions = TRUE, scale = TRUE)))
-  expect_message(print(plot_coefs(fit, fitw, plot.distributions = TRUE)))
-  expect_silent(print(plot_coefs(pmod, plot.distributions = TRUE)))
-  expect_warning(print(plot_coefs(pmod, plot.distributions = TRUE, exp = TRUE)))
-  expect_message(print(plot_coefs(fit, fitw, plot.distributions = TRUE,
-                                  inner_ci_level = .9)))
-  expect_silent(print(plot_summs(fit, plot.distributions = TRUE, scale = TRUE,
-                                  inner_ci_level = .9)))
+  p <- plot_coefs(fit, plot.distributions = TRUE)
+  expect_doppelganger("pc-lm1-dists", p)
+  p <- plot_summs(fit, plot.distributions = TRUE, scale = TRUE)
+  expect_doppelganger("pc-lm1-dists-scale", p)
+  p <- plot_coefs(fit, fitw, plot.distributions = TRUE)
+  expect_doppelganger("pc-lm2-dists", p)
+  p <- plot_coefs(pmod, plot.distributions = TRUE)
+  expect_doppelganger("pc-glm1-dists", p)
+  p <- expect_warning(plot_coefs(pmod, plot.distributions = TRUE, exp = TRUE))
+  expect_doppelganger("pc-glm1-dists-exp", p)
+  p <- plot_coefs(fit, fitw, plot.distributions = TRUE, inner_ci_level = .9)
+  expect_doppelganger("pc-lm2-dists-inner-ci", p)
+  p <- plot_summs(fit, plot.distributions = TRUE, scale = TRUE, 
+    inner_ci_level = .9)
+  expect_doppelganger("pc-lm2-dists-inner-ci-scale", p)
 })
 
 if (requireNamespace("brms") & requireNamespace("broom.mixed")) {
   bfit1 <- readRDS("brmfit.rds")
   mvfit <- readRDS("mvfit.rds")
   test_that("plot_coefs works with brms", {
-    expect_silent(print(suppressWarnings(plot_coefs(bfit1) + ggtitle("basic brms fit"))))
-    expect_silent(print(suppressWarnings(plot_coefs(mvfit) + ggtitle("default mv brms fit"))))
-    expect_silent(print(suppressWarnings(plot_coefs(mvfit, dpar = "sigma") +
-                          ggtitle("default dv, dpar sigma mv brms fit"))))
-    expect_silent(print(suppressWarnings(plot_coefs(mvfit, resp = "wt", dpar = "sigma") +
-                          ggtitle("select wt dv, dpar sigma mv brms fit"))))
-    expect_silent(print(suppressWarnings(plot_coefs(`MPG DV` = mvfit, `MPG Sigma` = mvfit, 
-                                   dpar = c(NA, "sigma"), resp = "mpg") +
-                          ggtitle("select mpg dv, dpar sigma separate models
-                                  mv brms fit"))))
+    p <- plot_coefs(bfit1) + ggtitle("basic brms fit")
+    expect_doppelganger("pc-brm1", p)
+    suppressWarnings({ 
+    # some parameter names contain underscores: term naming may be unreliable!
+    p <- plot_coefs(mvfit) + ggtitle("default mv brms fit")
+    })
+    expect_doppelganger("pc-brmmv", p)
+    suppressWarnings({
+    p <- plot_coefs(mvfit, dpar = "sigma") + 
+      ggtitle("default dv, dpar sigma mv brms fit")
+    })
+    expect_doppelganger("pc-brmmv-sigma", p)
+    suppressWarnings({
+    p <- plot_coefs(mvfit, resp = "wt", dpar = "sigma") +
+      ggtitle("select wt dv, dpar sigma mv brms fit")
+    })
+    expect_doppelganger("pc-brmmv-sigma-select-dv", p)
+    suppressWarnings({
+    p <- plot_coefs(`MPG DV` = mvfit, `MPG Sigma` = mvfit, 
+                    dpar = c(NA, "sigma"), resp = "mpg") +
+      ggtitle("select mpg dv, dpar sigma separate models mv brms fit")
+    })
+    expect_doppelganger("pc-brmmv2-multidist-select-dv", p)
   })
 }
 }
-
-options(device = device)

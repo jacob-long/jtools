@@ -42,7 +42,8 @@ Suggests:
   weights,
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    vdiffr
 Enhances:
   brms,
   quantreg,
