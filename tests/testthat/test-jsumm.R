@@ -23,6 +23,8 @@ pmod <- glm(counts ~ talent*money, offset = log(exposures), data = poisdat,
 pmod2 <- glm(counts ~ talent*money + offset(log(exposures)), data = poisdat,
             family = poisson)
 pmodw <- glm(counts ~ talent + money, data = poisdat, weights = wt)
+pmod2q <- glm(counts ~ talent*money + offset(log(exposures)), data = poisdat,
+            family = quasipoisson)
 
 if (requireNamespace("survey")) {
   # survey test
@@ -79,6 +81,12 @@ test_that("jsumm: GLMs w/ offsets work (formula)", {
   expect_is(summ(pmod2), "summ.glm")
   expect_is(summ(pmod2, scale = TRUE), "summ.glm")
   expect_is(summ(pmod2, center = TRUE), "summ.glm")
+})
+
+test_that("jsumm: quasipoisson works", {
+  expect_is(summ(pmod2q), "summ.glm")
+  expect_is(summ(pmod2q, scale = TRUE), "summ.glm")
+  expect_is(summ(pmod2q, center = TRUE), "summ.glm")
 })
 
 test_that("jsumm: GLMs w/ weights work", {

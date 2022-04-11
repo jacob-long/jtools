@@ -24,6 +24,9 @@ test_that("effect_plot works for lm", {
   p <- effect_plot(model = fit, pred = Murder,centered = "all") +
     ggtitle("All centered")
   expect_doppelganger("lm-all-centered", p)
+  p <- effect_plot(model = fit, pred = Murder,centered = "all") +
+    ggtitle("All centered APA") + theme_apa()
+  expect_doppelganger("lm-all-centered-apa", p)
   p <- effect_plot(model = fit,pred = Murder, centered = "HSGrad") +
     ggtitle("HSGrad centered")
   expect_doppelganger("lm-one-centered", p)
@@ -157,6 +160,15 @@ if (requireNamespace("lme4")) {
 
 context("effect_plot offsets")
 
+set.seed(1)
+n <- 50
+cov <- 10
+x <- rnorm(n, 0, 0.2)
+p <- 0.4 + 0.2*x
+y <- rbinom(n, cov, p)
+bindat <- data.frame(cbind(x, p, y, t = 10))
+binglm <- glm(cbind(y, t-y) ~ x, data = bindat, family = binomial)
+
 set.seed(100)
 exposures <- rpois(50, 50)
 counts <- exposures - rpois(50, 25)
@@ -168,6 +180,10 @@ poisdat$talent_f <- factor(poisdat$talent_f)
 pmod <- glm(counts ~ talent*money + talent_f, offset = log(exposures),
             data = poisdat, family = poisson)
 
+test_that("effect_plot handles two-column DVs", {
+  p <- effect_plot(binglm, x, interval = T)
+  expect_doppelganger("glm-bin-2col", p)
+})
 
 test_that("effect_plot handles offsets", {
   expect_message(p <- effect_plot(pmod, pred = money) + ggtitle("offset"))

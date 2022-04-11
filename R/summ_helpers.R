@@ -172,7 +172,7 @@ get_robust_se <- function(model, type = "HC3", cluster = NULL,
   } else {coefs <- vcov}
   
   vcov <- coefs
-  coefs <- coeftest(model, coefs)
+  coefs <- test_coefs(model, coefs)
   ses <- coefs[,2]
   ts <- coefs[,3]
   ps <- coefs[,4]

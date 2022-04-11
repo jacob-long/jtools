@@ -24,3 +24,26 @@ test_that("Color classes are returned", {
   expect_silent(get_colors(c("red", "blue", "black"), 3))
   expect_silent(get_colors(c("red", "blue", "black"), 2, reverse = TRUE))
 })
+
+context("Survey tools")
+if (requireNamespace("boot")) {
+   states <- as.data.frame(state.x77)
+   set.seed(100)
+   states$wts <- runif(50, 0, 3)
+   fit <- lm(Murder ~ Illiteracy + Frost, data = states)
+   expect_s3_class(
+     weights_tests(model = fit, data = states, weights = wts, sims = 100),
+     "weights_tests"
+   )
+}
+
+ if (requireNamespace("survey")) {
+  library(survey, quietly = TRUE)
+  data(api)
+  # Create survey design object
+  dstrat <- svydesign(id = ~1, strata = ~stype, weights = ~pw,
+                      data = apistrat, fpc = ~fpc)
+  # Save the results, extract correlation matrix
+  out <- svycor(~api00 + api99 + dnum, design = dstrat)
+  expect_s3_class(out, "svycor")
+}

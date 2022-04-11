@@ -433,7 +433,7 @@ get_family.plm <- function(model, ...) {
 # when I just want the values of non-focal predictors
 get_control_values <- function(model, data, preds, at, center, design = NULL,
                                set.offset = NULL, formula = NULL, ...) {
-
+                                 
   offname <- get_offset_name(model)
   weight_info <- get_weights(model, data)
   weights <- weight_info$weights
@@ -559,6 +559,9 @@ zero_or_base <- function(x) {
 
 check_two_col <- function(model) {
   r <- attr(terms(get_formula(model)),"dataClasses")[1] %in% c("nmatrix.2")
+  r <- if (length(r) == 0) {
+    attr(attr(model.frame(model), "terms"),"dataClasses")[1] %in% c("nmatrix.2")
+    } else {FALSE}
   if (length(r) == 0) {return(FALSE)} else {return(r)} 
 }
 

@@ -128,7 +128,7 @@ get_lhs <- function(x) {
 
 is_lhs_transformed <- function(x) {
   final <- as.character(deparse(get_lhs(x)))
-  bare_vars <- all.vars(get_lhs(x))
+  bare_vars <- all_vars(get_lhs(x))
   any(final != bare_vars)
 }
 
@@ -148,11 +148,13 @@ get_rhs <- function(x) {
 } 
 
 all_vars <- function(formula) {
-  if (two_sided(formula)) {
+  if (is.name(formula) | is.call(formula)) {
+    all.vars(formula)
+  } else if (two_sided(formula)) {
     c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))
   } else if (one_sided(formula)) {
     all.vars(get_rhs(formula))
-  }
+  } 
 }
 
 #### Weighted helpers ########################################################
@@ -281,27 +283,29 @@ j_update <- function(mod, formula = NULL, data = NULL, offset = NULL,
 
 ## Taken from lmtest package with changes
 
-coeftest <- function(x, vcov. = NULL, df = NULL, ...) {
-  UseMethod("coeftest")
+test_coefs <- function(x, the_vcov = NULL, df = NULL, ...) {
+  UseMethod("test_coefs")
 }
 
 #' @importFrom stats pnorm
-
-coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
-  ## extract coefficients and standard errors
+# Adapted from lmtest package
+test_coefs.default <- function(x, v_cov = NULL, df = NULL, ...) {
+  # Grab the coefs 
   est <- coef(x)
-  if (is.null(vcov.)) {
-    se <- vcov(x)
+  # Need to check what kind of SEs user requested and generate vcov matrix
+  if (is.null(v_cov)) {
+    the_vcov <- vcov(x) # out of the box
   } else {
-    if (is.function(vcov.)) {
-      se <- vcov.(x, ...)
+    if (is.function(v_cov)) {
+      the_vcov <- v_cov(x, ...) # use the supplied function
     } else {
-      se <- vcov.
+      the_vcov <- v_cov # use the supplied variance-covariance matrix
     }
   }
-  se <- sqrt(diag(se))
+  # Calculate the SEs
+  se <- sqrt(diag(the_vcov))
 
-  ## match using names and compute t/z statistics
+  # Now we need to calculate test statistics
   if (!is.null(names(est)) && !is.null(names(se))) {
 
     if (length(unique(names(est))) == length(names(est)) &&
@@ -313,9 +317,9 @@ coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
 
     }
   }
-  tval <- as.vector(est)/se
+  tvals <- as.vector(est)/se
 
-  ## apply central limit theorem
+  # Determine DFs
   if (is.null(df)) {
 
     df <- try(df.residual(x), silent = TRUE)
@@ -325,70 +329,29 @@ coeftest.default <- function(x, vcov. = NULL, df = NULL, ...) {
 
   if (is.null(df)) df <- 0
 
+  # Calculate the p values
   if (is.finite(df) && df > 0) {
 
-    pval <- 2 * pt(abs(tval), df = df, lower.tail = FALSE)
-    cnames <- c("Est.", "S.E.", "t value", "p")
-    mthd <- "t"
+    pvals <- 2 * pt(abs(tvals), df = df, lower.tail = FALSE)
+    cols <- c("Est.", "S.E.", "t value", "p")
 
   } else {
 
-    pval <- 2 * pnorm(abs(tval), lower.tail = FALSE)
-    cnames <- c("Est.", "S.E.", "z value", "p")
-    mthd <- "z"
+    pvals <- 2 * pnorm(abs(tvals), lower.tail = FALSE)
+    cols <- c("Est.", "S.E.", "z value", "p")
 
   }
 
-  rval <- cbind(est, se, tval, pval)
-  colnames(rval) <- cnames
-  # class(rval) <- "coeftest"
-  attr(rval, "method") <- paste(mthd, "test of coefficients")
-  ##  dQuote(class(x)[1]), "object", sQuote(deparse(substitute(x))))
-  return(rval)
+  tbl <- cbind(est, se, tvals, pvals)
+  colnames(tbl) <- cols
+  return(tbl)
 
 }
 
-coeftest.glm <- function(x, vcov. = NULL, df = Inf, ...) {
-  coeftest.default(x, vcov. = vcov., df = df, ...)
+test_coefs.glm <- function(x, the_vcov = NULL, df = Inf, ...) {
+  # Only difference is default DF
+  test_coefs.default(x, the_vcov = the_vcov, df = df, ...)
 }
-
-# coeftest.mlm <- function(x, vcov. = NULL, df = NULL, ...) {
-#   ## obtain vcov
-#   v <- if (is.null(vcov.)) {
-#     vcov(x)
-#   } else if (is.function(vcov.)) {
-#     vcov.(x)
-#   } else {
-#     vcov.
-#   }
-#
-#   ## nasty hack: replace coefficients so that their names match the vcov() method
-#   x$coefficients <- structure(as.vector(x$coefficients),
-#                               .Names = colnames(vcov(x)))
-#
-#   ## call default method
-#   coeftest.default(x, vcov. = v, df = df, ...)
-# }
-#
-# coeftest.survreg <- function(x, vcov. = NULL, df = Inf, ...) {
-#
-#   if (is.null(vcov.)) {
-#     v <- vcov(x)
-#   } else {
-#     if (is.function(vcov.)) {
-#       v <- vcov.(x)
-#     } else {
-#       v <- vcov.
-#     }
-#   }
-#
-#   if (length(x$coefficients) < NROW(x$var)) {
-#     x$coefficients <- c(x$coefficients, "Log(scale)" = log(x$scale))
-#   }
-#
-#   coeftest.default(x, vcov. = v, df = df, ...)
-#
-# }
 
 #### robust predictions #####################################################
 
