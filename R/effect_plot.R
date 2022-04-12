@@ -274,6 +274,8 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   
   # Deal with legacy color argument
   if (!all(color.class == colors)) colors <- color.class
+
+  colors <- get_colors(colors)
   
   pred_out <- make_predictions(model, pred = pred, pred.values = pred.values,
                                at = at, center = centered,

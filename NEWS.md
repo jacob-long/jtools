@@ -17,6 +17,9 @@ error when the left-hand side of the model formula contains a transformation.
 * Pseudo-R^2 calculations now work when `family` is given as a string to the 
 `glm()` function. (#92)
 * Facetting now works in `plot_summs()` as it always had in `plot_coefs()`. (#88)
+* `effect_plot()` now recognizes color palettes provided to the `colors`
+argument (although you will only get the first color of each palette). Thanks
+to Jed Brodie for the report.
 
 Enhancements:
 
