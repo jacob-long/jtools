@@ -85,6 +85,8 @@
 <code><a href="../reference/scale_mod.html">scale_mod()</a></code>/<code><a href="../reference/center_mod.html">center_mod()</a></code>, as well as <code><a href="../reference/summ.html">summ()</a></code>’s <code>scale</code> feature, no longer error when the left-hand side of the model formula contains a transformation. (<a href="https://github.com/jacob-long/jtools/issues/101" class="external-link">#101</a>)</li>
 <li>Pseudo-R^2 calculations now work when <code>family</code> is given as a string to the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> function. (<a href="https://github.com/jacob-long/jtools/issues/92" class="external-link">#92</a>)</li>
 <li>Facetting now works in <code><a href="../reference/plot_summs.html">plot_summs()</a></code> as it always had in <code><a href="../reference/plot_summs.html">plot_coefs()</a></code>. (<a href="https://github.com/jacob-long/jtools/issues/88" class="external-link">#88</a>)</li>
+<li>
+<code><a href="../reference/effect_plot.html">effect_plot()</a></code> now recognizes color palettes provided to the <code>colors</code> argument (although you will only get the first color of each palette). Thanks to Jed Brodie for the report.</li>
 </ul><p>Enhancements:</p>
 <ul><li>
 <code><a href="../reference/plot_summs.html">plot_coefs()</a></code> and <code><a href="../reference/plot_summs.html">plot_summs()</a></code> now allow you to change the size of the points using the <code>point.size</code> argument. (<a href="https://github.com/jacob-long/jtools/issues/61" class="external-link">#61</a>, <a href="https://github.com/jacob-long/jtools/issues/120" class="external-link">#120</a>)</li>
