@@ -84,7 +84,8 @@
 #'   for the plot. If \code{NULL}, no main title is used.
 #'
 #' @param colors See [jtools_colors] for details on the types of arguments
-#'    accepted. Default is "black". 
+#'    accepted. Default is "black". This affects the coloration of the line
+#'    as well as confidence intervals and points.
 #' 
 #' @param color.class Deprecated. Now known as `colors`.
 #'
@@ -165,8 +166,6 @@
 #' @param point.alpha What should the `alpha` aesthetic for plotted points of 
 #'  observed data be? Default is 0.6, and it can range from 0 (transparent) to 
 #'  1 (opaque).
-#' @param point.color What should the `colour` aesthetic for plotted points of 
-#'  observed data be? Default is "black".
 #' @param partial.residuals Instead of plotting the observed data, you may plot
 #'  the partial residuals (controlling for the effects of variables besides 
 #'  `pred`). 
@@ -251,9 +250,8 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   outcome.scale = "response", robust = FALSE, cluster = NULL, vcov = NULL, 
   set.offset = 1, x.label = NULL, y.label = NULL, pred.labels = NULL,
   main.title = NULL, colors = "black", line.thickness = 1.1, 
-  point.size = 1.5, point.alpha = 0.6, point.color = "black", jitter = 0,
-  rug = FALSE, rug.sides = "lb", 
-  force.cat = FALSE, cat.geom = c("point", "line", "bar"), 
+  point.size = 1.5, point.alpha = 0.6, jitter = 0, rug = FALSE, 
+  rug.sides = "lb", force.cat = FALSE, cat.geom = c("point", "line", "bar"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
   partial.residuals = FALSE, color.class = colors, ...) {
   
@@ -297,6 +295,10 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
     warn_wrap("The plot.points argument is not compatible with distributional
               parameters specified in `dpar`.")
   }
+  if (!is.null(dots$point.color)) {
+    warn_wrap("The 'point.color' argument is deprecated and is now ignored. 
+               You can change the color of points with the 'colors' argument.")
+  }
   
   if (is.numeric(d[[pred]]) & force.cat == FALSE) {
     plot_effect_continuous(predictions = pm, pred = pred,
@@ -310,7 +312,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                            weights = get_weights(model, d)$weights_name,
                            rug = rug, rug.sides = rug.sides,
                            point.size = point.size, point.alpha = point.alpha,
-                           point.color = point.color)
+                           point.color = colors)
   } else {
     plot_cat(predictions = pm, pred = pred, data = d,  
              geom = cat.geom, pred.values = pred.values,
@@ -321,7 +323,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
              resp = get_response_name(model, ...), jitter = jitter, 
              interval.geom = cat.interval.geom, line.thickness = line.thickness,
              point.size = point.size, pred.point.size = cat.pred.point.size,
-             point.alpha = point.alpha, point.color = point.color)
+             point.alpha = point.alpha, point.color = colors)
   }
   
 }
@@ -381,7 +383,7 @@ plot_effect_continuous <-
   if (interval == TRUE) {
     p <- p + geom_ribbon(data = pm, 
                          aes(ymin = !! sym("ymin"),  ymax = !! sym("ymax")),
-                         alpha = 1/5, show.legend = FALSE)
+                         alpha = 1/5, show.legend = FALSE, fill = colors)
   }
   
   # Rug plot for marginal distributions
@@ -389,7 +391,7 @@ plot_effect_continuous <-
     p <- p + geom_rug(data = d,
                       mapping = aes(x = !! pred, y = !! resp), alpha = 0.6,
                       position = position_jitter(width = jitter[1]),
-                      sides = rug.sides, inherit.aes = TRUE)
+                      sides = rug.sides, inherit.aes = TRUE, color = colors)
   }
   
   # Using theme_apa for theming...but using legend title and side positioning

@@ -28,7 +28,6 @@ effect_plot(
   line.thickness = 1.1,
   point.size = 1.5,
   point.alpha = 0.6,
-  point.color = "black",
   jitter = 0,
   rug = FALSE,
   rug.sides = "lb",
@@ -135,7 +134,8 @@ If \code{NULL}, the default, the factor labels are used.}
 for the plot. If \code{NULL}, no main title is used.}
 
 \item{colors}{See \link{jtools_colors} for details on the types of arguments
-accepted. Default is "black".}
+accepted. Default is "black". This affects the coloration of the line
+as well as confidence intervals and points.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
@@ -146,9 +146,6 @@ ggplot's default is 1.}
 \item{point.alpha}{What should the \code{alpha} aesthetic for plotted points of
 observed data be? Default is 0.6, and it can range from 0 (transparent) to
 1 (opaque).}
-
-\item{point.color}{What should the \code{colour} aesthetic for plotted points of
-observed data be? Default is "black".}
 
 \item{jitter}{How much should \code{plot.points} observed values be "jittered"
 via \code{\link[ggplot2:position_jitter]{ggplot2::position_jitter()}}? When there are many points near each

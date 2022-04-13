@@ -20,6 +20,10 @@ error when the left-hand side of the model formula contains a transformation.
 * `effect_plot()` now recognizes color palettes provided to the `colors`
 argument (although you will only get the first color of each palette). Thanks
 to Jed Brodie for the report.
+* `effect_plot()` now applies the color specified in `color` to the points and
+intervals. This deprecates the `point.color` argument which is now ignored with
+a warning. There was previously no means by which users could change the 
+color of the intervals. Thanks again to Jed Brodie for the report.
 
 Enhancements:
 
