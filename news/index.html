@@ -87,6 +87,8 @@
 <li>Facetting now works in <code><a href="../reference/plot_summs.html">plot_summs()</a></code> as it always had in <code><a href="../reference/plot_summs.html">plot_coefs()</a></code>. (<a href="https://github.com/jacob-long/jtools/issues/88" class="external-link">#88</a>)</li>
 <li>
 <code><a href="../reference/effect_plot.html">effect_plot()</a></code> now recognizes color palettes provided to the <code>colors</code> argument (although you will only get the first color of each palette). Thanks to Jed Brodie for the report.</li>
+<li>
+<code><a href="../reference/effect_plot.html">effect_plot()</a></code> now applies the color specified in <code>color</code> to the points and intervals. This deprecates the <code>point.color</code> argument which is now ignored with a warning. There was previously no means by which users could change the color of the intervals. Thanks again to Jed Brodie for the report.</li>
 </ul><p>Enhancements:</p>
 <ul><li>
 <code><a href="../reference/plot_summs.html">plot_coefs()</a></code> and <code><a href="../reference/plot_summs.html">plot_summs()</a></code> now allow you to change the size of the points using the <code>point.size</code> argument. (<a href="https://github.com/jacob-long/jtools/issues/61" class="external-link">#61</a>, <a href="https://github.com/jacob-long/jtools/issues/120" class="external-link">#120</a>)</li>
