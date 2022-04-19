@@ -24,3 +24,5 @@
 ^make_hex\.R$
 ^hex\.png$
 ^LICENSE\.md$
+^paper\.md$
+^pkgdown$
