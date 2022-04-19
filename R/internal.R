@@ -119,7 +119,7 @@ one_sided <- function(x, ...) {
 get_lhs <- function(x) {
   if (two_sided(x) == TRUE) {
     x[[2]] 
-  } else if(one_sided(x)) {
+  } else if (one_sided(x)) {
     NULL   
   } else {
     stop_wrap(x, "does not appear to be a one- or two-sided formula.")
@@ -389,8 +389,6 @@ predict_rob <- function(model, .vcov = vcov(model), newdata = NULL,
   if (!is.null(model$call$offset)) {
     offset <- offset + eval(model$call$offset, newdata)
   }
-
-  n <- length(model$residuals)
   p <- model$rank
   p1 <- seq_len(p)
   piv <- if (p) {qr(model)$pivot[p1]}
@@ -444,7 +442,7 @@ tidy.glht <- function (x, conf.int = FALSE, conf.level = 0.95, ...) {
 #' } else {
 #'   export(tidy.summary.glht)
 #' }
-tidy.summary.glht <- function (x, conf.int = FALSE, conf.level = 0.95, ...) {
+tidy.summary.glht <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
   lhs_rhs <- tibble(lhs = rownames(x$linfct), rhs = x$rhs)
   coef <- as_tibble(x$test[c("coefficients", "sigma", 
                              "tstat", "pvalues")])
