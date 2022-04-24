@@ -12,8 +12,9 @@ Practices](https://bestpractices.coreinfrastructure.org/projects/2527/badge)](ht
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools)
 [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools)
-<!-- [![GitHub tag](https://img.shields.io/github/tag/jacob-long/jtools.svg?label=Github)](https://github.com/jacob-long/jtools) -->
-<!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://opensource.org/licenses/MIT) -->
+[![License: GPL
+v3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
+<!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
 
 This package consists of a series of functions created by the author
 (Jacob) to automate otherwise tedious research tasks. At this juncture,
@@ -398,11 +399,13 @@ variable alongside the observed data.
 effect_plot(fit_c, pred = runtime, interval = TRUE, plot.points = TRUE)
 ```
 
-    #> Using data movies from global environment. This could cause incorrect
-    #> results if movies has been altered since the model was fit. You can
-    #> manually provide the data to the "data =" argument.
+    #> Using data movies from global environment. This could
+    #> cause incorrect results if movies has been altered since
+    #> the model was fit. You can manually provide the data to
+    #> the "data =" argument.
 
-    #> Warning: Removed 10 rows containing missing values (geom_point).
+    #> Warning: Removed 10 rows containing missing values
+    #> (geom_point).
 
 ![](man/figures/unnamed-chunk-9-1.png)<!-- -->
 
@@ -414,9 +417,10 @@ after accounting for effects of control variables.
 effect_plot(fit_c, pred = runtime, interval = TRUE, partial.residuals = TRUE)
 ```
 
-    #> Using data movies from global environment. This could cause incorrect
-    #> results if movies has been altered since the model was fit. You can
-    #> manually provide the data to the "data =" argument.
+    #> Using data movies from global environment. This could
+    #> cause incorrect results if movies has been altered since
+    #> the model was fit. You can manually provide the data to
+    #> the "data =" argument.
 
 ![](man/figures/unnamed-chunk-10-1.png)<!-- -->
 

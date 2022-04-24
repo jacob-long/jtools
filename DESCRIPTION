@@ -11,7 +11,7 @@ Description: This is a collection of tools for more efficiently understanding
   emphasis.
 URL: https://jtools.jacob-long.com
 BugReports: https://github.com/jacob-long/jtools/issues
-License: MIT + file LICENSE
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Imports: 
@@ -52,4 +52,4 @@ RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Depends: 
-    R (>= 2.10)
+    R (>= 3.50)
