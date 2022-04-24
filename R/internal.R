@@ -148,7 +148,7 @@ get_rhs <- function(x) {
 } 
 
 all_vars <- function(formula) {
-  if (is.name(formula) | is.call(formula)) {
+  if (is.name(formula) || is.call(formula)) {
     all.vars(formula)
   } else if (two_sided(formula)) {
     c(as.character(deparse(get_lhs(formula))), all.vars(get_rhs(formula)))

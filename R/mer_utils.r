@@ -147,47 +147,35 @@ pR2_merMod <- function(model) {
     varF <- var(as.vector(lme4::fixef(model) %*% t(model@pp$X)))
 
     # Check to see if random slopes are present as fixed effects
-    random.slopes <- if ("list" %in% class(lme4::ranef(model))) {
-
+    random.slopes <- if ("list" %in% class(lme4::ranef(model))) { # nolint
       unique(as.vector(sapply(lme4::ranef(model), colnames)))
-
     } else {
-
       colnames(lme4::ranef(model))
-
     }
 
     # Separate observation variance from variance of random effects
     n.obs <- names(
       unlist(
         lapply(
-          lme4::ranef(model), nrow))[!unlist(lapply(lme4::ranef(model), nrow)) ==
-                                       nrow(model@pp$X)]
+          lme4::ranef(model), nrow))[
+            !unlist(lapply(lme4::ranef(model), nrow)) == nrow(model@pp$X)
+          ]
       )
 
     # Get variance of random effects
     varRand <- sum(
-
       sapply(lme4::VarCorr(model)[n.obs], function(Sigma) {
-
         X <- model.matrix(model)
-
         Z <- X[, rownames(Sigma), drop = FALSE]
-
         Z.m <- Z %*% Sigma
-
         sum(diag(crossprod(Z.m, Z))) / nrow(X)
-
       } )
-
     )
 
     # Get residual variance
     varResid <- attr(lme4::VarCorr(model), "sc")^2
-
     # Calculate R2 values
     ret$Marginal <- varF / (varF + varRand + varResid)
-
     ret$Conditional <- (varF + varRand) / (varF + varRand + varResid)
 
   }
@@ -207,13 +195,9 @@ pR2_merMod <- function(model) {
 
     # Check to see if random slopes are present as fixed effects
     random.slopes <- if ("list" %in% class(lme4::ranef(model))) {
-
       unique(as.vector(sapply(lme4::ranef(model), colnames)))
-
     } else {
-
         colnames(lme4::ranef(model))
-
     }
 
     # Separate observation variance from variance of random effects
@@ -228,16 +212,11 @@ pR2_merMod <- function(model) {
     varRand <- sum(
 
       sapply(lme4::VarCorr(model)[n.obs], function(Sigma) {
-
         X <- model.matrix(model)
-
         Z <- X[, rownames(Sigma), drop = FALSE]
-
         Z.m <- Z %*% Sigma
-
         sum(diag(crossprod(Z.m, Z))) / nrow(X)
-
-      } )
+      })
 
     )
 
@@ -256,19 +235,12 @@ pR2_merMod <- function(model) {
     } else {
 
       varDisp <-  sum(
-
         sapply(lme4::VarCorr(model)[obs], function(Sigma) {
-
           X <- model.matrix(model)
-
           Z <- X[, rownames(Sigma)]
-
           Z.m <- Z %*% Sigma
-
           sum(diag(crossprod(Z.m, Z))) / nrow(X)
-
-        } )
-
+        })
       )
 
     }
@@ -277,24 +249,17 @@ pR2_merMod <- function(model) {
     if (ret$Family == "binomial") {
 
       if (ret$Link == "logit") {
-
       varDist <- (pi^2)/3
-
       } else if (ret$Link == "probit") {
-
         varDist <- 1
-
       } else {
-
         warning(paste("Model link '", summary(model)$link,
                       "' is not yet supported for the ",
                       summary(model)$family, "distribution"))
-
         varDist <- NA
-
       }
 
-    } else if (ret$Family == "poisson" | grepl("Negative Binomial", ret$Family)) {
+    } else if (ret$Family == "poisson" || grepl("Negative Binomial", ret$Family)) {
 
       # Generate null model (intercept and random effects only,
       # no fixed effects)
@@ -303,33 +268,23 @@ pR2_merMod <- function(model) {
 
       # Get the fixed effects of the null model
       null.fixef <- as.numeric(lme4::fixef(null.model))
-
       if (ret$Link == "log") {varDist <- log(1 + 1/exp(null.fixef))}
 
     } else if (ret$Link == "sqrt") {
-
       varDist <- 0.25
-
     } else {
-
       warning(paste("Model link '", summary(model)$link,
                     "' is not yet supported for the ",
                     summary(model)$family, "distribution"))
-
       varDist <- NA
-
     }
 
     # Calculate R2 values
     ret$Marginal <- varF / (varF + varRand + varDisp + varDist)
-
     ret$Conditional <- (varF + varRand) / (varF + varRand + varDisp + varDist)
 
   }
-
-  # Return results
   return(ret)
-
 }
 
 get.random.formula <- function(model, rhs) {

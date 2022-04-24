@@ -10,8 +10,6 @@ do_partials <- function(model, vars = NULL, data = NULL, at = NULL,
   # Drop missing observations
   data <- drop_missing(model, data)
   
-  wname <- get_weights(model, data)$weights_name
-  
   if (is.null(formula)) {formula <- get_formula(model, ...)}
 
   # Make sure the vars are in the data

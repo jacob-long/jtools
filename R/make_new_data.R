@@ -55,7 +55,7 @@ make_new_data <- function(model, pred, pred.values = NULL, at = NULL,
                           num.preds = 100, ...) {
   design <- if ("svyglm" %in% class(model)) model$survey.design else NULL
   
-  if (is.null(data) | "svyglm" %in% class(model)) {
+  if (is.null(data) || "svyglm" %in% class(model)) {
     data <- get_data(model)
   }
   
@@ -164,20 +164,20 @@ get_weights <- function(model, data) {
     return(list(weights_name = wname, weights = weights))
   }
   
-  if (("(weights)" %in% names(data) | !is.null(getCall(model)$weights))) {
+  if (("(weights)" %in% names(data) || !is.null(getCall(model)$weights))) {
     weights <- TRUE
     # subset gives bare name
     wname <- as.character(deparse(getCall(model)$weights))
     # Sometimes it's character(0)
-    if (length(wname) == 0 | wname == "NULL") {
+    if (length(wname) == 0 || wname == "NULL") {
       wname <- NULL
     } else {
       wname <- all.vars(as.formula(paste("~", wname)))
     }
     
-    if ("(weights)" %in% colnames(data) & !is.null(wname)) {
+    if ("(weights)" %in% colnames(data) && !is.null(wname)) {
       colnames(data)[which(colnames(data) == "(weights)")] <- wname
-    } else if ("(weights)" %in% colnames(data) & is.null(wname)) {
+    } else if ("(weights)" %in% colnames(data) && is.null(wname)) {
       wname <- "(weights)"
     } 
     
@@ -359,7 +359,7 @@ get_formula.brmsfit <- function(model, resp = NULL, dpar = NULL, ...) {
   form <- formula(model)
   if ("mvbrmsformula" %in% class(form)) {
     form <- as.list(form)[["forms"]]
-    if (is.null(resp) & is.null(dpar)) {
+    if (is.null(resp) && is.null(dpar)) {
       return(as.formula(form[[1]]))
     } else if (!is.null(resp)) {
       resps <- lapply(form, function(x) {
@@ -374,7 +374,7 @@ get_formula.brmsfit <- function(model, resp = NULL, dpar = NULL, ...) {
       form <- form[[1]]
     }
   } else {
-    if (is.null(resp) & is.null(dpar)) return(as.formula(form))
+    if (is.null(resp) && is.null(dpar)) return(as.formula(form))
   }
   
   if (!is.null(dpar)) {
@@ -445,11 +445,12 @@ get_control_values <- function(model, data, preds, at, center, design = NULL,
   controls <- controls %just% all.vars(formula)
   if (length(controls) > 0) {
     
-    if (center[1] == TRUE | (length(center) == 1 & center == "all" &
+    if (center[1] == TRUE || (length(center) == 1 && center == "all" &&
                              "all" %nin% names(controls))) {
       center <- names(controls)
-    } else if (center[1] == FALSE | (length(center) == 1 & center == "none" &
-                                     "none" %nin% names(controls))) {
+    } else if (center[1] == FALSE ||
+                (length(center) == 1 && center == "none" && 
+                "none" %nin% names(controls))) {
       center <- NULL
     }
     if (length(center) > 0) {

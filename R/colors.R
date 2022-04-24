@@ -75,7 +75,7 @@ get_colors <- function(colors, num.colors = 1, reverse = FALSE,
                        gradient = FALSE) {
   
   # Check if just passing through user-specified colors
-  if (length(colors) > 1 & gradient == FALSE) {
+  if (length(colors) > 1 && gradient == FALSE) {
     if (reverse) colors <- rev(colors)
     return(colors)
   } 
@@ -94,7 +94,7 @@ get_colors <- function(colors, num.colors = 1, reverse = FALSE,
   viridis <- c("viridis", "magma", "A", "inferno", "B", "plasma", "C",
                "D", "cividis", "E")
 
-  if (length(colors) == 1 && colors %in% c(brewers, viridis) &
+  if (length(colors) == 1 && colors %in% c(brewers, viridis) &&
       gradient == FALSE) {
 
     if (colors %in% sequentials) {
@@ -165,7 +165,7 @@ get_colors <- function(colors, num.colors = 1, reverse = FALSE,
     # This function gives a vector of the colors of length y
     rainbow_cols <- function(y) {
       y <- seq(from = 0, to = 1, length = y)
-      rgbs <- lapply(y, rainbow_col)
+      rgbs <- lapply(y, rainbow_col) # nolint
       hexs <- sapply(rgbs, function(x) {
         rgb(x[1], x[2], x[3])
       })
@@ -221,7 +221,7 @@ get_colors <- function(colors, num.colors = 1, reverse = FALSE,
 
   }
   
-  if (gradient == TRUE & length(colors) == 1) {
+  if (gradient == TRUE && length(colors) == 1) {
     if (colors == "Blues") {
       colors <- c("#C6DBEF", "#08519C")
     } else if (colors == "Oranges") {

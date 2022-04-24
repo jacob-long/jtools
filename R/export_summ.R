@@ -165,7 +165,7 @@ export_summs <- function(...,
   if (inherits(dots[[1]], 'list')) {
 
     mods <- dots[[1]]
-    if (is.null(model.names) & !is.null(names(mods))) {
+    if (is.null(model.names) && !is.null(names(mods))) {
       model.names <- names(mods)
     }
     if (length(dots) > 1) {
@@ -285,7 +285,7 @@ export_summs <- function(...,
 
       hux_args$note <- note
 
-    } else if (robust == TRUE & scale == FALSE) {
+    } else if (robust == TRUE && scale == FALSE) {
       note <- paste("Standard errors are heteroskedasticity robust. %stars%.")
       hux_args$note <- note
     }
@@ -413,13 +413,13 @@ tidy.summ <- function(x, conf.int = FALSE, conf.level = .95, ...) {
 
   }
 
-  if (attributes(x)$confint == TRUE | conf.int == TRUE) {
+  if (attributes(x)$confint == TRUE || conf.int == TRUE) {
 
     labs <- make_ci_labs(conf.level)
     lci_lab <- labs$lci
     uci_lab <- labs$uci
 
-    if (attributes(x)$confint == TRUE & attributes(x)$ci.width == conf.level) {
+    if (attributes(x)$confint == TRUE && attributes(x)$ci.width == conf.level) {
       base$conf.low <- x$coeftable[,lci_lab]
       base$conf.high <- x$coeftable[,uci_lab]
     } else {
@@ -518,13 +518,13 @@ tidy.summ.merMod <- function(x, conf.int = FALSE, conf.level = .95, ...) {
     
   }
   
-  if (attributes(x)$confint == TRUE | conf.int == TRUE) {
+  if (attributes(x)$confint == TRUE || conf.int == TRUE) {
     
     labs <- make_ci_labs(conf.level)
     lci_lab <- labs$lci
     uci_lab <- labs$uci
     
-    if (attributes(x)$confint == TRUE & attributes(x)$ci.width == conf.level) {
+    if (attributes(x)$confint == TRUE && attributes(x)$ci.width == conf.level) {
       base$conf.low <- x$coeftable[,lci_lab]
       base$conf.high <- x$coeftable[,uci_lab]
     } else {

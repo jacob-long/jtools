@@ -259,13 +259,13 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   pred <- quo_name(enexpr(pred))
   
   # Have a sensible interval default for categorical predictors
-  if ("interval" %nin% names(match.call())[-1] &
-      !(is.numeric(get_data(model, warn = FALSE)[[pred]]) &
+  if ("interval" %nin% names(match.call())[-1] &&
+      !(is.numeric(get_data(model, warn = FALSE)[[pred]]) &&
         force.cat == FALSE)) {
     interval <- TRUE
   }
   
-  if (force.cat == TRUE & is.null(pred.values)) {
+  if (force.cat == TRUE && is.null(pred.values)) {
     if (is.null(data)) {data <- get_data(model)}
     pred.values <- sort(unique(suppressMessages(data[[pred]])))
   }
@@ -290,7 +290,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   
   # Check for clashing options "dpar" and "plot.points"
   dots <- list(...)
-  if (!is.null(dots$dpar) & plot.points == TRUE) {
+  if (!is.null(dots$dpar) && plot.points == TRUE) {
     plot.points <- FALSE
     warn_wrap("The plot.points argument is not compatible with distributional
               parameters specified in `dpar`.")
@@ -300,7 +300,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                You can change the color of points with the 'colors' argument.")
   }
   
-  if (is.numeric(d[[pred]]) & force.cat == FALSE) {
+  if (is.numeric(d[[pred]]) && force.cat == FALSE) {
     plot_effect_continuous(predictions = pm, pred = pred,
                            plot.points = plot.points | partial.residuals,
                            interval = interval,
@@ -515,13 +515,13 @@ plot_cat <- function(predictions, pred, data = NULL,
   }
   
   # Plot intervals if requested
-  if (interval == TRUE & interval.geom[1] == "errorbar") {
+  if (interval == TRUE && interval.geom[1] == "errorbar") {
     p <- p + geom_errorbar(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
                            alpha = 1, show.legend = FALSE,
                            position = position_dodge(dodge.width),
                            width = errorbar.width,
                            size = line.thickness, color = colors)
-  } else if (interval == TRUE & interval.geom[1] %in% c("line", "linerange")) {
+  } else if (interval == TRUE && interval.geom[1] %in% c("line", "linerange")) {
     p <- p + geom_linerange(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
                             alpha = 0.8, show.legend = FALSE,
                             position = position_dodge(dodge.width),

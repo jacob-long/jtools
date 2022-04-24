@@ -188,7 +188,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # If first element of list is a list, assume the list is a list of models
   if (inherits(dots[[1]], 'list')) {
     mods <- dots[[1]]
-    if (is.null(model.names) & !is.null(names(mods))) {
+    if (is.null(model.names) && !is.null(names(mods))) {
       if (is.null(model.names)) model.names <- names(mods)
     }
     if (length(dots) > 1) {
@@ -219,7 +219,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     ex_args <- NULL
   }
   
-  if (!is.null(omit.coefs) & !is.null(coefs)) {
+  if (!is.null(omit.coefs) && !is.null(coefs)) {
     if (any(omit.coefs %nin% c("(Intercept)", "Intercept"))) {
       msg_wrap("coefs argument overrides omit.coefs argument. Displaying
                coefficients listed in coefs argument.")
@@ -241,7 +241,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   
   # Create more data for the inner interval
   if (!is.null(inner_ci_level)) {
-    if (plot.distributions == FALSE | n_models == 1) {
+    if (plot.distributions == FALSE || n_models == 1) {
       tidies_inner <- make_tidies(mods = mods, ex_args = ex_args,
                                   ci_level = inner_ci_level,
                                   model.names = model.names,
@@ -292,7 +292,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                                  xmax = conf.high, colour = model))
   
   if (!is.null(groups)) {
-    if (is.null(facet.rows) & is.null(facet.cols)) {
+    if (is.null(facet.rows) && is.null(facet.cols)) {
       facet.cols <- 1
     }
     p <- p + facet_wrap(group ~ ., nrow = facet.rows, ncol = facet.cols,
@@ -300,7 +300,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   }
   
   # Checking if user provided the colors his/herself
-  if (length(colors) == 1 | length(colors) != n_models) {
+  if (length(colors) == 1 || length(colors) != n_models) {
     colors <- get_colors(colors, n_models)
   } else {
     colors <- colors
@@ -337,7 +337,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # If there are overlapping distributions, the overlapping pointranges
   # are confusing and look bad. If plotting distributions with more than one
   # model, just plot the points with no ranges.
-  if (plot.distributions == FALSE | n_models == 1) {
+  if (plot.distributions == FALSE || n_models == 1) {
     # Plot the pointranges
     p <- p + ggstance::geom_pointrangeh(
       aes(y = term, x = estimate, xmin = conf.low,
@@ -356,11 +356,11 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   if (length(point.shape) == 1 && point.shape == TRUE) {
     oshapes <- c(21:25, 15:18, 3, 4, 8)
     shapes <- oshapes[seq_len(n_models)]
-  } else if (length(point.shape) == 1 && is.logical(point.shape[1]) &
+  } else if (length(point.shape) == 1 && is.logical(point.shape[1]) &&
              point.shape[1] == FALSE) {
     shapes <- rep(21, times = n_models)
   } else {
-    if (length(point.shape) != n_models & length(point.shape) != 1) {
+    if (length(point.shape) != n_models && length(point.shape) != 1) {
       stop_wrap("You must provide the same number of point shapes as the
                 number of models.")
     } else if (length(point.shape) == 1) {
@@ -395,7 +395,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     
     yrange <- ggplot_build(p)$layout$panel_params[[1]]$y.range
     xrange <- ggplot_build(p)$layout$panel_params[[1]]$x.range
-    if (is.null(yrange) & is.null(xrange)) { # ggplot 2.2.x compatibility
+    if (is.null(yrange) && is.null(xrange)) { # ggplot 2.2.x compatibility
       yrange <- ggplot_build(p)$layout$panel_ranges[[1]]$y.range
       xrange <- ggplot_build(p)$layout$panel_ranges[[1]]$x.range
     }
@@ -429,7 +429,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     
     mv_fits <- sapply(mods, function(x) "mvbrmsformula" %in% class(formula(x)))
     if (any(mv_fits)) {
-      if (!is.null(resp) & length(resp) %nin% c(sum(mv_fits), 1)) {
+      if (!is.null(resp) && length(resp) %nin% c(sum(mv_fits), 1)) {
         stop_wrap("The length of the `resp` argument must be either equal to
                   the number of multivariate `brmsfit` objects or 1.")
       } else if (is.null(resp)) { # Need to retrieve first DV
@@ -493,13 +493,13 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
       method_args <-
         method_args[names(method_args) %nin% c("intervals", "prob")]
       
-      if (method_stub == "brmsfit" & "par_type" %nin% ex_args) {
+      if (method_stub == "brmsfit" && "par_type" %nin% ex_args) {
         ex_args <- c(ex_args, par_type = "non-varying", effects = "fixed")
       } 
       
       extra_args <- ex_args[names(ex_args) %in% names(method_args)]
       
-    } else if (method_stub == "brmsfit" & is.null(ex_args)) {
+    } else if (method_stub == "brmsfit" && is.null(ex_args)) {
       extra_args <- list(effects = "fixed")
     } else {
       extra_args <- NULL
@@ -509,17 +509,17 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
                           conf.level = ci_level, extra_args))
     
     tidies[[i]] <- do.call(generics::tidy, args = all_args)
-    if (!is.null(names(mods)) & any(names(mods) != "")) {
+    if (!is.null(names(mods)) && any(names(mods) != "")) {
       tidies[[i]]$model <- names(mods)[i]
     } else {
       modname <- paste("Model", i)
       tidies[[i]]$model <- modname
     }
     # Deal with glht with no `term` column
-    if ("term" %nin% names(tidies[[i]]) & "lhs" %in% names(tidies[[i]])) {
+    if ("term" %nin% names(tidies[[i]]) && "lhs" %in% names(tidies[[i]])) {
       tidies[[i]]$term <- tidies[[i]]$lhs
     }
-    if ("brmsfit" %in% class(mods[[i]]) & (!is.null(resps) | !is.null(dpars))) {
+    if ("brmsfit" %in% class(mods[[i]]) && (!is.null(resps) || !is.null(dpars))) {
       # See if we're selecting a DV in a multivariate model
       if (!is.null(resps) && !is.na(resps[[i]])) {
         # Now see if we're also dealing with a distributional outcome
@@ -594,7 +594,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   tidies$term <- factor(tidies$term, levels = rev(coefs),
                         labels = rev(names(coefs)))
   
-  if (all(c("upper", "lower") %in% names(tidies)) &
+  if (all(c("upper", "lower") %in% names(tidies)) &&
       "conf.high" %nin% names(tidies)) {
     tidies$conf.high <- tidies$upper
     tidies$conf.low <- tidies$lower

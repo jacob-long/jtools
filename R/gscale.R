@@ -199,7 +199,7 @@ gscale <- function(data = NULL, vars = NULL, binary.inputs = "center",
   }
 
   # Deal with weights
-  if (!is.null(weights) & (is.data.frame(data) | survey == TRUE)) {
+  if (!is.null(weights) && (is.data.frame(data) || survey == TRUE)) {
     # If it's the weight column, skip
     wname <- as.character(substitute(weights))
     wname2 <- weights

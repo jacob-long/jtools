@@ -124,14 +124,6 @@ summ.rq <- function(model, scale = FALSE,
                  transform.response = transform.response,
                  boot.sims = boot.sims, boot.method = boot.method)
 
-  # Intercept?
-  if (length(attr(model$terms, "order")) != 0) {
-    df.int <- if (attr(model$terms, "intercept"))
-      1L else 0L
-  } else { # intercept only
-    df.int <- 1
-  }
-
   # Sample size used
   n <- length(model$residuals)
   j <- structure(j, n = n)
@@ -293,7 +285,7 @@ print.summ.rq <- function(x, ...) {
 
 knit_print.summ.rq <- function(x, options = NULL, ...) {
 
-  if (!nzchar(system.file(package = "kableExtra")) |
+  if (!nzchar(system.file(package = "kableExtra")) ||
       getOption("summ-normal-print", FALSE)) {
     return(knitr::normal_print(x))
   }
@@ -396,10 +388,11 @@ R1 <- function(model) {
 rq_model_matrix <- function(object) {
   mt <- terms(object)
   m <- model.frame(object)
-  y <- model.response(m)
-  if (object$method == "sfn")
-    x <- object$model$x
-  else x <- model.matrix(mt, m, contrasts = object$contrasts)
+  x <- if (object$method == "sfn") {
+    object$model$x
+  } else {
+    model.matrix(mt, m, contrasts = object$contrasts)
+  } 
   return(x)
 }
 

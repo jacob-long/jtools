@@ -11,11 +11,11 @@ make_predictions <- function(model, ...) {
 prepare_return_data <- function(model, data, return.orig.data, 
                                 partial.residuals, pm, pred, at, 
                                 center, set.offset, formula = NULL, ...) {
-  if (return.orig.data == FALSE & partial.residuals == FALSE) {
+  if (return.orig.data == FALSE && partial.residuals == FALSE) {
     o <- tibble::as_tibble(pm)
   } else {
     if (is.null(formula)) {formula <- get_formula(model)}
-    if (return.orig.data == TRUE & partial.residuals == FALSE) {
+    if (return.orig.data == TRUE && partial.residuals == FALSE) {
       o <- list(predictions = tibble::as_tibble(pm), data = 
                 suppressMessages(d <- get_data(model, formula = formula)))
       if ("is_dpar" %in% names(attributes(formula))) {return(o)}
@@ -28,8 +28,8 @@ prepare_return_data <- function(model, data, return.orig.data,
         } 
       }
       # For binomial family, character/logical DVs can cause problems
-      if (get_family(model, ...)$family == "binomial" & !is.numeric(d[[resp]]) &
-          !check_two_col(model)) {
+      if (get_family(model, ...)$family == "binomial" &&
+          !is.numeric(d[[resp]]) && !check_two_col(model)) {
         if (is.logical(d[[resp]])) {
           o[[2]][[resp]] <- as.numeric(o[[2]][[resp]])
         } else {
@@ -326,7 +326,7 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
   }
   
   # Do the predictions using built-in prediction method if robust is FALSE
-  if (interval == FALSE & is.null(model.offset(model.frame(model)))) {
+  if (interval == FALSE && is.null(model.offset(model.frame(model)))) {
     predicted <- as.data.frame(predict(model, newdata = pm,
                                        type = link_or_lm,
                                        re.form = re.form,
@@ -336,7 +336,7 @@ make_predictions.merMod <- function(model, pred, pred.values = NULL, at = NULL,
     
   } else { # Use my custom predictions function
     
-    if (interactive() & boot == TRUE & progress != "none") {
+    if (interactive() && boot == TRUE && progress != "none") {
       cat("Bootstrap progress:\n")
     }
     predicted <- predict_mer(model, newdata = pm, use_re_var = add.re.variance,

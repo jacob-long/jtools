@@ -28,7 +28,7 @@ md_table <- function(x, format = getOption("md_table_format", "grid"),
                      row.names = rownames(x), col.names = colnames(x),
                      align = NULL) {
   if (is.null(align)) {
-    align <- sapply(1:ncol(x), function(y) {is.numeric(x[,y])})
+    align <- sapply(seq_len(ncol(x)), function(y) {is.numeric(x[,y])})
     align <- ifelse(align, yes = "right", no = "left")
     if (!is.null(row.names) && !isFALSE(row.names)) {
       align <- c("left", align)
