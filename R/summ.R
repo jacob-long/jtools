@@ -1792,7 +1792,7 @@ summ.merMod <- function(
     tryo <- try({rsqs <- suppressWarnings(pR2_merMod(model))}, silent = TRUE)
     t1 <- Sys.time()
 
-    if (class(tryo) == "try-error") {
+    if (inherits("try-error", "try-error")) {
       rsqs <- NA
       failed.rsq <- TRUE
       r.squared <- FALSE

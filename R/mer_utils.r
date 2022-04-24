@@ -289,7 +289,7 @@ pR2_merMod <- function(model) {
 
 get.random.formula <- function(model, rhs) {
 
-  if (class(rhs) == "formula") {rhs <- Reduce(paste, deparse(rhs))}
+  if (inherits(rhs, "formula")) {rhs <- Reduce(paste, deparse(rhs))}
 
   # Get random formula from model
   random.formula <- if (any(class(model) %in% c("lmerMod", "lmerModLmerTest",
