@@ -26,3 +26,4 @@
 ^LICENSE\.md$
 ^paper\.md$
 ^pkgdown$
+^CRAN-SUBMISSION$
