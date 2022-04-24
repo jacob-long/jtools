@@ -408,18 +408,21 @@ Standard errors are heteroskedasticity robust. *** p &lt; 0.001; ** p &lt; 0.01;
 <p>Sometimes the best way to understand your model is to look at the predictions it generates. Rather than look at coefficients, <code><a href="reference/effect_plot.html">effect_plot()</a></code> lets you plot predictions across values of a predictor variable alongside the observed data.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit_c</span>, pred <span class="op">=</span> <span class="va">runtime</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could cause incorrect</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; results if movies has been altered since the model was fit. You can</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; manually provide the data to the "data =" argument.</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: Removed 10 rows containing missing values (geom_point).</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; cause incorrect results if movies has been altered since</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; the model was fit. You can manually provide the data to</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; the "data =" argument.</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: Removed 10 rows containing missing values</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; (geom_point).</span></span></code></pre></div>
 <p><img src="reference/figures/unnamed-chunk-9-1.png"><!-- --></p>
 <p>And a new feature in version <code>2.0.0</code> lets you plot <em>partial residuals</em> instead of the raw observed data, allowing you to assess model quality after accounting for effects of control variables.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit_c</span>, pred <span class="op">=</span> <span class="va">runtime</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, partial.residuals <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could cause incorrect</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; results if movies has been altered since the model was fit. You can</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; manually provide the data to the "data =" argument.</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; cause incorrect results if movies has been altered since</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; the model was fit. You can manually provide the data to</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; the "data =" argument.</span></span></code></pre></div>
 <p><img src="reference/figures/unnamed-chunk-10-1.png"><!-- --></p>
 <p>Categorical predictors, polynomial terms, (G)LM(M)s, weighted data, and much more are supported.</p>
 </div>
@@ -473,7 +476,7 @@ Standard errors are heteroskedasticity robust. *** p &lt; 0.001; ** p &lt; 0.01;
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li><small>GPL (&gt;= 3)</small></li>
 </ul>
 </div>
 
@@ -507,6 +510,7 @@ Standard errors are heteroskedasticity robust. *** p &lt; 0.001; ** p &lt; 0.01;
 <li><a href="https://github.com/jacob-long/jtools/actions" class="external-link"><img src="https://github.com/jacob-long/jtools/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://ci.appveyor.com/project/jacob-long/JTools" class="external-link"><img src="https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&amp;svg=true" alt="AppVeyor Build Status"></a></li>
 <li><a href="https://codecov.io/gh/jacob-long/jtools" class="external-link"><img src="https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg" alt="codecov"></a></li>
+<li><a href="https://www.gnu.org/licenses/gpl-3.0" class="external-link"><img src="https://img.shields.io/badge/License-GPLv3-brightgreen.svg" alt="License: GPL v3"></a></li>
 </ul>
 </div>
 
