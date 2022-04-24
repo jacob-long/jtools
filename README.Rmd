@@ -28,7 +28,7 @@ library(jtools)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2527/badge)](https://bestpractices.coreinfrastructure.org/projects/2527)
 [![R-CMD-check](https://github.com/jacob-long/jtools/workflows/R-CMD-check/badge.svg)](https://github.com/jacob-long/jtools/actions) 
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools) 
-[![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools) 
+[![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://app.codecov.io/gh/jacob-long/jtools) 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
 
@@ -66,11 +66,10 @@ Then install the package from Github.
 devtools::install_github("jacob-long/jtools")
 ```
 
-You should also check out the
-[`dev`](https://github.com/jacob-long/jtools/tree/dev) branch of this 
-repository for the latest and greatest changes, but also the latest and 
-greatest bugs. To see what features are on the roadmap, check the issues
-section of the repository, especially the "enhancement" tag.
+To see what features are on the roadmap, check the issues
+section of the repository, especially the "enhancement" tag. Closed issues
+may be of interest, too, since they may be fixed in the Github version but not
+yet submitted to CRAN.
 
 ## Usage
 

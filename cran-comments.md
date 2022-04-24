@@ -6,5 +6,6 @@
 * Windows 2012 Server (on Appveyor) R-release, R-devel
 
 ## R CMD check results
-There were no NOTEs, WARNINGs, or ERRORs.
+There were no NOTEs, WARNINGs, or ERRORs. Some CRAN checks find 403/503 errors
+to some doi.org links but I cannot replicate these locally.
 

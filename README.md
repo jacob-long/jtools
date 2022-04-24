@@ -11,7 +11,7 @@ Practices](https://bestpractices.coreinfrastructure.org/projects/2527/badge)](ht
 [![R-CMD-check](https://github.com/jacob-long/jtools/workflows/R-CMD-check/badge.svg)](https://github.com/jacob-long/jtools/actions)
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools)
-[![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://codecov.io/gh/jacob-long/jtools)
+[![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://app.codecov.io/gh/jacob-long/jtools)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
@@ -51,11 +51,10 @@ Then install the package from Github.
 devtools::install_github("jacob-long/jtools")
 ```
 
-You should also check out the
-[`dev`](https://github.com/jacob-long/jtools/tree/dev) branch of this
-repository for the latest and greatest changes, but also the latest and
-greatest bugs. To see what features are on the roadmap, check the issues
-section of the repository, especially the “enhancement” tag.
+To see what features are on the roadmap, check the issues section of the
+repository, especially the “enhancement” tag. Closed issues may be of
+interest, too, since they may be fixed in the Github version but not yet
+submitted to CRAN.
 
 ## Usage
 
@@ -124,14 +123,23 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
     #> Adj. R² = 0.08 
     #> 
     #> Standard errors: OLS
-    #> ------------------------------------------------------------------------------
-    #>                      Est.    2.5%   97.5%   t val.    VIF   partial.r   part.r
-    #> ----------------- ------- ------- ------- -------- ------ ----------- --------
-    #> (Intercept)         63.01   61.91   64.11   112.23                            
-    #> budget              -3.78   -5.05   -2.52    -5.89   1.31       -0.20    -0.20
-    #> us_gross             5.28    3.92    6.64     7.61   1.52        0.26     0.25
-    #> year                 0.05   -1.18    1.28     0.08   1.24        0.00     0.00
-    #> ------------------------------------------------------------------------------
+    #> ---------------------------------------------------------
+    #>                      Est.    2.5%   97.5%   t val.    VIF
+    #> ----------------- ------- ------- ------- -------- ------
+    #> (Intercept)         63.01   61.91   64.11   112.23       
+    #> budget              -3.78   -5.05   -2.52    -5.89   1.31
+    #> us_gross             5.28    3.92    6.64     7.61   1.52
+    #> year                 0.05   -1.18    1.28     0.08   1.24
+    #> ---------------------------------------------------------
+    #>  
+    #> --------------------------------------
+    #>                     partial.r   part.r
+    #> ----------------- ----------- --------
+    #> (Intercept)                           
+    #> budget                  -0.20    -0.20
+    #> us_gross                 0.26     0.25
+    #> year                     0.00     0.00
+    #> --------------------------------------
     #> 
     #> Continuous predictors are mean-centered and scaled by 1 s.d.
 
@@ -181,11 +189,6 @@ coef_names <- c("Budget" = "log(budget)", "US Gross" = "log(us_gross)",
                 "Runtime (Hours)" = "runtime", "Constant" = "(Intercept)")
 export_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
-
-    #> Registered S3 methods overwritten by 'broom':
-    #>   method            from  
-    #>   tidy.glht         jtools
-    #>   tidy.summary.glht jtools
 
 <table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-6">
 <col>
