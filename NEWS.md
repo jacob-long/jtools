@@ -24,6 +24,8 @@ to Jed Brodie for the report.
 intervals. This deprecates the `point.color` argument which is now ignored with
 a warning. There was previously no means by which users could change the 
 color of the intervals. Thanks again to Jed Brodie for the report.
+* `%just%.list`() now returns an output.
+
 
 Enhancements:
 

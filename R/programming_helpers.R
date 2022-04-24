@@ -243,7 +243,7 @@
     y <- which(names(x) %in% y)
   }
   out <- `%just%.data.frame`(x, y)
-  
+  out
 }
 
 #' @rdname subsetters
