@@ -144,15 +144,9 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   # Detect presence of offset, save the vector
   if (!is.null(model.offset(mf))) {
-
-    offset <- TRUE
     the_offset <- model.offset(mf)
-
   } else {
-
-    offset <- FALSE
     the_offset <- NULL
-
   }
 
   # Save response variable
@@ -192,15 +186,9 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
   formc <- gsub("``", "`", formc, fixed = TRUE)
 
   if (!is.null(model.weights(mf))) {
-
-    weights <- TRUE
     the_weights <- model.weights(mf)
-
   } else {
-
-    weights <- FALSE
     the_weights <- NULL
-
   }
 
   if (!is.null(data)) {
@@ -285,20 +273,6 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   mf <- model.frame(model)
   form <- formula(model)
-  formc <- as.character(deparse(formula(model)))
-
-  # Detect presence of offset, save the vector
-  if (!is.null(model.offset(mf))) {
-
-    offset <- TRUE
-    the_offset <- model.offset(mf)
-
-  } else {
-
-    offset <- FALSE
-    the_offset <- NULL
-
-  }
 
   # Save response variable
   resp <- as.character(formula(model)[2])
@@ -310,26 +284,11 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   # If offset supplied in the formula, detect it, delete it
   if (!is.null(attr(terms(form), "offset"))) {
-
     off_pos <- attr(terms(form), "offset") # Get index of offset in terms list
-    offname <- attr(terms(form), "variables")[off_pos] # Get its name in list
-    formc <- gsub(offname, "", formc)
-
+    offname <- rownames(attr(terms(form), "factors"))[off_pos] # Get its name in list
+  } else {
+    offname <- NULL
   }
-
-  # Now I'm quoting all the names so there's no choking on vars with functions
-  # applied. I save the backticked names
-  for (var in all_vars) {
-
-    regex_pattern <- paste("(?<=(~|\\s|\\*|\\+))", escapeRegex(var),
-                           "(?=($|~|\\s|\\*|\\+))", sep = "")
-    backtick_name <- paste("`", var, "`", sep = "")
-    formc <- gsub(regex_pattern, backtick_name, formc, perl = T)
-
-  }
-
-  formc <- paste0(formc, collapse = "")
-  formc <- gsub("``", "`", formc, fixed = TRUE)
 
   # Get the survey design object
   design <- model$survey.design
@@ -342,9 +301,7 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
   # (fixes issues with functions)
   adds <- which(all_vars %nin% names(design$variables))
   for (var in all_vars[adds]) {
-
     design$variables[[var]] <- mf[[var]]
-
   }
 
   # Complete cases only
@@ -354,11 +311,13 @@ scale_mod.svyglm <- function(model, binary.inputs = "0/1", n.sd = 1,
   if (scale.response == FALSE) {
     all_vars <- all_vars[all_vars %nin% resp]
   }
-
+  if (!is.null(offname)) {
+    all_vars <- all_vars %not% offname
+  }
+  # only scale a subset if requested
   if (!is.null(vars)) {
     all_vars <- all_vars[all_vars %in% vars]
   }
-
 
   # Call gscale()
   design <- gscale(vars = all_vars, data = design, n.sd = n.sd,
