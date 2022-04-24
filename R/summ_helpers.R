@@ -293,8 +293,7 @@ part_corr <- function(ts, df.int, rsq, robust, n) {
   
 }
 
-## Checking for presence of deprecated
-
+## Checking for presence of deprecated arguments
 dep_checks <- function(dots) {
   
   scale <-  transform.response <- robust <- exp <- NULL
