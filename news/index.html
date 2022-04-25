@@ -83,6 +83,8 @@
 <code><a href="../reference/make_predictions.html">make_predictions()</a></code> no longer ignores <code>int.type</code>. (<a href="https://github.com/jacob-long/jtools/issues/116" class="external-link">#116</a>)</li>
 <li>
 <code><a href="../reference/scale_mod.html">scale_mod()</a></code>/<code><a href="../reference/center_mod.html">center_mod()</a></code>, as well as <code><a href="../reference/summ.html">summ()</a></code>’s <code>scale</code> feature, no longer error when the left-hand side of the model formula contains a transformation. (<a href="https://github.com/jacob-long/jtools/issues/101" class="external-link">#101</a>)</li>
+<li>
+<code><a href="../reference/make_predictions.html">make_predictions()</a></code> (and therefore <code><a href="../reference/effect_plot.html">effect_plot()</a></code>) correctly transforms original data when the left-hand side of the formula includes a transformation.</li>
 <li>Pseudo-R^2 calculations now work when <code>family</code> is given as a string to the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> function. (<a href="https://github.com/jacob-long/jtools/issues/92" class="external-link">#92</a>)</li>
 <li>Facetting now works in <code><a href="../reference/plot_summs.html">plot_summs()</a></code> as it always had in <code><a href="../reference/plot_summs.html">plot_coefs()</a></code>. (<a href="https://github.com/jacob-long/jtools/issues/88" class="external-link">#88</a>)</li>
 <li>
@@ -106,6 +108,9 @@
 <code><a href="../reference/gscale.html">gscale()</a></code> (and therefore <code><a href="../reference/scale_mod.html">scale_mod()</a></code> and <code><a href="../reference/center_mod.html">center_mod()</a></code>) no longer convert binary factor variables to numeric variables by default. This behavior can be requested by setting <code>binary.factor = TRUE</code>. (<a href="https://github.com/jacob-long/jtools/issues/114" class="external-link">#114</a>)</li>
 <li>
 <code><a href="../reference/summ.html">summ()</a></code> no longer silently ignores the <code>cluster</code> argument when <code>robust</code> is set to <code>FALSE</code>. (<a href="https://github.com/jacob-long/jtools/issues/93" class="external-link">#93</a>)</li>
+<li>
+<code><a href="../reference/plot_summs.html">plot_summs()</a></code> and <code><a href="../reference/plot_summs.html">plot_coefs()</a></code> no longer reverse the typical order of the coefficients on the y-axis when <code>plot.distributions = TRUE</code>.</li>
+<li>Vignettes have been spruced up a little bit, especially the “Tools for summarizing and visualizing regression models” one, which has received some new examples using the <code>movies</code> dataset.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="2.1.4" id="jtools-214">jtools 2.1.4<a class="anchor" aria-label="anchor" href="#jtools-214"></a></h2><p class="text-muted">CRAN release: 2021-09-03</p>
