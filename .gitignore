@@ -43,3 +43,5 @@ tests/testthat/Rplots\.pdf
 doc
 Meta
 .DS_Store
+/doc/
+/Meta/

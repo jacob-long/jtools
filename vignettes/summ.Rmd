@@ -17,8 +17,8 @@ vignette: >
 required <- c("survey", "huxtable", "broom", "lme4", "quantreg")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
-knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 4,
-                      dpi = 100, render = knitr::normal_print)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 6, 
+                      fig.height = 4,cdpi = 150, render = knitr::normal_print)
 library(jtools)
 ```
 
@@ -40,41 +40,49 @@ publication (`export_summs`)
 
 When sharing analyses with colleagues unfamiliar with R, I found that the output
 generally was not clear to them. Things were even worse if I wanted to give
-them information that is not included in the `summary` like robust
+them information that is not included in the `summary()` like robust
 standard errors, scaled coefficients, and VIFs since the functions for 
 estimating these don't append them to a typical regression table. After creating
-output tables "by hand" on multiple occasions, I thought it best to pack things
-into a reusable function: It became `summ`.
+output tables "by hand" on multiple occasions, I thought it would be best to 
+pack things into a reusable function: It became `summ()`.
 
-With no user-specified arguments except a fitted model, the output of `summ`
+For example purposes, we'll create a model using the `movies` data from this
+package. These data comprise information about over 800 movies across several 
+decades. We will be predicting the Metacritic `metascore`, which ranges from
+0 to 100 (where higher numbers reflect more positive reviews) using 
+the gross revenue in the United States (`us_gross`), the fan rating at IMDB 
+(`imdb_rating`), and a categorical variable reflecting the genre (`genre5`) with
+"Action" as the reference level.
+
+With no user-specified arguments except a fitted model, the output of `summ()`
 looks like this:
 
 ```{r}
-# Fit model
-states <- as.data.frame(state.x77)
-fit <- lm(Income ~ Frost + Illiteracy + Murder, data = states)
+library(jtools) # Load jtools
+data(movies) # Telling R we want to use this data
+fit <- lm(metascore ~ imdb_rating + log(us_gross) + genre5, data = movies)
 summ(fit)
 ```
 
 Like any output, this one is somewhat opinionated — some information is shown 
 that perhaps not everyone would be interested in, some may be missing. That,
 of course, was the motivation behind the creation of the function; I didn't 
-like the choices made by R's core team with `summary`!
+like the choices made by R's core team with `summary()`!
 
 Here's a quick (not comprehensive) list of functionality supported by `summ`:
 
 * Summaries for `lm`, `glm`, `svyglm` (`survey`), `merMod` (`lme4`),
 and `rq` (`quantreg`) models.
-* Variable scaling and centering
+* Variable scaling and centering (i.e., calculating standardized coefficients)
 * Robust standard errors (for `lm` and `glm` plus `quantreg`'s built-in 
 options for `rq` models)
 * Confidence intervals, VIFs, and partial correlations (`lm` only) can 
 optionally be included in the output
 * p-values can be dropped from the output
-* R^2 (`lm`, linear `svyglm`), pseudo-R^2 (`glm`, `merMod`), R^1 (`rq`),
-and other model fit statistics are calculated and reported. These can also
-be suppressed if you don't want them.
-* Ability to choose defaults for many options using `set_summ_defaults` to
+* R^2 (`lm`, linear `svyglm`), pseudo-R^2 (`glm`, `svyglm`, `merMod`),
+R^1 (`rq`), and other model fit statistics are calculated and reported. 
+These can also be suppressed if you don't want them.
+* Ability to choose defaults for many options using `set_summ_defaults()` to
 reduce the need to do redundant typing in interactive use.
 
 Model types supported are `lm`, `glm`, `svyglm`, `merMod`, and `rq`, though
@@ -91,13 +99,12 @@ summ(fit)
 You can force `knitr` to give the console style of output by setting the
 chunk option `render = 'normal_print'`.
 
-
 ## Report robust standard errors
 
-One of the problems that originally motivated the creation of this function was
+One of the problems that originally motivated the creation of `summ()` was
 the desire to efficiently report robust standard errors — while it is easy 
 enough for an experienced R user to calculate robust standard errors, there are
-not  many simple ways to include the results in a regression table as is common
+not many simple ways to include the results in a regression table as is common
 with the likes of Stata, SPSS, etc.
 
 Robust standard errors require the user to have the `sandwich`
@@ -132,14 +139,24 @@ scaled betas are used instead when `scale = TRUE`. To be clear,
 since the meaning of "standardized beta" can vary depending on who you talk to,
 this option mean-centers the predictors as well but does not alter the dependent
 variable whatsoever. If you want to scale the dependent variable too,
-just add the `transform.response = TRUE` argument.
+just add the `transform.response = TRUE` argument. This argument does not
+do anything to factor variables and doesn't scale binary variables by default.
 
 ```{r}
 summ(fit, scale = TRUE)
 ```
 
+If you have transformed
+variables (e.g., `log(us_gross)`), the function will scale the 
+already-transformed variable. In other words, it is similar to the result
+you would get if you did `scale(log(us_gross))` rather than 
+`log(scale(us_gross))` which would cause an error since you cannot apply
+`log()` to numbers <== 0.
+
 You can also choose a different number of standard deviations to divide by for
-standardization. Andrew Gelman has been a proponent of dividing by 2 standard
+standardization. 
+[Andrew Gelman](http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf) 
+has been a proponent of dividing by 2 standard
 deviations; if you want to do things that way, give the argument `n.sd = 2`. 
 
 ```{r}
@@ -189,11 +206,15 @@ confidence intervals.
 
 ## Generalized and Mixed models
 
-`summ` has been expanding its range of supported model types. `glm` was a
-natural extension and will cover most use cases.
+`summ` has been expanding its range of supported model types. `glm` models are 
+a straightforward choice. Here we can take our previous model, but make it
+a probit model to reflect the fact that `metascore` is bound at 0 and 100 
+(analogous to 0 and 1). We'll use the `quasibinomial` family since this is 
+a percentage rather a binary outcome.
 
 ```{r}
-fitg <- glm(vs ~ drat + mpg, data = mtcars, family = binomial)
+fitg <- glm(metascore/100 ~ imdb_rating + log(us_gross) + genre5, data = movies,
+            family = quasibinomial())
 
 summ(fitg)
 ```
@@ -222,7 +243,7 @@ summ(fm1)
 Note that the summary of linear mixed models will omit p-values by default
 unless the \code{pbkrtest} package is installed for linear models. 
 There's no clear-cut way to derive p-values with linear mixed models and
-treating the t-values like you would for OLS models will lead to 
+treating the t-values as you would for OLS models can lead to 
 inflated Type 1 error rates. Confidence intervals are 
 better, but not perfect. Kenward-Roger calculated degrees of freedom are 
 fairly good under many circumstances and those are used by default when
@@ -238,33 +259,39 @@ package.
 
 I won't run through any examples here, but `svyglm` models are supported and
 provide near-equivalent output to what you see here depending on whether they
-are linear models or generalized linear models.
+are linear models or generalized linear models. See `?summ.svyglm` for details.
 
-# `effect_plot`
+### Quantile regression
+
+`summ()` also supports quantile regression models, as estimated by the `rq`
+package. See `?summ.rq` for details.
+
+# `effect_plot()`
 
 Sometimes to really understand what your model is telling you, you need to 
 see the kind of predictions it will give you. For that, you can use
-`effect_plot`, which does what it sounds like. There is a separate vignette
+`effect_plot()`, which does what it sounds like. There is a separate vignette
 available to explore all it can offer, but here's a basic example with our 
-linear model:
+`glm` model:
 
 ```{r}
-effect_plot(fit, pred = Illiteracy, interval = TRUE, plot.points = TRUE)
+effect_plot(fitg, pred = imdb_rating, interval = TRUE, plot.points = TRUE, 
+            jitter = 0.05)
 ```
 
-Now we're really learning something about our model---and it looks like the
-linear fit is basically correct. 
+Now we're really learning something about our model---and you can see the close
+but imperfect agreement between fans and critics.
 
 
-# `plot_summs` and `plot_coefs` 
+# `plot_summs()` and `plot_coefs()` 
 
 When it comes time to share your findings, especially in talks, tables are 
 often not the best way to capture people's attention and quickly convey the
 results. Variants on what are known by some as "forest plots" have been 
 gaining popularity for presenting regression results. 
 
-For that, `jtools` provides `plot_summs` and `plot_coefs`. `plot_summs` 
-gives you a plotting interface to `summ` and allows you to do so with 
+For that, `jtools` provides `plot_summs()` and `plot_coefs()`. `plot_summs()` 
+gives you a plotting interface to `summ()` and allows you to do so with 
 multiple models simultaneously (assuming you want to apply the same 
 arguments to each model). 
 
@@ -278,26 +305,21 @@ Note that the intercept is omitted by default because it often distorts the
 scale and generally isn't of theoretical interest. You can change this behavior
 or omit other coefficients with the `omit.coefs` argument.
 
-In the above example, the differing scales of the variables makes it kind of
-difficult to make a quick assessment. No problem, we can just use the tools
-built into `summ` for that.
+We may still want to use other features of `summ()`, like having robust standard
+errors. No problem.
 
 ```{r}
-plot_summs(fit, scale = TRUE)
+plot_summs(fit, robust = TRUE)
 ```
 
-See? Now we have a better idea of how the uncertainty and magnitude of effect
-differs for these variables. Note that by default the width of the confidence
+Note that by default the width of the confidence
 interval is .95, but this can be changed with the `ci_level` argument. You
 can also add a thicker band to convey a narrow interval using the 
 `inner_ci_level` argument:
 
 ```{r}
-plot_summs(fit, scale = TRUE, inner_ci_level = .9)
+plot_summs(fit, inner_ci_level = .9)
 ```
-
-Another compelling use case for `plot_summs` is robust standard errors (
-just use the `robust` argument).
 
 ### Plot coefficient uncertainty as normal distributions
 
@@ -313,7 +335,7 @@ visually sufficiently close that I have opted not to try to plot the points
 along a *t* distribution.
 
 ```{r}
-plot_summs(fit, scale = TRUE, plot.distributions = TRUE, inner_ci_level = .9)
+plot_summs(fit, plot.distributions = TRUE, inner_ci_level = .9)
 ```
 
 ### Comparing model coefficients visually
@@ -323,48 +345,48 @@ This is especially true when the models are nested. Let's fit a second model
 and compare.
 
 ```{r}
-fit2 <- lm(Income ~ Frost + Illiteracy + Murder + `HS Grad`,
-           data = states)
-plot_summs(fit, fit2, scale = TRUE)
+fit2 <- lm(metascore ~ imdb_rating + log(us_gross) + log(budget) + genre5,
+           data = movies)
+plot_summs(fit, fit2)
 ```
-
-This is a classic case in which adding a new predictor causes another one's
-estimate to get much closer to zero. 
 
 Doing this with `plot.distributions = TRUE` creates a nice effect:
 
 ```{r}
-plot_summs(fit, fit2, scale = TRUE, plot.distributions = TRUE)
+plot_summs(fit, fit2, plot.distributions = TRUE)
 ```
 
-By providing a list to `summ` arguments in `plot_summs`, you can compare
-results with different `summ` arguments (each item in the list corresponds to
+By providing a list of `summ()` arguments to `plot_summs()`, you can compare
+results with different `summ()` arguments (each item in the list corresponds to
 one model; the second list item to the second model, etc.). For instance,
 we can look at how the standard errors differ with different `robust` arguments:
 
 ```{r}
-plot_summs(fit, fit, fit, scale = TRUE, robust = list(FALSE, "HC0", "HC3"),
-           model.names = c("OLS", "HC0", "HC3"))
+plot_summs(fit, fit, fit, robust = list(FALSE, "HC0", "HC5"),
+           model.names = c("OLS", "HC0", "HC5"))
 ```
 
+### Support for models with no `summ()` method
 
-`plot_coefs` is very similar to `plot_summs`, but does not offer the features
-that `summ` does. The tradeoff, though, is that it allows for model types that
-`summ` does not — any model supported by `tidy` from the `broom` package 
-should work. If you provide unsupported model types to `plot_summs`, it just 
-passes them to `plot_coefs`. 
+`plot_coefs()` is very similar to `plot_summs()`, but does not offer the 
+features that `summ()` does. The tradeoff, though, is that it allows for model
+types that `summ()` does not — any model supported by `tidy()` from the 
+`broom` or `broom.mixed` packages should work. 
+
+Note: If you provide unsupported model 
+types to `plot_summs()`, it just passes them to `plot_coefs()`. 
 
 # Table output for Word and RMarkdown documents
 
 Sometimes you really do want a table, but it can't be standard R output. 
-For that, you can use `export_summs`. It is a wrapper around `huxtable`'s 
-`huxreg` function that will give you nice looking output if used in 
+For that, you can use `export_summs()`. It is a wrapper around `huxtable`'s 
+`huxreg()` function that will give you nice looking output if used in 
 RMarkdown documents or, if requested, printed to a Word file. In the latter 
 case, complicated models often need more fine-tuning in Word, but it gets
 you started.
 
-Like `plot_summs`, `export_summs` is designed to give you the features 
-available in `summ`, so you can request things like robust standard errors 
+Like `plot_summs()`, `export_summs()` is designed to give you the features 
+available in `summ()`, so you can request things like robust standard errors 
 and variable scaling.
 
 Here's an example of what to expect in a document like this one:
@@ -377,7 +399,7 @@ export_summs(fit, fit2, scale = TRUE)
 huxtable::print_html(export_summs(fit, fit2, scale = TRUE))
 ```
 
-When using RMarkdown, set `results = 'asis'` for the chunk with `export_summs`
+When using RMarkdown, set `results = 'asis'` for the chunk with `export_summs()`
 to get the right formatting for whatever type of output document (HTML, PDF,
 etc.)
 
@@ -465,7 +487,8 @@ summ(fit, model.info = FALSE)
 options("jtools-digits" = NULL)
 ```
 
-Note that the return object has non-rounded values if you wish to use them later.
+Note that the `summ` object contains the non-rounded values if you want to use 
+them later. The digits option just affects the printed output.
 
 ```{r}
 j <- summ(fit, digits = 3)
@@ -475,9 +498,9 @@ j$coeftable
 
 ## Set default arguments to `summ`
 
-You may like some of the options afforded to you by `summ` but may not
+You may like some of the options afforded to you by `summ()` but may not
 like the inconvenience of typing them over and over. To streamline your 
-sessions, you can use the `set_summ_defaults` function to avoid redundant
+sessions, you can use the `set_summ_defaults()` function to avoid redundant
 typing. 
 
 It works like this:
@@ -520,7 +543,8 @@ large. In some domains, a VIF over 2 is worthy of suspicion. Others set the bar
 higher, at  5 or 10. Others still will say you shouldn't pay attention to these
 at all.  Ultimately, the main thing to consider is that small effects are more
 likely to be "drowned out" by higher VIFs, but this may just be a natural,
-unavoidable fact with your model.
+unavoidable fact with your model (e.g., there is no problem with high VIFs when
+you have an interaction effect).
 
 
 

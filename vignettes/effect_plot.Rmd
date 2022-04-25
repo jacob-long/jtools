@@ -19,7 +19,7 @@ required <- c("MASS")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
 knitr::opts_chunk$set(message = F, warning = F, fig.width = 6, fig.height = 4,
-                      dpi = 100, render = knitr::normal_print)
+                      dpi = 150, render = knitr::normal_print)
 library(jtools)
 ```
 
@@ -138,7 +138,6 @@ doctor. These conditions are represented by the `trt` variable. Patients
 were checked for presence or absence of the bacteria (`y`) every few weeks
 (`week`).
 
-
 ```{r}
 library(MASS)
 data(bacteria)
@@ -218,7 +217,7 @@ clearly.
 
 ```{r}
 effect_plot(p_mod, pred = age_n, interval = TRUE, partial.residuals = TRUE,
-            jitter = c(0.1,0))
+            jitter = c(0.1, 0))
 ```
 
 Because I didn't want to alter the height of the points, I provided a vector

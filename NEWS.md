@@ -49,6 +49,9 @@ requested by setting `binary.factor = TRUE`. (#114)
 set to `FALSE`. (#93)
 * `plot_summs()` and `plot_coefs()` no longer reverse the typical order of the
 coefficients on the y-axis when `plot.distributions = TRUE`.
+* Vignettes have been spruced up a little bit, especially the "Tools for 
+summarizing and visualizing regression models" one, which has received some 
+new examples using the `movies` dataset.
 
 # jtools 2.1.4
 

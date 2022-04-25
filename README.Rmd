@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   render = knitr::normal_print,
   # dev.args=list(type="cairo"),
   # dev = "CairoPNG",
-  dpi = 300,
+  dpi = 200,
   retina = 1
 )
 library(jtools)
@@ -235,5 +235,6 @@ you agree to abide by its terms.
 
 ## License
 
-The source code of this package is licensed under the 
-[MIT License](https://opensource.org/licenses/mit-license.php).
+This package is licensed under the 
+[GPLv3 license](https://spdx.org/licenses/GPL-3.0-or-later.html) or any 
+later version.

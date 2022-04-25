@@ -123,23 +123,14 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
     #> Adj. R² = 0.08 
     #> 
     #> Standard errors: OLS
-    #> ---------------------------------------------------------
-    #>                      Est.    2.5%   97.5%   t val.    VIF
-    #> ----------------- ------- ------- ------- -------- ------
-    #> (Intercept)         63.01   61.91   64.11   112.23       
-    #> budget              -3.78   -5.05   -2.52    -5.89   1.31
-    #> us_gross             5.28    3.92    6.64     7.61   1.52
-    #> year                 0.05   -1.18    1.28     0.08   1.24
-    #> ---------------------------------------------------------
-    #>  
-    #> --------------------------------------
-    #>                     partial.r   part.r
-    #> ----------------- ----------- --------
-    #> (Intercept)                           
-    #> budget                  -0.20    -0.20
-    #> us_gross                 0.26     0.25
-    #> year                     0.00     0.00
-    #> --------------------------------------
+    #> ------------------------------------------------------------------------------
+    #>                      Est.    2.5%   97.5%   t val.    VIF   partial.r   part.r
+    #> ----------------- ------- ------- ------- -------- ------ ----------- --------
+    #> (Intercept)         63.01   61.91   64.11   112.23                            
+    #> budget              -3.78   -5.05   -2.52    -5.89   1.31       -0.20    -0.20
+    #> us_gross             5.28    3.92    6.64     7.61   1.52        0.26     0.25
+    #> year                 0.05   -1.18    1.28     0.08   1.24        0.00     0.00
+    #> ------------------------------------------------------------------------------
     #> 
     #> Continuous predictors are mean-centered and scaled by 1 s.d.
 
@@ -402,13 +393,10 @@ variable alongside the observed data.
 effect_plot(fit_c, pred = runtime, interval = TRUE, plot.points = TRUE)
 ```
 
-    #> Using data movies from global environment. This could
-    #> cause incorrect results if movies has been altered since
-    #> the model was fit. You can manually provide the data to
-    #> the "data =" argument.
+    #> Using data movies from global environment. This could cause incorrect results if movies has been altered since the model was fit.
+    #> You can manually provide the data to the "data =" argument.
 
-    #> Warning: Removed 10 rows containing missing values
-    #> (geom_point).
+    #> Warning: Removed 10 rows containing missing values (geom_point).
 
 ![](man/figures/unnamed-chunk-9-1.png)<!-- -->
 
@@ -420,10 +408,8 @@ after accounting for effects of control variables.
 effect_plot(fit_c, pred = runtime, interval = TRUE, partial.residuals = TRUE)
 ```
 
-    #> Using data movies from global environment. This could
-    #> cause incorrect results if movies has been altered since
-    #> the model was fit. You can manually provide the data to
-    #> the "data =" argument.
+    #> Using data movies from global environment. This could cause incorrect results if movies has been altered since the model was fit.
+    #> You can manually provide the data to the "data =" argument.
 
 ![](man/figures/unnamed-chunk-10-1.png)<!-- -->
 
@@ -468,5 +454,6 @@ By participating in this project you agree to abide by its terms.
 
 ## License
 
-The source code of this package is licensed under the [MIT
-License](https://opensource.org/licenses/mit-license.php).
+This package is licensed under the [GPLv3
+license](https://spdx.org/licenses/GPL-3.0-or-later.html) or any later
+version.
