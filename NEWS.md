@@ -45,6 +45,8 @@ binary factor variables to numeric variables by default. This behavior can be
 requested by setting `binary.factor = TRUE`. (#114)
 * `summ()` no longer silently ignores the `cluster` argument when `robust` is
 set to `FALSE`. (#93)
+* `plot_summs()` and `plot_coefs()` no longer reverse the typical order of the
+coefficients on the y-axis when `plot.distributions = TRUE`.
 
 # jtools 2.1.4
 

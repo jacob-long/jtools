@@ -311,7 +311,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # Plot distribution layer first so it is beneath the pointrange
   if (plot.distributions == TRUE) {
     # Helper function to generate data for geom_polygon
-    dist_curves <- get_dist_curves(tidies, order = rev(levels(tidies$term)),
+    dist_curves <- get_dist_curves(tidies, order = levels(tidies$term),
                                    models = levels(tidies$model),
                                    rescale.distributions = rescale.distributions)
     # Draw the distributions
@@ -390,7 +390,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # of plotting area so I need to set manually
   if (plot.distributions == TRUE) {
     
-    p <- p + scale_y_discrete(limits = rev(levels(tidies$term)),
+    p <- p + scale_y_discrete(limits = levels(tidies$term),
                               name = legend.title)
     
     yrange <- ggplot_build(p)$layout$panel_params[[1]]$y.range
@@ -647,7 +647,7 @@ get_dist_curves <- function(tidies, order, models, rescale.distributions) {
              consider rescaling your model coefficients or using the
              rescale.distributions = TRUE argument.")
   }
-  
+
   for (i in seq_along(means)) {
     
     if (rescale.distributions == FALSE) {
@@ -655,7 +655,8 @@ get_dist_curves <- function(tidies, order, models, rescale.distributions) {
     } else {
       multiplier <- .6 / heights[i]
     }
-    
+    # I need to know where to put this on the y-axis *numerically* since
+    # geom_polygon isn't going to know about the terms on the y-axis.
     y_pos <- which(order == term_names[i])
     this_curve <- cfs[[i]]$curve
     this_curve <- (this_curve * multiplier) + y_pos
