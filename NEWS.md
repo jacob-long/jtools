@@ -14,6 +14,8 @@ Other bug fixes:
 * `scale_mod()`/`center_mod()`, as well as `summ()`'s `scale` feature, no longer
 error when the left-hand side of the model formula contains a transformation.
 (#101)
+* `make_predictions()` (and therefore `effect_plot()`) correctly transforms 
+original data when the left-hand side of the formula includes a transformation.
 * Pseudo-R^2 calculations now work when `family` is given as a string to the 
 `glm()` function. (#92)
 * Facetting now works in `plot_summs()` as it always had in `plot_coefs()`. (#88)
