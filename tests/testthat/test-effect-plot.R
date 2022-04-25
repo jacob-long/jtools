@@ -126,24 +126,25 @@ if (requireNamespace("lme4")) {
   context("effect_plot lme4")
   library(lme4, quietly = TRUE)
   data(VerbAgg)
+  va <- VerbAgg[sample(seq_len(nrow(VerbAgg)), 500),]
   fmVA0 <- glmer(r2 ~ Anger + Gender + btype + situ + (1|id) + (1|item), 
-                 family = binomial, data = VerbAgg, nAGQ=0L)
+                 family = binomial, data = va, nAGQ=0L)
   lmVA0 <- lmer(as.numeric(r2 == "Y") ~ Anger + Gender + btype + situ + (1|id) + (1|item), 
-                data = VerbAgg)
+                data = va)
   gm <- glmer(incidence ~ as.numeric(period) + (1 | herd), family = poisson,
               data = cbpp, offset = log(size))
   test_that("effect_plot works for lme4", {
-    p <- effect_plot(lmVA0, pred = Anger, data = VerbAgg) +
+    p <- effect_plot(lmVA0, pred = Anger, data = va) +
       ggtitle("lmer test")
     expect_doppelganger("lmer", p)
-    p <- effect_plot(lmVA0, pred = Anger, plot.points = T, data = VerbAgg) +
+    p <- effect_plot(lmVA0, pred = Anger, plot.points = T, data = va) +
       ggtitle("lmer test + plot points")
     expect_doppelganger("lmer-points", p)
     p <- effect_plot(lmVA0, pred = Anger, partial.residuals = T, 
-      data = VerbAgg) +
+      data = va) +
       ggtitle("lmer test + partial residuals")
     expect_doppelganger("lmer-partials", p)
-    p <- effect_plot(fmVA0, pred = Anger, data = VerbAgg) +
+    p <- effect_plot(fmVA0, pred = Anger, data = va) +
       ggtitle("glmer test")
     expect_doppelganger("glmer", p)
     expect_message(p <- effect_plot(gm, pred = period, data = cbpp) +
@@ -152,9 +153,9 @@ if (requireNamespace("lme4")) {
   })
   context("lme4 predictions")
   test_that("predict_mer works with random effects", {
-    expect_equal(head(jtools:::predict_mer(lmVA0, newdata = VerbAgg, 
+    expect_equal(head(jtools:::predict_mer(lmVA0, newdata = va, 
                                            type = "response")), 
-                 head(predict(lmVA0, newdata = VerbAgg, type = "response")))
+                 head(predict(lmVA0, newdata = va, type = "response")))
   })
 }
 

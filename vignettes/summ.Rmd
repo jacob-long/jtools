@@ -18,7 +18,7 @@ required <- c("survey", "huxtable", "broom", "lme4", "quantreg")
 if (!all(sapply(required, requireNamespace, quietly = TRUE)))
   knitr::opts_chunk$set(eval = FALSE)
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 6, 
-                      fig.height = 4,cdpi = 150, render = knitr::normal_print)
+                      fig.height = 4, dpi = 125, render = knitr::normal_print)
 library(jtools)
 ```
 

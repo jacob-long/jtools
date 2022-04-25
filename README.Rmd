@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   render = knitr::normal_print,
   # dev.args=list(type="cairo"),
   # dev = "CairoPNG",
-  dpi = 200,
+  dpi = 175,
   retina = 1
 )
 library(jtools)
