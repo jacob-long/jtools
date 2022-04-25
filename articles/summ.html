@@ -705,7 +705,7 @@ genre5Other
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fitg</span>, pred <span class="op">=</span> <span class="va">imdb_rating</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span>, 
             jitter <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-14-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-14-1.png" width="750"></p>
 <p>Now we’re really learning something about our model—and you can see the close but imperfect agreement between fans and critics.</p>
 </div>
 <div class="section level2">
@@ -717,16 +717,16 @@ genre5Other
 <p>Here’s a basic, single-model use case.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-15-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-15-1.png" width="750"></p>
 <p>Note that the intercept is omitted by default because it often distorts the scale and generally isn’t of theoretical interest. You can change this behavior or omit other coefficients with the <code>omit.coefs</code> argument.</p>
 <p>We may still want to use other features of <code><a href="../reference/summ.html">summ()</a></code>, like having robust standard errors. No problem.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-16-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-16-1.png" width="750"></p>
 <p>Note that by default the width of the confidence interval is .95, but this can be changed with the <code>ci_level</code> argument. You can also add a thicker band to convey a narrow interval using the <code>inner_ci_level</code> argument:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-17-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-17-1.png" width="750"></p>
 <div class="section level4">
 <h4 id="plot-coefficient-uncertainty-as-normal-distributions">Plot coefficient uncertainty as normal distributions<a class="anchor" aria-label="anchor" href="#plot-coefficient-uncertainty-as-normal-distributions"></a>
 </h4>
@@ -734,7 +734,7 @@ genre5Other
 <p>While the common OLS model assumes a <em>t</em> distribution, I decided that they are visually sufficiently close that I have opted not to try to plot the points along a <em>t</em> distribution.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-18-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-18-1.png" width="750"></p>
 </div>
 <div class="section level4">
 <h4 id="comparing-model-coefficients-visually">Comparing model coefficients visually<a class="anchor" aria-label="anchor" href="#comparing-model-coefficients-visually"></a>
@@ -744,16 +744,16 @@ genre5Other
 <code class="sourceCode R"><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">budget</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>,
            data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span>
 <span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-19-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-19-1.png" width="750"></p>
 <p>Doing this with <code>plot.distributions = TRUE</code> creates a nice effect:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-20-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-20-1.png" width="750"></p>
 <p>By providing a list of <code><a href="../reference/summ.html">summ()</a></code> arguments to <code><a href="../reference/plot_summs.html">plot_summs()</a></code>, you can compare results with different <code><a href="../reference/summ.html">summ()</a></code> arguments (each item in the list corresponds to one model; the second list item to the second model, etc.). For instance, we can look at how the standard errors differ with different <code>robust</code> arguments:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit</span>, <span class="va">fit</span>, robust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span>,
            model.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OLS"</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="summ_files/figure-html/unnamed-chunk-21-1.png" width="576"></p>
+<p><img src="summ_files/figure-html/unnamed-chunk-21-1.png" width="750"></p>
 </div>
 <div class="section level4">
 <h4 id="support-for-models-with-no-summ-method">Support for models with no <code>summ()</code> method<a class="anchor" aria-label="anchor" href="#support-for-models-with-no-summ-method"></a>

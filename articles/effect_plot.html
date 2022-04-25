@@ -156,26 +156,26 @@
 <p>Let’s explore the effect of engine displacement on gas mileage:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">displ</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-3-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-3-1.png" width="750"></p>
 <p>To be clear, these predictions set all the continuous variables other than <code>displ</code> to their mean value. This can be tweaked via the <code>centered</code> argument (“none” or a vector of variables to center are options). Factor variables are set to their base level and logical variables are set to <code>FALSE</code>.</p>
 <p>So this plot, in this case, is not <em>super</em> illuminating. Let’s see the uncertainty around this line.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">displ</span>, interval <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-4-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-4-1.png" width="750"></p>
 <p>Now we’re getting somewhere.</p>
 <p>If you want to get a feel for how the data are distributed, you can add what is known as a rug plot.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">displ</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, rug <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-5-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-5-1.png" width="750"></p>
 <p>For a more direct look at how the model relates to the observed data, you can use the <code>plot.points = TRUE</code> argument.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">displ</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-6-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-6-1.png" width="750"></p>
 <p>Now we’re really learning something about our model—and things aren’t looking great. It seems like a simple linear model may not even be appropriate. Let’s try fitting a polynomial for the <code>displ</code> term to capture that curvature.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit_poly</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">cty</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html" class="external-link">poly</a></span><span class="op">(</span><span class="va">displ</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="va">year</span> <span class="op">+</span> <span class="va">cyl</span> <span class="op">+</span> <span class="va">class</span> <span class="op">+</span> <span class="va">fl</span>, data <span class="op">=</span> <span class="va">mpg</span><span class="op">)</span>
 <span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit_poly</span>, pred <span class="op">=</span> <span class="va">displ</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-7-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-7-1.png" width="750"></p>
 <p>Okay, now we’re getting closer even though the predicted line curiously grazes over the top of most of the observed data. Before we panic, let’s introduce another feature that might clear things up.</p>
 </div>
 <div class="section level2">
@@ -184,7 +184,7 @@
 <p>In complex regressions like the one in this running example, plotting the observed data can sometimes be relatively uninformative because the points seem to be all over the place. While the typical effects plot shows predicted values of <code>cty</code> across different values of <code>displ</code>, I included included a lot of predictors besides <code>displ</code> in this model and they may be accounting for some of this variation. This is what <em>partial residual plots</em> are designed to help with. Using the argument <code>partial.residuals = TRUE</code>, what is plotted instead is the observed data <em>with the effects of all the control variables accounted for</em>. In other words, the value <code>cty</code> for the observed data is based only on the values of <code>displ</code> and the model error. Let’s take a look.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit_poly</span>, pred <span class="op">=</span> <span class="va">displ</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, partial.residuals <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-8-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-8-1.png" width="750"></p>
 <p>There we go! Our polynomial term for <code>displ</code> is looking much better now. You could tell in the previous plot without partial residuals that the <em>shape</em> of the predictions were about right, but the predicted line was just too high. The partial residuals set all those controls to the same value which shifted the observations up (in this case) to where the predictions are. That means the model does a good job of explaining away that discrepancy and we can see more clearly the polynomial term for <code>displ</code> works better than a linear main effect.</p>
 <p>You can learn more about the technique and theory in Fox and Weisberg (2018). Another place to generate partial residual plots is in Fox’s <code>effects</code> package.</p>
 </div>
@@ -226,19 +226,14 @@
 <p>Let’s check out the effect of time.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">l_mod</span>, pred <span class="op">=</span> <span class="va">week</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, y.label <span class="op">=</span> <span class="st">"% testing positive"</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-10-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-10-1.png" width="750"></p>
 <p>As time goes on, fewer patients test positive for the bacteria.</p>
-<p>Note that probit models work the same way:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">pr_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html" class="external-link">update</a></span><span class="op">(</span><span class="va">l_mod</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span>link <span class="op">=</span> <span class="st">"probit"</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">pr_mod</span>, pred <span class="op">=</span> <span class="va">week</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, y.label <span class="op">=</span> <span class="st">"% testing positive"</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-11-1.png" width="900"></p>
 </div>
 <div class="section level3">
 <h3 id="poisson">Poisson<a class="anchor" aria-label="anchor" href="#poisson"></a>
 </h3>
 <p>For a poisson example, we’ll use the <code>Insurance</code> data from the <code>MASS</code> package. We’re predicting the number of car insurance claims for people with different combinations of car type, region, and age. While <code>Age</code> is an ordered factor, I’ll convert it to a continuous variable for the sake of demonstration. <code>Claims</code> is a count variable, so the poisson distribution is an appropriate modeling approach.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Insurance</span><span class="op">)</span>
 <span class="va">Insurance</span><span class="op">$</span><span class="va">age_n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">Insurance</span><span class="op">$</span><span class="va">Age</span><span class="op">)</span>
@@ -272,23 +267,23 @@
 <span class="co">## age_n               -0.18   0.02    -9.56   0.00</span>
 <span class="co">## ------------------------------------------------</span></code></pre>
 <p>Okay, age is a significant predictor of the number of claims. Note that we have an offset term, so the count we’re predicting is more like a <em>rate</em>. That is, we are modeling how many claims there are adjusting for the amount of policyholders.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">p_mod</span>, pred <span class="op">=</span> <span class="va">age_n</span>, interval <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-13-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-12-1.png" width="750"></p>
 <p>So what does this mean? Critical is understanding the scale of the outcome variable. Because of the offset, we must pick a value of the offset to generate predictions at. <code>effect_plot</code>, by default, sets the offset at 1. That means the predictions you see can be interpreted as a percentage; for every policyholder, there are between 0.16 and 0.10 claims. We can also see that as age goes up, the proportion of policyholders with claims goes down.</p>
 <p>Now let’s take a look at the observed data…</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">p_mod</span>, pred <span class="op">=</span> <span class="va">age_n</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-14-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-13-1.png" width="750"></p>
 <p>Oops! That doesn’t look right, does it? The problem here is the offset. Some age groups have many more policyholders than others and they all have more than 1, which is what we set the offset to for the predictions. This is a more extreme version of the problem we had the with the linear model previously, so let’s use the same solution: partial residuals.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">p_mod</span>, pred <span class="op">=</span> <span class="va">age_n</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, partial.residuals <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-15-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-14-1.png" width="750"></p>
 <p>Now we’re getting somewhere. The only difficulty in interpreting this is the overlapping points. Let’s use the <code>jitter</code> argument to add a random bit of noise to each observation so we can see just how many points there are more clearly.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">p_mod</span>, pred <span class="op">=</span> <span class="va">age_n</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, partial.residuals <span class="op">=</span> <span class="cn">TRUE</span>,
             jitter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-16-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-15-1.png" width="750"></p>
 <p>Because I didn’t want to alter the height of the points, I provided a vector with both 0.1 (referring to the horizontal position) and 0 (referring to the vertical position) to the <code>jitter</code> argument.</p>
 </div>
 </div>
@@ -297,31 +292,31 @@
 </h2>
 <p>These methods don’t work as clearly when the predictor isn’t continuous. Luckily, <code>effect_plot</code> automatically handles such cases and offers a number of options for visualizing effects of categorical predictors.</p>
 <p>Using our first example, predicting gas mileage, let’s focus on the class of car as predictor.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">fl</span>, interval <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-17-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-16-1.png" width="750"></p>
 <p>We can clearly see how diesel (“d”) is associated with the best mileage by far and ethanol (“e”) the worst by a little bit.</p>
 <p>You can plot the observed data in these types of plots as well:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">fl</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span>,
             jitter <span class="op">=</span> <span class="fl">.2</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-18-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-17-1.png" width="750"></p>
 <p>These seem a bit far off from the predictions. Let’s see if the partial residuals are a little more in line with expectations.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit</span>, pred <span class="op">=</span> <span class="va">fl</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, partial.residuals <span class="op">=</span> <span class="cn">TRUE</span>,
             jitter <span class="op">=</span> <span class="fl">.2</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-19-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-18-1.png" width="750"></p>
 <p>Now things make a little more sense and you can see the range of possibilities within each category after accounting for model year and so on. Diesel in particular seems have too few and too spaced out observations to take overly seriously.</p>
 <p>Let’s also look at the bacteria example, using treatment type as the predictor of interest.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">l_mod</span>, pred <span class="op">=</span> <span class="va">trt</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, y.label <span class="op">=</span> <span class="st">"% testing positive"</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-20-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-19-1.png" width="750"></p>
 <p>Now we can see that receiving the drug is clearly superior to placebo, but the drug plus encouragement is not only no better than the drug alone, it’s hardly better than placebo. Of course, we can also tell that the confidence intervals are fairly wide, so I won’t say that these data tell us anything definitively besides the superiority of the drug over placebo.</p>
 <p>You may also want to use lines to convey the ordered nature of this predictor.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">l_mod</span>, pred <span class="op">=</span> <span class="va">trt</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, y.label <span class="op">=</span> <span class="st">"% testing positive"</span>,
             cat.geom <span class="op">=</span> <span class="st">"line"</span><span class="op">)</span></code></pre></div>
-<p><img src="effect_plot_files/figure-html/unnamed-chunk-21-1.png" width="900"></p>
+<p><img src="effect_plot_files/figure-html/unnamed-chunk-20-1.png" width="750"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
