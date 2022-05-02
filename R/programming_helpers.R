@@ -334,7 +334,8 @@ dot_processor <- function(...) {
 #' @param sep Separator between `...`, Default: ''
 #' @param brk What should the last character of the message/warning/error be?
 #'  Default is `"\n"`, meaning the console output ends with a new line.
-#' @param call. Here for legacy reasons. It is ignored.
+#' @param call The actual calling environment to report in the error message.
+#'  By default, `rlang::caller_env()`.
 #' @inheritParams rlang::abort
 #' @details 
 #'  The point of these functions is to allow you to print
@@ -401,11 +402,11 @@ warn_wrap <- function(..., brk = "\n", class = NULL, call. = FALSE) {
 #' @export 
 stop_wrap <- function(...,  brk = "\n",
                       trace = rlang::trace_back(bottom = rlang::caller_env()),
-                      class = NULL, call. = NULL) {
+                      class = NULL, call = rlang::caller_env()) {
   dots <- dot_processor(...)
   wrapped <- c_red(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
   abort_args <- list(message = wrapped, class = class, dots$named,
-                     trace = trace)
+                     trace = trace, call = call)
   abort_args <- abort_args[!sapply(abort_args, is.null)]
   do.call(rlang::abort, abort_args)
 }

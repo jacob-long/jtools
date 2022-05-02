@@ -20,7 +20,7 @@ stop_wrap(
   brk = "\\n",
   trace = rlang::trace_back(bottom = rlang::caller_env()),
   class = NULL,
-  call. = NULL
+  call = rlang::caller_env()
 )
 
 msg_wrap(..., class = NULL, brk = "\\n")
@@ -38,9 +38,10 @@ Default is \code{"\\n"}, meaning the console output ends with a new line.}
 
 \item{class}{Subclass of the condition.}
 
-\item{call.}{Here for legacy reasons. It is ignored.}
-
 \item{trace}{A \code{trace} object created by \code{\link[rlang:trace_back]{trace_back()}}.}
+
+\item{call}{The actual calling environment to report in the error message.
+By default, \code{rlang::caller_env()}.}
 }
 \description{
 These are convenience functions that format printed output to

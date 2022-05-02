@@ -1,3 +1,9 @@
+# jtools 2.2.1.9000
+
+* Minor change to `stop_wrap()` to make its error messages include a more 
+useful "from" message. Rather than "Error in stop_wrap()", it will include the
+actual function in which the error occurred.
+
 # jtools 2.2.0
 
 Accuracy bug fixes:
