@@ -14,7 +14,7 @@ fit the width of the user's console."><meta property="og:image" content="/logo.p
     
     <a class="navbar-brand me-2" href="../index.html">jtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.1.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,7 +95,7 @@ fit the width of the user's console.</p>
   brk <span class="op">=</span> <span class="st">"\n"</span>,
   trace <span class="op">=</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/trace_back.html" class="external-link">trace_back</a></span><span class="op">(</span>bottom <span class="op">=</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/stack.html" class="external-link">caller_env</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,
   class <span class="op">=</span> <span class="cn">NULL</span>,
-  call. <span class="op">=</span> <span class="cn">NULL</span>
+  call <span class="op">=</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/stack.html" class="external-link">caller_env</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">)</span>
 
 <span class="fu">msg_wrap</span><span class="op">(</span><span class="va">...</span>, class <span class="op">=</span> <span class="cn">NULL</span>, brk <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span></code></pre></div>
@@ -115,10 +115,11 @@ respectively.</p></dd>
 Default is <code>"\n"</code>, meaning the console output ends with a new line.</p></dd>
 <dt>class</dt>
 <dd><p>Subclass of the condition.</p></dd>
-<dt>call.</dt>
-<dd><p>Here for legacy reasons. It is ignored.</p></dd>
 <dt>trace</dt>
 <dd><p>A <code>trace</code> object created by <code><a href="https://rlang.r-lib.org/reference/trace_back.html" class="external-link">trace_back()</a></code>.</p></dd>
+<dt>call</dt>
+<dd><p>The actual calling environment to report in the error message.
+By default, <code><a href="https://rlang.r-lib.org/reference/stack.html" class="external-link">rlang::caller_env()</a></code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
