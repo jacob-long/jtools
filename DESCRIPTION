@@ -52,4 +52,4 @@ RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Depends: 
-    R (>= 3.50)
+    R (>= 3.5.0)
