@@ -334,6 +334,7 @@ dot_processor <- function(...) {
 #' @param sep Separator between `...`, Default: ''
 #' @param brk What should the last character of the message/warning/error be?
 #'  Default is `"\n"`, meaning the console output ends with a new line.
+#' @param call. Here for legacy reasons. It is ignored.
 #' @param call The actual calling environment to report in the error message.
 #'  By default, `rlang::caller_env()`.
 #' @inheritParams rlang::abort

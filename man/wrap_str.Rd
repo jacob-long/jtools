@@ -38,6 +38,8 @@ Default is \code{"\\n"}, meaning the console output ends with a new line.}
 
 \item{class}{Subclass of the condition.}
 
+\item{call.}{Here for legacy reasons. It is ignored.}
+
 \item{trace}{A \code{trace} object created by \code{\link[rlang:trace_back]{trace_back()}}.}
 
 \item{call}{The actual calling environment to report in the error message.
