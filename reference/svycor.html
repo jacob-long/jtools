@@ -100,46 +100,68 @@ such a function.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>formula</dt>
 <dd><p>A formula (e.g., ~var1+var2) specifying the terms to correlate.</p></dd>
+
+
 <dt>design</dt>
 <dd><p>The <code>survey.design</code> or <code>svyrep.design</code> object.</p></dd>
+
+
 <dt>na.rm</dt>
 <dd><p>Logical. Should cases with missing values be dropped?</p></dd>
+
+
 <dt>digits</dt>
 <dd><p>An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
 digits for all jtools functions with
 <code>options("jtools-digits" = digits)</code> where digits is the desired number.</p></dd>
+
+
 <dt>sig.stats</dt>
 <dd><p>Logical. Perform non-parametric bootstrapping
 (using <code><a href="https://rdrr.io/pkg/weights/man/wtd.cor.html" class="external-link">wtd.cor</a></code>) to generate standard errors and
 associated t- and p-values. See details for some considerations when doing
 null hypothesis testing with complex survey correlations.</p></dd>
+
+
 <dt>bootn</dt>
 <dd><p>If <code>sig.stats</code> is TRUE, this defines the number of
 bootstraps to be run to generate the standard errors and p-values. For
 large values and large datasets, this can contribute considerably to
 processing time.</p></dd>
+
+
 <dt>mean1</dt>
 <dd><p>If <code>sig.stats</code> is TRUE, it is important to know whether the
 sampling weights should have a mean of 1. That is, should the standard
 errors be calculated as if the number of rows in your dataset is the total
 number of observations (TRUE) or as if the sum of the weights in your
 dataset is the total number of observations (FALSE)?</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Additional arguments passed to <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">svyvar()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>If significance tests are not requested, there is one returned value:</p>
+    
+
+<p>If significance tests are not requested, there is one returned value:</p>
 <dl><dt>cors</dt>
 <dd><p>The correlation matrix (without rounding)</p></dd>
+
+
 </dl><p>If significance tests are requested, the following are also returned:</p>
 <dl><dt>p.values</dt>
 <dd><p>A matrix of p values</p></dd>
+
 <dt>t.values</dt>
 <dd><p>A matrix of t values</p></dd>
+
 <dt>std.err</dt>
 <dd><p>A matrix of standard errors</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -214,7 +236,7 @@ All defects are attributed to the author.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

@@ -106,39 +106,56 @@ outcome variable is adjusted for the effects of the covariates.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>model</dt>
 <dd><p>A regression model.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Ignored.</p></dd>
+
+
 <dt>vars</dt>
 <dd><p>The variable(s) to <em>not</em> adjust for, as a string (or vector of
 strings). If I want to show the effect of <code>x</code> adjusting for the effect of
 <code>z</code>, then I would make <code>"x"</code> the <code>vars</code> argument.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>Optionally, provide the data used to fit the model (or some
 other data frame with the same variables). Otherwise, it will be retrieved
 from the model or the global environment.</p></dd>
+
+
 <dt>at</dt>
 <dd><p>If you want to manually set the values of other variables in the
 model, do so by providing a named list where the names are the variables
 and the list values are vectors of the values. This can be useful
 especially when you are exploring interactions or other conditional
 predictions.</p></dd>
+
+
 <dt>center</dt>
 <dd><p>Set numeric covariates to their mean? Default is TRUE. You
 may also just provide a vector of names (as strings) of covariates to
 center. Note that for <code>svyglm</code> models, the survey-weighted means are used.
 For models with weights, these are weighted means.</p></dd>
+
+
 <dt>scale</dt>
 <dd><p>For GLMs, should the outcome variable be returned on the link
 scale or response scale? Default is <code>"response"</code>.</p></dd>
+
+
 <dt>set.offset</dt>
 <dd><p>For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>data</code> plus the residualized outcome variable.</p>
+    
+
+<p><code>data</code> plus the residualized outcome variable.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -173,7 +190,7 @@ https://doi.org/10.18637/jss.v087.i09</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

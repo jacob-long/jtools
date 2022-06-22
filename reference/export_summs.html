@@ -111,33 +111,47 @@ the results of multiple models into a single table.</p>
     <dl><dt>...</dt>
 <dd><p>At minimum, a regression object(s). See details for more
 arguments.</p></dd>
+
+
 <dt>error_format</dt>
 <dd><p>Which of standard error, confidence intervals, test
 statistics, or p values should be used to express uncertainty of estimates
 for regression coefficients? See details for more info.
 Default: "(std.error)"</p></dd>
+
+
 <dt>error_pos</dt>
 <dd><p>Where should the error statistic defined in
 <code>error_style</code> be placed relative to the coefficient estimate?
 Default: "below"</p></dd>
+
+
 <dt>ci_level</dt>
 <dd><p>If reporting confidence intervals, what should the
 confidence level be? By default, it is .95 if
 confidence intervals are requested in <code>error_format</code>.</p></dd>
+
+
 <dt>statistics</dt>
 <dd><p>Which model summary statistics should be included?
 See <code><a href="https://hughjonesd.github.io/huxtable/reference/huxreg.html" class="external-link">huxreg</a></code> for more on usage. The default
 for this function depends on the model type. See details for more on
 the defaults by model type.</p></dd>
+
+
 <dt>model.names</dt>
 <dd><p>If you want to give your model(s) names at the top
 of each column, provide them here as a character vector.
 Otherwise, they will just be labeled by number. Default: NULL</p></dd>
+
+
 <dt>coefs</dt>
 <dd><p>If you want to include only a subset of the coefficients in
 the table, specify them here in a character vector. If you want the
 table to show different names for the coefficients, give a named vector
 where the names are the preferred coefficient names. See details for more.</p></dd>
+
+
 <dt>to.file</dt>
 <dd><p>Export the table to a Microsoft Word, PDF, or HTML document?
 This functionality relies on <code>huxtable</code>'s <code>quick_</code> functions
@@ -145,13 +159,18 @@ This functionality relies on <code>huxtable</code>'s <code>quick_</code> functio
 <code><a href="https://hughjonesd.github.io/huxtable/reference/quick-output.html" class="external-link">huxtable::quick_html()</a></code>, <code><a href="https://hughjonesd.github.io/huxtable/reference/quick-output.html" class="external-link">huxtable::quick_xlsx()</a></code>). Acceptable arguments
 are "Word" or "docx" (equivalent), "pdf", "html", or "xlsx". All are
 case insensitive. Default is NULL, meaning the table is not saved.</p></dd>
+
+
 <dt>file.name</dt>
 <dd><p>File name with (optionally) file path to save the
 file. Ignored if <code>to.file</code> is FALSE. Default: NULL</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>huxtable</code>.</p>
+    
+
+<p>A <code>huxtable</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -270,7 +289,7 @@ HTML or LaTeX, see <code>huxtable</code>'s documentation.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

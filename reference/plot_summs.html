@@ -133,34 +133,50 @@ plots with ggplot2.</p>
     <dl><dt>...</dt>
 <dd><p>regression model(s). You may also include arguments to be passed
 to <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code>.</p></dd>
+
+
 <dt>ci_level</dt>
 <dd><p>The desired width of confidence intervals for the
 coefficients. Default: 0.95</p></dd>
+
+
 <dt>model.names</dt>
 <dd><p>If plotting multiple models simultaneously, you can
 provide a vector of names here. If NULL, they will be named sequentially
 as "Model 1", "Model 2", and so on. Default: NULL</p></dd>
+
+
 <dt>coefs</dt>
 <dd><p>If you'd like to include only certain coefficients, provide
 them as a vector. If it is a named vector, then the names will be used
 in place of the variable names. See details for examples. Default: NULL</p></dd>
+
+
 <dt>omit.coefs</dt>
 <dd><p>If you'd like to specify some coefficients to not include
 in the plot, provide them as a vector. This argument is overridden by
 <code>coefs</code> if both are provided. By default, the intercept term is omitted.
 To include the intercept term, just set omit.coefs to NULL.</p></dd>
+
+
 <dt>inner_ci_level</dt>
 <dd><p>Plot a thicker line representing some narrower span
 than <code>ci_level</code>. Default is NULL, but good options are .9, .8, or .5.</p></dd>
+
+
 <dt>colors</dt>
 <dd><p>See <a href="jtools_colors.html">jtools_colors</a> for more on your color options.
 Default: 'CUD Bright'</p></dd>
+
+
 <dt>plot.distributions</dt>
 <dd><p>Instead of just plotting the ranges, you may
 plot normal distributions representing the width of each estimate. Note
 that these are completely theoretical and not based on a bootstrapping
 or MCMC procedure, even if the source model was fit that way. Default is
 FALSE.</p></dd>
+
+
 <dt>rescale.distributions</dt>
 <dd><p>If <code>plot.distributions</code> is TRUE, the default
 behavior is to plot each normal density curve on the same scale. If some
@@ -168,51 +184,76 @@ of the uncertainty intervals are much wider/narrower than others, that
 means the wide ones will have such a low height that you won't be able
 to see the curve. If you set this parameter to TRUE, each curve will
 have the same maximum height regardless of their width.</p></dd>
+
+
 <dt>exp</dt>
 <dd><p>If TRUE, all coefficients are exponentiated (e.g., transforms
 logit coefficents from log odds scale to odds). The reference line is
 also moved to 1 instead of 0.</p></dd>
+
+
 <dt>point.shape</dt>
 <dd><p>When using multiple models, should each model's point
 estimates use a different point shape to visually differentiate each
 model from the others? Default is TRUE. You may also pass a vector of
 shapes to specify shapes yourself.</p></dd>
+
+
 <dt>point.size</dt>
 <dd><p>Change the size of the points. Default is 3.</p></dd>
+
+
 <dt>legend.title</dt>
 <dd><p>What should the title for the legend be? Default is
 "Model", but you can specify it here since it is rather difficult to
 change later via <code>ggplot2</code>'s typical methods.</p></dd>
+
+
 <dt>groups</dt>
 <dd><p>If you would like to have facets (i.e., separate panes) for
 different groups of coefficients, you can specify those groups with a
 list here. See details for more on how to do this.</p></dd>
+
+
 <dt>facet.rows</dt>
 <dd><p>The number of rows in the facet grid (the <code>nrow</code> argument
 to <code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code>).</p></dd>
+
+
 <dt>facet.cols</dt>
 <dd><p>The number of columns in the facet grid (the <code>nrow</code>
 argument to <code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code>).</p></dd>
+
+
 <dt>facet.label.pos</dt>
 <dd><p>Where to put the facet labels. One of "top" (the
 default), "bottom", "left", or "right".</p></dd>
+
+
 <dt>color.class</dt>
 <dd><p>Deprecated. Now known as <code>colors</code>.</p></dd>
+
+
 <dt>resp</dt>
 <dd><p>For any models that are <code>brmsfit</code> and have multiple response
 variables, specify them with a vector here. If the model list includes
 other types of models, you do not need to enter <code>resp</code> for those models.
 For instance, if I want to plot a <code>lm</code> object and two <code>brmsfit</code> objects,
 you only need to provide a vector of length 2 for <code>resp</code>.</p></dd>
+
+
 <dt>dpar</dt>
 <dd><p>For any models that are <code>brmsfit</code> and have a distributional
 dependent variable, that can be specified here. If NULL, it is assumed you
 want coefficients for the location/mean parameter, not the distributional
 parameter(s).</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot object.</p>
+    
+
+<p>A ggplot object.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -269,7 +310,7 @@ this:</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

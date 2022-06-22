@@ -102,6 +102,7 @@ ggplot2 rather than base graphics, which some similar functions use."><meta prop
   pred.labels <span class="op">=</span> <span class="cn">NULL</span>,
   main.title <span class="op">=</span> <span class="cn">NULL</span>,
   colors <span class="op">=</span> <span class="st">"black"</span>,
+  line.colors <span class="op">=</span> <span class="va">colors</span>,
   line.thickness <span class="op">=</span> <span class="fl">1.1</span>,
   point.size <span class="op">=</span> <span class="fl">1.5</span>,
   point.alpha <span class="op">=</span> <span class="fl">0.6</span>,
@@ -128,15 +129,21 @@ ggplot2 rather than base graphics, which some similar functions use."><meta prop
 <code>stanreg</code> models.
 Models from other classes may work as well but are not officially
 supported. The model should include the interaction of interest.</p></dd>
+
+
 <dt>pred</dt>
 <dd><p>The name of the predictor variable involved
 in the interaction. This can be a bare name or string. Note that it
 is evaluated using <code>rlang</code>, so programmers can use the <code>!!</code> syntax
 to pass variables instead of the verbatim names.</p></dd>
+
+
 <dt>pred.values</dt>
 <dd><p>Values of <code>pred</code> to use instead of the equi-spaced
 series by default (for continuous variables) or all unique values (for
 non-continuous variables).</p></dd>
+
+
 <dt>centered</dt>
 <dd><p>A vector of quoted variable names that are to be
 mean-centered. If <code>"all"</code>, all non-focal predictors are centered. You
@@ -144,13 +151,19 @@ may instead pass a character vector of variables to center. User can
 also use "none" to base all predictions on variables set at 0.
 The response variable, <code>pred</code>, weights, and offset variables are never
 centered.</p></dd>
+
+
 <dt>plot.points</dt>
 <dd><p>Logical. If <code>TRUE</code>, plots the actual data points as
 a scatterplot on top of the interaction lines. The color of the dots will
 be based on their moderator value.</p></dd>
+
+
 <dt>interval</dt>
 <dd><p>Logical. If <code>TRUE</code>, plots confidence/prediction
 intervals around the line using <code><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></code>.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>Optional, default is NULL. You may provide the data used to
 fit the model. This can be a better way to get mean values for centering
@@ -159,20 +172,28 @@ and can be crucial for models with variable transformations in the formula
 see a warning if the function detects problems that would likely be
 solved by providing the data with this argument and the function will
 attempt to retrieve the original data from the global environment.</p></dd>
+
+
 <dt>at</dt>
 <dd><p>If you want to manually set the values of other variables in the
 model, do so by providing a named list where the names are the variables
 and the list values are vectors of the values. This can be useful
 especially when you are exploring interactions or other conditional
 predictions.</p></dd>
+
+
 <dt>int.type</dt>
 <dd><p>Type of interval to plot. Options are "confidence" or
 "prediction". Default is confidence interval.</p></dd>
+
+
 <dt>int.width</dt>
 <dd><p>How large should the interval be, relative to the standard
 error? The default, .95, corresponds to roughly 1.96 standard errors and
 a .05 alpha level for values outside the range. In other words, for a
 confidence interval, .95 is analogous to a 95% confidence interval.</p></dd>
+
+
 <dt>outcome.scale</dt>
 <dd><p>For nonlinear models (i.e., GLMs), should the outcome
 variable be plotted on the link scale (e.g., log odds for logit models) or
@@ -180,52 +201,85 @@ the original scale (e.g., predicted probabilities for logit models)? The
 default is <code>"response"</code>, which is the original scale. For the link
 scale, which will show straight lines rather than curves, use
 <code>"link"</code>.</p></dd>
+
+
 <dt>robust</dt>
 <dd><p>Should robust standard errors be used to find confidence
 intervals for supported models? Default is FALSE, but you should specify
 the type of sandwich standard errors if you'd like to use them (i.e.,
 <code>"HC0"</code>, <code>"HC1"</code>, and so on). If <code>TRUE</code>, defaults to <code>"HC3"</code> standard
 errors.</p></dd>
+
+
 <dt>cluster</dt>
 <dd><p>For clustered standard errors, provide the column name of
 the cluster variable in the input data frame (as a string). Alternately,
 provide a vector of clusters.</p></dd>
+
+
 <dt>vcov</dt>
 <dd><p>Optional. You may supply the variance-covariance matrix of the
 coefficients yourself. This is useful if you are using some method for
 robust standard error calculation not supported by the <span class="pkg">sandwich</span>
 package.</p></dd>
+
+
 <dt>set.offset</dt>
 <dd><p>For models with an offset (e.g., Poisson models), sets an
 offset for the predicted values. All predicted values will have the same
 offset. By default, this is set to 1, which makes the predicted values a
 proportion. See details for more about offset support.</p></dd>
+
+
 <dt>x.label</dt>
 <dd><p>A character object specifying the desired x-axis label. If
 <code>NULL</code>, the variable name is used.</p></dd>
+
+
 <dt>y.label</dt>
 <dd><p>A character object specifying the desired x-axis label. If
 <code>NULL</code>, the variable name is used.</p></dd>
+
+
 <dt>pred.labels</dt>
 <dd><p>A character vector of labels for categorical predictors.
 If <code>NULL</code>, the default, the factor labels are used.</p></dd>
+
+
 <dt>main.title</dt>
 <dd><p>A character object that will be used as an overall title
 for the plot. If <code>NULL</code>, no main title is used.</p></dd>
+
+
 <dt>colors</dt>
 <dd><p>See <a href="jtools_colors.html">jtools_colors</a> for details on the types of arguments
 accepted. Default is "black". This affects the coloration of the line
-as well as confidence intervals and points.</p></dd>
+as well as confidence intervals and points unless you give a different
+argument to <code>line.color</code>.</p></dd>
+
+
+<dt>line.colors</dt>
+<dd><p>See <a href="jtools_colors.html">jtools_colors</a> for details on the types of arguments
+accepted. Default is <code>colors</code>. This affects the coloration of the line
+as well as confidence intervals, but not the points.</p></dd>
+
+
 <dt>line.thickness</dt>
 <dd><p>How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.</p></dd>
+
+
 <dt>point.size</dt>
 <dd><p>What size should be used for observed data when
 <code>plot.points</code> is TRUE? Default is 1.5.</p></dd>
+
+
 <dt>point.alpha</dt>
 <dd><p>What should the <code>alpha</code> aesthetic for plotted points of
 observed data be? Default is 0.6, and it can range from 0 (transparent) to
 1 (opaque).</p></dd>
+
+
 <dt>jitter</dt>
 <dd><p>How much should <code>plot.points</code> observed values be "jittered"
 via <code><a href="https://ggplot2.tidyverse.org/reference/position_jitter.html" class="external-link">ggplot2::position_jitter()</a></code>? When there are many points near each
@@ -237,20 +291,28 @@ small values (e.g., 0.1) and increase as needed if your points are
 overlapping too much. If the argument is a vector with two values,
 then the first is assumed to be the jitter for width and the second
 for the height.</p></dd>
+
+
 <dt>rug</dt>
 <dd><p>Show a rug plot in the margins? This uses <code><a href="https://ggplot2.tidyverse.org/reference/geom_rug.html" class="external-link">ggplot2::geom_rug()</a></code>
 to show the distribution of the predictor (top/bottom) and/or
 response variable (left/right) in the original data. Default is
 FALSE.</p></dd>
+
+
 <dt>rug.sides</dt>
 <dd><p>On which sides should rug plots appear? Default is "lb",
 meaning both left and bottom. "t" and/or "b" show the distribution of
 the predictor
 while "l" and/or "r" show the distribution of the response.</p></dd>
+
+
 <dt>force.cat</dt>
 <dd><p>Force the continuous <code>pred</code> to be treated as categorical?
 default is FALSE, but this can be useful for things like dummy 0/1
 variables.</p></dd>
+
+
 <dt>cat.geom</dt>
 <dd><p>If <code>pred</code> is categorical (or <code>force.cat</code> is TRUE),
 what type of plot should this be? There are several options
@@ -268,29 +330,42 @@ does not represent the distribution of the observed data or the
 uncertainty of the predictions very well. It is best to at least use the
 <code>interval = TRUE</code> argument with this geom.</p></li>
 </ul></dd>
+
+
 <dt>cat.interval.geom</dt>
 <dd><p>For categorical by categorical interactions.
 One of "errorbar" or "linerange". If the former,
 <code><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">ggplot2::geom_errorbar()</a></code> is used. If the latter,
 <code><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">ggplot2::geom_linerange()</a></code> is used.</p></dd>
+
+
 <dt>cat.pred.point.size</dt>
 <dd><p>(for categorical <code>pred</code>)
 If TRUE and <code>geom</code> is <code>"point"</code> or <code>"line"</code>,
 sets the size of the predicted points. Default is 3.5.
 Note the distinction from <code>point.size</code>, which refers to the
 observed data points.</p></dd>
+
+
 <dt>partial.residuals</dt>
 <dd><p>Instead of plotting the observed data, you may plot
 the partial residuals (controlling for the effects of variables besides
 <code>pred</code>).</p></dd>
+
+
 <dt>color.class</dt>
 <dd><p>Deprecated. Now known as <code>colors</code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>extra arguments passed to <code><a href="make_predictions.html">make_predictions()</a></code></p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The functions returns a <code>ggplot</code> object, which can be treated
+    
+
+<p>The functions returns a <code>ggplot</code> object, which can be treated
 like
 a user-created plot and expanded upon as such.</p>
     </div>
@@ -376,7 +451,7 @@ for categorical by categorical interactions.</p></div>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

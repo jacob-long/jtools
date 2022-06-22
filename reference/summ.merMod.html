@@ -112,103 +112,153 @@ summary(), but formatted differently with more options."><meta property="og:imag
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>model</dt>
 <dd><p>A <code><a href="https://rdrr.io/pkg/lme4/man/merMod-class.html" class="external-link">merMod</a></code> object.</p></dd>
+
+
 <dt>scale</dt>
 <dd><p>If <code>TRUE</code>, reports standardized regression
 coefficients by scaling and mean-centering input data (the latter can be
 changed via the <code>scale.only</code> argument). Default is <code>FALSE</code>.</p></dd>
+
+
 <dt>confint</dt>
 <dd><p>Show confidence intervals instead of standard errors? Default
 is <code>FALSE</code>.</p></dd>
+
+
 <dt>ci.width</dt>
 <dd><p>A number between 0 and 1 that signifies the width of the
 desired confidence interval. Default is <code>.95</code>, which corresponds
 to a 95% confidence interval. Ignored if <code>confint = FALSE</code>.</p></dd>
+
+
 <dt>conf.method</dt>
 <dd><p>Argument passed to <code><a href="https://rdrr.io/pkg/lme4/man/confint.merMod.html" class="external-link">lme4::confint.merMod()</a></code>. Default
 is <code>"Wald"</code>, but <code>"profile"</code> or <code>"boot"</code> are better when accuracy is a
 priority. Be aware that both of the alternate methods are sometimes very
 time-consuming.</p></dd>
+
+
 <dt>digits</dt>
 <dd><p>An integer specifying the number of digits past the decimal to
 report in the output. Default is 2. You can change the default number of
 digits for all jtools functions with
 <code>options("jtools-digits" = digits)</code> where digits is the desired
 number.</p></dd>
+
+
 <dt>r.squared</dt>
 <dd><p>Calculate an r-squared model fit statistic? Default is
 <code>TRUE</code>, but if it has errors or takes a long time to calculate you
 may want to consider setting to FALSE.</p></dd>
+
+
 <dt>pvals</dt>
 <dd><p>Show p values? If <code>FALSE</code>, these
 are not printed. Default is <code>TRUE</code>, except for merMod objects (see
 details).</p></dd>
+
+
 <dt>n.sd</dt>
 <dd><p>If <code>scale = TRUE</code>, how many standard deviations should
 predictors be divided by? Default is 1, though some suggest 2.</p></dd>
+
+
 <dt>center</dt>
 <dd><p>If you want coefficients for mean-centered variables but don't
 want to standardize, set this to <code>TRUE</code>. Note that setting this to
 false does not affect whether <code>scale</code> mean-centers variables. Use
 <code>scale.only</code> for that.</p></dd>
+
+
 <dt>transform.response</dt>
 <dd><p>Should scaling/centering apply to response
 variable? Default is <code>FALSE</code>.</p></dd>
+
+
 <dt>scale.only</dt>
 <dd><p>If you want to scale but not center, set this to <code>TRUE</code>.
 Note that for legacy reasons, setting <code>scale = TRUE</code> and <code>center = FALSE</code>
 will not achieve the same effect. Default is <code>FALSE</code>.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>If you provide the data used to fit the model here, that data
 frame is used to re-fit the model (if <code>scale</code> is <code>TRUE</code>)
 instead of the <code><a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">stats::model.frame()</a></code>
 of the model. This is particularly useful if you have variable
 transformations or polynomial terms specified in the formula.</p></dd>
+
+
 <dt>exp</dt>
 <dd><p>If <code>TRUE</code>, reports exponentiated coefficients with
 confidence intervals for exponential models like logit and Poisson models.
 This quantity is known as an odds ratio for binary outcomes and incidence
 rate ratio for count models.</p></dd>
+
+
 <dt>t.df</dt>
 <dd><p>For <code>lmerMod</code> models only. User may set the degrees of
 freedom used in conducting t-tests. See details for options.</p></dd>
+
+
 <dt>model.info</dt>
 <dd><p>Toggles printing of basic information on sample size,
 name of DV, and number of predictors.</p></dd>
+
+
 <dt>model.fit</dt>
 <dd><p>Toggles printing of model fit statistics.</p></dd>
+
+
 <dt>re.variance</dt>
 <dd><p>Should random effects variances be expressed in
 standard deviations or variances? Default, to be consistent with previous
 versions of <code>jtools</code>, is <code>"sd"</code>. Use <code>"var"</code> to get the variance instead.</p></dd>
+
+
 <dt>which.cols</dt>
 <dd><p>Developmental feature. By providing columns by name,
 you can add/remove/reorder requested columns in the output. Not fully
 supported, for now.</p></dd>
+
+
 <dt>re.table</dt>
 <dd><p>Show table summarizing variance of random effects? Default
 is TRUE.</p></dd>
+
+
 <dt>groups.table</dt>
 <dd><p>Show table summarizing the grouping variables? Default
 is TRUE.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Among other things, arguments are passed to <code><a href="scale_mod.html">scale_mod()</a></code> or
 <code><a href="center_mod.html">center_mod()</a></code> when <code>center</code> or <code>scale</code> is <code>TRUE</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>If saved, users can access most of the items that are returned in
+    
+
+<p>If saved, users can access most of the items that are returned in
 the output (and without rounding).</p>
 <dl><dt>coeftable</dt>
 <dd><p>The outputted table of variables and coefficients</p></dd>
+
 <dt>rcoeftable</dt>
 <dd><p>The secondary table with the grouping variables and
 random coefficients.</p></dd>
+
 <dt>gvars</dt>
 <dd><p>The tertiary table with the grouping variables, numbers of
 groups, and ICCs.</p></dd>
+
 <dt>model</dt>
 <dd><p>The model for which statistics are displayed. This would be
 most useful in cases in which <code>scale = TRUE</code>.</p></dd>
+
+
 </dl><p>Much other information can be accessed as attributes.</p>
     </div>
     <div class="section level2">
@@ -391,7 +441,7 @@ generate the pseudo-R-squared estimates for linear models.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

@@ -100,23 +100,32 @@ by different types of models.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>model</dt>
 <dd><p>The fitted model object.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Ignored.</p></dd>
+
+
 <dt>resp</dt>
 <dd><p>For <code>brmsfit</code> objects, the response variable for which
 the formula is desired. <code>brmsfit</code> objects may have multiple formulas, so
 this selects a particular one. If <code>NULL</code>, the first formula is chosen
 (unless <code>dpar</code> is specified).</p></dd>
+
+
 <dt>dpar</dt>
 <dd><p>For <code>brmsfit</code> objects, the distributional variable for which
 the formula is desired. If <code>NULL</code>, no distributional parameter is used.
 If there are multiple responses with distributional parameters, then
 <code>resp</code> should be specified or else the first formula will be used by
 default.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>formula</code> object.</p>
+    
+
+<p>A <code>formula</code> object.</p>
     </div>
 
     <div class="section level2">
@@ -126,7 +135,7 @@ default.</p></dd>
 <span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">cyl</span>, data <span class="op">=</span> <span class="va">mtcars</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">get_formula</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> mpg ~ cyl</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55edef92a808&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55ff204d3730&gt;</span>
 <span class="r-in"></span>
 </code></pre></div>
     </div>
@@ -139,7 +148,7 @@ default.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

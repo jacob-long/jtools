@@ -101,48 +101,71 @@ with the ability to get standard errors as well.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>object</dt>
 <dd><p>a fitted model object</p></dd>
+
+
 <dt>newdata</dt>
 <dd><p>data frame for which to evaluate
     predictions.</p></dd>
+
+
 <dt>se.fit</dt>
 <dd><p>Include standard errors with the predictions? Note that
 these standard errors by default include only fixed effects variance.
 See details for more info. Default is FALSE.</p></dd>
+
+
 <dt>use.re.var</dt>
 <dd><p>If <code>se.fit</code> is TRUE, include random effects variance in
 standard errors? Default is FALSE.</p></dd>
+
+
 <dt>allow.new.levels</dt>
 <dd><p>logical if new levels (or NA values) in
     <code>newdata</code> are allowed. If FALSE (default), such new values in
     <code>newdata</code> will trigger an error; if TRUE, then the prediction
     will use the unconditional (population-level) values for data with
     previously unobserved levels (or NAs).</p></dd>
+
+
 <dt>type</dt>
 <dd><p>character string - either <code>"link"</code>, the default, or
     <code>"response"</code> indicating the type of prediction object returned.</p></dd>
+
+
 <dt>na.action</dt>
 <dd><p><code><a href="https://rdrr.io/r/base/function.html" class="external-link">function</a></code> determining what should be done
     with missing values for fixed effects in <code>newdata</code>.
     The default is to predict <code>NA</code>: see <code><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.pass</a></code>.</p></dd>
+
+
 <dt>re.form</dt>
 <dd><p>(formula, <code>NULL</code>, or <code>NA</code>) specify which random effects to condition on when predicting.  If <code>NULL</code>,
     include all random effects; if <code>NA</code> or <code>~0</code>,
     include no random effects.</p></dd>
+
+
 <dt>boot</dt>
 <dd><p>Use bootstrapping (via <code><a href="https://rdrr.io/pkg/lme4/man/bootMer.html" class="external-link">lme4::bootMer()</a></code>) to estimate
 variance for <code>se.fit</code>? Default is FALSE</p></dd>
+
+
 <dt>sims</dt>
 <dd><p>If <code>boot</code> is TRUE, how many simulations should be run? Default
 is 100.</p></dd>
+
+
 <dt>prog.arg</dt>
 <dd><p>If <code>boot</code> and <code>se.fit</code> are TRUE, a character string -
 type of progress bar to display. Default is "none"; the function will look
 for a relevant *ProgressBar function, so "txt" will work in general;
 "tk" is available if the tcltk package is loaded; or "win" on Windows
 systems. Progress bars are disabled (with a message) for parallel operation.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>When <code>boot</code> and <code>se.fit</code> are TRUE, any additional arguments are
 passed to <code><a href="https://rdrr.io/pkg/lme4/man/bootMer.html" class="external-link">lme4::bootMer()</a></code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -163,7 +186,7 @@ not perfect. Bayesian models are one way to do better.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>
