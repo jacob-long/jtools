@@ -25,6 +25,7 @@ effect_plot(
   pred.labels = NULL,
   main.title = NULL,
   colors = "black",
+  line.colors = colors,
   line.thickness = 1.1,
   point.size = 1.5,
   point.alpha = 0.6,
@@ -135,7 +136,12 @@ for the plot. If \code{NULL}, no main title is used.}
 
 \item{colors}{See \link{jtools_colors} for details on the types of arguments
 accepted. Default is "black". This affects the coloration of the line
-as well as confidence intervals and points.}
+as well as confidence intervals and points unless you give a different
+argument to \code{line.color}.}
+
+\item{line.colors}{See \link{jtools_colors} for details on the types of arguments
+accepted. Default is \code{colors}. This affects the coloration of the line
+as well as confidence intervals, but not the points.}
 
 \item{line.thickness}{How thick should the plotted lines be? Default is 1.1;
 ggplot's default is 1.}
