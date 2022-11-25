@@ -14,10 +14,10 @@
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><link href="../deps/_Lato-0.4.1/font.css" rel="stylesheet">
-<link href="../deps/_IBM%20Plex%20Mono-0.4.1/font.css" rel="stylesheet">
-<link href="../deps/_Raleway-0.4.1/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><link href="../deps/Lato-0.4.4/font.css" rel="stylesheet">
+<link href="../deps/IBM_Plex_Mono-0.4.4/font.css" rel="stylesheet">
+<link href="../deps/Raleway-0.4.4/font.css" rel="stylesheet">
 <!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
@@ -106,7 +106,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Tools for summarizing and visualizing regression models</h1>
                         <h4 data-toc-skip class="author">Jacob Long</h4>
             
-            <h4 data-toc-skip class="date">2022-06-22</h4>
+            <h4 data-toc-skip class="date">2022-11-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/jacob-long/jtools/blob/HEAD/vignettes/summ.Rmd" class="external-link"><code>vignettes/summ.Rmd</code></a></small>
       <div class="d-none name"><code>summ.Rmd</code></div>
@@ -114,62 +114,107 @@
 
     
     
-<p>The support <code>jtools</code> provides for helping to understand and report the results of regression models falls into a few broad categories:</p>
+<p>The support <code>jtools</code> provides for helping to understand
+and report the results of regression models falls into a few broad
+categories:</p>
 <ul>
-<li>Generating flexible table output in the console that includes multiple standard error specifications, toggles for confidence intervals, VIFs, p values, and so on (<code>summ</code>)</li>
-<li>Plotting predicted data from models to aid in substantive interpretation and understanding model fit, including models with interactions (<code>effect_plot</code>; see other vignette)</li>
-<li>Plotting regression coefficients and their uncertainty in a visually appealing way (<code>plot_coefs</code>, <code>plot_summs</code>)</li>
-<li>Exporting regression summaries as tables in PDF/LaTeX and Word formats for publication (<code>export_summs</code>)</li>
+<li>Generating flexible table output in the console that includes
+multiple standard error specifications, toggles for confidence
+intervals, VIFs, p values, and so on (<code>summ</code>)</li>
+<li>Plotting predicted data from models to aid in substantive
+interpretation and understanding model fit, including models with
+interactions (<code>effect_plot</code>; see other vignette)</li>
+<li>Plotting regression coefficients and their uncertainty in a visually
+appealing way (<code>plot_coefs</code>, <code>plot_summs</code>)</li>
+<li>Exporting regression summaries as tables in PDF/LaTeX and Word
+formats for publication (<code>export_summs</code>)</li>
 </ul>
 <div class="section level2">
 <h2 id="summ">
 <code>summ</code><a class="anchor" aria-label="anchor" href="#summ"></a>
 </h2>
-<p>When sharing analyses with colleagues unfamiliar with R, I found that the output generally was not clear to them. Things were even worse if I wanted to give them information that is not included in the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> like robust standard errors, scaled coefficients, and VIFs since the functions for estimating these don’t append them to a typical regression table. After creating output tables “by hand” on multiple occasions, I thought it would be best to pack things into a reusable function: It became <code><a href="../reference/summ.html">summ()</a></code>.</p>
-<p>For example purposes, we’ll create a model using the <code>movies</code> data from this package. These data comprise information about over 800 movies across several decades. We will be predicting the Metacritic <code>metascore</code>, which ranges from 0 to 100 (where higher numbers reflect more positive reviews) using the gross revenue in the United States (<code>us_gross</code>), the fan rating at IMDB (<code>imdb_rating</code>), and a categorical variable reflecting the genre (<code>genre5</code>) with “Action” as the reference level.</p>
-<p>With no user-specified arguments except a fitted model, the output of <code><a href="../reference/summ.html">summ()</a></code> looks like this:</p>
+<p>When sharing analyses with colleagues unfamiliar with R, I found that
+the output generally was not clear to them. Things were even worse if I
+wanted to give them information that is not included in the
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> like robust standard errors, scaled coefficients,
+and VIFs since the functions for estimating these don’t append them to a
+typical regression table. After creating output tables “by hand” on
+multiple occasions, I thought it would be best to pack things into a
+reusable function: It became <code><a href="../reference/summ.html">summ()</a></code>.</p>
+<p>For example purposes, we’ll create a model using the
+<code>movies</code> data from this package. These data comprise
+information about over 800 movies across several decades. We will be
+predicting the Metacritic <code>metascore</code>, which ranges from 0 to
+100 (where higher numbers reflect more positive reviews) using the gross
+revenue in the United States (<code>us_gross</code>), the fan rating at
+IMDB (<code>imdb_rating</code>), and a categorical variable reflecting
+the genre (<code>genre5</code>) with “Action” as the reference
+level.</p>
+<p>With no user-specified arguments except a fitted model, the output of
+<code><a href="../reference/summ.html">summ()</a></code> looks like this:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jtools.jacob-long.com" class="external-link">jtools</a></span><span class="op">)</span> <span class="co"># Load jtools</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">movies</span><span class="op">)</span> <span class="co"># Telling R we want to use this data</span>
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>, data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span>
-<span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## -----------------------------------------------------------</span>
-<span class="co">##                                 Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- -------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00</span>
-<span class="co">## imdb_rating                    12.80   0.49    25.89   0.00</span>
-<span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13</span>
-<span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00</span>
-<span class="co">## genre5Drama                     7.66   1.08     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63</span>
-<span class="co">## genre5Other                     5.86   3.25     1.80   0.07</span>
-<span class="co">## -----------------------------------------------------------</span></code></pre>
-<p>Like any output, this one is somewhat opinionated — some information is shown that perhaps not everyone would be interested in, some may be missing. That, of course, was the motivation behind the creation of the function; I didn’t like the choices made by R’s core team with <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>!</p>
-<p>Here’s a quick (not comprehensive) list of functionality supported by <code>summ</code>:</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jtools.jacob-long.com" class="external-link">jtools</a></span><span class="op">)</span> <span class="co"># Load jtools</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">movies</span><span class="op">)</span> <span class="co"># Telling R we want to use this data</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>, data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- -------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00</span></span>
+<span><span class="co">## imdb_rating                    12.80   0.49    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                     7.66   1.08     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                     5.86   3.25     1.80   0.07</span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span></code></pre>
+<p>Like any output, this one is somewhat opinionated — some information
+is shown that perhaps not everyone would be interested in, some may be
+missing. That, of course, was the motivation behind the creation of the
+function; I didn’t like the choices made by R’s core team with
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>!</p>
+<p>Here’s a quick (not comprehensive) list of functionality supported by
+<code>summ</code>:</p>
 <ul>
-<li>Summaries for <code>lm</code>, <code>glm</code>, <code>svyglm</code> (<code>survey</code>), <code>merMod</code> (<code>lme4</code>), and <code>rq</code> (<code>quantreg</code>) models.</li>
-<li>Variable scaling and centering (i.e., calculating standardized coefficients)</li>
-<li>Robust standard errors (for <code>lm</code> and <code>glm</code> plus <code>quantreg</code>’s built-in options for <code>rq</code> models)</li>
-<li>Confidence intervals, VIFs, and partial correlations (<code>lm</code> only) can optionally be included in the output</li>
+<li>Summaries for <code>lm</code>, <code>glm</code>, <code>svyglm</code>
+(<code>survey</code>), <code>merMod</code> (<code>lme4</code>), and
+<code>rq</code> (<code>quantreg</code>) models.</li>
+<li>Variable scaling and centering (i.e., calculating standardized
+coefficients)</li>
+<li>Robust standard errors (for <code>lm</code> and <code>glm</code>
+plus <code>quantreg</code>’s built-in options for <code>rq</code>
+models)</li>
+<li>Confidence intervals, VIFs, and partial correlations
+(<code>lm</code> only) can optionally be included in the output</li>
 <li>p-values can be dropped from the output</li>
-<li>R^2 (<code>lm</code>, linear <code>svyglm</code>), pseudo-R^2 (<code>glm</code>, <code>svyglm</code>, <code>merMod</code>), R^1 (<code>rq</code>), and other model fit statistics are calculated and reported. These can also be suppressed if you don’t want them.</li>
-<li>Ability to choose defaults for many options using <code><a href="../reference/set_summ_defaults.html">set_summ_defaults()</a></code> to reduce the need to do redundant typing in interactive use.</li>
+<li>R^2 (<code>lm</code>, linear <code>svyglm</code>), pseudo-R^2
+(<code>glm</code>, <code>svyglm</code>, <code>merMod</code>), R^1
+(<code>rq</code>), and other model fit statistics are calculated and
+reported. These can also be suppressed if you don’t want them.</li>
+<li>Ability to choose defaults for many options using
+<code><a href="../reference/set_summ_defaults.html">set_summ_defaults()</a></code> to reduce the need to do redundant
+typing in interactive use.</li>
 </ul>
-<p>Model types supported are <code>lm</code>, <code>glm</code>, <code>svyglm</code>, <code>merMod</code>, and <code>rq</code>, though not all will be reviewed in detail here.</p>
-<p><strong>Note:</strong> The output in this vignette will mimic how it looks in the R console, but if you are generating your own RMarkdown documents and have <code>kableExtra</code> installed, you’ll instead get some prettier looking tables like this:</p>
+<p>Model types supported are <code>lm</code>, <code>glm</code>,
+<code>svyglm</code>, <code>merMod</code>, and <code>rq</code>, though
+not all will be reviewed in detail here.</p>
+<p><strong>Note:</strong> The output in this vignette will mimic how it
+looks in the R console, but if you are generating your own RMarkdown
+documents and have <code>kableExtra</code> installed, you’ll instead get
+some prettier looking tables like this:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table-striped table-hover table-condensed table-responsive" style="width: auto !important; margin-left: auto; margin-right: auto;"><tbody>
 <tr>
 <td style="text-align:left;font-weight: bold;">
@@ -366,334 +411,406 @@ genre5Other
 </td>
 </tr></tfoot>
 </table>
-<p>You can force <code>knitr</code> to give the console style of output by setting the chunk option <code>render = 'normal_print'</code>.</p>
+<p>You can force <code>knitr</code> to give the console style of output
+by setting the chunk option <code>render = 'normal_print'</code>.</p>
 <div class="section level3">
 <h3 id="report-robust-standard-errors">Report robust standard errors<a class="anchor" aria-label="anchor" href="#report-robust-standard-errors"></a>
 </h3>
-<p>One of the problems that originally motivated the creation of <code><a href="../reference/summ.html">summ()</a></code> was the desire to efficiently report robust standard errors — while it is easy enough for an experienced R user to calculate robust standard errors, there are not many simple ways to include the results in a regression table as is common with the likes of Stata, SPSS, etc.</p>
-<p>Robust standard errors require the user to have the <code>sandwich</code> package installed. It does not need to be loaded.</p>
-<p>There are multiple types of robust standard errors that you may use, ranging from “HC0” to “HC5”. Per the recommendation of the authors of the <code>sandwich</code> package, the default is “HC3” so this is what you get if you set <code>robust = TRUE</code>. Stata’s default is “HC1”, so you may want to use that if your goal is to replicate Stata analyses. To toggle the type of robust errors, provide the desired type as the argument to <code>robust</code>.</p>
+<p>One of the problems that originally motivated the creation of
+<code><a href="../reference/summ.html">summ()</a></code> was the desire to efficiently report robust standard
+errors — while it is easy enough for an experienced R user to calculate
+robust standard errors, there are not many simple ways to include the
+results in a regression table as is common with the likes of Stata,
+SPSS, etc.</p>
+<p>Robust standard errors require the user to have the
+<code>sandwich</code> package installed. It does not need to be
+loaded.</p>
+<p>There are multiple types of robust standard errors that you may use,
+ranging from “HC0” to “HC5”. Per the recommendation of the authors of
+the <code>sandwich</code> package, the default is “HC3” so this is what
+you get if you set <code>robust = TRUE</code>. Stata’s default is “HC1”,
+so you may want to use that if your goal is to replicate Stata analyses.
+To toggle the type of robust errors, provide the desired type as the
+argument to <code>robust</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="st">"HC1"</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors:</span> Robust, <span style="font-style: italic;">type = </span>HC1</span>
-<span class="co">## -----------------------------------------------------------</span>
-<span class="co">##                                 Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- -------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   -39.96   6.16    -6.48   0.00</span>
-<span class="co">## imdb_rating                    12.80   0.48    26.42   0.00</span>
-<span class="co">## log(us_gross)                   0.47   0.33     1.39   0.16</span>
-<span class="co">## genre5Comedy                    6.32   1.01     6.24   0.00</span>
-<span class="co">## genre5Drama                     7.66   1.11     6.92   0.00</span>
-<span class="co">## genre5Horror/Thriller          -0.73   1.59    -0.46   0.65</span>
-<span class="co">## genre5Other                     5.86   3.24     1.81   0.07</span>
-<span class="co">## -----------------------------------------------------------</span></code></pre>
-<p>Robust standard errors can also be calculated for generalized linear models (i.e., <code>glm</code> objects) though there is some debate whether they should be used for models fit iteratively with non-normal errors. In the case of <code>svyglm</code>, the standard errors that package calculates are already robust to heteroskedasticity, so any argument to <code>robust</code> will be ignored with a warning.</p>
-<p>You may also specify with <code>cluster</code> argument the name of a variable in the input data or a vector of clusters to get cluster-robust standard errors.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="st">"HC1"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors:</span> Robust, <span style="font-style: italic;">type = </span>HC1</span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- -------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   6.16    -6.48   0.00</span></span>
+<span><span class="co">## imdb_rating                    12.80   0.48    26.42   0.00</span></span>
+<span><span class="co">## log(us_gross)                   0.47   0.33     1.39   0.16</span></span>
+<span><span class="co">## genre5Comedy                    6.32   1.01     6.24   0.00</span></span>
+<span><span class="co">## genre5Drama                     7.66   1.11     6.92   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73   1.59    -0.46   0.65</span></span>
+<span><span class="co">## genre5Other                     5.86   3.24     1.81   0.07</span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span></code></pre>
+<p>Robust standard errors can also be calculated for generalized linear
+models (i.e., <code>glm</code> objects) though there is some debate
+whether they should be used for models fit iteratively with non-normal
+errors. In the case of <code>svyglm</code>, the standard errors that
+package calculates are already robust to heteroskedasticity, so any
+argument to <code>robust</code> will be ignored with a warning.</p>
+<p>You may also specify with <code>cluster</code> argument the name of a
+variable in the input data or a vector of clusters to get cluster-robust
+standard errors.</p>
 </div>
 <div class="section level3">
 <h3 id="standardizedscaled-coefficients">Standardized/scaled coefficients<a class="anchor" aria-label="anchor" href="#standardizedscaled-coefficients"></a>
 </h3>
-<p>Some prefer to use scaled coefficients in order to avoid dismissing an effect as “small” when it is just the units of measure that are small. scaled betas are used instead when <code>scale = TRUE</code>. To be clear, since the meaning of “standardized beta” can vary depending on who you talk to, this option mean-centers the predictors as well but does not alter the dependent variable whatsoever. If you want to scale the dependent variable too, just add the <code>transform.response = TRUE</code> argument. This argument does not do anything to factor variables and doesn’t scale binary variables by default.</p>
+<p>Some prefer to use scaled coefficients in order to avoid dismissing
+an effect as “small” when it is just the units of measure that are
+small. scaled betas are used instead when <code>scale = TRUE</code>. To
+be clear, since the meaning of “standardized beta” can vary depending on
+who you talk to, this option mean-centers the predictors as well but
+does not alter the dependent variable whatsoever. If you want to scale
+the dependent variable too, just add the
+<code>transform.response = TRUE</code> argument. This argument does not
+do anything to factor variables and doesn’t scale binary variables by
+default.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">##                                Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- ------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   58.74   0.75    78.51   0.00</span>
-<span class="co">## imdb_rating                   11.06   0.43    25.89   0.00</span>
-<span class="co">## log(us_gross)                  0.63   0.42     1.52   0.13</span>
-<span class="co">## genre5Comedy                   6.32   1.06     5.95   0.00</span>
-<span class="co">## genre5Drama                    7.66   1.08     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller         -0.73   1.51    -0.48   0.63</span>
-<span class="co">## genre5Other                    5.86   3.25     1.80   0.07</span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">## </span>
-<span class="co">## Continuous predictors are mean-centered and scaled by 1 s.d.</span></code></pre>
-<p>If you have transformed variables (e.g., <code>log(us_gross)</code>), the function will scale the already-transformed variable. In other words, it is similar to the result you would get if you did <code>scale(log(us_gross))</code> rather than <code>log(scale(us_gross))</code> which would cause an error since you cannot apply <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code> to numbers &lt;== 0.</p>
-<p>You can also choose a different number of standard deviations to divide by for standardization. <a href="http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf" class="external-link">Andrew Gelman</a> has been a proponent of dividing by 2 standard deviations; if you want to do things that way, give the argument <code>n.sd = 2</code>.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">##                                Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- ------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   58.74   0.75    78.51   0.00</span></span>
+<span><span class="co">## imdb_rating                   11.06   0.43    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                  0.63   0.42     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                   6.32   1.06     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                    7.66   1.08     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller         -0.73   1.51    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                    5.86   3.25     1.80   0.07</span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Continuous predictors are mean-centered and scaled by 1 s.d.</span></span></code></pre>
+<p>If you have transformed variables (e.g., <code>log(us_gross)</code>),
+the function will scale the already-transformed variable. In other
+words, it is similar to the result you would get if you did
+<code>scale(log(us_gross))</code> rather than
+<code>log(scale(us_gross))</code> which would cause an error since you
+cannot apply <code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code> to numbers &lt;== 0.</p>
+<p>You can also choose a different number of standard deviations to
+divide by for standardization. <a href="http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf" class="external-link">Andrew
+Gelman</a> has been a proponent of dividing by 2 standard deviations; if
+you want to do things that way, give the argument
+<code>n.sd = 2</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, n.sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">##                                Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- ------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   58.74   0.75    78.51   0.00</span>
-<span class="co">## imdb_rating                   22.12   0.85    25.89   0.00</span>
-<span class="co">## log(us_gross)                  1.26   0.83     1.52   0.13</span>
-<span class="co">## genre5Comedy                   6.32   1.06     5.95   0.00</span>
-<span class="co">## genre5Drama                    7.66   1.08     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller         -0.73   1.51    -0.48   0.63</span>
-<span class="co">## genre5Other                    5.86   3.25     1.80   0.07</span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">## </span>
-<span class="co">## Continuous predictors are mean-centered and scaled by 2 s.d.</span></code></pre>
-<p>Note that this is achieved by refitting the model. If the model took a long time to fit initially, expect a similarly long time to refit it.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, n.sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">##                                Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- ------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   58.74   0.75    78.51   0.00</span></span>
+<span><span class="co">## imdb_rating                   22.12   0.85    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                  1.26   0.83     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                   6.32   1.06     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                    7.66   1.08     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller         -0.73   1.51    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                    5.86   3.25     1.80   0.07</span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Continuous predictors are mean-centered and scaled by 2 s.d.</span></span></code></pre>
+<p>Note that this is achieved by refitting the model. If the model took
+a long time to fit initially, expect a similarly long time to refit
+it.</p>
 <div class="section level4">
 <h4 id="mean-centered-variables">Mean-centered variables<a class="anchor" aria-label="anchor" href="#mean-centered-variables"></a>
 </h4>
-<p>In the same vein as the standardization feature, you can keep the original scale while still mean-centering the predictors with the <code>center = TRUE</code> argument. As with <code>scale</code>, this is not applied to the response variable unless <code>transform.response = TRUE</code>.</p>
+<p>In the same vein as the standardization feature, you can keep the
+original scale while still mean-centering the predictors with the
+<code>center = TRUE</code> argument. As with <code>scale</code>, this is
+not applied to the response variable unless
+<code>transform.response = TRUE</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">##                                Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- ------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   58.74   0.75    78.51   0.00</span>
-<span class="co">## imdb_rating                   12.80   0.49    25.89   0.00</span>
-<span class="co">## log(us_gross)                  0.47   0.31     1.52   0.13</span>
-<span class="co">## genre5Comedy                   6.32   1.06     5.95   0.00</span>
-<span class="co">## genre5Drama                    7.66   1.08     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller         -0.73   1.51    -0.48   0.63</span>
-<span class="co">## genre5Other                    5.86   3.25     1.80   0.07</span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">## </span>
-<span class="co">## Continuous predictors are mean-centered.</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">##                                Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- ------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   58.74   0.75    78.51   0.00</span></span>
+<span><span class="co">## imdb_rating                   12.80   0.49    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                  0.47   0.31     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                   6.32   1.06     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                    7.66   1.08     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller         -0.73   1.51    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                    5.86   3.25     1.80   0.07</span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Continuous predictors are mean-centered.</span></span></code></pre>
 </div>
 </div>
 <div class="section level3">
 <h3 id="confidence-intervals">Confidence intervals<a class="anchor" aria-label="anchor" href="#confidence-intervals"></a>
 </h3>
-<p>In many cases, you’ll learn more by looking at confidence intervals than p-values. You can request them from <code>summ</code>.</p>
+<p>In many cases, you’ll learn more by looking at confidence intervals
+than p-values. You can request them from <code>summ</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.367, <span style="font-style: italic;">p</span> = 0.000</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.552</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.549 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## --------------------------------------------------------------------------</span>
-<span class="co">##                                  Est.      2.5%     97.5%   t val.       p</span>
-<span class="co">## --------------------------- --------- --------- --------- -------- -------</span>
-<span class="co">## (Intercept)                   -39.959   -51.579   -28.338   -6.750   0.000</span>
-<span class="co">## imdb_rating                    12.801    11.831    13.772   25.886   0.000</span>
-<span class="co">## log(us_gross)                   0.466    -0.136     1.069    1.519   0.129</span>
-<span class="co">## genre5Comedy                    6.321     4.235     8.406    5.949   0.000</span>
-<span class="co">## genre5Drama                     7.660     5.547     9.773    7.117   0.000</span>
-<span class="co">## genre5Horror/Thriller          -0.730    -3.696     2.236   -0.483   0.629</span>
-<span class="co">## genre5Other                     5.860    -0.519    12.239    1.803   0.072</span>
-<span class="co">## --------------------------------------------------------------------------</span></code></pre>
-<p>You can adjust the width of the confidence intervals, which are by default 95% CIs.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.367, <span style="font-style: italic;">p</span> = 0.000</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.552</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.549 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## --------------------------------------------------------------------------</span></span>
+<span><span class="co">##                                  Est.      2.5%     97.5%   t val.       p</span></span>
+<span><span class="co">## --------------------------- --------- --------- --------- -------- -------</span></span>
+<span><span class="co">## (Intercept)                   -39.959   -51.579   -28.338   -6.750   0.000</span></span>
+<span><span class="co">## imdb_rating                    12.801    11.831    13.772   25.886   0.000</span></span>
+<span><span class="co">## log(us_gross)                   0.466    -0.136     1.069    1.519   0.129</span></span>
+<span><span class="co">## genre5Comedy                    6.321     4.235     8.406    5.949   0.000</span></span>
+<span><span class="co">## genre5Drama                     7.660     5.547     9.773    7.117   0.000</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.730    -3.696     2.236   -0.483   0.629</span></span>
+<span><span class="co">## genre5Other                     5.860    -0.519    12.239    1.803   0.072</span></span>
+<span><span class="co">## --------------------------------------------------------------------------</span></span></code></pre>
+<p>You can adjust the width of the confidence intervals, which are by
+default 95% CIs.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, ci.width <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ----------------------------------------------------------------------</span>
-<span class="co">##                                 Est.      25%      75%   t val.      p</span>
-<span class="co">## --------------------------- -------- -------- -------- -------- ------</span>
-<span class="co">## (Intercept)                   -39.96   -43.95   -35.96    -6.75   0.00</span>
-<span class="co">## imdb_rating                    12.80    12.47    13.14    25.89   0.00</span>
-<span class="co">## log(us_gross)                   0.47     0.26     0.67     1.52   0.13</span>
-<span class="co">## genre5Comedy                    6.32     5.60     7.04     5.95   0.00</span>
-<span class="co">## genre5Drama                     7.66     6.93     8.39     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller          -0.73    -1.75     0.29    -0.48   0.63</span>
-<span class="co">## genre5Other                     5.86     3.67     8.05     1.80   0.07</span>
-<span class="co">## ----------------------------------------------------------------------</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, ci.width <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ----------------------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.      25%      75%   t val.      p</span></span>
+<span><span class="co">## --------------------------- -------- -------- -------- -------- ------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   -43.95   -35.96    -6.75   0.00</span></span>
+<span><span class="co">## imdb_rating                    12.80    12.47    13.14    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                   0.47     0.26     0.67     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                    6.32     5.60     7.04     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                     7.66     6.93     8.39     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73    -1.75     0.29    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                     5.86     3.67     8.05     1.80   0.07</span></span>
+<span><span class="co">## ----------------------------------------------------------------------</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="removing-p-values">Removing p values<a class="anchor" aria-label="anchor" href="#removing-p-values"></a>
 </h3>
 <p>You might also want to drop the p-values altogether.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, pvals <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ---------------------------------------------------------------</span>
-<span class="co">##                                 Est.     2.5%    97.5%   t val.</span>
-<span class="co">## --------------------------- -------- -------- -------- --------</span>
-<span class="co">## (Intercept)                   -39.96   -51.58   -28.34    -6.75</span>
-<span class="co">## imdb_rating                    12.80    11.83    13.77    25.89</span>
-<span class="co">## log(us_gross)                   0.47    -0.14     1.07     1.52</span>
-<span class="co">## genre5Comedy                    6.32     4.24     8.41     5.95</span>
-<span class="co">## genre5Drama                     7.66     5.55     9.77     7.12</span>
-<span class="co">## genre5Horror/Thriller          -0.73    -3.70     2.24    -0.48</span>
-<span class="co">## genre5Other                     5.86    -0.52    12.24     1.80</span>
-<span class="co">## ---------------------------------------------------------------</span></code></pre>
-<p>Remember that you can omit p-values regardless of whether you have requested confidence intervals.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, pvals <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ---------------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.     2.5%    97.5%   t val.</span></span>
+<span><span class="co">## --------------------------- -------- -------- -------- --------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   -51.58   -28.34    -6.75</span></span>
+<span><span class="co">## imdb_rating                    12.80    11.83    13.77    25.89</span></span>
+<span><span class="co">## log(us_gross)                   0.47    -0.14     1.07     1.52</span></span>
+<span><span class="co">## genre5Comedy                    6.32     4.24     8.41     5.95</span></span>
+<span><span class="co">## genre5Drama                     7.66     5.55     9.77     7.12</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73    -3.70     2.24    -0.48</span></span>
+<span><span class="co">## genre5Other                     5.86    -0.52    12.24     1.80</span></span>
+<span><span class="co">## ---------------------------------------------------------------</span></span></code></pre>
+<p>Remember that you can omit p-values regardless of whether you have
+requested confidence intervals.</p>
 </div>
 <div class="section level3">
 <h3 id="generalized-and-mixed-models">Generalized and Mixed models<a class="anchor" aria-label="anchor" href="#generalized-and-mixed-models"></a>
 </h3>
-<p><code>summ</code> has been expanding its range of supported model types. <code>glm</code> models are a straightforward choice. Here we can take our previous model, but make it a probit model to reflect the fact that <code>metascore</code> is bound at 0 and 100 (analogous to 0 and 1). We’ll use the <code>quasibinomial</code> family since this is a percentage rather a binary outcome.</p>
+<p><code>summ</code> has been expanding its range of supported model
+types. <code>glm</code> models are a straightforward choice. Here we can
+take our previous model, but make it a probit model to reflect the fact
+that <code>metascore</code> is bound at 0 and 100 (analogous to 0 and
+1). We’ll use the <code>quasibinomial</code> family since this is a
+percentage rather a binary outcome.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fitg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">metascore</span><span class="op">/</span><span class="fl">100</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>, data <span class="op">=</span> <span class="va">movies</span>,
-            family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">quasibinomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fitg</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore/100</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> Generalized linear model</span>
-<span class="co">##   <span style="font-style: italic;">Family:</span> quasibinomial </span>
-<span class="co">##   <span style="font-style: italic;">Link function:</span> logit </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## χ²(6) = 57.19, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">Pseudo-R² (Cragg-Uhler)</span> = 0.28</span>
-<span class="co">## <span style="font-style: italic;">Pseudo-R² (McFadden)</span> = 0.18</span>
-<span class="co">## <span style="font-style: italic;">AIC</span> =  NA, <span style="font-style: italic;">BIC</span> =  NA </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: MLE</span></span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">##                                Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- ------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   -4.14   0.28   -14.81   0.00</span>
-<span class="co">## imdb_rating                    0.57   0.02    24.27   0.00</span>
-<span class="co">## log(us_gross)                  0.03   0.01     1.86   0.06</span>
-<span class="co">## genre5Comedy                   0.27   0.05     5.67   0.00</span>
-<span class="co">## genre5Drama                    0.35   0.05     7.11   0.00</span>
-<span class="co">## genre5Horror/Thriller         -0.02   0.07    -0.36   0.72</span>
-<span class="co">## genre5Other                    0.24   0.15     1.58   0.12</span>
-<span class="co">## ----------------------------------------------------------</span>
-<span class="co">## </span>
-<span class="co">## Estimated dispersion parameter = 0.06</span></code></pre>
-<p>For exponential family models, especially logit and Poisson, you may be interested in getting the exponentiated coefficients rather than the linear estimates. <code>summ</code> can handle that!</p>
+<code class="sourceCode R"><span><span class="va">fitg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">metascore</span><span class="op">/</span><span class="fl">100</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>, data <span class="op">=</span> <span class="va">movies</span>,</span>
+<span>            family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">quasibinomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fitg</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore/100</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> Generalized linear model</span></span>
+<span><span class="co">##   <span style="font-style: italic;">Family:</span> quasibinomial </span></span>
+<span><span class="co">##   <span style="font-style: italic;">Link function:</span> logit </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## χ²(6) = 57.19, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">Pseudo-R² (Cragg-Uhler)</span> = 0.28</span></span>
+<span><span class="co">## <span style="font-style: italic;">Pseudo-R² (McFadden)</span> = 0.18</span></span>
+<span><span class="co">## <span style="font-style: italic;">AIC</span> =  NA, <span style="font-style: italic;">BIC</span> =  NA </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: MLE</span></span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">##                                Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- ------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   -4.14   0.28   -14.81   0.00</span></span>
+<span><span class="co">## imdb_rating                    0.57   0.02    24.27   0.00</span></span>
+<span><span class="co">## log(us_gross)                  0.03   0.01     1.86   0.06</span></span>
+<span><span class="co">## genre5Comedy                   0.27   0.05     5.67   0.00</span></span>
+<span><span class="co">## genre5Drama                    0.35   0.05     7.11   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller         -0.02   0.07    -0.36   0.72</span></span>
+<span><span class="co">## genre5Other                    0.24   0.15     1.58   0.12</span></span>
+<span><span class="co">## ----------------------------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Estimated dispersion parameter = 0.06</span></span></code></pre>
+<p>For exponential family models, especially logit and Poisson, you may
+be interested in getting the exponentiated coefficients rather than the
+linear estimates. <code>summ</code> can handle that!</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fitg</span>, exp <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore/100</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> Generalized linear model</span>
-<span class="co">##   <span style="font-style: italic;">Family:</span> quasibinomial </span>
-<span class="co">##   <span style="font-style: italic;">Link function:</span> logit </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## χ²(6) = 57.19, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">Pseudo-R² (Cragg-Uhler)</span> = 0.28</span>
-<span class="co">## <span style="font-style: italic;">Pseudo-R² (McFadden)</span> = 0.18</span>
-<span class="co">## <span style="font-style: italic;">AIC</span> =  NA, <span style="font-style: italic;">BIC</span> =  NA </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: MLE</span></span>
-<span class="co">## ----------------------------------------------------------------------</span>
-<span class="co">##                               exp(Est.)   2.5%   97.5%   t val.      p</span>
-<span class="co">## --------------------------- ----------- ------ ------- -------- ------</span>
-<span class="co">## (Intercept)                        0.02   0.01    0.03   -14.81   0.00</span>
-<span class="co">## imdb_rating                        1.77   1.69    1.86    24.27   0.00</span>
-<span class="co">## log(us_gross)                      1.03   1.00    1.06     1.86   0.06</span>
-<span class="co">## genre5Comedy                       1.31   1.20    1.44     5.67   0.00</span>
-<span class="co">## genre5Drama                        1.42   1.29    1.57     7.11   0.00</span>
-<span class="co">## genre5Horror/Thriller              0.98   0.85    1.11    -0.36   0.72</span>
-<span class="co">## genre5Other                        1.27   0.94    1.72     1.58   0.12</span>
-<span class="co">## ----------------------------------------------------------------------</span>
-<span class="co">## </span>
-<span class="co">## Estimated dispersion parameter = 0.06</span></code></pre>
-<p>Standard errors are omitted for odds ratio estimates since the confidence intervals are not symmetrical.</p>
-<p>You can also get summaries of <code>merMod</code> objects, the mixed models from the <code>lme4</code> package.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fitg</span>, exp <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore/100</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> Generalized linear model</span></span>
+<span><span class="co">##   <span style="font-style: italic;">Family:</span> quasibinomial </span></span>
+<span><span class="co">##   <span style="font-style: italic;">Link function:</span> logit </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## χ²(6) = 57.19, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">Pseudo-R² (Cragg-Uhler)</span> = 0.28</span></span>
+<span><span class="co">## <span style="font-style: italic;">Pseudo-R² (McFadden)</span> = 0.18</span></span>
+<span><span class="co">## <span style="font-style: italic;">AIC</span> =  NA, <span style="font-style: italic;">BIC</span> =  NA </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: MLE</span></span></span>
+<span><span class="co">## ----------------------------------------------------------------------</span></span>
+<span><span class="co">##                               exp(Est.)   2.5%   97.5%   t val.      p</span></span>
+<span><span class="co">## --------------------------- ----------- ------ ------- -------- ------</span></span>
+<span><span class="co">## (Intercept)                        0.02   0.01    0.03   -14.81   0.00</span></span>
+<span><span class="co">## imdb_rating                        1.77   1.69    1.86    24.27   0.00</span></span>
+<span><span class="co">## log(us_gross)                      1.03   1.00    1.06     1.86   0.06</span></span>
+<span><span class="co">## genre5Comedy                       1.31   1.20    1.44     5.67   0.00</span></span>
+<span><span class="co">## genre5Drama                        1.42   1.29    1.57     7.11   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller              0.98   0.85    1.11    -0.36   0.72</span></span>
+<span><span class="co">## genre5Other                        1.27   0.94    1.72     1.58   0.12</span></span>
+<span><span class="co">## ----------------------------------------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Estimated dispersion parameter = 0.06</span></span></code></pre>
+<p>Standard errors are omitted for odds ratio estimates since the
+confidence intervals are not symmetrical.</p>
+<p>You can also get summaries of <code>merMod</code> objects, the mixed
+models from the <code>lme4</code> package.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span>
-<span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, <span class="va">sleepstudy</span><span class="op">)</span>
-
-<span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fm1</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 180</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> Reaction</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> Mixed effects linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">AIC</span> = 1755.63, <span style="font-style: italic;">BIC</span> = 1774.79</span>
-<span class="co">## <span style="font-style: italic;">Pseudo-R² (fixed effects)</span> = 0.28</span>
-<span class="co">## <span style="font-style: italic;">Pseudo-R² (total)</span> = 0.80 </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">FIXED EFFECTS:</span></span>
-<span class="co"><span style="text-decoration: underline;">## </span>---------------------------------------------------------</span>
-<span class="co">##                       Est.   S.E.   t val.    d.f.      p</span>
-<span class="co">## ----------------- -------- ------ -------- ------- ------</span>
-<span class="co">## (Intercept)         251.41   6.82    36.84   17.00   0.00</span>
-<span class="co">## Days                 10.47   1.55     6.77   17.00   0.00</span>
-<span class="co">## ---------------------------------------------------------</span>
-<span class="co">## </span>
-<span class="co">## <span style="color: #00BBBB; font-style: italic;">p values calculated using Satterthwaite d.f.</span></span>
-<span class="co">## </span>
-<span class="co"><span style="text-decoration: underline;">## RANDOM EFFECTS:</span></span>
-<span class="co"><span style="text-decoration: underline;">## </span>------------------------------------</span>
-<span class="co">##   Group      Parameter    Std. Dev. </span>
-<span class="co">## ---------- ------------- -----------</span>
-<span class="co">##  Subject    (Intercept)     24.74   </span>
-<span class="co">##  Subject       Days         5.92    </span>
-<span class="co">##  Residual                   25.59   </span>
-<span class="co">## ------------------------------------</span>
-<span class="co">## </span>
-<span class="co"><span style="text-decoration: underline;">## Grouping variables:</span></span>
-<span class="co"><span style="text-decoration: underline;">## </span>---------------------------</span>
-<span class="co">##   Group    # groups   ICC  </span>
-<span class="co">## --------- ---------- ------</span>
-<span class="co">##  Subject      18      0.48 </span>
-<span class="co">## ---------------------------</span></code></pre>
-<p>Note that the summary of linear mixed models will omit p-values by default unless the  package is installed for linear models. There’s no clear-cut way to derive p-values with linear mixed models and treating the t-values as you would for OLS models can lead to inflated Type 1 error rates. Confidence intervals are better, but not perfect. Kenward-Roger calculated degrees of freedom are fairly good under many circumstances and those are used by default when  package is installed. Be aware that for larger datasets, this procedure can take a long time. See the documentation (<code><a href="../reference/summ.merMod.html">?summ.merMod</a></code>) for more info.</p>
-<p>You also get an estimated model R-squared for mixed models using the Nakagawa &amp; Schielzeth (2013) procedure with code adapted from the <code>piecewiseSEM</code> package.</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
+<span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, <span class="va">sleepstudy</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fm1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 180</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> Reaction</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> Mixed effects linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">AIC</span> = 1755.63, <span style="font-style: italic;">BIC</span> = 1774.79</span></span>
+<span><span class="co">## <span style="font-style: italic;">Pseudo-R² (fixed effects)</span> = 0.28</span></span>
+<span><span class="co">## <span style="font-style: italic;">Pseudo-R² (total)</span> = 0.80 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">FIXED EFFECTS:</span></span></span>
+<span><span class="co"><span style="text-decoration: underline;">## </span>---------------------------------------------------------</span></span>
+<span><span class="co">##                       Est.   S.E.   t val.    d.f.      p</span></span>
+<span><span class="co">## ----------------- -------- ------ -------- ------- ------</span></span>
+<span><span class="co">## (Intercept)         251.41   6.82    36.84   17.00   0.00</span></span>
+<span><span class="co">## Days                 10.47   1.55     6.77   17.00   0.00</span></span>
+<span><span class="co">## ---------------------------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="color: #00BBBB; font-style: italic;">p values calculated using Satterthwaite d.f.</span></span></span>
+<span><span class="co">## </span></span>
+<span><span class="co"><span style="text-decoration: underline;">## RANDOM EFFECTS:</span></span></span>
+<span><span class="co"><span style="text-decoration: underline;">## </span>------------------------------------</span></span>
+<span><span class="co">##   Group      Parameter    Std. Dev. </span></span>
+<span><span class="co">## ---------- ------------- -----------</span></span>
+<span><span class="co">##  Subject    (Intercept)     24.74   </span></span>
+<span><span class="co">##  Subject       Days         5.92    </span></span>
+<span><span class="co">##  Residual                   25.59   </span></span>
+<span><span class="co">## ------------------------------------</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co"><span style="text-decoration: underline;">## Grouping variables:</span></span></span>
+<span><span class="co"><span style="text-decoration: underline;">## </span>---------------------------</span></span>
+<span><span class="co">##   Group    # groups   ICC  </span></span>
+<span><span class="co">## --------- ---------- ------</span></span>
+<span><span class="co">##  Subject      18      0.48 </span></span>
+<span><span class="co">## ---------------------------</span></span></code></pre>
+<p>Note that the summary of linear mixed models will omit p-values by
+default unless the package is installed for linear models. There’s no
+clear-cut way to derive p-values with linear mixed models and treating
+the t-values as you would for OLS models can lead to inflated Type 1
+error rates. Confidence intervals are better, but not perfect.
+Kenward-Roger calculated degrees of freedom are fairly good under many
+circumstances and those are used by default when package is installed.
+Be aware that for larger datasets, this procedure can take a long time.
+See the documentation (<code><a href="../reference/summ.merMod.html">?summ.merMod</a></code>) for more info.</p>
+<p>You also get an estimated model R-squared for mixed models using the
+Nakagawa &amp; Schielzeth (2013) procedure with code adapted from the
+<code>piecewiseSEM</code> package.</p>
 <div class="section level4">
 <h4 id="svyglm">svyglm<a class="anchor" aria-label="anchor" href="#svyglm"></a>
 </h4>
-<p>I won’t run through any examples here, but <code>svyglm</code> models are supported and provide near-equivalent output to what you see here depending on whether they are linear models or generalized linear models. See <code><a href="../reference/summ.svyglm.html">?summ.svyglm</a></code> for details.</p>
+<p>I won’t run through any examples here, but <code>svyglm</code> models
+are supported and provide near-equivalent output to what you see here
+depending on whether they are linear models or generalized linear
+models. See <code><a href="../reference/summ.svyglm.html">?summ.svyglm</a></code> for details.</p>
 </div>
 <div class="section level4">
 <h4 id="quantile-regression">Quantile regression<a class="anchor" aria-label="anchor" href="#quantile-regression"></a>
 </h4>
-<p><code><a href="../reference/summ.html">summ()</a></code> also supports quantile regression models, as estimated by the <code>rq</code> package. See <code><a href="../reference/summ.rq.html">?summ.rq</a></code> for details.</p>
+<p><code><a href="../reference/summ.html">summ()</a></code> also supports quantile regression models, as
+estimated by the <code>rq</code> package. See <code><a href="../reference/summ.rq.html">?summ.rq</a></code> for
+details.</p>
 </div>
 </div>
 </div>
@@ -701,75 +818,126 @@ genre5Other
 <h2 id="effect_plot">
 <code>effect_plot()</code><a class="anchor" aria-label="anchor" href="#effect_plot"></a>
 </h2>
-<p>Sometimes to really understand what your model is telling you, you need to see the kind of predictions it will give you. For that, you can use <code><a href="../reference/effect_plot.html">effect_plot()</a></code>, which does what it sounds like. There is a separate vignette available to explore all it can offer, but here’s a basic example with our <code>glm</code> model:</p>
+<p>Sometimes to really understand what your model is telling you, you
+need to see the kind of predictions it will give you. For that, you can
+use <code><a href="../reference/effect_plot.html">effect_plot()</a></code>, which does what it sounds like. There is
+a separate vignette available to explore all it can offer, but here’s a
+basic example with our <code>glm</code> model:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fitg</span>, pred <span class="op">=</span> <span class="va">imdb_rating</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span>, 
-            jitter <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fitg</span>, pred <span class="op">=</span> <span class="va">imdb_rating</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>            jitter <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-14-1.png" width="750"></p>
-<p>Now we’re really learning something about our model—and you can see the close but imperfect agreement between fans and critics.</p>
+<p>Now we’re really learning something about our model—and you can see
+the close but imperfect agreement between fans and critics.</p>
 </div>
 <div class="section level2">
 <h2 id="plot_summs-and-plot_coefs">
 <code>plot_summs()</code> and <code>plot_coefs()</code><a class="anchor" aria-label="anchor" href="#plot_summs-and-plot_coefs"></a>
 </h2>
-<p>When it comes time to share your findings, especially in talks, tables are often not the best way to capture people’s attention and quickly convey the results. Variants on what are known by some as “forest plots” have been gaining popularity for presenting regression results.</p>
-<p>For that, <code>jtools</code> provides <code><a href="../reference/plot_summs.html">plot_summs()</a></code> and <code><a href="../reference/plot_summs.html">plot_coefs()</a></code>. <code><a href="../reference/plot_summs.html">plot_summs()</a></code> gives you a plotting interface to <code><a href="../reference/summ.html">summ()</a></code> and allows you to do so with multiple models simultaneously (assuming you want to apply the same arguments to each model).</p>
+<p>When it comes time to share your findings, especially in talks,
+tables are often not the best way to capture people’s attention and
+quickly convey the results. Variants on what are known by some as
+“forest plots” have been gaining popularity for presenting regression
+results.</p>
+<p>For that, <code>jtools</code> provides <code><a href="../reference/plot_summs.html">plot_summs()</a></code> and
+<code><a href="../reference/plot_summs.html">plot_coefs()</a></code>. <code><a href="../reference/plot_summs.html">plot_summs()</a></code> gives you a
+plotting interface to <code><a href="../reference/summ.html">summ()</a></code> and allows you to do so with
+multiple models simultaneously (assuming you want to apply the same
+arguments to each model).</p>
 <p>Here’s a basic, single-model use case.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-15-1.png" width="750"></p>
-<p>Note that the intercept is omitted by default because it often distorts the scale and generally isn’t of theoretical interest. You can change this behavior or omit other coefficients with the <code>omit.coefs</code> argument.</p>
-<p>We may still want to use other features of <code><a href="../reference/summ.html">summ()</a></code>, like having robust standard errors. No problem.</p>
+<p>Note that the intercept is omitted by default because it often
+distorts the scale and generally isn’t of theoretical interest. You can
+change this behavior or omit other coefficients with the
+<code>omit.coefs</code> argument.</p>
+<p>We may still want to use other features of <code><a href="../reference/summ.html">summ()</a></code>, like
+having robust standard errors. No problem.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-16-1.png" width="750"></p>
-<p>Note that by default the width of the confidence interval is .95, but this can be changed with the <code>ci_level</code> argument. You can also add a thicker band to convey a narrow interval using the <code>inner_ci_level</code> argument:</p>
+<p>Note that by default the width of the confidence interval is .95, but
+this can be changed with the <code>ci_level</code> argument. You can
+also add a thicker band to convey a narrow interval using the
+<code>inner_ci_level</code> argument:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-17-1.png" width="750"></p>
 <div class="section level4">
 <h4 id="plot-coefficient-uncertainty-as-normal-distributions">Plot coefficient uncertainty as normal distributions<a class="anchor" aria-label="anchor" href="#plot-coefficient-uncertainty-as-normal-distributions"></a>
 </h4>
-<p>Most of our commonly used regression models make an assumption that the coefficient estimates are asymptotically normally distributed, which is how we derive our confidence intervals, p values, and so on. Using the <code>plot.distributions = TRUE</code> argument, you can plot a normal distribution along the width of your specified interval to convey the uncertainty. This is also great for didactic purposes.</p>
-<p>While the common OLS model assumes a <em>t</em> distribution, I decided that they are visually sufficiently close that I have opted not to try to plot the points along a <em>t</em> distribution.</p>
+<p>Most of our commonly used regression models make an assumption that
+the coefficient estimates are asymptotically normally distributed, which
+is how we derive our confidence intervals, p values, and so on. Using
+the <code>plot.distributions = TRUE</code> argument, you can plot a
+normal distribution along the width of your specified interval to convey
+the uncertainty. This is also great for didactic purposes.</p>
+<p>While the common OLS model assumes a <em>t</em> distribution, I
+decided that they are visually sufficiently close that I have opted not
+to try to plot the points along a <em>t</em> distribution.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-18-1.png" width="750"></p>
 </div>
 <div class="section level4">
 <h4 id="comparing-model-coefficients-visually">Comparing model coefficients visually<a class="anchor" aria-label="anchor" href="#comparing-model-coefficients-visually"></a>
 </h4>
-<p>Comparison of multiple models simultaneously is another benefit of plotting. This is especially true when the models are nested. Let’s fit a second model and compare.</p>
+<p>Comparison of multiple models simultaneously is another benefit of
+plotting. This is especially true when the models are nested. Let’s fit
+a second model and compare.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">budget</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>,
-           data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span>
-<span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">budget</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>,</span>
+<span>           data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-19-1.png" width="750"></p>
-<p>Doing this with <code>plot.distributions = TRUE</code> creates a nice effect:</p>
+<p>Doing this with <code>plot.distributions = TRUE</code> creates a nice
+effect:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-20-1.png" width="750"></p>
-<p>By providing a list of <code><a href="../reference/summ.html">summ()</a></code> arguments to <code><a href="../reference/plot_summs.html">plot_summs()</a></code>, you can compare results with different <code><a href="../reference/summ.html">summ()</a></code> arguments (each item in the list corresponds to one model; the second list item to the second model, etc.). For instance, we can look at how the standard errors differ with different <code>robust</code> arguments:</p>
+<p>By providing a list of <code><a href="../reference/summ.html">summ()</a></code> arguments to
+<code><a href="../reference/plot_summs.html">plot_summs()</a></code>, you can compare results with different
+<code><a href="../reference/summ.html">summ()</a></code> arguments (each item in the list corresponds to one
+model; the second list item to the second model, etc.). For instance, we
+can look at how the standard errors differ with different
+<code>robust</code> arguments:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit</span>, <span class="va">fit</span>, robust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span>,
-           model.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OLS"</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit</span>, <span class="va">fit</span>, robust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span>,</span>
+<span>           model.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OLS"</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-21-1.png" width="750"></p>
 </div>
 <div class="section level4">
 <h4 id="support-for-models-with-no-summ-method">Support for models with no <code>summ()</code> method<a class="anchor" aria-label="anchor" href="#support-for-models-with-no-summ-method"></a>
 </h4>
-<p><code><a href="../reference/plot_summs.html">plot_coefs()</a></code> is very similar to <code><a href="../reference/plot_summs.html">plot_summs()</a></code>, but does not offer the features that <code><a href="../reference/summ.html">summ()</a></code> does. The tradeoff, though, is that it allows for model types that <code><a href="../reference/summ.html">summ()</a></code> does not — any model supported by <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code> from the <code>broom</code> or <code>broom.mixed</code> packages should work.</p>
-<p>Note: If you provide unsupported model types to <code><a href="../reference/plot_summs.html">plot_summs()</a></code>, it just passes them to <code><a href="../reference/plot_summs.html">plot_coefs()</a></code>.</p>
+<p><code><a href="../reference/plot_summs.html">plot_coefs()</a></code> is very similar to
+<code><a href="../reference/plot_summs.html">plot_summs()</a></code>, but does not offer the features that
+<code><a href="../reference/summ.html">summ()</a></code> does. The tradeoff, though, is that it allows for
+model types that <code><a href="../reference/summ.html">summ()</a></code> does not — any model supported by
+<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">tidy()</a></code> from the <code>broom</code> or
+<code>broom.mixed</code> packages should work.</p>
+<p>Note: If you provide unsupported model types to
+<code><a href="../reference/plot_summs.html">plot_summs()</a></code>, it just passes them to
+<code><a href="../reference/plot_summs.html">plot_coefs()</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="table-output-for-word-and-rmarkdown-documents">Table output for Word and RMarkdown documents<a class="anchor" aria-label="anchor" href="#table-output-for-word-and-rmarkdown-documents"></a>
 </h2>
-<p>Sometimes you really do want a table, but it can’t be standard R output. For that, you can use <code><a href="../reference/export_summs.html">export_summs()</a></code>. It is a wrapper around <code>huxtable</code>’s <code>huxreg()</code> function that will give you nice looking output if used in RMarkdown documents or, if requested, printed to a Word file. In the latter case, complicated models often need more fine-tuning in Word, but it gets you started.</p>
-<p>Like <code><a href="../reference/plot_summs.html">plot_summs()</a></code>, <code><a href="../reference/export_summs.html">export_summs()</a></code> is designed to give you the features available in <code><a href="../reference/summ.html">summ()</a></code>, so you can request things like robust standard errors and variable scaling.</p>
+<p>Sometimes you really do want a table, but it can’t be standard R
+output. For that, you can use <code><a href="../reference/export_summs.html">export_summs()</a></code>. It is a
+wrapper around <code>huxtable</code>’s <code>huxreg()</code> function
+that will give you nice looking output if used in RMarkdown documents
+or, if requested, printed to a Word file. In the latter case,
+complicated models often need more fine-tuning in Word, but it gets you
+started.</p>
+<p>Like <code><a href="../reference/plot_summs.html">plot_summs()</a></code>, <code><a href="../reference/export_summs.html">export_summs()</a></code> is
+designed to give you the features available in <code><a href="../reference/summ.html">summ()</a></code>, so
+you can request things like robust standard errors and variable
+scaling.</p>
 <p>Here’s an example of what to expect in a document like this one:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <table class="table huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-23">
 <col>
 <col>
@@ -785,7 +953,7 @@ Model 2
 </th>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (Intercept)
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -796,154 +964,154 @@ Model 2
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.75)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.76)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 imdb_rating
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 11.06 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 10.61 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.43)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.43)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 <code>log(us_gross)</code>
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 0.63    
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 2.17 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.42)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.51)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Comedy
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 6.32 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 4.84 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.06)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.09)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Drama
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 7.66 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 6.71 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.08)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.08)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Horror/Thriller
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 -0.73    
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 -2.81    
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.51)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.55)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Other
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 5.86    
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 6.30 *  
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (3.25)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (3.20)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 <code>log(budget)</code>
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 -2.64 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
@@ -953,7 +1121,7 @@ genre5Other
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 N
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -976,21 +1144,36 @@ R2
 </tr>
 <tr>
 <th colspan="3" style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
-All continuous predictors are mean-centered and scaled by 1 standard deviation. *** p &lt; 0.001; ** p &lt; 0.01; * p &lt; 0.05.
+All continuous predictors are mean-centered and scaled by 1 standard
+deviation. *** p &lt; 0.001; ** p &lt; 0.01; * p &lt; 0.05.
 </th>
 </tr>
 </table>
-<p>When using RMarkdown, set <code>results = 'asis'</code> for the chunk with <code><a href="../reference/export_summs.html">export_summs()</a></code> to get the right formatting for whatever type of output document (HTML, PDF, etc.)</p>
-<p>To format the error statistics, simply put the statistics desired in curly braces wherever you want them in a character string. For example, if you want the standard error in parentheses, the argument would be <code>"({std.error})"</code>, which is the default. Some other ideas:</p>
+<p>When using RMarkdown, set <code>results = 'asis'</code> for the chunk
+with <code><a href="../reference/export_summs.html">export_summs()</a></code> to get the right formatting for
+whatever type of output document (HTML, PDF, etc.)</p>
+<p>To format the error statistics, simply put the statistics desired in
+curly braces wherever you want them in a character string. For example,
+if you want the standard error in parentheses, the argument would be
+<code>"({std.error})"</code>, which is the default. Some other
+ideas:</p>
 <ul>
-<li><p><code>"({statistic})"</code>, which gives you the test statistic in parentheses.</p></li>
-<li><p><code>"({statistic}, p = {p.value})"</code>, which gives the test statistic followed by a “p =” p value all in parentheses. Note that you’ll have to pay special attention to rounding if you do this to keep cells sufficiently narrow.</p></li>
-<li><p><code>"[{conf.low}, {conf.high}]"</code>, which gives the confidence interval in the standard bracket notation. You could also explicitly write the confidence level, e.g., <code>"95% CI [{conf.low}, {conf.high}]"</code>.</p></li>
+<li><p><code>"({statistic})"</code>, which gives you the test statistic
+in parentheses.</p></li>
+<li><p><code>"({statistic}, p = {p.value})"</code>, which gives the test
+statistic followed by a “p =” p value all in parentheses. Note that
+you’ll have to pay special attention to rounding if you do this to keep
+cells sufficiently narrow.</p></li>
+<li><p><code>"[{conf.low}, {conf.high}]"</code>, which gives the
+confidence interval in the standard bracket notation. You could also
+explicitly write the confidence level, e.g.,
+<code>"95% CI [{conf.low}, {conf.high}]"</code>.</p></li>
 </ul>
-<p>Here’s an example with confidence intervals instead of standard errors:</p>
+<p>Here’s an example with confidence intervals instead of standard
+errors:</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>,
-             error_format <span class="op">=</span> <span class="st">"[{conf.low}, {conf.high}]"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>             error_format <span class="op">=</span> <span class="st">"[{conf.low}, {conf.high}]"</span><span class="op">)</span></span></code></pre></div>
 <table class="table huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-25">
 <col>
 <col>
@@ -1006,7 +1189,7 @@ Model 2
 </th>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (Intercept)
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -1017,154 +1200,154 @@ Model 2
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [57.27, 60.21]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [58.15, 61.12]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 imdb_rating
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 11.06 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 10.61 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [10.22, 11.90]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [9.76, 11.45]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 <code>log(us_gross)</code>
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 0.63    
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 2.17 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [-0.18, 1.45]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [1.16, 3.17]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Comedy
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 6.32 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 4.84 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [4.24, 8.41]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [2.70, 6.97]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Drama
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 7.66 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 6.71 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [5.55, 9.77]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [4.60, 8.83]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Horror/Thriller
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 -0.73    
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 -2.81    
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [-3.70, 2.24]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [-5.84, 0.23]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 genre5Other
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 5.86    
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 6.30 *  
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [-0.52, 12.24]   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 [0.01, 12.59]   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 <code>log(budget)</code>
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 -2.64 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
@@ -1174,7 +1357,7 @@ genre5Other
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 N
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -1197,15 +1380,21 @@ R2
 </tr>
 <tr>
 <th colspan="3" style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.8pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
-All continuous predictors are mean-centered and scaled by 1 standard deviation. *** p &lt; 0.001; ** p &lt; 0.01; * p &lt; 0.05.
+All continuous predictors are mean-centered and scaled by 1 standard
+deviation. *** p &lt; 0.001; ** p &lt; 0.01; * p &lt; 0.05.
 </th>
 </tr>
 </table>
-<p>There’s a lot more customization that I’m not covering here: Renaming the columns, renaming/excluding coefficients, realigning the errors, and so on.</p>
-<p>If you want to save to a Word doc, use the <code>to.file</code> argument (requires the <code>officer</code> and <code>flextable</code> packages):</p>
+<p>There’s a lot more customization that I’m not covering here: Renaming
+the columns, renaming/excluding coefficients, realigning the errors, and
+so on.</p>
+<p>If you want to save to a Word doc, use the <code>to.file</code>
+argument (requires the <code>officer</code> and <code>flextable</code>
+packages):</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, to.file <span class="op">=</span> <span class="st">"docx"</span>, file.name <span class="op">=</span> <span class="st">"test.docx"</span><span class="op">)</span></code></pre></div>
-<p>You can likewise export to PDF (<code>"PDF"</code>), HTML (<code>"HTML"</code>), or Excel format (<code>"xlsx"</code>).</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, to.file <span class="op">=</span> <span class="st">"docx"</span>, file.name <span class="op">=</span> <span class="st">"test.docx"</span><span class="op">)</span></span></code></pre></div>
+<p>You can likewise export to PDF (<code>"PDF"</code>), HTML
+(<code>"HTML"</code>), or Excel format (<code>"xlsx"</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="other-options">Other options<a class="anchor" aria-label="anchor" href="#other-options"></a>
@@ -1213,110 +1402,131 @@ All continuous predictors are mean-centered and scaled by 1 standard deviation. 
 <div class="section level3">
 <h3 id="adding-and-removing-written-output">Adding and removing written output<a class="anchor" aria-label="anchor" href="#adding-and-removing-written-output"></a>
 </h3>
-<p>Much of the output with <code>summ</code> can be removed while there are several other pieces of information under the hood that users can ask for.</p>
-<p>To remove the written output at the beginning, set <code>model.info = FALSE</code> and/or <code>model.fit = FALSE</code>.</p>
+<p>Much of the output with <code>summ</code> can be removed while there
+are several other pieces of information under the hood that users can
+ask for.</p>
+<p>To remove the written output at the beginning, set
+<code>model.info = FALSE</code> and/or
+<code>model.fit = FALSE</code>.</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, model.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## -----------------------------------------------------------</span>
-<span class="co">##                                 Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- -------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00</span>
-<span class="co">## imdb_rating                    12.80   0.49    25.89   0.00</span>
-<span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13</span>
-<span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00</span>
-<span class="co">## genre5Drama                     7.66   1.08     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63</span>
-<span class="co">## genre5Other                     5.86   3.25     1.80   0.07</span>
-<span class="co">## -----------------------------------------------------------</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, model.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- -------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00</span></span>
+<span><span class="co">## imdb_rating                    12.80   0.49    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                     7.66   1.08     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                     5.86   3.25     1.80   0.07</span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="choose-how-many-digits-past-the-decimal-to-round-to">Choose how many digits past the decimal to round to<a class="anchor" aria-label="anchor" href="#choose-how-many-digits-past-the-decimal-to-round-to"></a>
 </h3>
-<p>With the <code>digits =</code> argument, you can decide how precise you want the outputted numbers to be. It is often inappropriate or distracting to report quantities with many digits past the decimal due to the inability to measure them so precisely or interpret them in applied settings. In other cases, it may be necessary to use more digits due to the way measures are calculated.</p>
+<p>With the <code>digits =</code> argument, you can decide how precise
+you want the outputted numbers to be. It is often inappropriate or
+distracting to report quantities with many digits past the decimal due
+to the inability to measure them so precisely or interpret them in
+applied settings. In other cases, it may be necessary to use more digits
+due to the way measures are calculated.</p>
 <p>The default argument is <code>digits = 2</code>.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, digits <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.36717, <span style="font-style: italic;">p</span> = 0.00000</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55222</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.54896 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ----------------------------------------------------------------------</span>
-<span class="co">##                                    Est.      S.E.     t val.         p</span>
-<span class="co">## --------------------------- ----------- --------- ---------- ---------</span>
-<span class="co">## (Intercept)                   -39.95854   5.92014   -6.74960   0.00000</span>
-<span class="co">## imdb_rating                    12.80145   0.49454   25.88575   0.00000</span>
-<span class="co">## log(us_gross)                   0.46630   0.30703    1.51874   0.12921</span>
-<span class="co">## genre5Comedy                    6.32084   1.06246    5.94925   0.00000</span>
-<span class="co">## genre5Drama                     7.65994   1.07630    7.11692   0.00000</span>
-<span class="co">## genre5Horror/Thriller          -0.72998   1.51083   -0.48317   0.62911</span>
-<span class="co">## genre5Other                     5.86029   3.24997    1.80318   0.07172</span>
-<span class="co">## ----------------------------------------------------------------------</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, digits <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.36717, <span style="font-style: italic;">p</span> = 0.00000</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55222</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.54896 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ----------------------------------------------------------------------</span></span>
+<span><span class="co">##                                    Est.      S.E.     t val.         p</span></span>
+<span><span class="co">## --------------------------- ----------- --------- ---------- ---------</span></span>
+<span><span class="co">## (Intercept)                   -39.95854   5.92014   -6.74960   0.00000</span></span>
+<span><span class="co">## imdb_rating                    12.80145   0.49454   25.88575   0.00000</span></span>
+<span><span class="co">## log(us_gross)                   0.46630   0.30703    1.51874   0.12921</span></span>
+<span><span class="co">## genre5Comedy                    6.32084   1.06246    5.94925   0.00000</span></span>
+<span><span class="co">## genre5Drama                     7.65994   1.07630    7.11692   0.00000</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.72998   1.51083   -0.48317   0.62911</span></span>
+<span><span class="co">## genre5Other                     5.86029   3.24997    1.80318   0.07172</span></span>
+<span><span class="co">## ----------------------------------------------------------------------</span></span></code></pre>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, digits <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.4, <span style="font-style: italic;">p</span> = 0.0</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.6</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.5 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ---------------------------------------------------------</span>
-<span class="co">##                                Est.   S.E.   t val.     p</span>
-<span class="co">## --------------------------- ------- ------ -------- -----</span>
-<span class="co">## (Intercept)                   -40.0    5.9     -6.7   0.0</span>
-<span class="co">## imdb_rating                    12.8    0.5     25.9   0.0</span>
-<span class="co">## log(us_gross)                   0.5    0.3      1.5   0.1</span>
-<span class="co">## genre5Comedy                    6.3    1.1      5.9   0.0</span>
-<span class="co">## genre5Drama                     7.7    1.1      7.1   0.0</span>
-<span class="co">## genre5Horror/Thriller          -0.7    1.5     -0.5   0.6</span>
-<span class="co">## genre5Other                     5.9    3.2      1.8   0.1</span>
-<span class="co">## ---------------------------------------------------------</span></code></pre>
-<p>You can pre-set the number of digits you want printed for all <code>jtools</code> functions with the <code>jtools-digits</code> option.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, digits <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.4, <span style="font-style: italic;">p</span> = 0.0</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.6</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.5 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ---------------------------------------------------------</span></span>
+<span><span class="co">##                                Est.   S.E.   t val.     p</span></span>
+<span><span class="co">## --------------------------- ------- ------ -------- -----</span></span>
+<span><span class="co">## (Intercept)                   -40.0    5.9     -6.7   0.0</span></span>
+<span><span class="co">## imdb_rating                    12.8    0.5     25.9   0.0</span></span>
+<span><span class="co">## log(us_gross)                   0.5    0.3      1.5   0.1</span></span>
+<span><span class="co">## genre5Comedy                    6.3    1.1      5.9   0.0</span></span>
+<span><span class="co">## genre5Drama                     7.7    1.1      7.1   0.0</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.7    1.5     -0.5   0.6</span></span>
+<span><span class="co">## genre5Other                     5.9    3.2      1.8   0.1</span></span>
+<span><span class="co">## ---------------------------------------------------------</span></span></code></pre>
+<p>You can pre-set the number of digits you want printed for all
+<code>jtools</code> functions with the <code>jtools-digits</code>
+option.</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"jtools-digits"</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
-<span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## -----------------------------------------------------------</span>
-<span class="co">##                                 Est.   S.E.   t val.      p</span>
-<span class="co">## --------------------------- -------- ------ -------- ------</span>
-<span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00</span>
-<span class="co">## imdb_rating                    12.80   0.49    25.89   0.00</span>
-<span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13</span>
-<span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00</span>
-<span class="co">## genre5Drama                     7.66   1.08     7.12   0.00</span>
-<span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63</span>
-<span class="co">## genre5Other                     5.86   3.25     1.80   0.07</span>
-<span class="co">## -----------------------------------------------------------</span></code></pre>
-<p>Note that the <code>summ</code> object contains the non-rounded values if you want to use them later. The digits option just affects the printed output.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"jtools-digits"</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.   S.E.   t val.      p</span></span>
+<span><span class="co">## --------------------------- -------- ------ -------- ------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00</span></span>
+<span><span class="co">## imdb_rating                    12.80   0.49    25.89   0.00</span></span>
+<span><span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13</span></span>
+<span><span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00</span></span>
+<span><span class="co">## genre5Drama                     7.66   1.08     7.12   0.00</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63</span></span>
+<span><span class="co">## genre5Other                     5.86   3.25     1.80   0.07</span></span>
+<span><span class="co">## -----------------------------------------------------------</span></span></code></pre>
+<p>Note that the <code>summ</code> object contains the non-rounded
+values if you want to use them later. The digits option just affects the
+printed output.</p>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">j</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-
-<span class="va">j</span><span class="op">$</span><span class="va">coeftable</span></code></pre></div>
-<pre><code><span class="co">##                              Est.      S.E.     t val.             p</span>
-<span class="co">## (Intercept)           -39.9585385 5.9201374 -6.7495965  2.794977e-11</span>
-<span class="co">## imdb_rating            12.8014468 0.4945364 25.8857504 1.374861e-108</span>
-<span class="co">## log(us_gross)           0.4662999 0.3070303  1.5187424  1.292109e-01</span>
-<span class="co">## genre5Comedy            6.3208381 1.0624588  5.9492549  3.979700e-09</span>
-<span class="co">## genre5Drama             7.6599375 1.0762996  7.1169191  2.401431e-12</span>
-<span class="co">## genre5Horror/Thriller  -0.7299804 1.5108295 -0.4831653  6.291067e-01</span>
-<span class="co">## genre5Other             5.8602899 3.2499662  1.8031848  7.172439e-02</span></code></pre>
+<code class="sourceCode R"><span><span class="va">j</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">j</span><span class="op">$</span><span class="va">coeftable</span></span></code></pre></div>
+<pre><code><span><span class="co">##                              Est.      S.E.     t val.             p</span></span>
+<span><span class="co">## (Intercept)           -39.9585385 5.9201374 -6.7495965  2.794977e-11</span></span>
+<span><span class="co">## imdb_rating            12.8014468 0.4945364 25.8857504 1.374861e-108</span></span>
+<span><span class="co">## log(us_gross)           0.4662999 0.3070303  1.5187424  1.292109e-01</span></span>
+<span><span class="co">## genre5Comedy            6.3208381 1.0624588  5.9492549  3.979700e-09</span></span>
+<span><span class="co">## genre5Drama             7.6599375 1.0762996  7.1169191  2.401431e-12</span></span>
+<span><span class="co">## genre5Horror/Thriller  -0.7299804 1.5108295 -0.4831653  6.291067e-01</span></span>
+<span><span class="co">## genre5Other             5.8602899 3.2499662  1.8031848  7.172439e-02</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="set-default-arguments-to-summ">Set default arguments to <code>summ</code><a class="anchor" aria-label="anchor" href="#set-default-arguments-to-summ"></a>
 </h3>
-<p>You may like some of the options afforded to you by <code><a href="../reference/summ.html">summ()</a></code> but may not like the inconvenience of typing them over and over. To streamline your sessions, you can use the <code><a href="../reference/set_summ_defaults.html">set_summ_defaults()</a></code> function to avoid redundant typing.</p>
+<p>You may like some of the options afforded to you by
+<code><a href="../reference/summ.html">summ()</a></code> but may not like the inconvenience of typing them
+over and over. To streamline your sessions, you can use the
+<code><a href="../reference/set_summ_defaults.html">set_summ_defaults()</a></code> function to avoid redundant typing.</p>
 <p>It works like this:</p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/set_summ_defaults.html">set_summ_defaults</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">2</span>, pvals <span class="op">=</span> <span class="cn">FALSE</span>, robust <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></code></pre></div>
-<p>If you do that, you will have 2 digits in your output, no p values displayed, and “HC3” sandwich robust standard errors in your <code>summ</code> output for the rest of the R session. You can also use this in a .RProfile, but remember that it should be included in scripts so that your code runs the same on every computer and every session.</p>
-<p>Here are all the options that can be toggled via <code>set_summ_defaults</code>:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/set_summ_defaults.html">set_summ_defaults</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">2</span>, pvals <span class="op">=</span> <span class="cn">FALSE</span>, robust <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span></code></pre></div>
+<p>If you do that, you will have 2 digits in your output, no p values
+displayed, and “HC3” sandwich robust standard errors in your
+<code>summ</code> output for the rest of the R session. You can also use
+this in a .RProfile, but remember that it should be included in scripts
+so that your code runs the same on every computer and every session.</p>
+<p>Here are all the options that can be toggled via
+<code>set_summ_defaults</code>:</p>
 <ul>
 <li><code>digits</code></li>
 <li><code>model.info</code></li>
@@ -1333,32 +1543,43 @@ All continuous predictors are mean-centered and scaled by 1 standard deviation. 
 <div class="section level3">
 <h3 id="calculate-and-report-variance-inflation-factors-vif">Calculate and report variance inflation factors (VIF)<a class="anchor" aria-label="anchor" href="#calculate-and-report-variance-inflation-factors-vif"></a>
 </h3>
-<p>When multicollinearity is a concern, it can be useful to have VIFs reported alongside each variable. This can be particularly helpful for model comparison and checking for the impact of newly-added variables. To get VIFs reported in the output table, just set <code>vifs = TRUE</code>.</p>
+<p>When multicollinearity is a concern, it can be useful to have VIFs
+reported alongside each variable. This can be particularly helpful for
+model comparison and checking for the impact of newly-added variables.
+To get VIFs reported in the output table, just set
+<code>vifs = TRUE</code>.</p>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, vifs <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span>
-<span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span>
-<span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span>
-<span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span>
-<span class="co">## </span>
-<span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span>
-<span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span>
-<span class="co">## <span style="font-style: italic;">R² = </span>0.55</span>
-<span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span>
-<span class="co">## </span>
-<span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span>
-<span class="co">## ------------------------------------------------------------------</span>
-<span class="co">##                                 Est.   S.E.   t val.      p    VIF</span>
-<span class="co">## --------------------------- -------- ------ -------- ------ ------</span>
-<span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00       </span>
-<span class="co">## imdb_rating                    12.80   0.49    25.89   0.00   1.18</span>
-<span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13   1.11</span>
-<span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00   1.21</span>
-<span class="co">## genre5Drama                     7.66   1.08     7.12   0.00   1.21</span>
-<span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63   1.21</span>
-<span class="co">## genre5Other                     5.86   3.25     1.80   0.07   1.21</span>
-<span class="co">## ------------------------------------------------------------------</span></code></pre>
-<p>There are many standards researchers apply for deciding whether a VIF is too large. In some domains, a VIF over 2 is worthy of suspicion. Others set the bar higher, at 5 or 10. Others still will say you shouldn’t pay attention to these at all. Ultimately, the main thing to consider is that small effects are more likely to be “drowned out” by higher VIFs, but this may just be a natural, unavoidable fact with your model (e.g., there is no problem with high VIFs when you have an interaction effect).</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, vifs <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
+<span><span class="co">## <span style="font-style: italic;">Dependent Variable:</span> metascore</span></span>
+<span><span class="co">## <span style="font-style: italic;">Type:</span> OLS linear regression </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
+<span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.37, <span style="font-style: italic;">p</span> = 0.00</span></span>
+<span><span class="co">## <span style="font-style: italic;">R² = </span>0.55</span></span>
+<span><span class="co">## <span style="font-style: italic;">Adj. R² = </span>0.55 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## <span style="font-style: italic;">Standard errors: OLS</span></span></span>
+<span><span class="co">## ------------------------------------------------------------------</span></span>
+<span><span class="co">##                                 Est.   S.E.   t val.      p    VIF</span></span>
+<span><span class="co">## --------------------------- -------- ------ -------- ------ ------</span></span>
+<span><span class="co">## (Intercept)                   -39.96   5.92    -6.75   0.00       </span></span>
+<span><span class="co">## imdb_rating                    12.80   0.49    25.89   0.00   1.18</span></span>
+<span><span class="co">## log(us_gross)                   0.47   0.31     1.52   0.13   1.11</span></span>
+<span><span class="co">## genre5Comedy                    6.32   1.06     5.95   0.00   1.21</span></span>
+<span><span class="co">## genre5Drama                     7.66   1.08     7.12   0.00   1.21</span></span>
+<span><span class="co">## genre5Horror/Thriller          -0.73   1.51    -0.48   0.63   1.21</span></span>
+<span><span class="co">## genre5Other                     5.86   3.25     1.80   0.07   1.21</span></span>
+<span><span class="co">## ------------------------------------------------------------------</span></span></code></pre>
+<p>There are many standards researchers apply for deciding whether a VIF
+is too large. In some domains, a VIF over 2 is worthy of suspicion.
+Others set the bar higher, at 5 or 10. Others still will say you
+shouldn’t pay attention to these at all. Ultimately, the main thing to
+consider is that small effects are more likely to be “drowned out” by
+higher VIFs, but this may just be a natural, unavoidable fact with your
+model (e.g., there is no problem with high VIFs when you have an
+interaction effect).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -1374,7 +1595,7 @@ All continuous predictors are mean-centered and scaled by 1 standard deviation. 
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>

@@ -14,10 +14,10 @@
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><link href="../deps/_Lato-0.4.1/font.css" rel="stylesheet">
-<link href="../deps/_IBM%20Plex%20Mono-0.4.1/font.css" rel="stylesheet">
-<link href="../deps/_Raleway-0.4.1/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><link href="../deps/Lato-0.4.4/font.css" rel="stylesheet">
+<link href="../deps/IBM_Plex_Mono-0.4.4/font.css" rel="stylesheet">
+<link href="../deps/Raleway-0.4.4/font.css" rel="stylesheet">
 <!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
@@ -106,7 +106,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Calculate correlations and correlation tables with complex survey data</h1>
                         <h4 data-toc-skip class="author">Jacob Long</h4>
             
-            <h4 data-toc-skip class="date">2022-06-22</h4>
+            <h4 data-toc-skip class="date">2022-11-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/jacob-long/jtools/blob/HEAD/vignettes/svycor.Rmd" class="external-link"><code>vignettes/svycor.Rmd</code></a></small>
       <div class="d-none name"><code>svycor.Rmd</code></div>
@@ -114,74 +114,119 @@
 
     
     
-<p>The <code>survey</code> package is one of R’s best tools for those working in the social sciences. For many, it saves you from needing to use commercial software for research that uses survey data. However, it lacks one function that many academic researchers often need to report in publications: correlations. The <code>svycor</code> function in <code>jtools</code> helps to fill that gap.</p>
-<p>A note, however, is necessary. The initial motivation to add this feature comes from a <a href="https://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088" class="external-link">response to a question</a> about calculating correlations with the <code>survey</code> package written by Thomas Lumley, the <code>survey</code> package author. All that is good about this function should be attributed to Dr. Lumley; all that is wrong with it should be attributed to me (Jacob).</p>
-<p>With that said, let’s look at an example. First, we need to get a <code>survey.design</code> object. This one is built into the <code>survey</code> package.</p>
+<p>The <code>survey</code> package is one of R’s best tools for those
+working in the social sciences. For many, it saves you from needing to
+use commercial software for research that uses survey data. However, it
+lacks one function that many academic researchers often need to report
+in publications: correlations. The <code>svycor</code> function in
+<code>jtools</code> helps to fill that gap.</p>
+<p>A note, however, is necessary. The initial motivation to add this
+feature comes from a <a href="https://stackoverflow.com/questions/34418822/pearson-correlation-coefficient-in-rs-survey-package#41031088" class="external-link">response
+to a question</a> about calculating correlations with the
+<code>survey</code> package written by Thomas Lumley, the
+<code>survey</code> package author. All that is good about this function
+should be attributed to Dr. Lumley; all that is wrong with it should be
+attributed to me (Jacob).</p>
+<p>With that said, let’s look at an example. First, we need to get a
+<code>survey.design</code> object. This one is built into the
+<code>survey</code> package.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://r-survey.r-forge.r-project.org/survey/" class="external-link">survey</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">api</span><span class="op">)</span>
-<span class="va">dstrat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign</a></span><span class="op">(</span>id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>,strata <span class="op">=</span> <span class="op">~</span><span class="va">stype</span>, weights <span class="op">=</span> <span class="op">~</span><span class="va">pw</span>, data <span class="op">=</span> <span class="va">apistrat</span>, fpc<span class="op">=</span><span class="op">~</span><span class="va">fpc</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://r-survey.r-forge.r-project.org/survey/" class="external-link">survey</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">api</span><span class="op">)</span></span>
+<span><span class="va">dstrat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign</a></span><span class="op">(</span>id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>,strata <span class="op">=</span> <span class="op">~</span><span class="va">stype</span>, weights <span class="op">=</span> <span class="op">~</span><span class="va">pw</span>, data <span class="op">=</span> <span class="va">apistrat</span>, fpc<span class="op">=</span><span class="op">~</span><span class="va">fpc</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="basic-use">Basic use<a class="anchor" aria-label="anchor" href="#basic-use"></a>
 </h2>
-<p>The necessary arguments are no different than when using <code>svyvar</code>. Specify, using an equation, which variables (and from which design) to include. It doesn’t matter which side of the equation the variables are on.</p>
+<p>The necessary arguments are no different than when using
+<code>svyvar</code>. Specify, using an equation, which variables (and
+from which design) to include. It doesn’t matter which side of the
+equation the variables are on.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      api00 api99
 api00  1.00  0.98
 api99  0.98  1.00</code></pre>
-<p>You can specify with the <code>digits =</code> argument how many digits past the decimal point should be printed.</p>
+<p>You can specify with the <code>digits =</code> argument how many
+digits past the decimal point should be printed.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <pre><code>       api00  api99
 api00 1.0000 0.9759
 api99 0.9759 1.0000</code></pre>
-<p>Any other arguments that you would normally pass to <code>svyvar</code> will be used as well, though in some cases it may not affect the output.</p>
+<p>Any other arguments that you would normally pass to
+<code>svyvar</code> will be used as well, though in some cases it may
+not affect the output.</p>
 </div>
 <div class="section level2">
 <h2 id="statistical-significance-tests">Statistical significance tests<a class="anchor" aria-label="anchor" href="#statistical-significance-tests"></a>
 </h2>
-<p>One thing that <code>survey</code> won’t do for you is give you <em>p</em> values for the null hypothesis that <span class="math inline">\(r = 0\)</span>. While at first blush finding the <em>p</em> value might seem like a simple procedure, complex surveys will almost always violate the important distributional assumptions that go along with simple hypothesis tests of the correlation coefficient. There is not a clear consensus on the appropriate way to conduct hypothesis tests in this context, due in part to the fact that most analyses of complex surveys occurs in the context of multiple regression rather than simple bivariate cases.</p>
-<p>If <code>sig.stats = TRUE</code>, then <code>svycor</code> will use the <code>wtd.cor</code> function from the <code>weights</code> package to conduct hypothesis tests. The <em>p</em> values are derived from a bootstrap procedure in which the weights define sampling probability. The <code>bootn =</code> argument is given to <code>wtd.cor</code> to define the number of simulations to run. This can significantly increase the running time for large samples and/or large numbers of simulations. The <code>mean1</code> argument tells <code>wtd.cor</code> whether it should treat your sample size as the number of observations in the survey design (the number of rows in the data frame) or the sum of the weights. Usually, the former is desired, so the default value of <code>mean1</code> is <code>TRUE</code>.</p>
+<p>One thing that <code>survey</code> won’t do for you is give you
+<em>p</em> values for the null hypothesis that <span class="math inline">\(r = 0\)</span>. While at first blush finding the
+<em>p</em> value might seem like a simple procedure, complex surveys
+will almost always violate the important distributional assumptions that
+go along with simple hypothesis tests of the correlation coefficient.
+There is not a clear consensus on the appropriate way to conduct
+hypothesis tests in this context, due in part to the fact that most
+analyses of complex surveys occurs in the context of multiple regression
+rather than simple bivariate cases.</p>
+<p>If <code>sig.stats = TRUE</code>, then <code>svycor</code> will use
+the <code>wtd.cor</code> function from the <code>weights</code> package
+to conduct hypothesis tests. The <em>p</em> values are derived from a
+bootstrap procedure in which the weights define sampling probability.
+The <code>bootn =</code> argument is given to <code>wtd.cor</code> to
+define the number of simulations to run. This can significantly increase
+the running time for large samples and/or large numbers of simulations.
+The <code>mean1</code> argument tells <code>wtd.cor</code> whether it
+should treat your sample size as the number of observations in the
+survey design (the number of rows in the data frame) or the sum of the
+weights. Usually, the former is desired, so the default value of
+<code>mean1</code> is <code>TRUE</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span>, sig.stats <span class="op">=</span> <span class="cn">TRUE</span>, bootn <span class="op">=</span> <span class="fl">2000</span>, mean1 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span>, sig.stats <span class="op">=</span> <span class="cn">TRUE</span>, bootn <span class="op">=</span> <span class="fl">2000</span>, mean1 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      api00   api99  
 api00 1       0.9759*
 api99 0.9759* 1      </code></pre>
-<p>When using <code>sig.stats = TRUE</code>, the correlation parameter estimates come from the bootstrap procedure rather than the simpler method based on the survey-weighted covariance matrix when <code>sig.stats = FALSE</code>.</p>
-<p>By saving the output of the function, you can extract non-rounded coefficients, <em>p</em> values, and standard errors.</p>
+<p>When using <code>sig.stats = TRUE</code>, the correlation parameter
+estimates come from the bootstrap procedure rather than the simpler
+method based on the survey-weighted covariance matrix when
+<code>sig.stats = FALSE</code>.</p>
+<p>By saving the output of the function, you can extract non-rounded
+coefficients, <em>p</em> values, and standard errors.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">c</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span>, sig.stats <span class="op">=</span> <span class="cn">TRUE</span>, bootn <span class="op">=</span> <span class="fl">2000</span>, mean1 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-
-<span class="va">c</span><span class="op">$</span><span class="va">cors</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">c</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span>, sig.stats <span class="op">=</span> <span class="cn">TRUE</span>, bootn <span class="op">=</span> <span class="fl">2000</span>, mean1 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">c</span><span class="op">$</span><span class="va">cors</span></span></code></pre></div>
 <pre><code>          api00     api99
 api00 1.0000000 0.9759047
 api99 0.9759047 1.0000000</code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">c</span><span class="op">$</span><span class="va">p.values</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">c</span><span class="op">$</span><span class="va">p.values</span></span></code></pre></div>
 <pre><code>      api00 api99
 api00     0     0
 api99     0     0</code></pre>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">c</span><span class="op">$</span><span class="va">std.err</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">c</span><span class="op">$</span><span class="va">std.err</span></span></code></pre></div>
 <pre><code>            api00       api99
-api00 0.000000000 0.003529292
-api99 0.003529292 0.000000000</code></pre>
+api00 0.000000000 0.003482861
+api99 0.003482861 0.000000000</code></pre>
 </div>
 <div class="section level2">
 <h2 id="technical-details">Technical details<a class="anchor" aria-label="anchor" href="#technical-details"></a>
 </h2>
-<p>The heavy lifting behind the scenes is done by <code>svyvar</code>, which from its output you may not realize also calculates covariance.</p>
+<p>The heavy lifting behind the scenes is done by <code>svyvar</code>,
+which from its output you may not realize also calculates
+covariance.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svyvar</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svyvar</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      variance     SE
 api00    15191 1255.7
 api99    16518 1318.4</code></pre>
-<p>But if you save the <code>svyvar</code> object, you can see that there’s more than meets the eye.</p>
+<p>But if you save the <code>svyvar</code> object, you can see that
+there’s more than meets the eye.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svyvar</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span>
-<span class="va">var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span>
-<span class="va">var</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svyvar</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span>
+<span><span class="va">var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span></span>
+<span><span class="va">var</span></span></code></pre></div>
 <pre><code>         api00    api99
 api00 15190.59 15458.83
 api99 15458.83 16518.24
@@ -193,10 +238,11 @@ api99 1580654 1630856 1630856 1657352
 api99 1561998 1657352 1657352 1738266
 attr(,"statistic")
 [1] "variance"</code></pre>
-<p>Once we know that, it’s just a matter of using R’s <code>cov2cor</code> function and cleaning up the output.</p>
+<p>Once we know that, it’s just a matter of using R’s
+<code>cov2cor</code> function and cleaning up the output.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cov2cor</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span>
-<span class="va">cor</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cov2cor</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span></span>
+<span><span class="va">cor</span></span></code></pre></div>
 <pre><code>          api00     api99
 api00 1.0000000 0.9759047
 api99 0.9759047 1.0000000
@@ -210,15 +256,17 @@ attr(,"statistic")
 [1] "variance"</code></pre>
 <p>Now to get rid of that covariance matrix…</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cor</span> <span class="op">&lt;-</span> <span class="va">cor</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cor</span><span class="op">)</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cor</span><span class="op">)</span><span class="op">]</span>
-<span class="va">cor</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cor</span> <span class="op">&lt;-</span> <span class="va">cor</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cor</span><span class="op">)</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cor</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">cor</span></span></code></pre></div>
 <pre><code>          api00     api99
 api00 1.0000000 0.9759047
 api99 0.9759047 1.0000000</code></pre>
-<p><code>svycor</code> has its own print method, so you won’t see so many digits past the decimal point. You can extract the un-rounded matrix, however.</p>
+<p><code>svycor</code> has its own print method, so you won’t see so
+many digits past the decimal point. You can extract the un-rounded
+matrix, however.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api99</span> <span class="op">+</span> <span class="va">api00</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span>
-<span class="va">out</span><span class="op">$</span><span class="va">cors</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api99</span> <span class="op">+</span> <span class="va">api00</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span>
+<span><span class="va">out</span><span class="op">$</span><span class="va">cors</span></span></code></pre></div>
 <pre><code>          api99     api00
 api99 1.0000000 0.9759047
 api00 0.9759047 1.0000000</code></pre>
@@ -236,7 +284,7 @@ api00 0.9759047 1.0000000</code></pre>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>
