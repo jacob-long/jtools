@@ -1,5 +1,11 @@
 # jtools 2.2.1.9000
 
+Important accuracy bug fix:
+
+* The `robust` argument from `summ()`, when getting results for `glm` models
+only, was not returning robust standard errors. This has been corrected. Thanks
+to Javier Mariani for noticing the issue.
+
 * Minor change to `stop_wrap()` to make its error messages include a more 
 useful "from" message. Rather than "Error in stop_wrap()", it will include the
 actual function in which the error occurred.

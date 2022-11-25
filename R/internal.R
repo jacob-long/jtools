@@ -348,9 +348,9 @@ test_coefs.default <- function(x, v_cov = NULL, df = NULL, ...) {
 
 }
 
-test_coefs.glm <- function(x, the_vcov = NULL, df = Inf, ...) {
+test_coefs.glm <- function(x, v_cov = NULL, df = Inf, ...) {
   # Only difference is default DF
-  test_coefs.default(x, the_vcov = the_vcov, df = df, ...)
+  test_coefs.default(x, v_cov = v_cov, df = df, ...)
 }
 
 #### robust predictions #####################################################
