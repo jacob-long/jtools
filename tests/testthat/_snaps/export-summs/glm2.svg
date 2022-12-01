@@ -31,18 +31,18 @@
 <polyline points='294.94,537.34 294.94,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
 <polyline points='445.95,537.34 445.95,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
 <polyline points='596.95,537.34 596.95,37.95 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-linecap: butt;' />
-<line x1='273.13' y1='424.20' x2='304.92' y2='424.20' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
-<line x1='273.13' y1='463.21' x2='304.92' y2='463.21' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
-<line x1='100.39' y1='268.14' x2='599.30' y2='268.14' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
-<line x1='100.39' y1='307.15' x2='599.30' y2='307.15' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
 <line x1='336.85' y1='112.07' x2='390.38' y2='112.07' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
+<line x1='100.39' y1='268.14' x2='599.30' y2='268.14' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
+<line x1='273.13' y1='424.20' x2='304.92' y2='424.20' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
 <line x1='336.85' y1='151.09' x2='390.38' y2='151.09' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
-<circle cx='289.03' cy='424.20' r='3.27' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
-<rect x='286.13' y='460.32' width='5.79' height='5.79' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
-<circle cx='349.85' cy='268.14' r='3.27' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
-<rect x='346.95' y='304.25' width='5.79' height='5.79' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
-<circle cx='363.62' cy='112.07' r='3.27' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
-<rect x='360.72' y='148.19' width='5.79' height='5.79' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
+<line x1='100.39' y1='307.15' x2='599.30' y2='307.15' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
+<line x1='273.13' y1='463.21' x2='304.92' y2='463.21' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
+<circle cx='363.62' cy='112.07' r='3.38' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<circle cx='349.85' cy='268.14' r='3.38' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<circle cx='289.03' cy='424.20' r='3.38' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<rect x='360.63' y='148.10' width='5.98' height='5.98' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
+<rect x='346.86' y='304.16' width='5.98' height='5.98' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
+<rect x='286.03' y='460.22' width='5.98' height='5.98' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
 <line x1='294.94' y1='537.34' x2='294.94' y2='37.95' style='stroke-width: 0.53; stroke-dasharray: 4.00,4.00; stroke-linecap: butt;' />
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
@@ -57,10 +57,10 @@
 <text x='674.86' y='270.84' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='29.96px' lengthAdjust='spacingAndGlyphs'>Model</text>
 <rect x='640.69' y='282.45' width='21.60' height='17.85' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
 <line x1='642.85' y1='291.37' x2='660.13' y2='291.37' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
-<circle cx='651.49' cy='291.37' r='4.12' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
+<circle cx='651.49' cy='291.37' r='2.84' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
 <rect x='640.69' y='300.29' width='21.60' height='17.85' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
 <line x1='642.85' y1='309.21' x2='660.13' y2='309.21' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
-<rect x='647.83' y='305.56' width='7.31' height='7.31' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
+<rect x='648.97' y='306.70' width='5.04' height='5.04' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
 <text x='672.75' y='294.40' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='31.31px' lengthAdjust='spacingAndGlyphs'>Model 1</text>
 <text x='672.75' y='312.24' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='31.31px' lengthAdjust='spacingAndGlyphs'>Model 2</text>
 <text x='75.45' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='30.35px' lengthAdjust='spacingAndGlyphs'>glm2</text>

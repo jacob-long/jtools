@@ -383,7 +383,7 @@ plot_effect_continuous <-
   }
   
   # Define line thickness
-  p <- p + geom_path(size = line.thickness, colour = colors)
+  p <- p + geom_path(linewidth = line.thickness, colour = colors)
   
   # Plot intervals if requested
   if (interval == TRUE) {
@@ -516,7 +516,7 @@ plot_cat <- function(predictions, pred, data = NULL,
   
   if (geom == "line") {
     p <- p + geom_path(position = position_dodge(dodge.width),
-                       size = line.thickness, show.legend = FALSE, 
+                       linewidth = line.thickness, show.legend = FALSE, 
                        color = colors)
   }
   
@@ -526,12 +526,12 @@ plot_cat <- function(predictions, pred, data = NULL,
                            alpha = 1, show.legend = FALSE,
                            position = position_dodge(dodge.width),
                            width = errorbar.width,
-                           size = line.thickness, color = colors)
+                           linewidth = line.thickness, color = colors)
   } else if (interval == TRUE && interval.geom[1] %in% c("line", "linerange")) {
     p <- p + geom_linerange(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
                             alpha = 0.8, show.legend = FALSE,
                             position = position_dodge(dodge.width),
-                            size = line.thickness, color = colors)
+                            linewidth = line.thickness, color = colors)
   }
   
   # For factor vars, plotting the observed points

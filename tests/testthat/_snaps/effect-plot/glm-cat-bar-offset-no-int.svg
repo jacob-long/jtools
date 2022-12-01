@@ -33,8 +33,8 @@
 <polyline points='43.01,244.31 714.52,244.31 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-dasharray: 9.96,4.27; stroke-linecap: butt;' />
 <polyline points='43.01,154.20 714.52,154.20 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-dasharray: 9.96,4.27; stroke-linecap: butt;' />
 <polyline points='43.01,64.09 714.52,64.09 ' style='stroke-width: 1.07; stroke: #E8E8E8; stroke-dasharray: 9.96,4.27; stroke-linecap: butt;' />
-<rect x='88.79' y='89.94' width='274.71' height='424.70' style='stroke-width: 1.07; stroke-linecap: square; stroke-linejoin: miter; fill: #595959;' />
-<rect x='394.03' y='60.65' width='274.71' height='454.00' style='stroke-width: 1.07; stroke-linecap: square; stroke-linejoin: miter; fill: #595959;' />
+<rect x='88.79' y='89.94' width='274.71' height='424.70' style='stroke-width: 1.07; stroke-linecap: butt; stroke-linejoin: miter; fill: #595959;' />
+<rect x='394.03' y='60.65' width='274.71' height='454.00' style='stroke-width: 1.07; stroke-linecap: butt; stroke-linejoin: miter; fill: #595959;' />
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
 <text x='29.17' y='517.67' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.0</text>

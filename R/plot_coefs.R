@@ -112,7 +112,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        omit.coefs = "(Intercept)", inner_ci_level = NULL,
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
-                       point.shape = TRUE, point.size = 3, 
+                       point.shape = TRUE, point.size = 5, 
                        legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors, 
@@ -163,7 +163,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        omit.coefs = c("(Intercept)", "Intercept"),
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
-                       exp = FALSE, point.shape = TRUE, point.size = 3,
+                       exp = FALSE, point.shape = TRUE, point.size = 5,
                        legend.title = "Model", groups = NULL,
                        facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors,
@@ -171,9 +171,6 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   
   if (!requireNamespace("broom", quietly = TRUE)) {
     stop_wrap("Install the broom package to use the plot_coefs function.")
-  }
-  if (!requireNamespace("ggstance", quietly = TRUE)) {
-    stop_wrap("Install the ggstance package to use the plot_coefs function.")
   }
   
   if (!all(color.class == colors)) colors <- color.class
@@ -328,10 +325,11 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   
   # Plot the inner CI using linerange first, so the point can overlap it
   if (!is.null(inner_ci_level)) {
-    p <- p + ggstance::geom_linerangeh(
+    p <- p + ggplot2::geom_linerange(
       aes(y = term, xmin = conf.low.inner, xmax = conf.high.inner,
-          colour = model), position = ggstance::position_dodgev(height = dh),
-      size = 2, show.legend = length(mods) > 1)
+          colour = model), position = ggplot2::position_dodge(width = dh),
+          # orientation = "x",
+      linewidth = 2, show.legend = length(mods) > 1)
   }
   
   # If there are overlapping distributions, the overlapping pointranges
@@ -339,11 +337,12 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # model, just plot the points with no ranges.
   if (plot.distributions == FALSE || n_models == 1) {
     # Plot the pointranges
-    p <- p + ggstance::geom_pointrangeh(
+    p <- p + ggplot2::geom_pointrange(
       aes(y = term, x = estimate, xmin = conf.low,
           xmax = conf.high, colour = model, shape = model),
-      position = ggstance::position_dodgev(height = dh),
-      fill = "white", fatten = point.size, size = 0.8,
+      position = ggplot2::position_dodge(width = dh),
+      fill = "white", fatten = point.size, linewidth = 0.8,
+      # orientation = "x",
       show.legend = length(mods) > 1) # omit legend if just a single model
   } else {
     p <- p + geom_point(
@@ -371,7 +370,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   }
   
   p <- p +
-    geom_vline(xintercept = 1 - !exp, linetype = 2, size = .25) +
+    geom_vline(xintercept = 1 - !exp, linetype = 2, linewidth = .25) +
     scale_colour_manual(values = colors,
                         limits = rev(levels(tidies$model)),
                         breaks = rev(levels(tidies$model)),
