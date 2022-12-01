@@ -23,11 +23,11 @@
 #'  Note that when using `se = "rank"`, there are no standard errors,
 #'  test statistics, or p values calculated.
 #'
-#'  About the R1 fit statistic: Described in Koenker \& Machado (1999), this
+#'  About the R1 fit statistic: Described in Koenker & Machado (1999), this
 #'  offers an interpretation similar to R-squared in OLS regression. While you
 #'  could calculate R-squared for these models, it goes against the underlying
 #'  theoretical rationale for them. Koenker himself is not a big fan of R1
-#'  either, but it's something. See Koenker \& Machado (1999) for more info.
+#'  either, but it's something. See Koenker & Machado (1999) for more info.
 #'
 #' @family summ
 #'
