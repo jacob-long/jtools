@@ -403,7 +403,7 @@ warn_wrap <- function(..., brk = "\n", class = NULL, call. = FALSE) {
 #' @export 
 stop_wrap <- function(...,  brk = "\n",
                       trace = rlang::trace_back(bottom = rlang::caller_env()),
-                      class = NULL, call = rlang::caller_env()) {
+                      class = NULL, call = rlang::caller_env(), call. = FALSE) {
   dots <- dot_processor(...)
   wrapped <- c_red(do.call(wrap_str, as.list(c(dots$unnamed, brk))))
   abort_args <- list(message = wrapped, class = class, dots$named,
