@@ -20,7 +20,8 @@ stop_wrap(
   brk = "\\n",
   trace = rlang::trace_back(bottom = rlang::caller_env()),
   class = NULL,
-  call = rlang::caller_env()
+  call = rlang::caller_env(),
+  call. = FALSE
 )
 
 msg_wrap(..., class = NULL, brk = "\\n")
@@ -56,13 +57,17 @@ where to place newline characters. These functions get the width of the
 console from the \code{"width"} option, which in most editors adjusts dynamically
 as you resize.
 
-So instead of writing a warning like this:\preformatted{warning("I have to give you this very important message that may be too\\n",
-        "wide for your screen")
-}
+So instead of writing a warning like this:
 
-You can do it like this:\preformatted{warn_wrap("I have to give you this very important message that may be
+\if{html}{\out{<div class="sourceCode">}}\preformatted{warning("I have to give you this very important message that may be too\\n",
+        "wide for your screen")
+}\if{html}{\out{</div>}}
+
+You can do it like this:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{warn_wrap("I have to give you this very important message that may be
           too wide for your screen")
-}
+}\if{html}{\out{</div>}}
 
 And the function will automatically insert line breaks to fit the console.
 As a note, it will also ignore any newlines you insert. This means you can
