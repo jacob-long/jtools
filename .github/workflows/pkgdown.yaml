@@ -21,7 +21,7 @@ jobs:
       isPush: ${{ github.event_name == 'push' }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-tinytex@v2
 
@@ -71,4 +71,3 @@ jobs:
           # enable-commit-status: true
           #o verwrites-pull-request-comment: true
         timeout-minutes: 1
-
