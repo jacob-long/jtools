@@ -361,6 +361,10 @@ scale_statement <- function(scale, center, transform.response, n.sd,
     " are scaled by "
   } else { NULL }
   part_5 <- if (scale) { paste(n.sd, "s.d") } else { NULL }
+  if (!transform.response) {
+    part_5 <- 
+      paste0(part_5, ". The outcome variable remains in its original units")
+  }
   
   if (scale == FALSE && center == FALSE) {
     return(NULL)

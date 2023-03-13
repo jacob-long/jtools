@@ -186,6 +186,7 @@ export_summs <- function(...,
   # # Setting defaults for summ functions I want to add captions about
   robust <- getOption("summ-robust", FALSE)
   scale <- FALSE
+  transform.response <- FALSE
   n.sd <- 1
   digits <- getOption("jtools-digits", 2)
 
@@ -195,6 +196,8 @@ export_summs <- function(...,
   robust <- ifelse(all(robust != FALSE), yes = TRUE, no = FALSE)
   if ("scale" %in% names(dots)) {scale <- dots$scale}
   scale <- ifelse(all(scale == TRUE), yes = TRUE, no = FALSE)
+  if ("transform.response" %in% names(dots)) {transform.response <- dots$transform.response}
+  transform.response <- ifelse(all(transform.response == TRUE), yes = TRUE, no = FALSE)
   if ("n.sd" %in% names(dots)) {n.sd <- dots$n.sd}
   n.sd <- ifelse(length(unique(n.sd)) == 1, yes = n.sd[1], no = NULL)
   if (is.null(n.sd)) {scale <- FALSE}
@@ -275,7 +278,11 @@ export_summs <- function(...,
               "by",  n.sd[1], "standard",  ifelse(n.sd > 1,
                                                   no = "deviation.",
                                                   yes = "deviations."))
-
+      if (transform.response == TRUE) {
+        note <- gsub("predictors", "variables", note, fixed = TRUE)
+      } else {
+        note <- paste(note, "The outcome variable is in its original units.")
+      }
       if (robust == TRUE) {
         note <- paste(note,
                   "Standard errors are heteroskedasticity robust. %stars%.")
