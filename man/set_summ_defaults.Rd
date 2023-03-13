@@ -8,6 +8,7 @@ set_summ_defaults(
   digits = NULL,
   model.info = NULL,
   model.fit = NULL,
+  model.coefs = NULL,
   pvals = NULL,
   robust = NULL,
   confint = NULL,
@@ -28,6 +29,8 @@ number.}
 name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of model fit statistics.}
+
+\item{model.coefs}{Toggles printing of model coefficents.}
 
 \item{pvals}{Show p values? If \code{FALSE}, these
 are not printed. Default is \code{TRUE}.}

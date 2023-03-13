@@ -60,7 +60,8 @@ summ.rq <- function(model, scale = FALSE,
   digits = getOption("jtools-digits", 2), pvals = getOption("summ-pvals", TRUE),
   n.sd = 1, center = FALSE, transform.response = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,  ...) {
+  model.fit = getOption("summ-model.fit", TRUE), 
+  model.coefs = getOption("summ-model.coefs", TRUE), which.cols = NULL,  ...) {
 
   j <- list()
 
@@ -211,7 +212,8 @@ summ.rq <- function(model, scale = FALSE,
                  standardize.response = transform.response,
                  scale.response = transform.response,
                  transform.response = transform.response,
-                 exp = FALSE, se = se[1], aic = aic, bic = bic)
+                 exp = FALSE, se = se[1], aic = aic, bic = bic, 
+                 model.coefs = model.coefs)
 
   j$coeftable <- mat
   j$model <- model
@@ -264,14 +266,16 @@ print.summ.rq <- function(x, ...) {
                     "ker" = "Sandwich (kernel)",
                     "boot" = "bootstrap",
                     "rank" = "Koenker rank test")
+  
+  if (x$model.coefs == TRUE) {
+    print_se_info(x$robust, x$use_cluster, manual = se_name)
+    print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                  sig.digits = FALSE, digits = x$digits))
 
-  print_se_info(x$robust, x$use_cluster, manual = se_name)
-  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE, digits = x$digits))
-
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
-  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+    if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+  }
 
 }
 
@@ -347,20 +351,24 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
 
   } else {stats <- NULL}
 
-  se_name <- switch(x$se,
-                    "iid" = "IID",
-                    "nid" = "Sandwich (Huber)",
-                    "ker" = "Sandwich (kernel)",
-                    "boot" = "bootstrap",
-                    "rank" = "Koenker rank test")
-  se_info <- get_se_info(x$robust, x$use_cluster, manual = se_name)
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
-  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
-  cap <- paste0("Standard errors: ", se_info, ss)
+  if (x$model.coefs == TRUE) {
+    se_name <- switch(x$se,
+                      "iid" = "IID",
+                      "nid" = "Sandwich (Huber)",
+                      "ker" = "Sandwich (kernel)",
+                      "boot" = "bootstrap",
+                      "rank" = "Koenker rank test")
+    se_info <- get_se_info(x$robust, x$use_cluster, manual = se_name)
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd)
+    ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+    cap <- paste0("Standard errors: ", se_info, ss)
 
-  if (format == "html") {ctable %<>% escape_stars()}
-  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+    if (format == "html") {ctable %<>% escape_stars()}
+    ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+  } else {
+    ctable <- NULL
+  }
 
   out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
   options(kableExtra.auto_format = o_opt)

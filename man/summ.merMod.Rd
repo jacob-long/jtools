@@ -23,6 +23,7 @@
   t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
+  model.coefs = getOption("summ-model.coefs", TRUE),
   re.variance = getOption("summ-re.variance", c("sd", "var")),
   which.cols = NULL,
   re.table = getOption("summ-re.table", TRUE),
@@ -96,6 +97,8 @@ freedom used in conducting t-tests. See details for options.}
 name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of model fit statistics.}
+
+\item{model.coefs}{Toggles printing of model coefficents.}
 
 \item{re.variance}{Should random effects variances be expressed in
 standard deviations or variances? Default, to be consistent with previous

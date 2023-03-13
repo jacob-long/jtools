@@ -105,6 +105,8 @@ j_summ <- summ
 #'   name of DV, and number of predictors.
 #'
 #' @param model.fit Toggles printing of model fit statistics.
+#' 
+#' @param model.coefs Toggles printing of model coefficents.
 #'
 #' @param data If you provide the data used to fit the model here, that data
 #'   frame is used to re-fit the model (if `scale` is `TRUE`)
@@ -219,7 +221,9 @@ summ.lm <- function(
   n.sd = 1, center = FALSE, transform.response = FALSE, scale.only = FALSE,
   data = NULL, part.corr = FALSE, 
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, 
+  model.fit = getOption("summ-model.fit", TRUE), 
+  model.coefs = getOption("summ-model.coefs", TRUE),
+  which.cols = NULL, 
   vcov = NULL, ...) {
 
   j <- list()
@@ -262,7 +266,8 @@ summ.lm <- function(
                  digits = digits, model.info = model.info,
                  model.fit = model.fit, n.sd = n.sd, center = center,
                  call = the_call, env = the_env, scale = scale, data = data,
-                 transform.response = transform.response)
+                 transform.response = transform.response, 
+                 model.coefs = model.coefs)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
@@ -417,14 +422,16 @@ print.summ.lm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  print_se_info(x$robust, x$use_cluster, manual = "OLS", vcov = x$vcov)
-  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE, digits = x$digits))
+  if (x$model.coefs == TRUE) {
+    print_se_info(x$robust, x$use_cluster, manual = "OLS", vcov = x$vcov)
+    print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                  sig.digits = FALSE, digits = x$digits))
 
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
-                        x$scale.only)
-  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
+                          x$scale.only)
+    if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
+  }
 
 }
 
@@ -492,16 +499,20 @@ knit_print.summ.lm <- function(x, options = NULL, ...) {
     stats %<>% to_kable(format = format, row.names = FALSE, col.names = NULL)
   } else {stats <- NULL}
 
-  se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS", vcov = x$vcov)
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
-                        x$scale.only)
-  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
-  cap <- paste0("Standard errors: ", se_info, ss)
+  if (x$model.coefs == TRUE) {
+    se_info <- get_se_info(x$robust, x$use_cluster, manual = "OLS", vcov = x$vcov)
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
+                          x$scale.only)
+    ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+    cap <- paste0("Standard errors: ", se_info, ss)
 
-  # pandoc turns single asterisks into a big dot
-  if (format == "html") {ctable %<>% escape_stars()}
-  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+    # pandoc turns single asterisks into a big dot
+    if (format == "html") {ctable %<>% escape_stars()}
+    ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+  } else {
+    ctable <- NULL
+  }
 
   out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
   options(kableExtra.auto_format = o_opt)
@@ -615,7 +626,8 @@ summ.glm <- function(
   exp = FALSE, pvals = getOption("summ-pvals", TRUE), n.sd = 1,
   center = FALSE, transform.response = FALSE, scale.only = FALSE, data = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL,
+  model.fit = getOption("summ-model.fit", TRUE), 
+  model.coefs = getOption("summ-model.coefs", TRUE), which.cols = NULL,
   vcov = NULL, ...) {
 
   j <- list()
@@ -663,7 +675,8 @@ summ.glm <- function(
                  model.info = model.info, model.fit = model.fit, n.sd = n.sd,
                  center = center, call = the_call, env = the_env,
                  scale = scale, data = data,
-                 transform.response = transform.response)
+                 transform.response = transform.response, 
+                 model.coefs = model.coefs)
 
   # Intercept?
   if (model$rank != attr(model$terms, "intercept")) {
@@ -860,19 +873,21 @@ print.summ.glm <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  print_se_info(x$robust, x$use_cluster, vcov = x$vcov)
-  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE, digits = x$digits))
+  if (x$model.coefs == TRUE) {
+    print_se_info(x$robust, x$use_cluster, vcov = x$vcov)
+    print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                  sig.digits = FALSE, digits = x$digits))
 
-  if (x$dispersion != 1) {
-    cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits), "\n")
+    if (x$dispersion != 1) {
+      cat("\n")
+      cat("Estimated dispersion parameter =", round(x$dispersion, x$digits), "\n")
+    }
+
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
+                          x$scale.only)
+    if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
   }
-
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
-                        x$scale.only)
-  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
@@ -965,15 +980,19 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
   
   } else {stats <- NULL}
 
-  se_info <- get_se_info(x$robust, x$use_cluster, vcov = x$vcov)
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
-                        x$scale.only)
-  ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
-  cap <- paste0("Standard errors: ", se_info, ss)
+  if (x$model.coefs == TRUE) {
+    se_info <- get_se_info(x$robust, x$use_cluster, vcov = x$vcov)
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
+                          x$scale.only)
+    ss <- if (!is.null(ss)) {paste(";", ss)} else {ss}
+    cap <- paste0("Standard errors: ", se_info, ss)
 
-  if (format == "html") {ctable %<>% escape_stars()}
-  ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+    if (format == "html") {ctable %<>% escape_stars()}
+    ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+  } else {
+    ctable <- NULL
+  }
 
   out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
   options(kableExtra.auto_format = o_opt)
@@ -1064,7 +1083,8 @@ summ.svyglm <- function(
   transform.response = FALSE, scale.only = FALSE,
   exp = FALSE, vifs = getOption("summ-vifs", FALSE),
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE), which.cols = NULL, ...) {
+  model.fit = getOption("summ-model.fit", TRUE), 
+  model.coefs = getOption("summ-model.coefs", TRUE), which.cols = NULL, ...) {
 
   j <- list()
 
@@ -1120,7 +1140,8 @@ summ.svyglm <- function(
                  model.info = model.info, model.fit = model.fit,
                  n.sd = n.sd, center = center, call = the_call,
                  env = the_env, scale = scale,
-                 transform.response = transform.response)
+                 transform.response = transform.response,
+                 model.coefs = model.coefs)
 
   # Check if linear model
   if (model$family[1] == "gaussian" && model$family[2] == "identity") {
@@ -1346,18 +1367,20 @@ print.summ.svyglm <- function(x, ...) {
   if (x$linear == TRUE) {
     cat("Standard errors: Robust\n")
   }
-  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE, digits = x$digits))
+  if (x$model.coefs == TRUE) {
+    print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                  sig.digits = FALSE, digits = x$digits))
 
-  if (x$dispersion != 1) {
-    cat("\n")
-    cat("Estimated dispersion parameter =", round(x$dispersion, x$digits),"\n")
+    if (x$dispersion != 1) {
+      cat("\n")
+      cat("Estimated dispersion parameter =", round(x$dispersion, x$digits),"\n")
+    }
+
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
+                          x$scale.only)
+    if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
   }
-
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
-                        x$scale.only)
-  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
@@ -1442,6 +1465,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
   } else {stats <- NULL}
 
+  if (x$model.coefs == TRUE) {
   # Notifying user if variables altered from original fit
   ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
                         x$scale.only)
@@ -1450,6 +1474,9 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 
   if (format == "html") {ctable %<>% escape_stars()}
   ctable %<>% to_kable(format = format, row.names = TRUE, footnote = cap)
+  } else {
+    ctable <- NULL
+  }
 
   out <- paste(mod_meta, stats, ctable, collapse = "\n\n")
   options(kableExtra.auto_format = o_opt)
@@ -1666,7 +1693,8 @@ summ.merMod <- function(
   transform.response = FALSE, scale.only = FALSE, 
   data = NULL, exp = FALSE, t.df = NULL,
   model.info = getOption("summ-model.info", TRUE),
-  model.fit = getOption("summ-model.fit", TRUE),
+  model.fit = getOption("summ-model.fit", TRUE), 
+  model.coefs = getOption("summ-model.coefs", TRUE),
   re.variance = getOption("summ-re.variance", c("sd", "var")),
   which.cols = NULL, re.table = getOption("summ-re.table", TRUE),
   groups.table = getOption("summ-groups.table", TRUE), ...) {
@@ -1946,7 +1974,7 @@ summ.merMod <- function(
                  standardize.response = transform.response,
                  exp = exp, scale.response = transform.response,
                  re.table = re.table, groups.table = groups.table, 
-                 scale.only = scale.only)
+                 scale.only = scale.only, model.coefs = model.coefs)
 
   j <- structure(j, lmFamily = family(model))
 
@@ -1999,71 +2027,73 @@ print.summ.merMod <- function(x, ...) {
     print_mod_fit(stats)
   }
 
-  cat(underline("FIXED EFFECTS:\n"))
-  print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
-                 sig.digits = FALSE, digits = x$digits))
-  
-  ## Explaining the origin of the p values if they were used
-  if (x$pvals == TRUE & lme4::isLMM(j$model)) {
+  if (x$model.coefs == TRUE) {
+    cat(underline("FIXED EFFECTS:\n"))
+    print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
+                  sig.digits = FALSE, digits = x$digits))
+    
+    ## Explaining the origin of the p values if they were used
+    if (x$pvals == TRUE & lme4::isLMM(j$model)) {
 
-    if (x$p_calc == "residual") {
+      if (x$p_calc == "residual") {
 
-      cat(italic$cyan("\nNote: p values calculated based on residual d.f. =",
-          x$df, "\n"))
+        cat(italic$cyan("\nNote: p values calculated based on residual d.f. =",
+            x$df, "\n"))
 
-      if (is.null(x$t.df)) {
-        msg_wrap("Using p values with lmer based on residual d.f. may inflate
-                the Type I error rate in many common study designs.
-                Install package \"lmerTest\" and/or \"pbkrtest\" to get more
-                accurate p values.", brk = "\n")
+        if (is.null(x$t.df)) {
+          msg_wrap("Using p values with lmer based on residual d.f. may inflate
+                  the Type I error rate in many common study designs.
+                  Install package \"lmerTest\" and/or \"pbkrtest\" to get more
+                  accurate p values.", brk = "\n")
+        }
+
+      } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
+
+        cat("\n")
+        cat_wrap(italic$cyan("p values calculated using Kenward-Roger standard
+                            errors and d.f."), brk = "\n")
+
+      } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
+
+        cat("\n")
+        cat_wrap(italic$cyan("p values calculated using Satterthwaite
+                        d.f."), brk = "\n")
+
+      } else if (x$p_calc == "manual") {
+
+        cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
+            x$df, "\n")
+
       }
-
-    } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
-
-      cat("\n")
-      cat_wrap(italic$cyan("p values calculated using Kenward-Roger standard
-                           errors and d.f."), brk = "\n")
-
-    } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
-
-      cat("\n")
-      cat_wrap(italic$cyan("p values calculated using Satterthwaite
-                      d.f."), brk = "\n")
-
-    } else if (x$p_calc == "manual") {
-
-      cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
-          x$df, "\n")
 
     }
 
-  }
+    if (x$re.table == TRUE) {
+      cat(underline("\nRANDOM EFFECTS:\n"))
+      rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
+      #rownames(rtable) <- rep("", times = nrow(rtable))
+      # print(rtable, row.names = FALSE)
+      # cat("\n")
+      print(md_table(rtable, format = getOption("summ.table.format", "multiline"),
+            align = "c", row.names = FALSE))
+    }
 
-  if (x$re.table == TRUE) {
-    cat(underline("\nRANDOM EFFECTS:\n"))
-    rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
-    #rownames(rtable) <- rep("", times = nrow(rtable))
-    # print(rtable, row.names = FALSE)
-    # cat("\n")
-    print(md_table(rtable, format = getOption("summ.table.format", "multiline"),
-          align = "c", row.names = FALSE))
-  }
+    if (x$groups.table == TRUE) {
+      cat(underline("\nGrouping variables:\n"))
+      gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
+      gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
+      #rownames(gtable) <- rep("", times = nrow(gtable))
+      # print(gtable, row.names = FALSE)
+      # cat("\n")
+      print(md_table(gtable, format = getOption("summ.table.format", "multiline"),
+            align = "c", row.names = FALSE))
+    }
 
-  if (x$groups.table == TRUE) {
-    cat(underline("\nGrouping variables:\n"))
-    gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
-    gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
-    #rownames(gtable) <- rep("", times = nrow(gtable))
-    # print(gtable, row.names = FALSE)
-    # cat("\n")
-    print(md_table(gtable, format = getOption("summ.table.format", "multiline"),
-          align = "c", row.names = FALSE))
+    # Notifying user if variables altered from original fit
+    ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
+                          x$scale.only)
+    if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
   }
-
-  # Notifying user if variables altered from original fit
-  ss <- scale_statement(x$scale, x$center, x$transform.response, x$n.sd,
-                        x$scale.only)
-  if (!is.null(ss)) {cat("\n", ss, "\n", sep = "")}
 
 }
 
@@ -2191,11 +2221,15 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
   ss <- if (!is.null(ss)) {paste0("; ", ss)} else {ss}
   cap <- paste(cap, ss)
 
+  if (x$model.coefs == TRUE) {
   num_cols <- ncol(ctable)
   if (format == "html") {ctable %<>% escape_stars()}
   ctable %<>% to_kable(format = format, cols = num_cols + 1,
                        caption = "Fixed Effects", footnote = cap,
                        row.names = TRUE)
+  } else {
+    ctable <- NULL
+  }
 
   if (x$re.table == TRUE) {
     rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
@@ -2243,7 +2277,8 @@ knit_print.summ.merMod <- function(x, options = NULL, ...) {
 #'
 
 set_summ_defaults <- function(digits = NULL, model.info = NULL,
-                              model.fit = NULL, pvals = NULL, robust = NULL,
+                              model.fit = NULL, model.coefs = NULL,
+                              pvals = NULL, robust = NULL,
                               confint = NULL, ci.width = NULL, vifs = NULL,
                               conf.method = NULL, table.format = NULL) {
 
@@ -2258,6 +2293,9 @@ set_summ_defaults <- function(digits = NULL, model.info = NULL,
   }
   if ("model.fit" %in% names(match.call())) {
     options("summ-model.fit" = model.fit)
+  }
+  if ("model.coefs" %in% names(match.call())) {
+    options("summ-model.coefs" = model.fit)
   }
   if ("robust" %in% names(match.call())) {
     options("summ-robust" = robust)

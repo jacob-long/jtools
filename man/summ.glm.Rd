@@ -23,6 +23,7 @@
   data = NULL,
   model.info = getOption("summ-model.info", TRUE),
   model.fit = getOption("summ-model.fit", TRUE),
+  model.coefs = getOption("summ-model.coefs", TRUE),
   which.cols = NULL,
   vcov = NULL,
   ...
@@ -101,6 +102,8 @@ transformations or polynomial terms specified in the formula.}
 name of DV, and number of predictors.}
 
 \item{model.fit}{Toggles printing of model fit statistics.}
+
+\item{model.coefs}{Toggles printing of model coefficents.}
 
 \item{which.cols}{Developmental feature. By providing columns by name,
 you can add/remove/reorder requested columns in the output. Not fully
