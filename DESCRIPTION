@@ -47,7 +47,7 @@ Enhances:
   brms,
   quantreg,
   rstanarm
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Depends: 

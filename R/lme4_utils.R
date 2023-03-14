@@ -7,7 +7,7 @@
 #' @title Alternative interface for `merMod` predictions
 #' @description This function generates predictions for `merMod` models, but
 #'  with the ability to get standard errors as well. 
-#' @inheritParams lme4:::predict.merMod
+#' @inheritParams lme4::predict.merMod
 #' @param se.fit Include standard errors with the predictions? Note that
 #'  these standard errors by default include only fixed effects variance.
 #'  See details for more info. Default is FALSE.
