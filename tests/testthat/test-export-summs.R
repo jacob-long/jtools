@@ -262,6 +262,17 @@ test_that("inner_ci_level works", {
   expect_doppelganger("pc-lm2-inner-ci", p)
 })
 
+test_that("plot_summs accepts aesthetic arguments", {
+  p <- plot_summs(fit, fit2, fitw, line.size = 2)
+  expect_doppelganger("lm3-linesize2", p)
+  p <- plot_summs(fit, fit2, fitw, inner_ci_level = 0.8,
+         line.size = c(2, 4))
+  expect_doppelganger("lm3-linesize2-inner-ci", p)
+  expect_message(p <- plot_summs(fit, fit2, fitw, inner_ci_level = 0.8,
+         line.size = c(2)))
+  expect_doppelganger("lm3-linesize2-inner-ci-msg", p)
+})
+
 test_that("plot.distributions works", {
   p <- plot_coefs(fit, plot.distributions = TRUE)
   expect_doppelganger("pc-lm1-dists", p)

@@ -18,6 +18,7 @@ plot_summs(
   exp = FALSE,
   point.shape = TRUE,
   point.size = 5,
+  line.size = c(0.8, 2),
   legend.title = "Model",
   groups = NULL,
   facet.rows = NULL,
@@ -41,6 +42,7 @@ plot_coefs(
   exp = FALSE,
   point.shape = TRUE,
   point.size = 5,
+  line.size = c(0.8, 2),
   legend.title = "Model",
   groups = NULL,
   facet.rows = NULL,
@@ -100,6 +102,11 @@ model from the others? Default is TRUE. You may also pass a vector of
 shapes to specify shapes yourself.}
 
 \item{point.size}{Change the size of the points. Default is 3.}
+
+\item{line.size}{Change the thickness of the error bar lines.
+Default is \code{c(0.8, 2)}. The first number is the size for the full
+width of the interval, the second number is used for the thicker
+inner interval when \code{inner.ci} is \code{TRUE}.}
 
 \item{legend.title}{What should the title for the legend be? Default is
 "Model", but you can specify it here since it is rather difficult to

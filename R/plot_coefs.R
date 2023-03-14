@@ -39,6 +39,10 @@
 #'   model from the others? Default is TRUE. You may also pass a vector of
 #'   shapes to specify shapes yourself.
 #' @param point.size Change the size of the points. Default is 3.
+#' @param line.size Change the thickness of the error bar lines. 
+#'    Default is `c(0.8, 2)`. The first number is the size for the full 
+#'    width of the interval, the second number is used for the thicker 
+#'    inner interval when `inner.ci` is `TRUE`.
 #' @param legend.title What should the title for the legend be? Default is
 #'   "Model", but you can specify it here since it is rather difficult to
 #'   change later via `ggplot2`'s typical methods.
@@ -113,7 +117,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE, exp = FALSE,
                        point.shape = TRUE, point.size = 5, 
-                       legend.title = "Model",
+                       line.size = c(0.8, 2), legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors, 
                        resp = NULL, dpar = NULL) {
@@ -143,7 +147,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     plot.distributions = plot.distributions,
                     rescale.distributions = rescale.distributions, exp = exp,
                     point.shape = list(point.shape), point.size = point.size, 
-                    legend.title = legend.title,
+                    line.size = list(line.size), legend.title = legend.title,
                     groups = list(groups), facet.rows = facet.rows,
                     facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
                     color.class = color.class, resp = resp, dpar = dpar,
@@ -164,8 +168,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        colors = "CUD Bright", plot.distributions = FALSE,
                        rescale.distributions = FALSE,
                        exp = FALSE, point.shape = TRUE, point.size = 5,
-                       legend.title = "Model", groups = NULL,
-                       facet.rows = NULL, facet.cols = NULL,
+                       line.size = c(0.8, 2), legend.title = "Model", 
+                       groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors,
                        resp = NULL, dpar = NULL) {
   
@@ -173,6 +177,9 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     stop_wrap("Install the broom package to use the plot_coefs function.")
   }
   
+  if (!is.numeric(line.size[1])) stop_wrap("line.size must be a number (or two
+    numbers in a vector).")
+
   if (!all(color.class == colors)) colors <- color.class
   
   # Nasty workaround for R CMD Check warnings for global variable bindings
@@ -325,11 +332,16 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   
   # Plot the inner CI using linerange first, so the point can overlap it
   if (!is.null(inner_ci_level)) {
+    if (length(line.size) < 2) {
+      msg_wrap("No line.size specified for inner CI level. Defaulting to 
+                line.size * 2.")
+      line.size <- c(line.size, line.size * 2)
+    }
     p <- p + ggplot2::geom_linerange(
       aes(y = term, xmin = conf.low.inner, xmax = conf.high.inner,
           colour = model), position = ggplot2::position_dodge(width = dh),
           # orientation = "x",
-      linewidth = 2, show.legend = length(mods) > 1)
+      linewidth = line.size[2], show.legend = length(mods) > 1)
   }
   
   # If there are overlapping distributions, the overlapping pointranges
@@ -341,7 +353,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
       aes(y = term, x = estimate, xmin = conf.low,
           xmax = conf.high, colour = model, shape = model),
       position = ggplot2::position_dodge(width = dh),
-      fill = "white", fatten = point.size, linewidth = 0.8,
+      fill = "white", fatten = point.size, linewidth = line.size[1],
       # orientation = "x",
       show.legend = length(mods) > 1) # omit legend if just a single model
   } else {

@@ -1,3 +1,9 @@
+# jtools 2.2.2
+
+* In addition the point size, shape, and color, you may now also change the 
+thickness of the lines drawn to represent coefficient intervals with the 
+`plot_summs()` and `plot_coefs()` functions. You need only use the `line.size`
+argument. (#130)
 # jtools 2.2.1
 
 Important accuracy bug fix:
