@@ -1,12 +1,27 @@
 # jtools 2.2.2
 
+Bug fix:
+
+* Custom error messages no longer cause additional errors. Thanks to Achim 
+Zeileis and Duncan Murdoch for finding the underlying problem and 
+implementing a fix. (#132)
 * Corrected a S3 methods argument mismatch on the internal function `test_coefs()`.
 * Minor compatibility fix related to the `getRversion()` to retain package
 on CRAN.
+
+Several enhancements:
+
 * In addition the point size, shape, and color, you may now also change the 
 thickness of the lines drawn to represent coefficient intervals with the 
 `plot_summs()` and `plot_coefs()` functions. You need only use the `line.size`
 argument. (#130)
+* You may now suppress printing of model coefficients when using `summ()`. (#129)
+* `summ()` now emphasizes that outcome variables are unaffected when 
+`scale = TRUE` and `transform.response = FALSE`. (#131)
+* When installing `jtools`, you are now required to update to the latest 
+version of `ggplot2` to avoid cryptic errors on older versions of `ggplot2`.
+
+
 # jtools 2.2.1
 
 Important accuracy bug fix:

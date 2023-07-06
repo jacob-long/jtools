@@ -1,7 +1,7 @@
 Package: jtools
 Type: Package
 Title: Analysis and Presentation of Social Scientific Data
-Version: 2.2.1
+Version: 2.2.2
 Authors@R: person(c("Jacob","A."), "Long", email = "jacob.long@sc.edu",
   role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1582-6214"))
 Description: This is a collection of tools for more efficiently understanding 
@@ -17,7 +17,7 @@ LazyData: true
 Imports: 
     crayon,
     generics,
-    ggplot2 (>= 3.3.0),
+    ggplot2 (>= 3.4.0),
     magrittr,
     pander,
     pkgconfig,
