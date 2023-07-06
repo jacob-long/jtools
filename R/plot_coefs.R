@@ -491,7 +491,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
       nse <- asNamespace("generics")
     }
     method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
-    if (getRversion() < 3.5) {
+    if (getRversion() < "3.5") {
       # getS3method() only available in R >= 3.3
       the_method <- get(paste0("tidy.", method_stub), nse,
                         mode = "function")

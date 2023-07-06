@@ -1,6 +1,8 @@
 # jtools 2.2.2
 
 * Corrected a S3 methods argument mismatch on the internal function `test_coefs()`.
+* Minor compatibility fix related to the `getRversion()` to retain package
+on CRAN.
 * In addition the point size, shape, and color, you may now also change the 
 thickness of the lines drawn to represent coefficient intervals with the 
 `plot_summs()` and `plot_coefs()` functions. You need only use the `line.size`
