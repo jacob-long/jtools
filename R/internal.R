@@ -289,17 +289,17 @@ test_coefs <- function(x, the_vcov = NULL, df = NULL, ...) {
 
 #' @importFrom stats pnorm
 # Adapted from lmtest package
-test_coefs.default <- function(x, v_cov = NULL, df = NULL, ...) {
+test_coefs.default <- function(x, the_vcov = NULL, df = NULL, ...) {
   # Grab the coefs 
   est <- coef(x)
   # Need to check what kind of SEs user requested and generate vcov matrix
-  if (is.null(v_cov)) {
+  if (is.null(the_vcov)) {
     the_vcov <- vcov(x) # out of the box
   } else {
-    if (is.function(v_cov)) {
-      the_vcov <- v_cov(x, ...) # use the supplied function
+    if (is.function(the_vcov)) {
+      the_vcov <- the_vcov(x, ...) # use the supplied function
     } else {
-      the_vcov <- v_cov # use the supplied variance-covariance matrix
+      the_vcov <- the_vcov # use the supplied variance-covariance matrix
     }
   }
   # Calculate the SEs
@@ -348,9 +348,9 @@ test_coefs.default <- function(x, v_cov = NULL, df = NULL, ...) {
 
 }
 
-test_coefs.glm <- function(x, v_cov = NULL, df = Inf, ...) {
+test_coefs.glm <- function(x, the_vcov = NULL, df = Inf, ...) {
   # Only difference is default DF
-  test_coefs.default(x, v_cov = v_cov, df = df, ...)
+  test_coefs.default(x, the_vcov = the_vcov, df = df, ...)
 }
 
 #### robust predictions #####################################################
