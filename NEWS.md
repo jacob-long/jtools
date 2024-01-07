@@ -1,3 +1,12 @@
+# jtools 2.2.3.9999
+
+Bug fix:
+* `predict_merMod()` was miscalculating predictions under a specific set of
+conditions: When the model was fit with `lme4::glmer()`, the link was not
+identity, standard errors were simultaneously being calculated, and the 
+user included random effects. This error has been corrected 
+([#144](https://github.com/jacob-long/jtools/issues/144))
+
 # jtools 2.2.2
 
 Bug fix:

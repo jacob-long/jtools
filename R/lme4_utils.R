@@ -116,6 +116,18 @@ predict_merMod <- function(object, newdata = NULL, se.fit = FALSE,
 
   }  ## newdata/newparams/re.form
 
+  # Need to add random effects before potentially transforming
+  # to response scale
+  if (!noReForm(re.form)) {
+    if (is.null(re.form))
+      re.form <- reOnly(formula(object)) # RE formula only
+    rfd <- if (is.null(newdata)) {object@frame} else {newdata}
+    newRE <- mkNewReTrms(object, rfd, re.form, na.action = na.action,
+                         allow.new.levels = allow.new.levels)
+    REvals <- base::drop(methods::as(newRE$b %*% newRE$Zt, "matrix"))
+    fit <- fit + REvals
+  }
+
   if (se.fit == TRUE && boot == FALSE) {
     .vcov <- as.matrix(vcov(object))
     fit.ses <- sqrt(diag(X %*% .vcov %*% t(X)))
@@ -153,16 +165,6 @@ predict_merMod <- function(object, newdata = NULL, se.fit = FALSE,
       }, link = , terms = )
     }
 
-  }
-
-  if (!noReForm(re.form)) {
-    if (is.null(re.form))
-      re.form <- reOnly(formula(object)) # RE formula only
-    rfd <- if (is.null(newdata)) {object@frame} else {newdata}
-    newRE <- mkNewReTrms(object, rfd, re.form, na.action = na.action,
-                         allow.new.levels = allow.new.levels)
-    REvals <- base::drop(methods::as(newRE$b %*% newRE$Zt, "matrix"))
-    fit <- fit + REvals
   }
 
   if (se.fit == FALSE & lme4::isGLMM(object)) {
