@@ -11,7 +11,7 @@ authors:
 affiliations:
  - name: School of Journalism and Mass Communications, University of South Carolina, USA
    index: 1
-date: 26 October 2023
+date: 6 January 2024
 bibliography: paper.bib
 
 ---
@@ -58,62 +58,45 @@ for comparing nested/related model specifications. Plots are generated with
 `ggplot2` — allowing knowledgeable users to further customize the appearance —
 but do not require the user to know how to use `ggplot2`.
 
+To support survey researchers, `jtools` functions generally support the use of
+sampling weights and survey design objects created by the `survey` package 
+[@survey]. To fill in a gap in `survey`'s offerings, it adds `svycor()`, which
+calculates survey-weighted correlation matrices for survey design objects. 
+In addition, `weights_tests()` implements the tests for the ignorability of 
+sampling weights first devised by @dumouchel1983 and @pfeffermann1999. 
+In layman's terms, these tests allow researchers to check whether the use of
+sampling weights to make data better resemble a population meaningfully change
+their statistical results compared to ignoring those weights.
+
+## Alternative software
+
 Other R packages exist to achieve some of these ends. In some cases, `jtools`
 is using third-party packages for computation and simply repackaging the results
-(e.g., `sandwich` [@sandwich] for robust standard errors and `pbkrtest` for computation of 
-*p*-values for multilevel models). `modelsummary` provides comparable
-functionality to `summ()` and has some advantages, such as a greater range
+(e.g., `sandwich` \[@sandwich\] for robust standard errors and `pbkrtest` 
+\[@pbkrtest\] for computation of 
+*p*-values for multilevel models). `modelsummary` [@modelsummary] provides 
+comparable functionality to `summ()` and has some advantages, such as a 
+greater range
 of supported models and more support for exporting to external documents. 
-`marginaleffects`, `sjPlot`, and `see` offer support for plotting predicted 
+`marginaleffects` [@marginaleffects], `sjPlot` [@sjplot], and `see` [@see] 
+offer support for plotting predicted 
 values from fitted regression models and again have some of their own 
 advantages, such as more supported model types. There is also overlap in 
-functionality with the `car` package (e.g., the computation of variance 
-inflation factors and partial residuals), although `jtools` aims to improve
+functionality with the `car` package [@car], like the computation of variance 
+inflation factors and partial residuals, although `jtools` aims to improve
 the user interface and support more model types in some cases.
 
-# Mathematics
+## Real-world use
 
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
-
-Double dollars make self-standing equations:
-
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
-
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
-
-# Acknowledgements
-
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+At the time of writing, Google Scholar has tracked 556 references to `jtools`.
+These are predominantly, but not solely, in the social sciences, such as 
+psychology, communication, and political science. For example, @sutin2023 
+uses `summ()` to calculate degrees of freedom for a multilevel model in a 
+study of personality and aging. @urban-wojcik2022 also use `summ()`, in this
+case to summarize regression models with robust standard errors in their study
+of physical activity and the hippocampus. @kraft2022 generate plotted regression
+summaries with `plot_coefs()`. Finally, @spalti2023 use `weights_tests()` to 
+assess the sensitivity of their estimates to the influence of survey sampling
+weights.
 
 # References
