@@ -54,7 +54,8 @@ as plotted points, and rug plots. Categorical predictors can be plotted as
 bar charts of single points with error bars as well. Finally, `jtools` features
 the function `plot_coefs()` that allows users to plot regression coefficients
 with confidence intervals for one or more models. This is particularly useful
-for comparing nested/related model specifications. Plots are generated with 
+for comparing nested/related model specifications [@kastellec2007]. 
+Plots are generated with 
 `ggplot2` — allowing knowledgeable users to further customize the appearance —
 but do not require the user to know how to use `ggplot2`.
 
@@ -78,7 +79,7 @@ is using third-party packages for computation and simply repackaging the results
 comparable functionality to `summ()` and has some advantages, such as a 
 greater range
 of supported models and more support for exporting to external documents. 
-`marginaleffects` [@marginaleffects], `sjPlot` [@sjplot], and `see` [@see] 
+`marginaleffects` [@marginaleffects], `sjPlot` [@sjPlot], and `see` [@see] 
 offer support for plotting predicted 
 values from fitted regression models and again have some of their own 
 advantages, such as more supported model types. There is also overlap in 
