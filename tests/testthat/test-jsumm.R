@@ -121,7 +121,7 @@ if (requireNamespace("MASS")) {
     expect_is(summ(fitnb), "summ.glm")
   )
   test_that("summ: negative binomial pR2 works",
-    expect_is(attr(summ(fitnb), "chisq")$df, "numeric")
+    expect_is(attr(summ(fitnb), "chisq")$df, "integer")
   )
 }
 
