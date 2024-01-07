@@ -96,8 +96,9 @@ uses `summ()` to calculate degrees of freedom for a multilevel model in a
 study of personality and aging. @urban-wojcik2022 also use `summ()`, in this
 case to summarize regression models with robust standard errors in their study
 of physical activity and the hippocampus. @kraft2022 generate plotted regression
-summaries with `plot_coefs()`. Finally, @spalti2023 use `weights_tests()` to 
+summaries with `plot_coefs()` in a study of asthma sufferers.
+Finally, @spalti2023 use `weights_tests()` to 
 assess the sensitivity of their estimates to the influence of survey sampling
-weights.
+weights in their research on scientific misperceptions.
 
 # References
