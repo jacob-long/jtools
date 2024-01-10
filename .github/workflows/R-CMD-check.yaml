@@ -43,6 +43,14 @@ jobs:
         with:
           extra-packages: rcmdcheck
 
+      - name: Set CRAN mirror
+        run: echo "options(repos = c(CRAN='https://cloud.r-project.org/'))" > ~/.Rprofile
+
+      - name: Install lme4 from source to fix Matrix errors
+        run: | 
+          install.packages('lme4', type = 'source')
+        shell: Rscript {0}
+
       - uses: r-lib/actions/check-r-package@v2
 
       - name: Show testthat output
