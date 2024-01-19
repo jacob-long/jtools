@@ -21,16 +21,23 @@ pR2Work <- function(llh, llhNull, n, object = NULL, objectNull = NULL) {
   if (!is.null(object)) {
     the_aov <- anova(objectNull, object, test = "Chisq")
     
-    out$chisq <- the_aov$Deviance[2]
-    out$chisq_df <- the_aov$Df[2]
-    out$chisq_p <- the_aov$`Pr(>Chi)`[2]
+    # glm.nb uses different names for the columns
+    if (grepl("Negative Binomial", get_family(object)$family)) {
+      out$chisq <- the_aov$`LR stat.`[2]
+      out$chisq_df <- the_aov$`Resid. df`[2]
+      out$chisq_p <- the_aov$`Pr(Chi)`[2]
+    } else {
+      out$chisq <- the_aov$Deviance[2]
+      out$chisq_df <- the_aov$Df[2]
+      out$chisq_p <- the_aov$`Pr(>Chi)`[2]
+    }
   }
   
   out
 }
 
 pR2 <- function(object) {
-  
+
   llh <- getLL(object)
   
   if (get_family(object)$family %in% c("quasibinomial","quasipoisson")) {
@@ -75,7 +82,11 @@ pR2 <- function(object) {
   if ("start" %in% names(call)) {
     call$start <- NULL
   } 
-  call$family <- get_family(object)
+  # Can't attach the family object from glm.nb objects because of 
+  # the theta parameter being estimated based on the model spec.
+  if (!grepl("Negative Binomial", get_family(object)$family)) {
+    call$family <- get_family(object)
+  }
   # Update the model
   objectNull <- try(eval(call))
   if ("try-error" %in% class(objectNull)) {

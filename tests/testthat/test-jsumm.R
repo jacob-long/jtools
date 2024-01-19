@@ -112,6 +112,19 @@ test_that("summ: knit_print works", {
   }
 })
 
+if (requireNamespace("MASS")) {
+  # Negative binomial test
+  library(MASS, quietly = TRUE)
+  data(quine)
+  fitnb <- MASS::glm.nb(Days ~ Sex/(Age + Eth*Lrn), data = quine)
+  test_that("summ: negative binomial works",
+    expect_is(summ(fitnb), "summ.glm")
+  )
+  test_that("summ: negative binomial pR2 works",
+    expect_is(attr(summ(fitnb), "chisq")$df, "integer")
+  )
+}
+
 options("summ-stars" = FALSE)
 
 # Test handling of singular models
