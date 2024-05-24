@@ -106,7 +106,7 @@ theme_apa <- function(legend.pos = "right", legend.use.title = FALSE,
     strip.text.x = ggplot2::element_text(size = facet.title.size), # facet labs
     strip.text.y = ggplot2::element_text(size = facet.title.size),
     # facet titles
-    strip.background = ggplot2::element_rect(colour = "white", fill = "white"),
+    strip.background = ggplot2::element_rect(colour = NA, fill = NA),
     panel.background = ggplot2::element_rect(fill = "white"),
     plot.title.position = "panel",
     # complete = TRUE
