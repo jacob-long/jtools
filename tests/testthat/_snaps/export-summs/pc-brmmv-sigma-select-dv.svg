@@ -45,6 +45,6 @@
 <text x='423.91' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.0</text>
 <text x='596.96' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>0.2</text>
 <text x='376.08' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='42.80px' lengthAdjust='spacingAndGlyphs'>Estimate</text>
-<text x='37.64' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='222.55px' lengthAdjust='spacingAndGlyphs'>select wt dv, dpar sigma mv brms fit</text>
+<text x='42.62' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='222.55px' lengthAdjust='spacingAndGlyphs'>select wt dv, dpar sigma mv brms fit</text>
 </g>
 </svg>

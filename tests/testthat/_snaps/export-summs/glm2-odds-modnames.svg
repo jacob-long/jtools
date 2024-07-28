@@ -54,15 +54,15 @@
 <text x='469.65' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>1.2</text>
 <text x='609.81' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='12.23px' lengthAdjust='spacingAndGlyphs'>1.3</text>
 <text x='354.49' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='67.87px' lengthAdjust='spacingAndGlyphs'>exp(Estimate)</text>
-<text x='679.51' y='270.84' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='29.96px' lengthAdjust='spacingAndGlyphs'>Model</text>
-<rect x='649.98' y='282.45' width='21.60' height='17.85' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
+<text x='654.96' y='270.84' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='29.96px' lengthAdjust='spacingAndGlyphs'>Model</text>
+<rect x='649.98' y='282.45' width='21.60' height='17.85' style='stroke-width: 0.00; stroke: #FFFFFF; fill: #FFFFFF;' />
 <line x1='652.14' y1='291.37' x2='669.42' y2='291.37' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
 <circle cx='660.78' cy='291.37' r='2.84' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
-<rect x='649.98' y='300.29' width='21.60' height='17.85' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
+<rect x='649.98' y='300.29' width='21.60' height='17.85' style='stroke-width: 0.00; stroke: #FFFFFF; fill: #FFFFFF;' />
 <line x1='652.14' y1='309.21' x2='669.42' y2='309.21' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
 <rect x='658.26' y='306.70' width='5.04' height='5.04' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
 <text x='682.04' y='294.40' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='22.02px' lengthAdjust='spacingAndGlyphs'>Mod1</text>
 <text x='682.04' y='312.24' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='22.02px' lengthAdjust='spacingAndGlyphs'>Mod2</text>
-<text x='75.45' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='139.31px' lengthAdjust='spacingAndGlyphs'>glm2-odds-modnames</text>
+<text x='80.43' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='139.31px' lengthAdjust='spacingAndGlyphs'>glm2-odds-modnames</text>
 </g>
 </svg>
