@@ -12,6 +12,11 @@ Enhancement:
 * `summ()` will now produce model fit statistics for `glm.nb` models 
 ([#142](https://github.com/jacob-long/jtools/issues/142)).
 
+Other changes:
+
+* Removed `tidy.glht()` method because the `broom` package now implements one.
+(#139)
+
 # jtools 2.2.2
 
 Bug fix:

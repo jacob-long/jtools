@@ -22,12 +22,6 @@ if (!nzchar(system.file(package = "interactions"))) {
 }
 
 if (getRversion() >= "3.6.0") {
-  S3method(generics::tidy, glht)
-} else {
-  export(tidy.glht)
-}
-
-if (getRversion() >= "3.6.0") {
   S3method(generics::tidy, summary.glht)
 } else {
   export(tidy.summary.glht)

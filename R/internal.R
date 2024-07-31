@@ -417,23 +417,6 @@ predict_rob <- function(model, .vcov = vcov(model), newdata = NULL,
 
 }
 
-## Kludge to fix glht compatibility
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(generics::tidy, glht)
-#' } else {
-#'   export(tidy.glht)
-#' }
-tidy.glht <- function (x, conf.int = FALSE, conf.level = 0.95, ...) {
-  if (!conf.int) {
-    tibble(lhs = rownames(x$linfct), rhs = x$rhs, estimate = stats::coef(x))
-  } else {
-    confs <- as.data.frame(confint(x, level = conf.level)$confint)
-    tibble(lhs = rownames(x$linfct), rhs = x$rhs, estimate = stats::coef(x),
-           conf.low = confs$lwr, conf.high = confs$upr)
-  }
-}
-
 #' @importFrom tibble tibble as_tibble
 #' @importFrom stats confint
 #' @rawNamespace 
