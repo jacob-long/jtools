@@ -964,10 +964,12 @@ knit_print.summ.glm <- function(x, options = NULL, ...) {
       chi <- "chi\u00B2("
     }
     stats <- data.frame(stat = c(paste0(chi, x$chisq$df,  ")"),
+                                  "p",
                                  "Pseudo-R\u00B2 (Cragg-Uhler)",
                                  "Pseudo-R\u00B2 (McFadden)",
                                  "AIC", "BIC"),
                         value = c(num_print(x$chisq$chi, x$digits),
+                                  num_print(x$chisq$p, x$digits),
                                   num_print(x$rsq, digits = x$digits),
                                   num_print(x$rsqmc, digits = x$digits),
                                   num_print(x$aic, x$digits),

@@ -1,11 +1,14 @@
 # jtools 2.2.3.9999
 
-Bug fix:
+Bug fixes:
 * `predict_merMod()` was miscalculating predictions under a specific set of
 conditions: When the model was fit with `lme4::glmer()`, the link was not
 identity, standard errors were simultaneously being calculated, and the 
 user included random effects. This error has been corrected 
 ([#144](https://github.com/jacob-long/jtools/issues/144))
+* When printing `summ.glm()` results with `knitr`, the *p* value for the 
+omnibus chi-squared test is now included in the model statistics, like it 
+already is when using the function in the console. ([#138](https://github.com/jacob-long/jtools/issues/138)
 
 Enhancement:
 
