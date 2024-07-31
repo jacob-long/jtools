@@ -1,168 +1,58 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/CONDUCT.html</loc>
-  </url>
-  <url>
-    <loc>/CONTRIBUTING.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>/articles/effect_plot.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/summ.html</loc>
-  </url>
-  <url>
-    <loc>/articles/svycor.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/news/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/center.html</loc>
-  </url>
-  <url>
-    <loc>/reference/center_mod.html</loc>
-  </url>
-  <url>
-    <loc>/reference/effect_plot.html</loc>
-  </url>
-  <url>
-    <loc>/reference/export_summs.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_colors.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_formula.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_robust_se.html</loc>
-  </url>
-  <url>
-    <loc>/reference/glance.summ.html</loc>
-  </url>
-  <url>
-    <loc>/reference/gridlines.html</loc>
-  </url>
-  <url>
-    <loc>/reference/gscale.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/interactions_deprecated.html</loc>
-  </url>
-  <url>
-    <loc>/reference/jtools_colors.html</loc>
-  </url>
-  <url>
-    <loc>/reference/knit_print.summ.html</loc>
-  </url>
-  <url>
-    <loc>/reference/make_new_data.html</loc>
-  </url>
-  <url>
-    <loc>/reference/make_predictions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/md_table.html</loc>
-  </url>
-  <url>
-    <loc>/reference/model_utils.html</loc>
-  </url>
-  <url>
-    <loc>/reference/movies.html</loc>
-  </url>
-  <url>
-    <loc>/reference/nin.html</loc>
-  </url>
-  <url>
-    <loc>/reference/num_print.html</loc>
-  </url>
-  <url>
-    <loc>/reference/partialize.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pf_sv_test.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_summs.html</loc>
-  </url>
-  <url>
-    <loc>/reference/predict_merMod.html</loc>
-  </url>
-  <url>
-    <loc>/reference/reexports.html</loc>
-  </url>
-  <url>
-    <loc>/reference/scale_mod.html</loc>
-  </url>
-  <url>
-    <loc>/reference/set_summ_defaults.html</loc>
-  </url>
-  <url>
-    <loc>/reference/standardize.html</loc>
-  </url>
-  <url>
-    <loc>/reference/subsetters.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summ.glm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summ.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summ.lm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summ.merMod.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summ.rq.html</loc>
-  </url>
-  <url>
-    <loc>/reference/summ.svyglm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/svycor.html</loc>
-  </url>
-  <url>
-    <loc>/reference/svysd.html</loc>
-  </url>
-  <url>
-    <loc>/reference/theme_apa.html</loc>
-  </url>
-  <url>
-    <loc>/reference/theme_nice.html</loc>
-  </url>
-  <url>
-    <loc>/reference/weights_tests.html</loc>
-  </url>
-  <url>
-    <loc>/reference/wgttest.html</loc>
-  </url>
-  <url>
-    <loc>/reference/wrap_str.html</loc>
-  </url>
-  <url>
-    <loc>/reference/wtd.sd.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/CONDUCT.html</loc></url>
+<url><loc>/CONTRIBUTING.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/effect_plot.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/summ.html</loc></url>
+<url><loc>/articles/svycor.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/center.html</loc></url>
+<url><loc>/reference/center_mod.html</loc></url>
+<url><loc>/reference/effect_plot.html</loc></url>
+<url><loc>/reference/export_summs.html</loc></url>
+<url><loc>/reference/get_colors.html</loc></url>
+<url><loc>/reference/get_formula.html</loc></url>
+<url><loc>/reference/get_robust_se.html</loc></url>
+<url><loc>/reference/glance.summ.html</loc></url>
+<url><loc>/reference/gridlines.html</loc></url>
+<url><loc>/reference/gscale.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/interactions_deprecated.html</loc></url>
+<url><loc>/reference/jtools_colors.html</loc></url>
+<url><loc>/reference/knit_print.summ.html</loc></url>
+<url><loc>/reference/make_new_data.html</loc></url>
+<url><loc>/reference/make_predictions.html</loc></url>
+<url><loc>/reference/md_table.html</loc></url>
+<url><loc>/reference/model_utils.html</loc></url>
+<url><loc>/reference/movies.html</loc></url>
+<url><loc>/reference/nin.html</loc></url>
+<url><loc>/reference/num_print.html</loc></url>
+<url><loc>/reference/partialize.html</loc></url>
+<url><loc>/reference/pf_sv_test.html</loc></url>
+<url><loc>/reference/plot_summs.html</loc></url>
+<url><loc>/reference/predict_merMod.html</loc></url>
+<url><loc>/reference/reexports.html</loc></url>
+<url><loc>/reference/scale_mod.html</loc></url>
+<url><loc>/reference/set_summ_defaults.html</loc></url>
+<url><loc>/reference/standardize.html</loc></url>
+<url><loc>/reference/subsetters.html</loc></url>
+<url><loc>/reference/summ.glm.html</loc></url>
+<url><loc>/reference/summ.html</loc></url>
+<url><loc>/reference/summ.lm.html</loc></url>
+<url><loc>/reference/summ.merMod.html</loc></url>
+<url><loc>/reference/summ.rq.html</loc></url>
+<url><loc>/reference/summ.svyglm.html</loc></url>
+<url><loc>/reference/svycor.html</loc></url>
+<url><loc>/reference/svysd.html</loc></url>
+<url><loc>/reference/theme_apa.html</loc></url>
+<url><loc>/reference/theme_nice.html</loc></url>
+<url><loc>/reference/weights_tests.html</loc></url>
+<url><loc>/reference/wgttest.html</loc></url>
+<url><loc>/reference/wrap_str.html</loc></url>
+<url><loc>/reference/wtd.sd.html</loc></url>
 </urlset>
+
