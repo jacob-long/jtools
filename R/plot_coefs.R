@@ -173,10 +173,6 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        facet.label.pos = "top", color.class = colors,
                        resp = NULL, dpar = NULL) {
   
-  if (!requireNamespace("broom", quietly = TRUE)) {
-    stop_wrap("Install the broom package to use the plot_coefs function.")
-  }
-  
   if (!is.numeric(line.size[1])) stop_wrap("line.size must be a number (or two
     numbers in a vector).")
 
@@ -433,11 +429,6 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   resps <- NULL
   if ("brmsfit" %in% sapply(mods, class)) {
     
-    if (!requireNamespace("broom.mixed")) {
-      stop_wrap("Please install the broom.mixed package to process `brmsfit`
-                objects.")
-    }
-    
     mv_fits <- sapply(mods, function(x) "mvbrmsformula" %in% class(formula(x)))
     if (any(mv_fits)) {
       if (!is.null(resp) && length(resp) %nin% c(sum(mv_fits), 1)) {
@@ -478,26 +469,10 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   tidies <- as.list(rep(NA, times = length(mods)))
   
   for (i in seq_along(mods)) {
-    
-    # Major kludge for methods clash between broom and broom.mixed
-    # Making namespace environment with broom.mixed before generics 
-    # to try to put those methods in the search path
-    # Will drop after update to broom 0.7.0
-    if (requireNamespace("broom.mixed")) {
-      nse <- as.environment(unlist(sapply(c(asNamespace("broom.mixed"), 
-                                            asNamespace("generics")),
-                                          as.list)))
-    } else {
-      nse <- asNamespace("generics")
-    }
+
     method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
-    if (getRversion() < "3.5") {
-      # getS3method() only available in R >= 3.3
-      the_method <- get(paste0("tidy.", method_stub), nse,
-                        mode = "function")
-    } else {
-      the_method <- utils::getS3method("tidy", method_stub, envir = nse)
-    }
+    the_method <- utils::getS3method("tidy", method_stub, envir = nse)
+
     if (!is.null(ex_args)) {
       method_args <- formals(the_method)
       

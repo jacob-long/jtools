@@ -19,6 +19,8 @@ Other changes:
 
 * Removed `tidy.glht()` method because the `broom` package now implements one.
 (#139)
+* Made `broom` and `broom.mixed` hard dependencies to help avoid user confusion
+and a few errors that could occur when one was missing. (#149) 
 
 # jtools 2.2.2
 

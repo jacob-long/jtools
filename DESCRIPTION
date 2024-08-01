@@ -17,6 +17,8 @@ LazyData: true
 Imports: 
     cli,
     generics,
+    broom,
+    broom.mixed,
     ggplot2 (>= 3.4.0),
     magrittr,
     pander,
@@ -25,8 +27,6 @@ Imports:
     tibble
 Suggests:
   boot,
-  broom,
-  broom.mixed,
   huxtable (>= 3.0.0),
   kableExtra,
   lme4,

@@ -154,10 +154,6 @@ export_summs <- function(...,
     stop_wrap("Install the huxtable package to use the export_summs function.")
   }
 
-  if (!requireNamespace("broom", quietly = TRUE)) {
-    stop_wrap("Install the broom package to use the export_summs function.")
-  }
-
   # Capture arguments
   dots <- list(...)
 
