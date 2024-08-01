@@ -439,16 +439,16 @@ vif <- function(mod, vcov = NULL, mod.matrix = NULL, ...) {
 
 print_mod_info <- function(missing, n, dv, type) {
   if (is.null(missing) || missing == 0) {
-    cat(underline("MODEL INFO:"), "\n",
-        italic("Observations:"), " ",  n, "\n",
-        italic("Dependent Variable:"), " ", dv, "\n", sep = "")
+    cat(style_underline("MODEL INFO:"), "\n",
+        style_italic("Observations:"), " ",  n, "\n",
+        style_italic("Dependent Variable:"), " ", dv, "\n", sep = "")
   } else {
-    cat(underline("MODEL INFO:"), "\n",
-        italic("Observations:"), " ", n, " (", missing,
+    cat(style_underline("MODEL INFO:"), "\n",
+        style_italic("Observations:"), " ", n, " (", missing,
         " missing obs. deleted)", "\n",
-        italic("Dependent Variable:"), " ", dv, "\n", sep = "")
+        style_italic("Dependent Variable:"), " ", dv, "\n", sep = "")
   }
-  cat(italic("Type:"), type, "\n\n")
+  cat(style_italic("Type:"), type, "\n\n")
 }
 
 ## Take model info and save as list
@@ -464,7 +464,7 @@ mod_info_list <- function(missing, n, dv, type) {
 ## Print model fit info
 
 print_mod_fit <- function(stats) {
-  cat(underline("MODEL FIT:"), "\n", sep = "")
+  cat(style_underline("MODEL FIT:"), "\n", sep = "")
   cat(stats, "\n\n")
 }
 
@@ -474,7 +474,7 @@ print_se_info <- function(robust, use_cluster, manual = NULL, vcov = NULL, ...) 
   
   if (identical(FALSE, robust) && is.null(vcov)) {
     
-    cat(italic("Standard errors:",  ifelse(is.null(manual),
+    cat(style_italic("Standard errors:",  ifelse(is.null(manual),
                                            no = manual, yes = "MLE")),
         "\n", sep = "")
     
@@ -482,15 +482,15 @@ print_se_info <- function(robust, use_cluster, manual = NULL, vcov = NULL, ...) 
     
     if (robust == TRUE) {robust <- "HC3"}
     
-    cat(italic("Standard errors:"), sep = "")
+    cat(style_italic("Standard errors:"), sep = "")
     
     if (use_cluster == FALSE) {
       
-      cat(" Robust, ", italic("type = "), robust, "\n", sep = "")
+      cat(" Robust, ", style_italic("type = "), robust, "\n", sep = "")
       
     } else if (use_cluster == TRUE) {
       
-      cat(" Cluster-robust, ", italic("type = "), robust, "\n", sep = "")
+      cat(" Cluster-robust, ", style_italic("type = "), robust, "\n", sep = "")
       
     }
     

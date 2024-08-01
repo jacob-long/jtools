@@ -20,7 +20,8 @@
 #'
 #' @export
 #' @importFrom stats nobs
-#'
+#' @import cli
+#' 
 
 
 summ <- function(model, ...) {
@@ -413,11 +414,11 @@ print.summ.lm <- function(x, ...) {
   }
 
   if (x$model.fit == TRUE && !is.null(x$modpval)) {
-    stats <- paste(italic("F"), "(", x$fnum, ",", x$fden, ") = ",
-        num_print(x$fstat, digits = x$digits), ", ", italic("p"), " = ",
+    stats <- paste(style_italic("F"), "(", x$fnum, ",", x$fden, ") = ",
+        num_print(x$fstat, digits = x$digits), ", ", style_italic("p"), " = ",
         num_print(x$modpval, digits = x$digits), "\n",
-        italic("R\u00B2 = "), num_print(x$rsq, digits = x$digits), "\n",
-        italic("Adj. R\u00B2 = "), num_print(x$arsq, digits = x$digits),
+        style_italic("R\u00B2 = "), num_print(x$rsq, digits = x$digits), "\n",
+        style_italic("Adj. R\u00B2 = "), num_print(x$arsq, digits = x$digits),
         sep = "")
     print_mod_fit(stats)
   }
@@ -851,9 +852,9 @@ print.summ.glm <- function(x, ...) {
       type <- "Linear regression"
     } else {
       type <- paste("Generalized linear model\n ",
-                    italic("Family:"),
+                    style_italic("Family:"),
                     as.character(x$lmFamily[1]), "\n ",
-                    italic("Link function:"),
+                    style_italic("Link function:"),
                     as.character(x$lmFamily[2]), sep = " ")
     }
     print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
@@ -862,13 +863,13 @@ print.summ.glm <- function(x, ...) {
   if (x$model.fit == TRUE) {
     stats <- paste("\u03C7\u00B2(",
                   x$chisq$df,  ") = ", num_print(x$chisq$chi, x$digits), ", ",
-                  italic("p"), " = ", num_print(x$chisq$p, x$digits), "\n",
-                   italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
+                  style_italic("p"), " = ", num_print(x$chisq$p, x$digits), "\n",
+                   style_italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
                    num_print(x$rsq, digits = x$digits), "\n",
-                   italic("Pseudo-R\u00B2 (McFadden)"), " = ",
+                   style_italic("Pseudo-R\u00B2 (McFadden)"), " = ",
                    num_print(x$rsqmc, digits = x$digits), "\n",
-                   italic("AIC"), " = ", num_print(x$aic, x$digits),
-                   ", ", italic("BIC"), " = ", num_print(x$bic, x$digits),
+                   style_italic("AIC"), " = ", num_print(x$aic, x$digits),
+                   ", ", style_italic("BIC"), " = ", num_print(x$bic, x$digits),
                    sep = "")
     print_mod_fit(stats)
   }
@@ -1340,8 +1341,8 @@ print.summ.svyglm <- function(x, ...) {
     } else {
       # Otherwise just treat it like glm
       type <- paste("Analysis of complex survey design", "\n",
-                  italic("Family:"), as.character(x$lmFamily[1]),
-                  "\n", italic("Link function:"), as.character(x$lmFamily[2]),
+                  style_italic("Family:"), as.character(x$lmFamily[1]),
+                  "\n", style_italic("Link function:"), as.character(x$lmFamily[2]),
                   sep = " ")
     }
     print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
@@ -1351,17 +1352,17 @@ print.summ.svyglm <- function(x, ...) {
     if (as.character(x$lmFamily[1]) == "gaussian" &&
         as.character(x$lmFamily[2]) == "identity") {
       # If it's a linear model, show regular lm fit stats
-      stats <- paste(italic("R\u00B2"), " = ",
+      stats <- paste(style_italic("R\u00B2"), " = ",
                      num_print(x$rsq, digits = x$digits), "\n",
-                     italic("Adj. R\u00B2"), " = ",
+                     style_italic("Adj. R\u00B2"), " = ",
                      num_print(x$arsq, digits = x$digits), sep = "")
     } else {
       # If it isn't linear, show GLM fit stats
-      stats <- paste(italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
+      stats <- paste(style_italic("Pseudo-R\u00B2 (Cragg-Uhler)"), " = ",
                      num_print(x$rsq, digits = x$digits), "\n",
-                     italic("Pseudo-R\u00B2 (McFadden)"), " = ",
+                     style_italic("Pseudo-R\u00B2 (McFadden)"), " = ",
                      num_print(x$rsqmc, digits = x$digits), "\n",
-                     italic("AIC"), " = ", num_print(x$aic, x$digits), sep = "")
+                     style_italic("AIC"), " = ", num_print(x$aic, x$digits), sep = "")
     }
     print_mod_fit(stats)
   }
@@ -2008,29 +2009,29 @@ print.summ.merMod <- function(x, ...) {
       type <- "Mixed effects linear regression"
     } else {
       type <- paste("Mixed effects generalized linear regression", "\n",
-                    italic("Error Distribution: "),
+                    style_italic("Error Distribution: "),
                     as.character(x$lmFamily[1]), "\n",
-                    italic("Link function: "), as.character(x$lmFamily[2]),
+                    style_italic("Link function: "), as.character(x$lmFamily[2]),
                     sep = "")
     }
     print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == T) {
-    stats <- paste(italic("AIC"), " = ", num_print(x$aic, x$digits),
-                   ", ", italic("BIC"), " = ",
+    stats <- paste(style_italic("AIC"), " = ", num_print(x$aic, x$digits),
+                   ", ", style_italic("BIC"), " = ",
                    num_print(x$bic, x$digits), sep = "")
     if (x$r.squared == TRUE) {
-      stats <- paste(stats, "\n", italic("Pseudo-R\u00B2 (fixed effects)"),
+      stats <- paste(stats, "\n", style_italic("Pseudo-R\u00B2 (fixed effects)"),
                      " = ", num_print(x$rsq$Marginal, x$digits), "\n",
-                     italic("Pseudo-R\u00B2 (total)"), " = ",
+                     style_italic("Pseudo-R\u00B2 (total)"), " = ",
                      num_print(x$rsq$Conditional, x$digits), sep = "")
     }
     print_mod_fit(stats)
   }
 
   if (x$model.coefs == TRUE) {
-    cat(underline("FIXED EFFECTS:\n"))
+    cat(style_underline("FIXED EFFECTS:\n"))
     print(md_table(ctable, format = getOption("summ.table.format", "multiline"),
                   sig.digits = FALSE, digits = x$digits))
     
@@ -2039,8 +2040,8 @@ print.summ.merMod <- function(x, ...) {
 
       if (x$p_calc == "residual") {
 
-        cat(italic$cyan("\nNote: p values calculated based on residual d.f. =",
-            x$df, "\n"))
+        cat(style_italic(col_cyan(
+           "\nNote: p values calculated based on residual d.f. =", x$df, "\n")))
 
         if (is.null(x$t.df)) {
           msg_wrap("Using p values with lmer based on residual d.f. may inflate
@@ -2052,18 +2053,18 @@ print.summ.merMod <- function(x, ...) {
       } else if (x$p_calc %in% c("k-r", "Kenward-Roger", "kenward-roger")) {
 
         cat("\n")
-        cat_wrap(italic$cyan("p values calculated using Kenward-Roger standard
-                            errors and d.f."), brk = "\n")
+        cat_wrap(style_italic(col_cyan("p values calculated using Kenward-Roger 
+                                        standard errors and d.f.")), brk = "\n")
 
       } else if (x$p_calc %in% c("s", "Satterthwaite", "satterthwaite")) {
 
         cat("\n")
-        cat_wrap(italic$cyan("p values calculated using Satterthwaite
-                        d.f."), brk = "\n")
+        cat_wrap(style_italic(col_cyan("p values calculated using Satterthwaite
+                                      d.f.")), brk = "\n")
 
       } else if (x$p_calc == "manual") {
 
-        cat(italic("\nNote: p values calculated based on user-defined d.f. ="),
+        cat(style_italic("\nNote: p values calculated based on user-defined d.f. ="),
             x$df, "\n")
 
       }
@@ -2071,7 +2072,7 @@ print.summ.merMod <- function(x, ...) {
     }
 
     if (x$re.table == TRUE) {
-      cat(underline("\nRANDOM EFFECTS:\n"))
+      cat(style_underline("\nRANDOM EFFECTS:\n"))
       rtable <- round_df_char(j$rcoeftable, digits = x$digits, na_vals = "")
       #rownames(rtable) <- rep("", times = nrow(rtable))
       # print(rtable, row.names = FALSE)
@@ -2081,7 +2082,7 @@ print.summ.merMod <- function(x, ...) {
     }
 
     if (x$groups.table == TRUE) {
-      cat(underline("\nGrouping variables:\n"))
+      cat(style_underline("\nGrouping variables:\n"))
       gtable <- round_df_char(j$gvars, digits = x$digits, na_vals = "")
       gtable[, "# groups"] <- as.integer(gtable[, "# groups"])
       #rownames(gtable) <- rep("", times = nrow(gtable))

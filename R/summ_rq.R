@@ -249,13 +249,13 @@ print.summ.rq <- function(x, ...) {
              "fnc" = "Frisch-Newton (user-specified equality constraints)")
 
     type <- paste0("Quantile regression",
-                   "\n  ", italic("Quantile (tau): "), j$model$tau, "\n  ",
-                   italic("Method: "), method)
+                   "\n  ", style_italic("Quantile (tau): "), j$model$tau, "\n  ",
+                   style_italic("Method: "), method)
     print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == TRUE) {
-    stats <- paste(italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
+    stats <- paste(style_italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
                    num_print(x$r1, digits = x$digits), sep = "")
     print_mod_fit(stats)
   }
@@ -341,7 +341,7 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   }
 
   if (x$model.fit == T && !is.null(x$modpval)) {
-    stats <- paste(italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
+    stats <- paste(style_italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
                    num_print(x$r1, digits = x$digits), sep = "")
     stats <- data.frame(stat = c(paste0("R\u00B9 ", "(", j$model$tau, ")")),
                         value = c(num_print(x$r1, digits = x$digits))

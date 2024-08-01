@@ -15,7 +15,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    crayon,
+    cli,
     generics,
     ggplot2 (>= 3.4.0),
     magrittr,
@@ -47,7 +47,7 @@ Enhances:
   brms,
   quantreg,
   rstanarm
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2.9000
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Depends: 
