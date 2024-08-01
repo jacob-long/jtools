@@ -23,11 +23,12 @@ Imports:
     magrittr,
     pander,
     pkgconfig,
-    rlang (>= 0.3.0),
+    rlang,
+    sandwich,
     tibble
 Suggests:
   boot,
-  huxtable (>= 3.0.0),
+  huxtable,
   kableExtra,
   lme4,
   lmerTest,
@@ -35,7 +36,6 @@ Suggests:
   methods,
   pbkrtest,
   RColorBrewer,
-  sandwich,
   scales,
   survey,
   weights,
@@ -50,5 +50,3 @@ Enhances:
 RoxygenNote: 7.3.2.9000
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-Depends: 
-    R (>= 3.5.0)
