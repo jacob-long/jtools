@@ -26,3 +26,4 @@
 ^paper\.md$
 ^pkgdown$
 ^CRAN-SUBMISSION$
+^doc$
