@@ -470,6 +470,7 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   
   for (i in seq_along(mods)) {
 
+    nse <- asNamespace("generics")
     method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
     the_method <- utils::getS3method("tidy", method_stub, envir = nse)
 
