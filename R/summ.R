@@ -397,7 +397,6 @@ summ.lm <- function(
 ### PRINT METHOD
 
 #' @export
-#' @importFrom crayon underline inverse italic
 
 print.summ.lm <- function(x, ...) {
 

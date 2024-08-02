@@ -21,6 +21,9 @@ Other changes:
 (#139)
 * Made `broom` and `broom.mixed` hard dependencies to help avoid user confusion
 and a few errors that could occur when one was missing. (#149) 
+* `cli` is now used to format (colorizing, italicizing, etc.) console output 
+rather than `crayon`. Please report any issues if formatting doesn't work 
+right for you; there shouldn't be any changes from past releases.
 
 # jtools 2.2.2
 

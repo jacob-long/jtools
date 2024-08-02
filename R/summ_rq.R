@@ -225,7 +225,6 @@ summ.rq <- function(model, scale = FALSE,
 ### PRINT METHOD
 
 #' @export
-#' @importFrom crayon underline inverse italic
 
 print.summ.rq <- function(x, ...) {
 
