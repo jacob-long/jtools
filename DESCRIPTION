@@ -50,3 +50,5 @@ Enhances:
 RoxygenNote: 7.3.2.9000
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
+Depends: 
+    R (>= 3.6.0)

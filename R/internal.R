@@ -435,3 +435,9 @@ tidy.summary.glht <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
   }
   out
 }
+
+#' @import broom
+NULL
+
+#' @import broom.mixed
+NULL
