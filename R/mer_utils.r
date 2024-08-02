@@ -1,18 +1,11 @@
 
-# Taken from sjstats so I don't have to list it as import
-
+# Based on defunct sjstats implementation. Could consider `performance` in future
 icc <- function(fit, obj.name) {
-  # check if suggested package is available
-  if (!requireNamespace("lme4", quietly = TRUE)) {
-    stop("Package `lme4` needed for this function to work. Please install it.",
-         call. = FALSE)
-  }
+  
+  check_installed("lme4", reason = "This function requires lme4.")
 
   # get family
   fitfam <- stats::family(fit)$family
-  # is neg. binomial? Dropped sjstats' internal function in favor of regexp
-  # is_negbin <-
-  # sjmisc::str_contains(fitfam, "Negative Binomial", ignore.case = TRUE)
   is_negbin <- grepl(ignore.case = TRUE, pattern = "Negative Binomial",
                      x = fitfam)
 
@@ -97,10 +90,6 @@ icc <- function(fit, obj.name) {
   attr(ri.icc, "rho.01") <- rho.01
   attr(ri.icc, "tau.11") <- tau.11
   attr(ri.icc, "sigma_2") <- resid_var
-  # finally, save name of fitted model object. May be needed for
-  # the 'se()' function, which accesses the global environment
-  ## Not sure what sjstats is going for here but breaks my code -- Jacob
-  # attr(ri.icc, ".obj.name") <- obj.name
   # return results
   return(ri.icc)
 

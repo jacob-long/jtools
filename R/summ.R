@@ -1682,6 +1682,7 @@ knit_print.summ.svyglm <- function(x, options = NULL, ...) {
 #'
 #' @importFrom stats coef coefficients lm predict sd cooks.distance pf logLik
 #'  AIC BIC family fitted pt residuals terms model.weights
+#' @importFrom rlang check_installed is_installed
 #' @export
 #' @aliases j_summ.merMod
 #'
@@ -1761,15 +1762,16 @@ summ.merMod <- function(
         if (requireNamespace("lmerTest", quietly = TRUE)) {
           satt <- TRUE
         } else {
-          stop_wrap("You have requested Satterthwaite p values but you do
-                    not have the lmerTest package installed.")
+          check_installed("lmerTest", reason =
+            "The lmerTest package is required for Satterthwaite d.f.")
         }
       } else if (t.df %in% c("k-r", "kenward-roger", "Kenward-Roger")) {
         if (requireNamespace("pbkrtest", quietly = TRUE)) {
           pbkr <- TRUE
         } else {
-          stop_wrap("You have requested Kenward-Roger p values but you do
-                    not have the pbkrtest package installed.")
+          check_installed("pbkrtest", reason =
+            "The pbkrtest package is required for Kenward-Roger d.f."
+          )
         }
       } else if (is.numeric(t.df) || t.df %in% c("resid", "residual")) {
         manual_df <- TRUE

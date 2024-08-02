@@ -150,9 +150,7 @@ export_summs <- function(...,
                          to.file = NULL,
                          file.name = NULL) {
 
-  if (!requireNamespace("huxtable", quietly = TRUE)) {
-    stop_wrap("Install the huxtable package to use the export_summs function.")
-  }
+  rlang::check_installed("huxtable")
 
   # Capture arguments
   dots <- list(...)

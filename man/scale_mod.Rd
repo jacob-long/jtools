@@ -135,8 +135,8 @@ ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 interaction models.
 
 Other standardization: 
-\code{\link{center_mod}()},
 \code{\link{center}()},
+\code{\link{center_mod}()},
 \code{\link{gscale}()},
 \code{\link{standardize}()}
 }
