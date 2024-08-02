@@ -398,10 +398,12 @@ get_family <- function(model, ...) {
   UseMethod("get_family")
 }
 
+#' @exportS3Method NULL
 get_family.default <- function(model, ...) {
   family(model)
 }
 
+#' @exportS3Method NULL
 get_family.brmsfit <- function(model, resp = NULL, ...) {
   form <- formula(model)
   fam <- family(model)

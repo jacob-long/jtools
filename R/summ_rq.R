@@ -279,12 +279,7 @@ print.summ.rq <- function(x, ...) {
 }
 
 #' @rdname knit_print.summ
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(knitr::knit_print, summ.rq)
-#' } else {
-#'   export(knit_print.summ.rq)
-#' }
+#' @exportS3Method knitr::knit_print
 
 knit_print.summ.rq <- function(x, options = NULL, ...) {
 
@@ -413,12 +408,7 @@ rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
 
 
 #' @rdname glance.summ
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'  S3method(generics::glance, summ.rq)
-#' } else {
-#'  export(glance.summ.rq)
-#' }
+#' @export
 
 glance.summ.rq <- function(x, ...) {
 
