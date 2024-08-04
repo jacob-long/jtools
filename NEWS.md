@@ -26,6 +26,8 @@ or you may want to rearrange into different row/column configurations, etc. I
 expect this to be most useful for cases when you have a multilevel model and 
 there is a random slope specified for the `pred` variable. A version of this
 feature was requested by Github user *5tokesy* (#147). 
+* `plot_coefs()` now handles `fixest_multi` objects from the `fixest` package
+out of the box. (#123)
 
 Other changes:
 

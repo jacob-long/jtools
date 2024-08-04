@@ -186,7 +186,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   dots <- list(...)
   
   # If first element of list is a list, assume the list is a list of models
-  if (inherits(dots[[1]], 'list')) {
+  if (inherits(dots[[1]], "list") || inherits(dots[[1]], "fixest_multi")) {
     mods <- dots[[1]]
     if (is.null(model.names) && !is.null(names(mods))) {
       if (is.null(model.names)) model.names <- names(mods)
