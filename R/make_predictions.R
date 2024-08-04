@@ -14,10 +14,24 @@ prepare_return_data <- function(model, data, return.orig.data,
   if (return.orig.data == FALSE && partial.residuals == FALSE) {
     o <- tibble::as_tibble(pm)
   } else {
-    if (is.null(formula)) {formula <- get_formula(model)}
+    # Want to make sure I return the full original data if it's already given, 
+    # otherwise fetch it again
+    if (is.null(data)) {
+      if (is.null(formula)) {
+        formula <- get_formula(model)
+      }
+      suppressMessages(d <- get_data(model, formula = formula))
+    } else if (!is.null(data)) {
+      if (!is.null(formula)) {
+        # I'll assume formula was specified so that I would fetch more variables
+        suppressMessages(d <- get_data(model, formula = formula))
+      } else {
+        formula <- get_formula(model)
+        d <- data
+      }
+    }
     if (return.orig.data == TRUE && partial.residuals == FALSE) {
-      o <- list(predictions = tibble::as_tibble(pm), data = 
-                suppressMessages(d <- get_data(model, formula = formula)))
+      o <- list(predictions = tibble::as_tibble(pm), data = d)
       if ("is_dpar" %in% names(attributes(formula))) {return(o)}
       resp <- as.character(deparse(get_lhs(formula)))
       # If left-hand side is transformed, make new column in original data for
@@ -50,7 +64,7 @@ prepare_return_data <- function(model, data, return.orig.data,
                   )
                 )
     }
-  }
+    }
   return(o)
 }
 
@@ -135,7 +149,6 @@ prepare_return_data <- function(model, data, return.orig.data,
 #' @rdname make_predictions
 #' @export
 #' 
-
 
 make_predictions.default <- function(model, pred, pred.values = NULL, at = NULL,
   data = NULL, center = TRUE, interval = TRUE,

@@ -10,10 +10,22 @@ user included random effects. This error has been corrected
 omnibus chi-squared test is now included in the model statistics, like it 
 already is when using the function in the console. ([#138](https://github.com/jacob-long/jtools/issues/138)
 
-Enhancement:
+Enhancements:
 
 * `summ()` will now produce model fit statistics for `glm.nb` models 
 ([#142](https://github.com/jacob-long/jtools/issues/142)).
+* `effect_plot()` now includes the argument `facet.by`. If you want to plot
+your prediction variable at multiple values of some other variable, you can 
+pass the name of that variable to `facet.by`. It will, by default, create a 
+separate plot for each unique level of that variable using 
+`ggplot2::facet_wrap()`. If you only want specific levels of the `facet.by`
+variable, you can specify them by giving a vector of values to the `at` argument.
+More than most kinds of plots, you may need to do some further customization
+to the results of `effect_plot()` since the plots may not fit the space well,
+or you may want to rearrange into different row/column configurations, etc. I
+expect this to be most useful for cases when you have a multilevel model and 
+there is a random slope specified for the `pred` variable. A version of this
+feature was requested by Github user *5tokesy* (#147). 
 
 Other changes:
 
