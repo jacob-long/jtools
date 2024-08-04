@@ -80,6 +80,7 @@ ggplot2 rather than base graphics, which some similar functions use."><meta prop
 <span>  cat.pred.point.size <span class="op">=</span> <span class="fl">3.5</span>,</span>
 <span>  partial.residuals <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  color.class <span class="op">=</span> <span class="va">colors</span>,</span>
+<span>  facet.by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -322,6 +323,16 @@ the partial residuals (controlling for the effects of variables besides
 
 <dt id="arg-color-class">color.class<a class="anchor" aria-label="anchor" href="#arg-color-class"></a></dt>
 <dd><p>Deprecated. Now known as <code>colors</code>.</p></dd>
+
+
+<dt id="arg-facet-by">facet.by<a class="anchor" aria-label="anchor" href="#arg-facet-by"></a></dt>
+<dd><p>A variable in the data by which you want to plot the
+effects separately. This will cause the plot to include multiple panels,
+basically a separate plot for each unique value of the variable in
+<code>facet.by</code>. This will be most useful when plotting effects from multilevel
+models (e.g., as fit by <code>lme4</code>'s models) with a random slope for the
+<code>pred</code> variable. You should generally only want to use this if you expect
+the different panels to look meaningfully different. Default is <code>NULL</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
