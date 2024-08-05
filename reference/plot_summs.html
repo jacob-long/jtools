@@ -67,7 +67,8 @@ plots with ggplot2.</p>
 <span>  facet.label.pos <span class="op">=</span> <span class="st">"top"</span>,</span>
 <span>  color.class <span class="op">=</span> <span class="va">colors</span>,</span>
 <span>  resp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  dpar <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  dpar <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  coefs.match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exact"</span>, <span class="st">"regex"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">plot_coefs</span><span class="op">(</span></span>
@@ -91,7 +92,8 @@ plots with ggplot2.</p>
 <span>  facet.label.pos <span class="op">=</span> <span class="st">"top"</span>,</span>
 <span>  color.class <span class="op">=</span> <span class="va">colors</span>,</span>
 <span>  resp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  dpar <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  dpar <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  coefs.match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exact"</span>, <span class="st">"regex"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -223,6 +225,16 @@ you only need to provide a vector of length 2 for <code>resp</code>.</p></dd>
 dependent variable, that can be specified here. If NULL, it is assumed you
 want coefficients for the location/mean parameter, not the distributional
 parameter(s).</p></dd>
+
+
+<dt id="arg-coefs-match">coefs.match<a class="anchor" aria-label="anchor" href="#arg-coefs-match"></a></dt>
+<dd><p>This modifies the way the <code>coefs</code> and <code>omit.coefs</code>
+arguments are interpreted. The default <code>"exact"</code> which represents the
+legacy behavior, will include/exclude coefficients that match exactly
+with your inputs to those functions. If <code>"regex"</code>, <code>coefs</code> and
+<code>omit.coefs</code> are used as the <code>pattern</code> argument for <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl()</a></code> matching
+the coefficient names. Note that using <code>"regex"</code> means you will be unable
+to override the default coefficient names via a named vector.</p></dd>
 
 </dl></div>
     <div class="section level2">
