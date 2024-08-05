@@ -28,6 +28,12 @@ there is a random slope specified for the `pred` variable. A version of this
 feature was requested by Github user *5tokesy* (#147). 
 * `plot_coefs()` now handles `fixest_multi` objects from the `fixest` package
 out of the box. (#123)
+* The `omit.coefs` and `coefs` arguments to  `plot_coefs()` can now be modified
+using the new argument, `coefs.match`. You may use regular expressions to more
+efficiently match coefficient names, which will be most useful when you have 
+models with many coefficients with predictable naming schemes. To have your
+arguments interepreted this way, set `coefs.match = "regex"`. 
+([#122](https://github.com/jacob-long/jtools/issues/122))
 
 Other changes:
 
