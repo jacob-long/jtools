@@ -37,7 +37,7 @@ if (requireNamespace("lme4")) {
   mv <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 }
 
-if (requireNamespace("huxtable") & requireNamespace("broom")) {
+if (requireNamespace("huxtable")) {
 
 test_that("Export doesn't fail with lm", {
   expect_is(export_summs(fit, fit2, fitw), "huxtable")
@@ -170,8 +170,6 @@ test_that("Export can take manual coefficient names", {
 
 context("plot_summs")
 
-if (requireNamespace("broom")) {
-
 test_that("plot_summs doesn't fail with lm", {
   p <- plot_summs(fit, fit2, fitw)
   expect_doppelganger("lm3", p)
@@ -291,7 +289,7 @@ test_that("plot.distributions works", {
   expect_doppelganger("pc-lm2-dists-inner-ci-scale", p)
 })
 
-if (requireNamespace("brms") & requireNamespace("broom.mixed")) {
+if (requireNamespace("brms")) {
   bfit1 <- readRDS("brmfit.rds")
   mvfit <- readRDS("mvfit.rds")
   test_that("plot_coefs works with brms", {
@@ -319,5 +317,4 @@ if (requireNamespace("brms") & requireNamespace("broom.mixed")) {
     })
     expect_doppelganger("pc-brmmv2-multidist-select-dv", p)
   })
-}
 }

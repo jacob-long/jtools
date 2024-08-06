@@ -51,15 +51,15 @@
 <text x='406.47' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='7.82px' lengthAdjust='spacingAndGlyphs'>-1</text>
 <text x='513.49' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='4.89px' lengthAdjust='spacingAndGlyphs'>0</text>
 <text x='319.26' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='42.80px' lengthAdjust='spacingAndGlyphs'>Estimate</text>
-<text x='666.80' y='270.84' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='29.96px' lengthAdjust='spacingAndGlyphs'>Model</text>
-<rect x='624.55' y='282.45' width='21.60' height='17.85' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
+<text x='629.53' y='270.84' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='29.96px' lengthAdjust='spacingAndGlyphs'>Model</text>
+<rect x='624.55' y='282.45' width='21.60' height='17.85' style='stroke-width: 0.00; stroke: #FFFFFF; fill: #FFFFFF;' />
 <line x1='626.71' y1='291.37' x2='643.99' y2='291.37' style='stroke-width: 1.71; stroke: #49B7FC; stroke-linecap: butt;' />
 <circle cx='635.35' cy='291.37' r='2.84' style='stroke-width: 1.42; stroke: #49B7FC; fill: #FFFFFF;' />
-<rect x='624.55' y='300.29' width='21.60' height='17.85' style='stroke-width: 1.07; stroke: #FFFFFF; fill: #FFFFFF;' />
+<rect x='624.55' y='300.29' width='21.60' height='17.85' style='stroke-width: 0.00; stroke: #FFFFFF; fill: #FFFFFF;' />
 <line x1='626.71' y1='309.21' x2='643.99' y2='309.21' style='stroke-width: 1.71; stroke: #FF7B00; stroke-linecap: butt;' />
 <rect x='632.83' y='306.70' width='5.04' height='5.04' style='stroke-width: 1.42; stroke: #FF7B00; fill: #FFFFFF;' />
 <text x='656.61' y='294.40' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='34.73px' lengthAdjust='spacingAndGlyphs'>MPG DV</text>
 <text x='656.61' y='312.24' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='47.45px' lengthAdjust='spacingAndGlyphs'>MPG Sigma</text>
-<text x='30.41' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='343.20px' lengthAdjust='spacingAndGlyphs'>select mpg dv, dpar sigma separate models mv brms fit</text>
+<text x='35.39' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='343.20px' lengthAdjust='spacingAndGlyphs'>select mpg dv, dpar sigma separate models mv brms fit</text>
 </g>
 </svg>

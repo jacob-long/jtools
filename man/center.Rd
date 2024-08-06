@@ -52,7 +52,7 @@ standardize(mtcars, vars = "qsec")
 
 }
 \seealso{
-Other standardization: 
+standardization, scaling, and centering tools
 \code{\link{center_mod}()},
 \code{\link{gscale}()},
 \code{\link{scale_mod}()},

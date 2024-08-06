@@ -55,6 +55,6 @@
 <text x='618.59' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='4.89px' lengthAdjust='spacingAndGlyphs'>4</text>
 <text x='378.76' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='30.58px' lengthAdjust='spacingAndGlyphs'>period</text>
 <text transform='translate(13.05,287.64) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='46.48px' lengthAdjust='spacingAndGlyphs'>incidence</text>
-<text x='43.01' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='111.68px' lengthAdjust='spacingAndGlyphs'>glmer + offset test</text>
+<text x='47.99' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='111.68px' lengthAdjust='spacingAndGlyphs'>glmer + offset test</text>
 </g>
 </svg>

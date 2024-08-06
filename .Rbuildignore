@@ -19,7 +19,6 @@
 ^CONTRIBUTING.md$
 ^\.github$
 ^\.vs$
-^doc$
 ^Meta$
 ^make_hex\.R$
 ^hex\.png$
@@ -27,3 +26,4 @@
 ^paper\.md$
 ^pkgdown$
 ^CRAN-SUBMISSION$
+^doc$

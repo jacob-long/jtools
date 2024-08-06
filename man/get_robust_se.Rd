@@ -18,7 +18,7 @@ get_robust_se(
 \item{type}{One of \code{"HC3"}, \code{"const"}, \code{"HC"}, \code{"HC0"}, \code{"HC1"},
 \code{"HC2"}, \code{"HC4"}, \code{"HC4m"}, \code{"HC5"}. See \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}} for some
 more details on these choices. Note that some of these do not work for
-clustered standard errors (see sandwich::vcovCL()]).}
+clustered standard errors (see \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}).}
 
 \item{cluster}{If you want clustered standard errors, either a string naming
 the column in \code{data} that represents the clusters or a vector of clusters

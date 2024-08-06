@@ -26,7 +26,8 @@ plot_summs(
   facet.label.pos = "top",
   color.class = colors,
   resp = NULL,
-  dpar = NULL
+  dpar = NULL,
+  coefs.match = c("exact", "regex")
 )
 
 plot_coefs(
@@ -50,7 +51,8 @@ plot_coefs(
   facet.label.pos = "top",
   color.class = colors,
   resp = NULL,
-  dpar = NULL
+  dpar = NULL,
+  coefs.match = c("exact", "regex")
 )
 }
 \arguments{
@@ -137,6 +139,14 @@ you only need to provide a vector of length 2 for \code{resp}.}
 dependent variable, that can be specified here. If NULL, it is assumed you
 want coefficients for the location/mean parameter, not the distributional
 parameter(s).}
+
+\item{coefs.match}{This modifies the way the \code{coefs} and \code{omit.coefs}
+arguments are interpreted. The default \code{"exact"} which represents the
+legacy behavior, will include/exclude coefficients that match exactly
+with your inputs to those functions. If \code{"regex"}, \code{coefs} and
+\code{omit.coefs} are used as the \code{pattern} argument for \code{\link[=grepl]{grepl()}} matching
+the coefficient names. Note that using \code{"regex"} means you will be unable
+to override the default coefficient names via a named vector.}
 }
 \value{
 A ggplot object.

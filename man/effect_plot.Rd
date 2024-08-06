@@ -38,6 +38,7 @@ effect_plot(
   cat.pred.point.size = 3.5,
   partial.residuals = FALSE,
   color.class = colors,
+  facet.by = NULL,
   ...
 )
 }
@@ -213,6 +214,14 @@ the partial residuals (controlling for the effects of variables besides
 \code{pred}).}
 
 \item{color.class}{Deprecated. Now known as \code{colors}.}
+
+\item{facet.by}{A variable in the data by which you want to plot the
+effects separately. This will cause the plot to include multiple panels,
+basically a separate plot for each unique value of the variable in
+\code{facet.by}. This will be most useful when plotting effects from multilevel
+models (e.g., as fit by \code{lme4}'s models) with a random slope for the
+\code{pred} variable. You should generally only want to use this if you expect
+the different panels to look meaningfully different. Default is \code{NULL}.}
 
 \item{...}{extra arguments passed to \code{make_predictions()}}
 }

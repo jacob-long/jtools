@@ -8,15 +8,15 @@
 \alias{knit_print.summ.rq}
 \title{knitr methods for summ}
 \usage{
-knit_print.summ.lm(x, options = NULL, ...)
+\method{knit_print}{summ.lm}(x, options = NULL, ...)
 
-knit_print.summ.glm(x, options = NULL, ...)
+\method{knit_print}{summ.glm}(x, options = NULL, ...)
 
-knit_print.summ.svyglm(x, options = NULL, ...)
+\method{knit_print}{summ.svyglm}(x, options = NULL, ...)
 
-knit_print.summ.merMod(x, options = NULL, ...)
+\method{knit_print}{summ.merMod}(x, options = NULL, ...)
 
-knit_print.summ.rq(x, options = NULL, ...)
+\method{knit_print}{summ.rq}(x, options = NULL, ...)
 }
 \arguments{
 \item{x}{The \code{summ} object}

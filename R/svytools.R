@@ -332,11 +332,7 @@ print.wgttest <- function(x, ...) {
 pf_sv_test <- function(model, data = NULL, weights, sims = 1000,
                         digits = getOption("jtools-digits", default = 3)) {
 
-  if (!requireNamespace("boot", quietly = TRUE)) {
-    stop("This function relies on the boot package.\n",
-         "Please install it and try again.",
-         call. = FALSE)
-  }
+  check_installed("boot", reason = "This function requires the boot package.")
 
   # Need to parse the arguments
   if (length(as.character(substitute(weights))) == 1 &&
@@ -697,10 +693,9 @@ svycor <- function(formula, design, na.rm = FALSE,
     return(c)
   } else {
 
-    if (!requireNamespace("weights", quietly = TRUE)) {
-      stop("p-value calculations require the 'weights' package.")
-    }
-
+    check_installed("weights", reason =
+       "p-value calculations require the 'weights' package."
+    )
     # Use wtd.cor
     wcors <- weights::wtd.cor(mf, weight = wts, bootse = TRUE, mean1 = mean1,
                               bootn = bootn, bootp = TRUE)
@@ -716,10 +711,7 @@ svycor <- function(formula, design, na.rm = FALSE,
 
 }
 
-
-
 #' @export
-
 print.svycor <- function(x, ...) {
 
   if (x$sig.stats == FALSE) {

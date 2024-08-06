@@ -46,6 +46,6 @@
 <text x='547.71' y='552.03' text-anchor='middle' style='font-size: 8.80px; fill: #34495E; font-family: sans;' textLength='9.79px' lengthAdjust='spacingAndGlyphs'>12</text>
 <text x='382.44' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='34.85px' lengthAdjust='spacingAndGlyphs'>Murder</text>
 <text transform='translate(13.05,287.64) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='36.08px' lengthAdjust='spacingAndGlyphs'>Income</text>
-<text x='50.35' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='100.40px' lengthAdjust='spacingAndGlyphs'>Robust intervals</text>
+<text x='55.33' y='26.53' style='font-size: 14.00px; font-weight: bold; fill: #34495E; font-family: sans;' textLength='100.40px' lengthAdjust='spacingAndGlyphs'>Robust intervals</text>
 </g>
 </svg>

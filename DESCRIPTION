@@ -15,19 +15,20 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Imports: 
-    crayon,
+    cli,
     generics,
+    broom,
+    broom.mixed,
     ggplot2 (>= 3.4.0),
     magrittr,
     pander,
     pkgconfig,
-    rlang (>= 0.3.0),
+    rlang,
+    sandwich,
     tibble
 Suggests:
   boot,
-  broom,
-  broom.mixed,
-  huxtable (>= 3.0.0),
+  huxtable,
   kableExtra,
   lme4,
   lmerTest,
@@ -35,7 +36,6 @@ Suggests:
   methods,
   pbkrtest,
   RColorBrewer,
-  sandwich,
   scales,
   survey,
   weights,
@@ -47,8 +47,8 @@ Enhances:
   brms,
   quantreg,
   rstanarm
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2.9000
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 Depends: 
-    R (>= 3.5.0)
+    R (>= 3.6.0)

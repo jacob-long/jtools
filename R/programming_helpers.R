@@ -288,7 +288,7 @@ give_back <- function(x) {
 }
 c_orange <- function(...) {
   if (!is.rstudio()) {
-    orange <- crayon::make_style("orange") 
+    orange <- cli::make_ansi_style("orange") 
     orange(...)
   } else {
     give_back(...)
@@ -296,14 +296,14 @@ c_orange <- function(...) {
 }
 c_red <- function(...) {
   if (!is.rstudio()) {
-    crayon::red(...)
+    cli::col_red(...)
   } else {
     give_back(...)
   }
 }
 c_cyan <- function(...) {
   if (!is.rstudio()) {
-    crayon::cyan(...)
+    cli::col_cyan(...)
   } else {
     give_back(...)
   }
@@ -399,7 +399,6 @@ warn_wrap <- function(..., brk = "\n", class = NULL, call. = FALSE) {
 
 # Like cat_wrap but for errors
 #' @rdname wrap_str
-#' @importFrom crayon red
 #' @export 
 stop_wrap <- function(...,  brk = "\n",
                       trace = rlang::trace_back(bottom = rlang::caller_env()),
@@ -413,7 +412,6 @@ stop_wrap <- function(...,  brk = "\n",
 }
 
 # Like cat_wrap but for messages
-#' @importFrom crayon cyan
 #' @rdname wrap_str
 #' @export 
 msg_wrap <- function(..., class = NULL, brk = "\n") {

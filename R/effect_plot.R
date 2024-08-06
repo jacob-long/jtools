@@ -174,6 +174,13 @@
 #' @param partial.residuals Instead of plotting the observed data, you may plot
 #'  the partial residuals (controlling for the effects of variables besides 
 #'  `pred`). 
+#' @param facet.by A variable in the data by which you want to plot the
+#'  effects separately. This will cause the plot to include multiple panels,
+#'  basically a separate plot for each unique value of the variable in 
+#'  `facet.by`. This will be most useful when plotting effects from multilevel
+#'  models (e.g., as fit by `lme4`'s models) with a random slope for the 
+#'  `pred` variable. You should generally only want to use this if you expect
+#'  the different panels to look meaningfully different. Default is `NULL`.
 #'
 #' @details This function provides a means for plotting effects for the
 #'   purpose of exploring regression estimates. You must have the
@@ -259,20 +266,48 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
   point.size = 1.5, point.alpha = 0.6, jitter = 0, rug = FALSE, 
   rug.sides = "lb", force.cat = FALSE, cat.geom = c("point", "line", "bar"), 
   cat.interval.geom = c("errorbar", "linerange"), cat.pred.point.size = 3.5, 
-  partial.residuals = FALSE, color.class = colors, ...) {
+  partial.residuals = FALSE, color.class = colors, facet.by = NULL, ...) {
   
   # Evaluate the pred arg
-  pred <- quo_name(enexpr(pred))
-  
+  pred <- as_name(enquo(pred))
+
+  # Get the data right now rather than checking for its presence several times
+  if (is.null(data)) {
+    data <- get_data(model)
+  }
+
+  # Evaluate the facet.by arg, knowing it may be NULL
+  facet.by <- enquo(facet.by) 
+  if (!quo_is_null(facet.by)) { # check for NULL
+    facet.by <- as_name(facet.by)
+    if (is.null(at) || facet.by %nin% names(at)) {
+      # If user isn't telling me the levels, then grab them all
+      if (facet.by %nin% names(data)) {
+        # Assume issue is variable isn't in the model formula for some reason
+        the_formula <- stats::formula(model)
+        the_formula <- update(the_formula, paste(". ~ . +", facet.by))
+        data <- get_data(model, formula = the_formula)
+      }
+      at[[facet.by]] <- unique(data[[facet.by]])
+      if (length(at[[facet.by]]) > 10) {
+        msg_wrap(facet.by, " has ", length(at[[facet.by]]), " levels. This may
+                 result in a difficult-to-see plot and/or a slow loading time
+                 while the plot is generated. If you'd like to see just a 
+                 subset of the levels, you can specify them in the `at` 
+                 argument (e.g., at = list(", facet.by, " = c(",
+                 dput(at[[facet.by]][1]), ", ", dput(at[[facet.by]][2]), ", ",
+                 dput(at[[facet.by]][3]), "))", brk = "")
+      }
+    }
+  } else {facet.by <- NULL} # don't make it a quosure anymore
+
   # Have a sensible interval default for categorical predictors
-  if ("interval" %nin% names(match.call())[-1] &&
-      !(is.numeric(get_data(model, warn = FALSE)[[pred]]) &&
+  if ("interval" %nin% names(match.call())[-1] && !(is.numeric(data[[pred]]) &&
         force.cat == FALSE)) {
     interval <- TRUE
   }
   
   if (force.cat == TRUE && is.null(pred.values)) {
-    if (is.null(data)) {data <- get_data(model)}
     pred.values <- sort(unique(suppressMessages(data[[pred]])))
   }
   
@@ -290,6 +325,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                                set.offset = set.offset, return.orig.data = TRUE,
                                partial.residuals = partial.residuals, 
                                data = data, ...)
+
   # Putting these outputs into separate objects
   pm <- pred_out[[1]]
   d <- pred_out[[2]]
@@ -318,7 +354,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
                            weights = get_weights(model, d)$weights_name,
                            rug = rug, rug.sides = rug.sides,
                            point.size = point.size, point.alpha = point.alpha,
-                           point.color = colors)
+                           point.color = colors, facet.by = facet.by)
   } else {
     plot_cat(predictions = pm, pred = pred, data = d,  
              geom = cat.geom, pred.values = pred.values,
@@ -329,7 +365,7 @@ effect_plot <- function(model, pred, pred.values = NULL, centered = "all",
              resp = get_response_name(model, ...), jitter = jitter, 
              interval.geom = cat.interval.geom, line.thickness = line.thickness,
              point.size = point.size, pred.point.size = cat.pred.point.size,
-             point.alpha = point.alpha, point.color = colors)
+             point.alpha = point.alpha, point.color = colors, facet.by = facet.by)
   }
   
 }
@@ -340,11 +376,12 @@ plot_effect_continuous <-
            main.title = NULL, colors = NULL, line.thickness = 1.1,
            jitter = 0.1, resp = NULL, weights = NULL, rug = FALSE,
            rug.sides = "b",
-           point.size = 1, point.alpha = 0.6, point.color = "black") {
+           point.size = 1, point.alpha = 0.6, point.color = "black", 
+           facet.by = NULL) {
   
   pm <- predictions
   d <- data
-  
+
   if (is.null(x.label)) {
     x.label <- pred
   }
@@ -353,16 +390,12 @@ plot_effect_continuous <-
     y.label <- resp
   }
   
-  pred <- sym(pred)
-  resp <- sym(resp)
-  if (!is.null(weights)) {weights <- sym(weights)}
-  
   # If only 1 jitter arg, just duplicate it
   if (length(jitter) == 1) {jitter <- rep(jitter, 2)}
 
   # Starting plot object
-  p <- ggplot(pm, aes(x = !! pred, y = !! resp))
-
+  p <- ggplot(pm, aes(x = .data[[pred]], y = .data[[resp]]))
+    
   # Plot observed data — do this first to plot the line over the points
   if (plot.points == TRUE) {
     
@@ -374,7 +407,8 @@ plot_effect_continuous <-
     # Need to use layer function to programmatically define constant aesthetics
     p <- p + layer(geom = "point", data = d, stat = "identity",
                    inherit.aes = FALSE, show.legend = FALSE,
-                   mapping = aes(x = !! pred, y = !! resp, size = !! weights),
+                   mapping = aes(x = .data[[pred]], y = .data[[resp]], 
+                                 size = .data[[weights]]),
                    position = position_jitter(width = jitter[1], 
                                               height = jitter[2]),
                    params = constants) +
@@ -388,14 +422,14 @@ plot_effect_continuous <-
   # Plot intervals if requested
   if (interval == TRUE) {
     p <- p + geom_ribbon(data = pm, 
-                         aes(ymin = !! sym("ymin"),  ymax = !! sym("ymax")),
+                         aes(ymin = .data$ymin,  ymax = .data$ymax),
                          alpha = 1/5, show.legend = FALSE, fill = colors)
   }
   
   # Rug plot for marginal distributions
   if (rug == TRUE) {
     p <- p + geom_rug(data = d,
-                      mapping = aes(x = !! pred, y = !! resp), alpha = 0.6,
+                      mapping = aes(x = .data[[pred]], y = .data[[resp]]), alpha = 0.6,
                       position = position_jitter(width = jitter[1]),
                       sides = rug.sides, inherit.aes = TRUE, color = colors)
   }
@@ -421,6 +455,10 @@ plot_effect_continuous <-
     }
   }
   
+  if (!is.null(facet.by)) {
+    p <- p + facet_wrap(facet.by)
+  }   
+    
   # Give the plot the user-specified title if there is one
   if (!is.null(main.title)) {
     p <- p + ggtitle(main.title)
@@ -430,7 +468,7 @@ plot_effect_continuous <-
   return(p)
   
   
-}
+  }
 
 plot_cat <- function(predictions, pred, data = NULL, 
  geom = c("point", "line", "bar", "boxplot"), pred.values = NULL,
@@ -439,7 +477,7 @@ plot_cat <- function(predictions, pred, data = NULL,
  resp = NULL, jitter = 0.1, geom.alpha = NULL, dodge.width = NULL,
  errorbar.width = NULL, interval.geom = c("errorbar", "linerange"),
  line.thickness = 1.1, point.size = 1, pred.point.size = 3.5, 
- point.alpha = 0.6, point.color = "black") {
+ point.alpha = 0.6, point.color = "black", facet.by = NULL) {
   
   pm <- predictions
   d <- data
@@ -503,7 +541,7 @@ plot_cat <- function(predictions, pred, data = NULL,
   }
   
 
-  p <- ggplot(pm, aes(x = !! pred, y = !! resp, group = 1))
+  p <- ggplot(pm, aes(x = .data[[pred]], y = .data[[resp]], group = 1))
   
   if (geom == "bar") {
     p <- p + geom_bar(stat = "identity", position = "dodge", alpha = a_level,
@@ -522,13 +560,13 @@ plot_cat <- function(predictions, pred, data = NULL,
   
   # Plot intervals if requested
   if (interval == TRUE && interval.geom[1] == "errorbar") {
-    p <- p + geom_errorbar(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
+    p <- p + geom_errorbar(aes(ymin = .data$ymin, ymax = .data$ymax),
                            alpha = 1, show.legend = FALSE,
                            position = position_dodge(dodge.width),
                            width = errorbar.width,
                            linewidth = line.thickness, color = colors)
   } else if (interval == TRUE && interval.geom[1] %in% c("line", "linerange")) {
-    p <- p + geom_linerange(aes(ymin = !! sym("ymin"), ymax = !! sym("ymax")),
+    p <- p + geom_linerange(aes(ymin = .data$ymin, ymax = .data$ymax),
                             alpha = 0.8, show.legend = FALSE,
                             position = position_dodge(dodge.width),
                             linewidth = line.thickness, color = colors)
@@ -546,7 +584,8 @@ plot_cat <- function(predictions, pred, data = NULL,
     # Need to use layer function to programmatically define constant aesthetics
     p <- p + layer(geom = "point", data = d, stat = "identity",
                    inherit.aes = FALSE, show.legend = FALSE,
-                   mapping = aes(x = !! pred, y = !! resp, size = !! weights),
+                   mapping = aes(x = .data[[pred]], y = .data[[resp]], 
+                                 size = .data[[weights]]),
                    position = position_jitter(width = jitter[1], 
                                               height = jitter[2]),
                    params = constants) +
@@ -558,6 +597,10 @@ plot_cat <- function(predictions, pred, data = NULL,
   p <- p + theme_nice() + drop_x_gridlines() + 
     labs(x = x.label, y = y.label) # better labels for axes
   
+  if (!is.null(facet.by)) {
+    p <- p + facet_wrap(facet.by)
+  }   
+
   # Give the plot the user-specified title if there is one
   if (!is.null(main.title)) {
     p <- p + ggtitle(main.title)
@@ -565,6 +608,5 @@ plot_cat <- function(predictions, pred, data = NULL,
   
   # Return the plot
   return(p)
-  
   
 }
