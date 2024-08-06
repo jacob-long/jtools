@@ -173,6 +173,8 @@ get_weights <- function(model, data) {
       wname <- NULL
     } else {
       wname <- all.vars(as.formula(paste("~", wname)))
+      # this can also make it character(0)
+      if (length(wname) == 0) {wname <- NULL}
     }
     
     if ("(weights)" %in% colnames(data) && !is.null(wname)) {

@@ -9,6 +9,9 @@ user included random effects. This error has been corrected
 * When printing `summ.glm()` results with `knitr`, the *p* value for the 
 omnibus chi-squared test is now included in the model statistics, like it 
 already is when using the function in the console. ([#138](https://github.com/jacob-long/jtools/issues/138)
+* `effect_plot()` no longer fails with an error when models weights are 
+specified without a variable name. 
+([#156](https://github.com/jacob-long/jtools/issues/156))
 
 Enhancements:
 
