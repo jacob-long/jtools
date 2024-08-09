@@ -225,7 +225,6 @@ summ.rq <- function(model, scale = FALSE,
 ### PRINT METHOD
 
 #' @export
-#' @importFrom crayon underline inverse italic
 
 print.summ.rq <- function(x, ...) {
 
@@ -249,13 +248,13 @@ print.summ.rq <- function(x, ...) {
              "fnc" = "Frisch-Newton (user-specified equality constraints)")
 
     type <- paste0("Quantile regression",
-                   "\n  ", italic("Quantile (tau): "), j$model$tau, "\n  ",
-                   italic("Method: "), method)
+                   "\n  ", style_italic("Quantile (tau): "), j$model$tau, "\n  ",
+                   style_italic("Method: "), method)
     print_mod_info(missing = x$missing, n = x$n, dv = x$dv, type = type)
   }
 
   if (x$model.fit == TRUE) {
-    stats <- paste(italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
+    stats <- paste(style_italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
                    num_print(x$r1, digits = x$digits), sep = "")
     print_mod_fit(stats)
   }
@@ -280,12 +279,7 @@ print.summ.rq <- function(x, ...) {
 }
 
 #' @rdname knit_print.summ
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(knitr::knit_print, summ.rq)
-#' } else {
-#'   export(knit_print.summ.rq)
-#' }
+#' @exportS3Method knitr::knit_print
 
 knit_print.summ.rq <- function(x, options = NULL, ...) {
 
@@ -341,7 +335,7 @@ knit_print.summ.rq <- function(x, options = NULL, ...) {
   }
 
   if (x$model.fit == T && !is.null(x$modpval)) {
-    stats <- paste(italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
+    stats <- paste(style_italic("R\u00B9"), paste0("(", j$model$tau, ")"), " = ",
                    num_print(x$r1, digits = x$digits), sep = "")
     stats <- data.frame(stat = c(paste0("R\u00B9 ", "(", j$model$tau, ")")),
                         value = c(num_print(x$r1, digits = x$digits))
@@ -414,12 +408,7 @@ rq.fit.br <- function(x, y, tau = 0.5, alpha = 0.1, ci = FALSE,
 
 
 #' @rdname glance.summ
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'  S3method(generics::glance, summ.rq)
-#' } else {
-#'  export(glance.summ.rq)
-#' }
+#' @export
 
 glance.summ.rq <- function(x, ...) {
 

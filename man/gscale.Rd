@@ -163,9 +163,9 @@ open access)
 regression models. On request, it will center and/or standardize variables
 before printing its output.
 
-Other standardization: 
-\code{\link{center_mod}()},
+standardization, scaling, and centering tools
 \code{\link{center}()},
+\code{\link{center_mod}()},
 \code{\link{scale_mod}()},
 \code{\link{standardize}()}
 }

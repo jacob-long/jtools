@@ -64,6 +64,13 @@
 #'   dependent variable, that can be specified here. If NULL, it is assumed you 
 #'   want coefficients for the location/mean parameter, not the distributional
 #'   parameter(s).
+#' @param coefs.match This modifies the way the `coefs` and `omit.coefs` 
+#'   arguments are interpreted. The default `"exact"` which represents the 
+#'   legacy behavior, will include/exclude coefficients that match exactly
+#'   with your inputs to those functions. If `"regex"`, `coefs` and
+#'   `omit.coefs` are used as the `pattern` argument for [grepl()] matching
+#'   the coefficient names. Note that using `"regex"` means you will be unable
+#'   to override the default coefficient names via a named vector.
 #' @return A ggplot object.
 #' @details A note on the distinction between `plot_summs` and `plot_coefs`:
 #'   `plot_summs` only accepts models supported by [summ()] and allows users
@@ -120,7 +127,8 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                        line.size = c(0.8, 2), legend.title = "Model",
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors, 
-                       resp = NULL, dpar = NULL) {
+                       resp = NULL, dpar = NULL, 
+                       coefs.match = c("exact", "regex")) {
   
   # Capture arguments
   dots <- list(...)
@@ -151,7 +159,7 @@ plot_summs <- function(..., ci_level = .95, model.names = NULL, coefs = NULL,
                     groups = list(groups), facet.rows = facet.rows,
                     facet.cols = facet.cols, facet.label.pos = facet.label.pos, 
                     color.class = color.class, resp = resp, dpar = dpar,
-                    ex_args))
+                    coefs.match = coefs.match, ex_args))
   
   do.call("plot_coefs", args = args)
   
@@ -171,11 +179,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
                        line.size = c(0.8, 2), legend.title = "Model", 
                        groups = NULL, facet.rows = NULL, facet.cols = NULL,
                        facet.label.pos = "top", color.class = colors,
-                       resp = NULL, dpar = NULL) {
-  
-  if (!requireNamespace("broom", quietly = TRUE)) {
-    stop_wrap("Install the broom package to use the plot_coefs function.")
-  }
+                       resp = NULL, dpar = NULL, 
+                       coefs.match = c("exact", "regex")) {
   
   if (!is.numeric(line.size[1])) stop_wrap("line.size must be a number (or two
     numbers in a vector).")
@@ -190,7 +195,7 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   dots <- list(...)
   
   # If first element of list is a list, assume the list is a list of models
-  if (inherits(dots[[1]], 'list')) {
+  if (inherits(dots[[1]], "list") || inherits(dots[[1]], "fixest_multi")) {
     mods <- dots[[1]]
     if (is.null(model.names) && !is.null(names(mods))) {
       if (is.null(model.names)) model.names <- names(mods)
@@ -223,6 +228,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
     ex_args <- NULL
   }
   
+  coefs.match <- match.arg(coefs.match)
+
   if (!is.null(omit.coefs) && !is.null(coefs)) {
     if (any(omit.coefs %nin% c("(Intercept)", "Intercept"))) {
       msg_wrap("coefs argument overrides omit.coefs argument. Displaying
@@ -239,7 +246,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
   # Create tidy data frame combining each model's tidy output
   tidies <- make_tidies(mods = mods, ex_args = ex_args, ci_level = ci_level,
                         model.names = model.names, omit.coefs = omit.coefs,
-                        coefs = coefs, resp = resp, dpar = dpar)
+                        coefs = coefs, resp = resp, dpar = dpar, 
+                        coefs.match = coefs.match)
   
   n_models <- length(unique(tidies$model))
   
@@ -249,7 +257,8 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
       tidies_inner <- make_tidies(mods = mods, ex_args = ex_args,
                                   ci_level = inner_ci_level,
                                   model.names = model.names,
-                                  omit.coefs = omit.coefs, coefs = coefs)
+                                  omit.coefs = omit.coefs, coefs = coefs,
+                                  coefs.match = coefs.match)
       
       tidies_inner$conf.low.inner <- tidies_inner$conf.low
       tidies_inner$conf.high.inner <- tidies_inner$conf.high
@@ -425,18 +434,13 @@ plot_coefs <- function(..., ci_level = .95, inner_ci_level = NULL,
 }
 
 make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
-                        coefs, resp = NULL, dpar = NULL) {
+                        coefs, resp = NULL, dpar = NULL, coefs.match = NULL) {
   
   # Need to handle complexities of resp and dpar arguments
   dpars <- NULL
   dpar_fits <- FALSE
   resps <- NULL
   if ("brmsfit" %in% sapply(mods, class)) {
-    
-    if (!requireNamespace("broom.mixed")) {
-      stop_wrap("Please install the broom.mixed package to process `brmsfit`
-                objects.")
-    }
     
     mv_fits <- sapply(mods, function(x) "mvbrmsformula" %in% class(formula(x)))
     if (any(mv_fits)) {
@@ -478,26 +482,11 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   tidies <- as.list(rep(NA, times = length(mods)))
   
   for (i in seq_along(mods)) {
-    
-    # Major kludge for methods clash between broom and broom.mixed
-    # Making namespace environment with broom.mixed before generics 
-    # to try to put those methods in the search path
-    # Will drop after update to broom 0.7.0
-    if (requireNamespace("broom.mixed")) {
-      nse <- as.environment(unlist(sapply(c(asNamespace("broom.mixed"), 
-                                            asNamespace("generics")),
-                                          as.list)))
-    } else {
-      nse <- asNamespace("generics")
-    }
+
+    nse <- asNamespace("generics")
     method_stub <- find_S3_class("tidy", mods[[i]], package = "generics")
-    if (getRversion() < "3.5") {
-      # getS3method() only available in R >= 3.3
-      the_method <- get(paste0("tidy.", method_stub), nse,
-                        mode = "function")
-    } else {
-      the_method <- utils::getS3method("tidy", method_stub, envir = nse)
-    }
+    the_method <- utils::getS3method("tidy", method_stub, envir = nse)
+
     if (!is.null(ex_args)) {
       method_args <- formals(the_method)
       
@@ -576,6 +565,13 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   
   # Combine the tidy frames into one, long frame
   tidies <- do.call(rbind, tidies)
+
+  # Check if we have any rows. Mostly so I can give a more informative message
+  # if it goes to zero due to the coef filters later.
+  if (nrow(tidies) == 0) {
+    stop_wrap("The coefficient table for your model(s) is empty. It's not due to
+               the `coefs` or `omit.coefs` arguments.")
+  }
   
   # For consistency in creating the factors apply contrived names to model.names
   if (is.null(model.names)) {
@@ -584,7 +580,12 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
   
   # Drop omitted coefficients
   if (!is.null(omit.coefs)) {
-    tidies <- tidies[tidies$term %nin% omit.coefs,]
+    if (coefs.match == "exact") {
+      tidies <- tidies[tidies$term %nin% omit.coefs,]
+    } else {
+      # this rowSums/sapply approach lets me deal with vector inputs
+      tidies <- tidies[rowSums(sapply(omit.coefs, grepl, tidies$term)) == 0,]
+    }
   }
   
   # Creating factors with consistent ordering for coefficients too
@@ -592,10 +593,26 @@ make_tidies <- function(mods, ex_args, ci_level, model.names, omit.coefs,
     coefs <- unique(tidies$term)
     names(coefs) <- coefs
   } else {
-    tidies <- tidies[tidies$term %in% coefs,]
-    if (is.null(names(coefs))) {
+    if (coefs.match == "exact") {
+      tidies <- tidies[tidies$term %in% coefs,]
+      if (is.null(names(coefs))) {
+        names(coefs) <- coefs
+      }
+    } else {
+      # User can't really pass preferred names for coefficients with partial 
+      # matching so I need to grab the names and name the vector.
+      the_coefs <- tidies$term[rowSums(sapply(coefs, grepl, tidies$term)) > 0]
+      # Now filter the data frame
+      tidies <- tidies[rowSums(sapply(coefs, grepl, tidies$term)) > 0,]
+      coefs <- the_coefs
       names(coefs) <- coefs
     }
+  }
+
+  if (nrow(tidies) == 0) {
+    stop_wrap("After applying filters from the `coefs` and `omit.coefs` 
+              arguments, there are no coefficients left. Check for errors
+              in your inputs to those arguments.")
   }
   
   # For some reason, the order of the legend and the dodged colors

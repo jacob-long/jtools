@@ -313,5 +313,11 @@ if (requireNamespace("rstanarm") & requireNamespace("lme4")) {
     expect_s3_class(make_predictions(rsfit, pred = "size", interval = TRUE,
       estimate = "median", data = cbpp), "data.frame")
   })
+  test_that("facet.by works with rstanarm", {
+    p <- effect_plot(rsfit, pred = "size", interval = TRUE, data = lme4::cbpp,
+                     facet.by = "herd") +
+         ggtitle("stanreg facet.by")
+    expect_doppelganger("rstanarm-facet", p)
+  })
 }
 

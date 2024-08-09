@@ -134,9 +134,9 @@ ed.). Mahwah, NJ: Lawrence Erlbaum Associates, Inc.
 \code{\link{interact_plot}} creates attractive, user-configurable plots of
 interaction models.
 
-Other standardization: 
-\code{\link{center_mod}()},
+standardization, scaling, and centering tools
 \code{\link{center}()},
+\code{\link{center_mod}()},
 \code{\link{gscale}()},
 \code{\link{standardize}()}
 }

@@ -348,6 +348,7 @@ test_coefs.default <- function(x, the_vcov = NULL, df = NULL, ...) {
 
 }
 
+#' @exportS3Method NULL
 test_coefs.glm <- function(x, the_vcov = NULL, df = Inf, ...) {
   # Only difference is default DF
   test_coefs.default(x, the_vcov = the_vcov, df = df, ...)
@@ -417,31 +418,9 @@ predict_rob <- function(model, .vcov = vcov(model), newdata = NULL,
 
 }
 
-## Kludge to fix glht compatibility
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(generics::tidy, glht)
-#' } else {
-#'   export(tidy.glht)
-#' }
-tidy.glht <- function (x, conf.int = FALSE, conf.level = 0.95, ...) {
-  if (!conf.int) {
-    tibble(lhs = rownames(x$linfct), rhs = x$rhs, estimate = stats::coef(x))
-  } else {
-    confs <- as.data.frame(confint(x, level = conf.level)$confint)
-    tibble(lhs = rownames(x$linfct), rhs = x$rhs, estimate = stats::coef(x),
-           conf.low = confs$lwr, conf.high = confs$upr)
-  }
-}
-
 #' @importFrom tibble tibble as_tibble
 #' @importFrom stats confint
-#' @rawNamespace 
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(generics::tidy, summary.glht)
-#' } else {
-#'   export(tidy.summary.glht)
-#' }
+#' @export
 tidy.summary.glht <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
   lhs_rhs <- tibble(lhs = rownames(x$linfct), rhs = x$rhs)
   coef <- as_tibble(x$test[c("coefficients", "sigma", 
@@ -456,3 +435,9 @@ tidy.summary.glht <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
   }
   out
 }
+
+#' @import broom
+NULL
+
+#' @import broom.mixed
+NULL

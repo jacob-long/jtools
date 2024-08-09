@@ -20,90 +20,6 @@ if (!nzchar(system.file(package = "interactions"))) {
 if (!nzchar(system.file(package = "interactions"))) {
   export(sim_slopes)
 }
-
-if (getRversion() >= "3.6.0") {
-  S3method(generics::tidy, glht)
-} else {
-  export(tidy.glht)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(generics::tidy, summary.glht)
-} else {
-  export(tidy.summary.glht)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(knitr::knit_print, summ.glm)
-} else {
-  export(knit_print.summ.glm)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(knitr::knit_print, summ.lm)
-} else {
-  export(knit_print.summ.lm)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(knitr::knit_print, summ.merMod)
-} else {
-  export(knit_print.summ.merMod)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(knitr::knit_print, summ.rq)
-} else {
-  export(knit_print.summ.rq)
-}
-
-if (getRversion() >= "3.6.0") {
-  S3method(knitr::knit_print, summ.svyglm)
-} else {
-  export(knit_print.summ.svyglm)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::glance, summ.lm)
-} else {
- export(glance.summ.lm)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::glance, summ.glm)
-} else {
- export(glance.summ.glm)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::glance, summ.svyglm)
-} else {
- export(glance.summ.svyglm)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::glance, summ.merMod)
-} else {
- export(glance.summ.merMod)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::glance, summ.rq)
-} else {
- export(glance.summ.rq)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::tidy, summ)
-} else {
- export(tidy.summ)
-}
-
-if (getRversion() >= "3.6.0") {
- S3method(generics::tidy, summ.merMod)
-} else {
- export(tidy.summ.merMod)
-}
 S3method("%just%",data.frame)
 S3method("%just%",default)
 S3method("%just%",list)
@@ -126,8 +42,15 @@ S3method(get_formula,brmsfit)
 S3method(get_formula,default)
 S3method(get_formula,panelmodel)
 S3method(glance,summ.glm)
+S3method(glance,summ.lm)
 S3method(glance,summ.merMod)
+S3method(glance,summ.rq)
 S3method(glance,summ.svyglm)
+S3method(knitr::knit_print,summ.glm)
+S3method(knitr::knit_print,summ.lm)
+S3method(knitr::knit_print,summ.merMod)
+S3method(knitr::knit_print,summ.rq)
+S3method(knitr::knit_print,summ.svyglm)
 S3method(make_predictions,brmsfit)
 S3method(make_predictions,default)
 S3method(make_predictions,merMod)
@@ -159,6 +82,9 @@ S3method(summ,lm)
 S3method(summ,merMod)
 S3method(summ,rq)
 S3method(summ,svyglm)
+S3method(tidy,summ)
+S3method(tidy,summ.merMod)
+S3method(tidy,summary.glht)
 export("%just%")
 export("%just%<-")
 export("%nin%")
@@ -212,13 +138,11 @@ export(weights_tests)
 export(wgttest)
 export(wrap_str)
 export(wtd.sd)
+import(broom)
+import(broom.mixed)
+import(cli)
 import(ggplot2)
 import(rlang)
-importFrom(crayon,cyan)
-importFrom(crayon,inverse)
-importFrom(crayon,italic)
-importFrom(crayon,red)
-importFrom(crayon,underline)
 importFrom(generics,glance)
 importFrom(generics,tidy)
 importFrom(ggplot2,aes_string)
@@ -234,6 +158,8 @@ importFrom(grDevices,rgb)
 importFrom(magrittr,"%<>%")
 importFrom(magrittr,"%>%")
 importFrom(pander,pandoc.table.return)
+importFrom(rlang,check_installed)
+importFrom(rlang,is_installed)
 importFrom(stats,"contrasts<-")
 importFrom(stats,AIC)
 importFrom(stats,BIC)

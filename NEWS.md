@@ -1,16 +1,52 @@
 # jtools 2.2.3.9999
 
-Bug fix:
+Bug fixes:
 * `predict_merMod()` was miscalculating predictions under a specific set of
 conditions: When the model was fit with `lme4::glmer()`, the link was not
 identity, standard errors were simultaneously being calculated, and the 
 user included random effects. This error has been corrected 
 ([#144](https://github.com/jacob-long/jtools/issues/144))
+* When printing `summ.glm()` results with `knitr`, the *p* value for the 
+omnibus chi-squared test is now included in the model statistics, like it 
+already is when using the function in the console. ([#138](https://github.com/jacob-long/jtools/issues/138)
+* `effect_plot()` no longer fails with an error when models weights are 
+specified without a variable name. 
+([#156](https://github.com/jacob-long/jtools/issues/156))
 
-Enhancement:
+Enhancements:
 
 * `summ()` will now produce model fit statistics for `glm.nb` models 
 ([#142](https://github.com/jacob-long/jtools/issues/142)).
+* `effect_plot()` now includes the argument `facet.by`. If you want to plot
+your prediction variable at multiple values of some other variable, you can 
+pass the name of that variable to `facet.by`. It will, by default, create a 
+separate plot for each unique level of that variable using 
+`ggplot2::facet_wrap()`. If you only want specific levels of the `facet.by`
+variable, you can specify them by giving a vector of values to the `at` argument.
+More than most kinds of plots, you may need to do some further customization
+to the results of `effect_plot()` since the plots may not fit the space well,
+or you may want to rearrange into different row/column configurations, etc. I
+expect this to be most useful for cases when you have a multilevel model and 
+there is a random slope specified for the `pred` variable. A version of this
+feature was requested by Github user *5tokesy* (#147). 
+* `plot_coefs()` now handles `fixest_multi` objects from the `fixest` package
+out of the box. (#123)
+* The `omit.coefs` and `coefs` arguments to  `plot_coefs()` can now be modified
+using the new argument, `coefs.match`. You may use regular expressions to more
+efficiently match coefficient names, which will be most useful when you have 
+models with many coefficients with predictable naming schemes. To have your
+arguments interepreted this way, set `coefs.match = "regex"`. 
+([#122](https://github.com/jacob-long/jtools/issues/122))
+
+Other changes:
+
+* Removed `tidy.glht()` method because the `broom` package now implements one.
+(#139)
+* Made `broom` and `broom.mixed` hard dependencies to help avoid user confusion
+and a few errors that could occur when one was missing. (#149) 
+* `cli` is now used to format (colorizing, italicizing, etc.) console output 
+rather than `crayon`. Please report any issues if formatting doesn't work 
+right for you; there shouldn't be any changes from past releases.
 
 # jtools 2.2.2
 

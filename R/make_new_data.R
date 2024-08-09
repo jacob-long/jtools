@@ -173,6 +173,8 @@ get_weights <- function(model, data) {
       wname <- NULL
     } else {
       wname <- all.vars(as.formula(paste("~", wname)))
+      # this can also make it character(0)
+      if (length(wname) == 0) {wname <- NULL}
     }
     
     if ("(weights)" %in% colnames(data) && !is.null(wname)) {
@@ -398,10 +400,12 @@ get_family <- function(model, ...) {
   UseMethod("get_family")
 }
 
+#' @exportS3Method NULL
 get_family.default <- function(model, ...) {
   family(model)
 }
 
+#' @exportS3Method NULL
 get_family.brmsfit <- function(model, resp = NULL, ...) {
   form <- formula(model)
   fam <- family(model)
