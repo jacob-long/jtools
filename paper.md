@@ -11,7 +11,7 @@ authors:
 affiliations:
  - name: School of Journalism and Mass Communications, University of South Carolina, USA
    index: 1
-date: 6 January 2024
+date: 9 August 2024
 bibliography: paper.bib
 
 ---
@@ -100,5 +100,20 @@ summaries with `plot_coefs()` in a study of asthma sufferers.
 Finally, @spalti2023 use `weights_tests()` to 
 assess the sensitivity of their estimates to the influence of survey sampling
 weights in their research on scientific misperceptions.
+
+\newpage
+\begin{landscape}
+
+| **Feature**                      | `jtools`                                                                                                  | `marginaleffects`                                                                                       | `modelsummary`                                                            | `sjPlot`                                                                 | `ggeffects`                                                                           | `gtsummary`                                                    | `performance`  | `parameters`                            |
+|------------------------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------|-------------------------------------------------------------|---------------------------|--------------------------------------------------|
+| **Model information**            | Flexible summaries, robust SEs, VIFs, centered and scaled variables, model fit statistics               | Marginal effects, contrasts, equivalence tests                                                        | All information available via `broom` and `parameters`, plus robust Ses | Flexible summaries, robust SEs, scaled variables, model fit statistics | Marginal effects, contrasts, equivalence tests (from `marginaleffects` or `emmeans`) | Information available via `broom`, pairwise comparisons      | Model fit and diagnostics | Coefficient estimates, intervals, test statistics |
+| **Supported models**             | lm, glm, mixed models, survey data for summaries, many more for visualization                           | Over 100 types                                                                                         | All models supported by `broom` and `parameters`                        | lm, glm, mixed models, Bayesian models                                            | Large number of models                                                               | All that are supported by `broom`                           | Large number of models    | Large number, including structural models          |
+| **Visualization**                | Effect plots, coefficient plots (`ggplot2`)                                                             | Visualization of marginal effects, similar to `ggeffects`                                             | Coefficient plots (`ggplot2`)                                           | Coefficient plots (`ggplot2`)                                          | Plots for effects, predictions, etc.                                                | Experimental coefficient plot functions                      | Uses `see` package        | Visualization of model parameters                 |
+| **Model summary export options** | Coefficient plots, tables to PDF/html/Word via "huxtable"                                               | Limited (console-focused)                                                                             | Most extensive, customizable, easy to use (Markdown, LaTeX, HTML, etc.) | To HTML                                                                | To HTML and Markdown                                                                | Extensive (Word, PDF, HTML, etc.)                            | To Markdown               | To HTML and Markdown                              |
+| **Interface**                    | User-friendly, non-standard evaluation, customizable, bundled features in single function calls         | Simple, tidy, pipeline-oriented                                                                       | Simple, user-friendly, power user features                              | User-friendly, easy to integrate                                       | Simple, user-friendly, pipeline-oriented                                            | Pipeline-oriented, focus on table output                     | User-friendly, simple     | User-friendly                                     |
+| **Unique features**              | Extensive survey/weights support, plot intervals with robust errors, include partial residuals on plots | Detailed marginal effect analysis, flexible contrasts and hypothesis testing, extensive documentation | Also includes summaries of data frames                                  | Support for psychometric item analysis                                 | Plot intervals with robust errors, plot partial residuals on plots                  | Medical research-oriented summaries, focus on data summaries | nan                       | Includes variable selection/data reduction tools  |
+
+\end{landscape}
+\newpage
 
 # References
