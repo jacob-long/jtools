@@ -79,13 +79,41 @@ is using third-party packages for computation and simply repackaging the results
 comparable functionality to `summ()` and has some advantages, such as a 
 greater range
 of supported models and more support for exporting to external documents. 
-`marginaleffects` [@marginaleffects], `sjPlot` [@sjPlot], and `see` [@see] 
-offer support for plotting predicted 
+`gtsummary` [@gtsummary] also has extensive functionality for exporting to
+external documents, although its ability to include and calculate customized 
+statistics is more limited. These may be preferred for those whose sole goal is
+to quickly export straightforward regression summaries to LaTeX or other 
+documents. Neither `modelsummary` nor `gtsummary` are designed for interactive (console) use as `jtools` is.
+
+`marginaleffects` [@marginaleffects], `sjPlot` [@sjPlot], `see` [@see],
+and `ggeffects` [@ggeffects] offer support for plotting predicted 
 values from fitted regression models and again have some of their own 
-advantages, such as more supported model types. There is also overlap in 
-functionality with the `car` package [@car], like the computation of variance 
+advantages, such as more supported model types. Each of these offer overlapping
+functionality with emphasis on `ggplot2` graphical output. Of these, only 
+`ggeffects` offers the same partial residual functionality that `jtools` does. 
+A design difference for `jtools` in comparison to others (to varying degrees)
+is that `jtools` tends to perform many steps in a single function call, with the
+user making choices via function arguments. Many of these other packages tend to
+have multi-step usage patterns, in which the user creates an object with one 
+function which is then passed to another function, and so on. For
+instance, `ggeffects` recommends that users fit a model, then pass the model to 
+generate marginal effect estimates to another function, pass the outputted 
+marginal effects to a hypothesis testing function, then passing the output of 
+that function to a `plot()` S3 method (although it is possible to skip one or
+more steps). This type of interface can provide
+for more flexibility for the user as well as R code that is more explicit
+On the other hand, less-experienced programmers may find these multi-step 
+workflows more confusing or error-prone.
+
+There is also overlap in 
+functionality with the `car` and `effects` packages [@car], like the computation of variance 
 inflation factors and partial residuals, although `jtools` aims to improve
-the user interface and support more model types in some cases.
+the user interface, such as by allowing non-standard evaluation, and support more
+model types in some cases. The use of `ggplot2` for graphics is another important
+distinction from `car`. `car` does not produce model summaries in general, so
+the user would need to incorporate `car`'s variance inflation factors into a 
+table through some other means or otherwise just inspect them devoid of that 
+context. 
 
 ## Real-world use
 
@@ -100,18 +128,5 @@ summaries with `plot_coefs()` in a study of asthma sufferers.
 Finally, @spalti2023 use `weights_tests()` to 
 assess the sensitivity of their estimates to the influence of survey sampling
 weights in their research on scientific misperceptions.
-
-\footnotesize
-
-| **Feature**                    | `jtools`                                                                                            | `marginaleffects`                                                                                | `modelsummary`                                                     | `sjPlot`                                                           | `ggeffects`                                                                     | `gtsummary`                                          | `parameters`                                      |
-|--------------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------|--------------------------------------------------------------------------------|-----------------------------------------------------|--------------------------------------------------|
-| **Model information**          | Flexible summaries, robust SEs, VIFs, centered and scaled variables, model fit statistics           | Marginal effects, contrasts, equivalence tests                                                   | All information available via `broom` and `parameters`, plus robust SEs | Flexible summaries, robust SEs, scaled variables, model fit statistics | Marginal effects, contrasts, equivalence tests (from `marginaleffects` or `emmeans`) | Information available via `broom`, pairwise comparisons  | Coefficient estimates, intervals, test statistics  |
-| **Supported models**           | lm, glm, mixed models, survey data for summaries, many more for visualization                       | Over 100 types                                                                                   | All models supported by `broom` and `parameters`                    | lm, glm, mixed models, Bayesian models                                    | Large number of models                                                           | All that are supported by `broom`                     | Large number, including structural models          |
-| **Visualization**              | Effect plots, coefficient plots (`ggplot2`)                                                         | Visualization of marginal effects, similar to `ggeffects`                                        | Coefficient plots (`ggplot2`)                                       | Coefficient plots (`ggplot2`)                                      | Plots for effects, predictions, etc.                                                | Experimental coefficient plot functions                | Visualization of model parameters                 |
-| **Model summary export options** | Coefficient plots, tables to PDF/html/Word via "huxtable"                                            | Limited (console-focused)                                                                        | Most extensive, customizable, easy to use (Markdown, LaTeX, HTML, etc.) | To HTML                                                          | To HTML and Markdown                                                              | Extensive (Word, PDF, HTML, etc.)                      | To HTML and Markdown                              |
-| **Interface**                  | User-friendly, non-standard evaluation, customizable, bundled features in single function calls     | Simple, tidy, pipeline-oriented                                                                  | Simple, user-friendly, power user features                          | User-friendly, easy to integrate                                   | Simple, user-friendly, pipeline-oriented                                            | Pipeline-oriented, focus on table output               | User-friendly                                     |
-| **Unique Features**            | Extensive survey/weights support, plot intervals with robust errors, include partial residuals on plots | Detailed marginal effect analysis, flexible contrasts and hypothesis testing, extensive documentation | Also includes summaries of data frames                              | Support for psychometric item analysis                             | Plot intervals with robust errors, plot partial residuals on plots                | Medical research-oriented summaries, focus on data summaries | Includes variable selection/data reduction tools  |
-
-\normalsize
 
 # References
