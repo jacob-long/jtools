@@ -101,6 +101,8 @@ Finally, @spalti2023 use `weights_tests()` to
 assess the sensitivity of their estimates to the influence of survey sampling
 weights in their research on scientific misperceptions.
 
+\footnotesize
+
 | **Feature**                    | `jtools`                                                                                            | `marginaleffects`                                                                                | `modelsummary`                                                     | `sjPlot`                                                           | `ggeffects`                                                                     | `gtsummary`                                          | `parameters`                                      |
 |--------------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------|--------------------------------------------------------------------------------|-----------------------------------------------------|--------------------------------------------------|
 | **Model information**          | Flexible summaries, robust SEs, VIFs, centered and scaled variables, model fit statistics           | Marginal effects, contrasts, equivalence tests                                                   | All information available via `broom` and `parameters`, plus robust SEs | Flexible summaries, robust SEs, scaled variables, model fit statistics | Marginal effects, contrasts, equivalence tests (from `marginaleffects` or `emmeans`) | Information available via `broom`, pairwise comparisons  | Coefficient estimates, intervals, test statistics  |
@@ -110,5 +112,6 @@ weights in their research on scientific misperceptions.
 | **Interface**                  | User-friendly, non-standard evaluation, customizable, bundled features in single function calls     | Simple, tidy, pipeline-oriented                                                                  | Simple, user-friendly, power user features                          | User-friendly, easy to integrate                                   | Simple, user-friendly, pipeline-oriented                                            | Pipeline-oriented, focus on table output               | User-friendly                                     |
 | **Unique Features**            | Extensive survey/weights support, plot intervals with robust errors, include partial residuals on plots | Detailed marginal effect analysis, flexible contrasts and hypothesis testing, extensive documentation | Also includes summaries of data frames                              | Support for psychometric item analysis                             | Plot intervals with robust errors, plot partial residuals on plots                | Medical research-oriented summaries, focus on data summaries | Includes variable selection/data reduction tools  |
 
+\normalsize
 
 # References
