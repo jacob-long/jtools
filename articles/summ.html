@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.3.9999</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,7 +68,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Tools for summarizing and visualizing regression models</h1>
                         <h4 data-toc-skip class="author">Jacob Long</h4>
             
-            <h4 data-toc-skip class="date">2024-08-09</h4>
+            <h4 data-toc-skip class="date">2024-08-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/jacob-long/jtools/blob/master/vignettes/summ.Rmd" class="external-link"><code>vignettes/summ.Rmd</code></a></small>
       <div class="d-none name"><code>summ.Rmd</code></div>
@@ -76,9 +76,6 @@
 
     
     
-<pre><code><span><span class="co">## Registered S3 method overwritten by 'jtools':</span></span>
-<span><span class="co">##   method            from </span></span>
-<span><span class="co">##   tidy.summary.glht broom</span></span></code></pre>
 <p>The support <code>jtools</code> provides for helping to understand
 and report the results of regression models falls into a few broad
 categories:</p>
@@ -117,7 +114,7 @@ the genre (<code>genre5</code>) with “Action” as the reference
 level.</p>
 <p>With no user-specified arguments except a fitted model, the output of
 <code><a href="../reference/summ.html">summ()</a></code> looks like this:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jtools.jacob-long.com" class="external-link">jtools</a></span><span class="op">)</span> <span class="co"># Load jtools</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">movies</span><span class="op">)</span> <span class="co"># Telling R we want to use this data</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>, data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span></span>
@@ -178,7 +175,7 @@ not all will be reviewed in detail here.</p>
 looks in the R console, but if you are generating your own RMarkdown
 documents and have <code>kableExtra</code> installed, you’ll instead get
 some prettier looking tables like this:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table-striped table-hover table-condensed table-responsive" style="width: auto !important; margin-left: auto; margin-right: auto;"><tbody>
 <tr>
@@ -397,7 +394,7 @@ you get if you set <code>robust = TRUE</code>. Stata’s default is “HC1”,
 so you may want to use that if your goal is to replicate Stata analyses.
 To toggle the type of robust errors, provide the desired type as the
 argument to <code>robust</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="st">"HC1"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -444,7 +441,7 @@ the dependent variable too, just add the
 <code>transform.response = TRUE</code> argument. This argument does not
 do anything to factor variables and doesn’t scale binary variables by
 default.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -481,7 +478,7 @@ divide by for standardization. <a href="http://www.stat.columbia.edu/~gelman/res
 Gelman</a> has been a proponent of dividing by 2 standard deviations; if
 you want to do things that way, give the argument
 <code>n.sd = 2</code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, n.sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -518,7 +515,7 @@ original scale while still mean-centering the predictors with the
 <code>center = TRUE</code> argument. As with <code>scale</code>, this is
 not applied to the response variable unless
 <code>transform.response = TRUE</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -551,7 +548,7 @@ not applied to the response variable unless
 </h3>
 <p>In many cases, you’ll learn more by looking at confidence intervals
 than p-values. You can request them from <code>summ</code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -577,7 +574,7 @@ than p-values. You can request them from <code>summ</code>.</p>
 <span><span class="co">## --------------------------------------------------------------------------</span></span></code></pre>
 <p>You can adjust the width of the confidence intervals, which are by
 default 95% CIs.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, ci.width <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -606,7 +603,7 @@ default 95% CIs.</p>
 <h3 id="removing-p-values">Removing p values<a class="anchor" aria-label="anchor" href="#removing-p-values"></a>
 </h3>
 <p>You might also want to drop the p-values altogether.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, confint <span class="op">=</span> <span class="cn">TRUE</span>, pvals <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -642,7 +639,7 @@ take our previous model, but make it a probit model to reflect the fact
 that <code>metascore</code> is bound at 0 and 100 (analogous to 0 and
 1). We’ll use the <code>quasibinomial</code> family since this is a
 percentage rather a binary outcome.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fitg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">metascore</span><span class="op">/</span><span class="fl">100</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>, data <span class="op">=</span> <span class="va">movies</span>,</span>
 <span>            family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">quasibinomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -677,7 +674,7 @@ percentage rather a binary outcome.</p>
 <p>For exponential family models, especially logit and Poisson, you may
 be interested in getting the exponentiated coefficients rather than the
 linear estimates. <code>summ</code> can handle that!</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fitg</span>, exp <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>
@@ -710,7 +707,7 @@ linear estimates. <code>summ</code> can handle that!</p>
 confidence intervals are not symmetrical.</p>
 <p>You can also get summaries of <code>merMod</code> objects, the mixed
 models from the <code>lme4</code> package.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lme4/lme4/" class="external-link">lme4</a></span><span class="op">)</span></span>
 <span><span class="va">fm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">Reaction</span> <span class="op">~</span> <span class="va">Days</span> <span class="op">+</span> <span class="op">(</span><span class="va">Days</span> <span class="op">|</span> <span class="va">Subject</span><span class="op">)</span>, <span class="va">sleepstudy</span><span class="op">)</span></span>
 <span></span>
@@ -788,7 +785,7 @@ need to see the kind of predictions it will give you. For that, you can
 use <code><a href="../reference/effect_plot.html">effect_plot()</a></code>, which does what it sounds like. There is
 a separate vignette available to explore all it can offer, but here’s a
 basic example with our <code>glm</code> model:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fitg</span>, pred <span class="op">=</span> <span class="va">imdb_rating</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>            jitter <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-14-1.png" width="750"></p>
@@ -810,7 +807,7 @@ plotting interface to <code><a href="../reference/summ.html">summ()</a></code> a
 multiple models simultaneously (assuming you want to apply the same
 arguments to each model).</p>
 <p>Here’s a basic, single-model use case.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-15-1.png" width="750"></p>
 <p>Note that the intercept is omitted by default because it often
@@ -819,14 +816,14 @@ change this behavior or omit other coefficients with the
 <code>omit.coefs</code> argument.</p>
 <p>We may still want to use other features of <code><a href="../reference/summ.html">summ()</a></code>, like
 having robust standard errors. No problem.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, robust <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-16-1.png" width="750"></p>
 <p>Note that by default the width of the confidence interval is .95, but
 this can be changed with the <code>ci_level</code> argument. You can
 also add a thicker band to convey a narrow interval using the
 <code>inner_ci_level</code> argument:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-17-1.png" width="750"></p>
 <div class="section level4">
@@ -841,7 +838,7 @@ the uncertainty. This is also great for didactic purposes.</p>
 <p>While the common OLS model assumes a <em>t</em> distribution, I
 decided that they are visually sufficiently close that I have opted not
 to try to plot the points along a <em>t</em> distribution.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span>, inner_ci_level <span class="op">=</span> <span class="fl">.9</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-18-1.png" width="750"></p>
 </div>
@@ -851,14 +848,14 @@ to try to plot the points along a <em>t</em> distribution.</p>
 <p>Comparison of multiple models simultaneously is another benefit of
 plotting. This is especially true when the models are nested. Let’s fit
 a second model and compare.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm</a></span><span class="op">(</span><span class="va">metascore</span> <span class="op">~</span> <span class="va">imdb_rating</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">us_gross</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">budget</span><span class="op">)</span> <span class="op">+</span> <span class="va">genre5</span>,</span>
 <span>           data <span class="op">=</span> <span class="va">movies</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-19-1.png" width="750"></p>
 <p>Doing this with <code>plot.distributions = TRUE</code> creates a nice
 effect:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, plot.distributions <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-20-1.png" width="750"></p>
 <p>By providing a list of <code><a href="../reference/summ.html">summ()</a></code> arguments to
@@ -867,7 +864,7 @@ effect:</p>
 model; the second list item to the second model, etc.). For instance, we
 can look at how the standard errors differ with different
 <code>robust</code> arguments:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_summs.html">plot_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit</span>, <span class="va">fit</span>, robust <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span>,</span>
 <span>           model.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"OLS"</span>, <span class="st">"HC0"</span>, <span class="st">"HC5"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="summ_files/figure-html/unnamed-chunk-21-1.png" width="750"></p>
@@ -901,7 +898,7 @@ designed to give you the features available in <code><a href="../reference/summ.
 you can request things like robust standard errors and variable
 scaling.</p>
 <p>Here’s an example of what to expect in a document like this one:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <table class="table huxtable" data-quarto-disable-processing="true" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  ">
 <col>
@@ -1137,7 +1134,7 @@ explicitly write the confidence level, e.g.,
 </ul>
 <p>Here’s an example with confidence intervals instead of standard
 errors:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>             error_format <span class="op">=</span> <span class="st">"[{conf.low}, {conf.high}]"</span><span class="op">)</span></span></code></pre></div>
 <table class="table huxtable" data-quarto-disable-processing="true" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  ">
@@ -1358,7 +1355,7 @@ so on.</p>
 <p>If you want to save to a Word doc, use the <code>to.file</code>
 argument (requires the <code>officer</code> and <code>flextable</code>
 packages):</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit2</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, to.file <span class="op">=</span> <span class="st">"docx"</span>, file.name <span class="op">=</span> <span class="st">"test.docx"</span><span class="op">)</span></span></code></pre></div>
 <p>You can likewise export to PDF (<code>"PDF"</code>), HTML
 (<code>"HTML"</code>), or Excel format (<code>"xlsx"</code>).</p>
@@ -1375,7 +1372,7 @@ ask for.</p>
 <p>To remove the written output at the beginning, set
 <code>model.info = FALSE</code> and/or
 <code>model.fit = FALSE</code>.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, model.fit <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="font-style: italic;">Standard errors:OLS</span></span></span>
 <span><span class="co">## -----------------------------------------------------------</span></span>
@@ -1400,7 +1397,7 @@ to the inability to measure them so precisely or interpret them in
 applied settings. In other cases, it may be necessary to use more digits
 due to the way measures are calculated.</p>
 <p>The default argument is <code>digits = 2</code>.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, digits <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.36717, <span style="font-style: italic;">p</span> = 0.00000</span></span>
@@ -1419,7 +1416,7 @@ due to the way measures are calculated.</p>
 <span><span class="co">## genre5Horror/Thriller          -0.72998   1.51083   -0.48317   0.62911</span></span>
 <span><span class="co">## genre5Other                     5.86029   3.24997    1.80318   0.07172</span></span>
 <span><span class="co">## ----------------------------------------------------------------------</span></span></code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span>, digits <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">F</span>(6,824) = 169.4, <span style="font-style: italic;">p</span> = 0.0</span></span>
@@ -1441,7 +1438,7 @@ due to the way measures are calculated.</p>
 <p>You can pre-set the number of digits you want printed for all
 <code>jtools</code> functions with the <code>jtools-digits</code>
 option.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"jtools-digits"</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, model.info <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL FIT:</span></span></span>
@@ -1464,7 +1461,7 @@ option.</p>
 <p>Note that the <code>summ</code> object contains the non-rounded
 values if you want to use them later. The digits option just affects the
 printed output.</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">j</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">j</span><span class="op">$</span><span class="va">coeftable</span></span></code></pre></div>
@@ -1485,7 +1482,7 @@ printed output.</p>
 over and over. To streamline your sessions, you can use the
 <code><a href="../reference/set_summ_defaults.html">set_summ_defaults()</a></code> function to avoid redundant typing.</p>
 <p>It works like this:</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/set_summ_defaults.html">set_summ_defaults</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">2</span>, pvals <span class="op">=</span> <span class="cn">FALSE</span>, robust <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span></code></pre></div>
 <p>If you do that, you will have 2 digits in your output, no p values
 displayed, and “HC3” sandwich robust standard errors in your
@@ -1515,7 +1512,7 @@ reported alongside each variable. This can be particularly helpful for
 model comparison and checking for the impact of newly-added variables.
 To get VIFs reported in the output table, just set
 <code>vifs = TRUE</code>.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summ.html">summ</a></span><span class="op">(</span><span class="va">fit</span>, vifs <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="text-decoration: underline;">MODEL INFO:</span></span></span>
 <span><span class="co">## <span style="font-style: italic;">Observations:</span> 831 (10 missing obs. deleted)</span></span>

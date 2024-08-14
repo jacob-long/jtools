@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">jtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.3.9999</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,7 +68,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Calculate correlations and correlation tables with complex survey data</h1>
                         <h4 data-toc-skip class="author">Jacob Long</h4>
             
-            <h4 data-toc-skip class="date">2024-08-09</h4>
+            <h4 data-toc-skip class="date">2024-08-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/jacob-long/jtools/blob/master/vignettes/svycor.Rmd" class="external-link"><code>vignettes/svycor.Rmd</code></a></small>
       <div class="d-none name"><code>svycor.Rmd</code></div>
@@ -76,9 +76,6 @@
 
     
     
-<pre><code><span><span class="co">## Registered S3 method overwritten by 'jtools':</span></span>
-<span><span class="co">##   method            from </span></span>
-<span><span class="co">##   tidy.summary.glht broom</span></span></code></pre>
 <p>The <code>survey</code> package is one of R’s best tools for those
 working in the social sciences. For many, it saves you from needing to
 use commercial software for research that uses survey data. However, it
@@ -95,7 +92,7 @@ attributed to me (Jacob).</p>
 <p>With that said, let’s look at an example. First, we need to get a
 <code>survey.design</code> object. This one is built into the
 <code>survey</code> package.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://r-survey.r-forge.r-project.org/survey/" class="external-link">survey</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">api</span><span class="op">)</span></span>
 <span><span class="va">dstrat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign</a></span><span class="op">(</span>id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>,strata <span class="op">=</span> <span class="op">~</span><span class="va">stype</span>, weights <span class="op">=</span> <span class="op">~</span><span class="va">pw</span>, data <span class="op">=</span> <span class="va">apistrat</span>, fpc<span class="op">=</span><span class="op">~</span><span class="va">fpc</span><span class="op">)</span></span></code></pre></div>
@@ -106,14 +103,14 @@ attributed to me (Jacob).</p>
 <code>svyvar</code>. Specify, using an equation, which variables (and
 from which design) to include. It doesn’t matter which side of the
 equation the variables are on.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      api00 api99
 api00  1.00  0.98
 api99  0.98  1.00</code></pre>
 <p>You can specify with the <code>digits =</code> argument how many
 digits past the decimal point should be printed.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <pre><code>       api00  api99
 api00 1.0000 0.9759
@@ -148,7 +145,7 @@ should treat your sample size as the number of observations in the
 survey design (the number of rows in the data frame) or the sum of the
 weights. Usually, the former is desired, so the default value of
 <code>mean1</code> is <code>TRUE</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span>, sig.stats <span class="op">=</span> <span class="cn">TRUE</span>, bootn <span class="op">=</span> <span class="fl">2000</span>, mean1 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      api00   api99  
 api00 1       0.9759*
@@ -159,19 +156,19 @@ method based on the survey-weighted covariance matrix when
 <code>sig.stats = FALSE</code>.</p>
 <p>By saving the output of the function, you can extract non-rounded
 coefficients, <em>p</em> values, and standard errors.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">c</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span>, digits <span class="op">=</span> <span class="fl">4</span>, sig.stats <span class="op">=</span> <span class="cn">TRUE</span>, bootn <span class="op">=</span> <span class="fl">2000</span>, mean1 <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">c</span><span class="op">$</span><span class="va">cors</span></span></code></pre></div>
 <pre><code>          api00     api99
 api00 1.0000000 0.9759047
 api99 0.9759047 1.0000000</code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">c</span><span class="op">$</span><span class="va">p.values</span></span></code></pre></div>
 <pre><code>      api00 api99
 api00     0     0
 api99     0     0</code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">c</span><span class="op">$</span><span class="va">std.err</span></span></code></pre></div>
 <pre><code>            api00       api99
 api00 0.000000000 0.003471507
@@ -183,14 +180,14 @@ api99 0.003471507 0.000000000</code></pre>
 <p>The heavy lifting behind the scenes is done by <code>svyvar</code>,
 which from its output you may not realize also calculates
 covariance.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svyvar</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span></code></pre></div>
 <pre><code>      variance     SE
 api00    15191 1255.7
 api99    16518 1318.4</code></pre>
 <p>But if you save the <code>svyvar</code> object, you can see that
 there’s more than meets the eye.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svyvar</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span> <span class="op">+</span> <span class="va">api99</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span>
 <span><span class="va">var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SparseM/man/SparseM.ontology.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span></span>
 <span><span class="va">var</span></span></code></pre></div>
@@ -207,7 +204,7 @@ attr(,"statistic")
 [1] "variance"</code></pre>
 <p>Once we know that, it’s just a matter of using R’s
 <code>cov2cor</code> function and cleaning up the output.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cov2cor</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span></span>
 <span><span class="va">cor</span></span></code></pre></div>
 <pre><code>          api00     api99
@@ -222,7 +219,7 @@ api99 1561998 1657352 1657352 1738266
 attr(,"statistic")
 [1] "variance"</code></pre>
 <p>Now to get rid of that covariance matrix…</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cor</span> <span class="op">&lt;-</span> <span class="va">cor</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cor</span><span class="op">)</span>, <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cor</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">cor</span></span></code></pre></div>
 <pre><code>          api00     api99
@@ -231,7 +228,7 @@ api99 0.9759047 1.0000000</code></pre>
 <p><code>svycor</code> has its own print method, so you won’t see so
 many digits past the decimal point. You can extract the un-rounded
 matrix, however.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svycor.html">svycor</a></span><span class="op">(</span><span class="op">~</span><span class="va">api99</span> <span class="op">+</span> <span class="va">api00</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">cors</span></span></code></pre></div>
 <pre><code>          api99     api00
