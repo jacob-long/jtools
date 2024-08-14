@@ -1,5 +1,5 @@
 ## Test environments
-* Local macOS install, R 4.1.3
+* Local macOS install, R 4.4.1
 * ubuntu-latest (via Github Actions), R-release, R-devel, oldrel-1
 * macOS-latest (via Github Actions), R-release
 * windows-latest (via Github Actions), R-release

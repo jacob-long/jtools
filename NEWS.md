@@ -1,4 +1,4 @@
-# jtools 2.2.3.9999
+# jtools 2.3.0
 
 Bug fixes:
 * `predict_merMod()` was miscalculating predictions under a specific set of

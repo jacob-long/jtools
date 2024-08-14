@@ -418,24 +418,6 @@ predict_rob <- function(model, .vcov = vcov(model), newdata = NULL,
 
 }
 
-#' @importFrom tibble tibble as_tibble
-#' @importFrom stats confint
-#' @export
-tidy.summary.glht <- function(x, conf.int = FALSE, conf.level = 0.95, ...) {
-  lhs_rhs <- tibble(lhs = rownames(x$linfct), rhs = x$rhs)
-  coef <- as_tibble(x$test[c("coefficients", "sigma", 
-                             "tstat", "pvalues")])
-  names(coef) <- c("estimate", "std.error", "statistic", 
-                   "p.value")
-  out <- as_tibble(cbind(lhs_rhs, coef))
-  if (conf.int) {
-    confs <- as.data.frame(confint(x, level = conf.level)$confint)
-    out$conf.low <- confs$lwr
-    out$conf.high <- confs$upr
-  }
-  out
-}
-
 #' @import broom
 NULL
 
