@@ -57,9 +57,9 @@
 #'   such situations.
 #'
 #'   This theme was created with inspiration from Rudolf Cardinal's
-#'   \href{http://egret.psychol.cam.ac.uk/statistics/R/graphs2.html}{code}, which
-#'   required updating for newer versions of \code{ggplot2} and adaptations for
-#'   APA style.
+#'   \href{https://web.archive.org/web/20220616072522/http://egret.psychol.cam.ac.uk/statistics/R/graphs2.html}{code}, 
+#'   which required updating for newer versions of \code{ggplot2} and 
+#'   adaptations for APA style.
 #'
 #' @author Jacob Long \email{jacob.long@@sc.edu}
 #'
