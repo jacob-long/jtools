@@ -23,7 +23,7 @@ arguments.}
 \item{error_format}{Which of standard error, confidence intervals, test
 statistics, or p values should be used to express uncertainty of estimates
 for regression coefficients? See details for more info.
-Default: "({std.error})"}
+Default: \code{"({std.error})"}}
 
 \item{error_pos}{Where should the error statistic defined in
 \code{error_style} be placed relative to the coefficient estimate?
