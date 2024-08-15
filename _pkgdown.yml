@@ -81,16 +81,23 @@ reference:
 
 
 navbar:
-  left:
-    - icon: fa-home
+  structure:
+    left: [home, news, reference, articles]
+  components:
+    home:
+      icon: fa-home
       href: index.html
-    - icon: fa-newspaper-o
+      aria-label: "Home"
+    news:
+      icon: fa-newspaper-o
       text: "News"
       href: news/index.html
-    - icon: fa-file-code-o
-      text: "Documentation"
+    reference:
+      icon: fa-file-code-o
       href: reference/index.html
-    - icon: fa-book
+      text: "Documentation"
+    articles:
+      icon: fa-book
       text: "Vignettes"
       menu:
       -  text: Tools for summarizing and visualizing regression models
@@ -99,8 +106,3 @@ navbar:
          href: articles/effect_plot.html
       -  text: Calculate correlations and correlation tables with complex survey data
          href: articles/svycor.html
-  right:
-    - icon: fa-github fa-lg
-      text: "Github"
-      href: https://github.com/jacob-long/jtools
-
