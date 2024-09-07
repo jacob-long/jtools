@@ -68,7 +68,7 @@
 <img src="logo.png" class="logo" alt=""><h1 id="jtools-">jtools <a class="anchor" aria-label="anchor" href="#jtools-"></a>
 </h1>
 </div>
-<p><a href="https://cran.r-project.org/package=jtools" class="external-link"><img src="https://www.r-pkg.org/badges/version/jtools" alt="CRAN_Status_Badge"></a> <a href="https://cran.r-project.org/package=jtools" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/jtools" alt="Total Downloads"></a> <a href="https://bestpractices.coreinfrastructure.org/projects/2527" class="external-link"><img src="https://bestpractices.coreinfrastructure.org/projects/2527/badge" alt="CII Best Practices"></a> <a href="https://github.com/jacob-long/jtools/actions" class="external-link"><img src="https://github.com/jacob-long/jtools/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <a href="https://ci.appveyor.com/project/jacob-long/JTools" class="external-link"><img src="https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&amp;svg=true" alt="AppVeyor Build Status"></a> <a href="https://app.codecov.io/gh/jacob-long/jtools" class="external-link"><img src="https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://www.gnu.org/licenses/gpl-3.0" class="external-link"><img src="https://img.shields.io/badge/License-GPLv3-brightgreen.svg" alt="License: GPL v3"></a> <!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) --></p>
+<p><a href="https://cran.r-project.org/package=jtools" class="external-link"><img src="https://www.r-pkg.org/badges/version/jtools" alt="CRAN_Status_Badge"></a> <a href="https://cran.r-project.org/package=jtools" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/jtools" alt="Total Downloads"></a> <a href="https://bestpractices.coreinfrastructure.org/projects/2527" class="external-link"><img src="https://bestpractices.coreinfrastructure.org/projects/2527/badge" alt="CII Best Practices"></a> <a href="https://github.com/jacob-long/jtools/actions" class="external-link"><img src="https://github.com/jacob-long/jtools/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <a href="https://ci.appveyor.com/project/jacob-long/JTools" class="external-link"><img src="https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&amp;svg=true" alt="AppVeyor Build Status"></a> <a href="https://app.codecov.io/gh/jacob-long/jtools" class="external-link"><img src="https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://doi.org/10.21105/joss.06610" class="external-link"><img src="https://joss.theoj.org/papers/10.21105/joss.06610/status.svg" alt="DOI"></a> <a href="https://www.gnu.org/licenses/gpl-3.0" class="external-link"><img src="https://img.shields.io/badge/License-GPLv3-brightgreen.svg" alt="License: GPL v3"></a> <!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) --></p>
 <p>This package consists of a series of functions created by the author (Jacob) to automate otherwise tedious research tasks. At this juncture, the unifying theme is the more efficient presentation of regression analyses. There are a number of functions for other programming and statistical purposes as well. Support for the <code>survey</code> package’s <code>svyglm</code> objects as well as weighted regressions is a common theme throughout.</p>
 <p><strong>Notice:</strong> As of <code>jtools</code> version 2.0.0, all functions dealing with interactions (e.g., <code><a href="reference/interactions_deprecated.html">interact_plot()</a></code>, <code><a href="reference/interactions_deprecated.html">sim_slopes()</a></code>, <code><a href="reference/interactions_deprecated.html">johnson_neyman()</a></code>) have been moved to a new package, aptly named <a href="https://interactions.jacob-long.com" class="external-link"><code>interactions</code></a>.</p>
 <div class="section level2">
@@ -108,7 +108,7 @@
 <span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; R² = 0.09</span></span>
 <span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Adj. R² = 0.08 </span></span>
 <span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; Standard errors: OLS</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; Standard errors:OLS</span></span>
 <span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; --------------------------------------------------</span></span>
 <span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt;                      Est.     S.E.   t val.      p</span></span>
 <span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; ----------------- ------- -------- -------- ------</span></span>
@@ -131,7 +131,7 @@
 <span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; R² = 0.09</span></span>
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Adj. R² = 0.08 </span></span>
 <span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Standard errors: OLS</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Standard errors:OLS</span></span>
 <span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------------------------</span></span>
 <span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;                      Est.    2.5%   97.5%   t val.    VIF   partial.r   part.r</span></span>
 <span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; ----------------- ------- ------- ------- -------- ------ ----------- --------</span></span>
@@ -141,7 +141,7 @@
 <span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; year                 0.05   -1.18    1.28     0.08   1.24        0.00     0.00</span></span>
 <span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------------------------</span></span>
 <span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; Continuous predictors are mean-centered and scaled by 1 s.d.</span></span></code></pre></div>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; Continuous predictors are mean-centered and scaled by 1 s.d. The outcome variable remains in its original units.</span></span></code></pre></div>
 <p>Cluster-robust standard errors:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"PetersenCL"</span>, package <span class="op">=</span> <span class="st">"sandwich"</span><span class="op">)</span></span>
@@ -177,7 +177,7 @@
 <span><span class="va">coef_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Budget"</span> <span class="op">=</span> <span class="st">"log(budget)"</span>, <span class="st">"US Gross"</span> <span class="op">=</span> <span class="st">"log(us_gross)"</span>,</span>
 <span>                <span class="st">"Runtime (Hours)"</span> <span class="op">=</span> <span class="st">"runtime"</span>, <span class="st">"Constant"</span> <span class="op">=</span> <span class="st">"(Intercept)"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/export_summs.html">export_summs</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">fit_b</span>, <span class="va">fit_c</span>, robust <span class="op">=</span> <span class="st">"HC3"</span>, coefs <span class="op">=</span> <span class="va">coef_names</span><span class="op">)</span></span></code></pre></div>
-<table class="table huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-6">
+<table class="table huxtable" data-quarto-disable-processing="true" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  ">
 <col>
 <col>
 <col>
@@ -196,7 +196,7 @@ Model 3
 </th>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 Budget
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -210,88 +210,88 @@ Budget
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.44)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.62)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.67)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 US Gross
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 3.96 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 3.85 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.51)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.48)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 Runtime (Hours)
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 14.29 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.63)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 Constant
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 105.29 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 81.84 ***
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 83.35 ***
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (7.65)   
@@ -304,7 +304,7 @@ Constant
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 N
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -361,16 +361,19 @@ Standard errors are heteroskedasticity robust. *** p &lt; 0.001; ** p &lt; 0.01;
 <p>Sometimes the best way to understand your model is to look at the predictions it generates. Rather than look at coefficients, <code><a href="reference/effect_plot.html">effect_plot()</a></code> lets you plot predictions across values of a predictor variable alongside the observed data.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit_c</span>, pred <span class="op">=</span> <span class="va">runtime</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could cause incorrect results if movies has been altered since the model was fit.</span></span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co">#&gt; You can manually provide the data to the "data =" argument.</span></span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt; Warning: Removed 10 rows containing missing values (geom_point).</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could cause incorrect</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co">#&gt; results if movies has been altered since the model was fit. You can</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co">#&gt; manually provide the data to the "data =" argument.</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="reference/figures/unnamed-chunk-9-1.png"><!-- --></p>
 <p>And a new feature in version <code>2.0.0</code> lets you plot <em>partial residuals</em> instead of the raw observed data, allowing you to assess model quality after accounting for effects of control variables.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/effect_plot.html">effect_plot</a></span><span class="op">(</span><span class="va">fit_c</span>, pred <span class="op">=</span> <span class="va">runtime</span>, interval <span class="op">=</span> <span class="cn">TRUE</span>, partial.residuals <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could cause incorrect results if movies has been altered since the model was fit.</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="co">#&gt; You can manually provide the data to the "data =" argument.</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co">#&gt; Using data movies from global environment. This could cause incorrect</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="co">#&gt; results if movies has been altered since the model was fit. You can</span></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; manually provide the data to the "data =" argument.</span></span></code></pre></div>
 <p><img src="reference/figures/unnamed-chunk-10-1.png"><!-- --></p>
 <p>Categorical predictors, polynomial terms, (G)LM(M)s, weighted data, and much more are supported.</p>
 </div>

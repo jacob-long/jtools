@@ -33,11 +33,11 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/jacob-long/jtools/blob/2.3.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/jacob-long/jtools/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="2.3.0" id="jtools-230">jtools 2.3.0<a class="anchor" aria-label="anchor" href="#jtools-230"></a></h2>
+<h2 class="pkg-version" data-toc-text="2.3.0" id="jtools-230">jtools 2.3.0<a class="anchor" aria-label="anchor" href="#jtools-230"></a></h2><p class="text-muted">CRAN release: 2024-08-25</p>
 <p>Bug fixes: * <code><a href="../reference/predict_merMod.html">predict_merMod()</a></code> was miscalculating predictions under a specific set of conditions: When the model was fit with <code><a href="https://rdrr.io/pkg/lme4/man/glmer.html" class="external-link">lme4::glmer()</a></code>, the link was not identity, standard errors were simultaneously being calculated, and the user included random effects. This error has been corrected (<a href="https://github.com/jacob-long/jtools/issues/144" class="external-link">#144</a>) * When printing <code><a href="../reference/summ.glm.html">summ.glm()</a></code> results with <code>knitr</code>, the <em>p</em> value for the omnibus chi-squared test is now included in the model statistics, like it already is when using the function in the console. (<a href="https://github.com/jacob-long/jtools/issues/138" class="external-link">#138</a> * <code><a href="../reference/effect_plot.html">effect_plot()</a></code> no longer fails with an error when models weights are specified without a variable name. (<a href="https://github.com/jacob-long/jtools/issues/156" class="external-link">#156</a>)</p>
 <p>Enhancements:</p>
 <ul><li>
