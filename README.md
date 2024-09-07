@@ -12,6 +12,7 @@ Practices](https://bestpractices.coreinfrastructure.org/projects/2527/badge)](ht
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/jacob-long/JTools?branch=master&svg=true)](https://ci.appveyor.com/project/jacob-long/JTools)
 [![codecov](https://codecov.io/gh/jacob-long/jtools/branch/master/graph/badge.svg)](https://app.codecov.io/gh/jacob-long/jtools)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.06610/status.svg)](https://doi.org/10.21105/joss.06610)
 [![License: GPL
 v3](https://img.shields.io/badge/License-GPLv3-brightgreen.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) -->
@@ -85,7 +86,7 @@ summ(fit)
     #> R² = 0.09
     #> Adj. R² = 0.08 
     #> 
-    #> Standard errors: OLS
+    #> Standard errors:OLS
     #> --------------------------------------------------
     #>                      Est.     S.E.   t val.      p
     #> ----------------- ------- -------- -------- ------
@@ -122,7 +123,7 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
     #> R² = 0.09
     #> Adj. R² = 0.08 
     #> 
-    #> Standard errors: OLS
+    #> Standard errors:OLS
     #> ------------------------------------------------------------------------------
     #>                      Est.    2.5%   97.5%   t val.    VIF   partial.r   part.r
     #> ----------------- ------- ------- ------- -------- ------ ----------- --------
@@ -132,7 +133,7 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
     #> year                 0.05   -1.18    1.28     0.08   1.24        0.00     0.00
     #> ------------------------------------------------------------------------------
     #> 
-    #> Continuous predictors are mean-centered and scaled by 1 s.d.
+    #> Continuous predictors are mean-centered and scaled by 1 s.d. The outcome variable remains in its original units.
 
 Cluster-robust standard errors:
 
@@ -181,7 +182,7 @@ coef_names <- c("Budget" = "log(budget)", "US Gross" = "log(us_gross)",
 export_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
 
-<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-6">
+<table class="huxtable" data-quarto-disable-processing="true" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  ">
 <col>
 <col>
 <col>
@@ -200,7 +201,7 @@ Model 3
 </th>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 Budget
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -214,88 +215,88 @@ Budget
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.44)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.62)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.67)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 US Gross
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 3.96 \*\*\*
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 3.85 \*\*\*
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.51)   
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (0.48)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 Runtime (Hours)
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 14.29 \*\*\*
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
        
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (1.63)   
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 Constant
 </th>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 105.29 \*\*\*
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 81.84 \*\*\*
 </td>
-<td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 83.35 \*\*\*
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 (7.65)   
@@ -308,7 +309,7 @@ Constant
 </td>
 </tr>
 <tr>
-<th style="vertical-align: top; text-align: left; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
 N
 </th>
 <td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">
@@ -393,10 +394,12 @@ variable alongside the observed data.
 effect_plot(fit_c, pred = runtime, interval = TRUE, plot.points = TRUE)
 ```
 
-    #> Using data movies from global environment. This could cause incorrect results if movies has been altered since the model was fit.
-    #> You can manually provide the data to the "data =" argument.
+    #> Using data movies from global environment. This could cause incorrect
+    #> results if movies has been altered since the model was fit. You can
+    #> manually provide the data to the "data =" argument.
 
-    #> Warning: Removed 10 rows containing missing values (geom_point).
+    #> Warning: Removed 10 rows containing missing values or values outside the scale range
+    #> (`geom_point()`).
 
 ![](man/figures/unnamed-chunk-9-1.png)<!-- -->
 
@@ -408,8 +411,9 @@ after accounting for effects of control variables.
 effect_plot(fit_c, pred = runtime, interval = TRUE, partial.residuals = TRUE)
 ```
 
-    #> Using data movies from global environment. This could cause incorrect results if movies has been altered since the model was fit.
-    #> You can manually provide the data to the "data =" argument.
+    #> Using data movies from global environment. This could cause incorrect
+    #> results if movies has been altered since the model was fit. You can
+    #> manually provide the data to the "data =" argument.
 
 ![](man/figures/unnamed-chunk-10-1.png)<!-- -->
 
@@ -420,20 +424,20 @@ much more are supported.
 
 There are several other things that might interest you.
 
--   `gscale()`: Scale and/or mean-center data, including `svydesign`
-    objects
--   `scale_mod()` and `center_mod()`: Re-fit models with scaled and/or
-    mean-centered data
--   `wgttest()` and `pf_sv_test()`, which are combined in
-    `weights_tests()`: Test the ignorability of sample weights in
-    regression models
--   `svycor()`: Generate correlation matrices from `svydesign` objects
--   `theme_apa()`: A mostly APA-compliant `ggplot2` theme
--   `theme_nice()`: A nice `ggplot2` theme
--   `add_gridlines()` and `drop_gridlines()`: `ggplot2` theme-changing
-    convenience functions
--   `make_predictions()`: an easy way to generate hypothetical predicted
-    data from your regression model for plotting or other purposes.
+- `gscale()`: Scale and/or mean-center data, including `svydesign`
+  objects
+- `scale_mod()` and `center_mod()`: Re-fit models with scaled and/or
+  mean-centered data
+- `wgttest()` and `pf_sv_test()`, which are combined in
+  `weights_tests()`: Test the ignorability of sample weights in
+  regression models
+- `svycor()`: Generate correlation matrices from `svydesign` objects
+- `theme_apa()`: A mostly APA-compliant `ggplot2` theme
+- `theme_nice()`: A nice `ggplot2` theme
+- `add_gridlines()` and `drop_gridlines()`: `ggplot2` theme-changing
+  convenience functions
+- `make_predictions()`: an easy way to generate hypothetical predicted
+  data from your regression model for plotting or other purposes.
 
 Details on the arguments can be accessed via the R documentation
 (`?functionname`). There are now vignettes documenting just about
