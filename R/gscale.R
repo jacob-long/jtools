@@ -90,7 +90,7 @@
 #'
 #' Gelman, A. (2008). Scaling regression inputs by dividing by two standard
 #' deviations. \emph{Statistics in Medicine}, \emph{27}, 2865–2873.
-#' \url{http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
+#' \url{https://sites.stat.columbia.edu/gelman/research/published/standardizing7.pdf}
 #'
 #' Grotenhuis, M. te, Pelzer, B., Eisinga, R., Nieuwenhuis, R.,
 #'  Schmidt-Catran, A., & Konig, R. (2017). When size matters: Advantages of
