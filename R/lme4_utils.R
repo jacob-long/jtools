@@ -196,7 +196,7 @@ noReForm <- function(re.form) {
 
 reOnly <- function(f, response = FALSE) {
   response <- if (response && length(f) == 3) { f[[2]] } else { NULL }
-  reformulate(paste0("(", vapply(lme4::findbars(f), safeDeparse,
+  reformulate(paste0("(", vapply(reformulas::findbars(f), safeDeparse,
                                  ""), ")"), response = response)
 }
 
@@ -238,7 +238,7 @@ mkNewReTrms <- function(object, newdata, re.form = NULL, na.action = na.pass,
         0) {
       newdata <- newdata[-fit.na.action, ]
     }
-    ReTrms <- lme4::mkReTrms(lme4::findbars(re.form[[2]]), rfd)
+    ReTrms <- reformulas::mkReTrms(reformulas::findbars(re.form[[2]]), rfd)
     ReTrms <- within(ReTrms, Lambdat@x <- unname(lme4::getME(object,
                                                        "theta")[Lind]))
     if (!allow.new.levels && any(vapply(ReTrms$flist, anyNA,

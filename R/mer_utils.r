@@ -284,7 +284,7 @@ get.random.formula <- function(model, rhs) {
   random.formula <- if (any(class(model) %in% c("lmerMod", "lmerModLmerTest",
                                                 "glmerMod", "glmmTMB"))) {
 
-        paste("(", lme4::findbars(formula(model)), ")", collapse = " + ")
+        paste("(", reformulas::findbars(formula(model)), ")", collapse = " + ")
 
   }
 

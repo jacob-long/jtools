@@ -23,6 +23,7 @@ Imports:
     magrittr,
     pander,
     pkgconfig,
+    reformulas,
     rlang,
     sandwich,
     tibble
