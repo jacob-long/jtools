@@ -51,7 +51,7 @@ see all of those options).
 }
 \references{
 Paul Tol's site is what is used to derive 4 of the 6 \code{jtools}-specific
-qualitative palettes: \url{https://personal.sron.nl/~pault/}
+qualitative palettes: \url{https://sronpersonalpages.nl/~pault/}
 
 Okabe and Ito's palette inspired "CUD Bright", though "CUD Bright" is not
 exactly the same. "CUD" is the same.
