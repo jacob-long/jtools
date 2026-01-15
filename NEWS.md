@@ -1,3 +1,9 @@
+# jtools 2.3.1
+
+Bug fixes:
+* `get_data()` now returns original data for `panelr` models when available,
+  improving compatibility with `interactions` and downstream helpers.
+
 # jtools 2.3.0
 
 Bug fixes:

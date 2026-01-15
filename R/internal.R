@@ -97,55 +97,91 @@ original_terms <- function(formula) {
 
 # Adapted from formula.tools
 two_sided <- function(x, ...) {
-  # from operator.tools::operators()
-  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
-                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
-                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
-                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
-  is.name(x[[1]]) && deparse(x[[1]]) %in% operators && length(x) == 3
-}
-
-# Adapted from formula.tools
-one_sided <- function(x, ...) {
-  # from operator.tools::operators()
-  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
-                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
-                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
-                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
-  is.name(x[[1]]) && deparse(x[[1]]) %in% operators && length(x) == 2
-}
-
-# Adapted from formula.tools
-get_lhs <- function(x) {
-  if (two_sided(x) == TRUE) {
-    x[[2]] 
-  } else if (one_sided(x)) {
-    NULL   
-  } else {
-    stop_wrap(x, "does not appear to be a one- or two-sided formula.")
+  # Handle Formula objects
+  if (inherits(x, "Formula")) {
+    # Extract just the main formula part for wbgee
+    x <- formula(x)
+    if (debug) {
+      cat("After Formula conversion:\n")
+      print(x)
+    }
   }
+  
+  # Basic formula check
+  if (inherits(x, "formula")) {
+    result <- length(x) > 2
+    if (debug) {
+      cat("Formula length:", length(x), "\n")
+      cat("Returning:", result, "\n")
+    }
+    return(result)
+  }
+  
+  # For other cases
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  
+  result <- isTRUE(is.call(x) && 
+                   is.name(x[[1]]) && 
+                   deparse1(x[[1]]) %in% operators && 
+                   length(x) == 3)
+  
+  result
 }
 
 is_lhs_transformed <- function(x) {
-  final <- as.character(deparse(get_lhs(x)))
-  bare_vars <- all_vars(get_lhs(x))
+  # Handle Formula objects
+  if (inherits(x, "Formula")) {
+    x <- as.formula(x)
+  }
+  
+  lhs <- tryCatch(get_lhs(x), error = function(e) NULL)
+  if (is.null(lhs)) return(FALSE)
+  
+  final <- deparse1(lhs)
+  bare_vars <- all_vars(lhs)
   any(final != bare_vars)
 }
 
-# Adapted from formula.tools
-get_rhs <- function(x) {
-  # from operator.tools::operators()
-  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
-                 "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
-                 "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
-                 "%x%", "%o%", "%>%", "%<>%", "%T>%")
-  
-  if (as.character(x[[1]]) %nin% operators) {
-    stop_wrap(x[[1]], "does not appear to be an operator.")
+one_sided <- function(x, ...) {
+  # Handle Formula objects
+  if (inherits(x, "Formula")) {
+    x <- formula(x)
   }
   
-  if (two_sided(x) == TRUE) {x[[3]]} else if (one_sided(x) == TRUE) {x[[2]]}
-} 
+  # Basic formula check
+  if (inherits(x, "formula")) {
+    return(length(x) == 2)
+  }
+  
+  operators <- c("::", ":::", "@", "$", "[", "[[", ":", "+", "-", "*", "/", "^",
+                "%%", "%/%", "<", "<=", ">", ">=", "==", "!=", "%in%", "%!in%",
+                "!", "&", "&&", "|", "||", "~", "<-", "<<-", "=", "?", "%*%",
+                "%x%", "%o%", "%>%", "%<>%", "%T>%")
+  
+  isTRUE(is.call(x) && 
+         is.name(x[[1]]) && 
+         deparse1(x[[1]]) %in% operators && 
+         length(x) == 2)
+}
+
+get_lhs <- function(x) {
+  if (inherits(x, "Formula")) {
+    x <- formula(x)
+  }
+  if (!inherits(x, "formula")) return(NULL)
+  if (length(x) > 2) x[[2]] else NULL
+}
+
+get_rhs <- function(x) {
+  if (inherits(x, "Formula")) {
+    x <- formula(x)
+  }
+  if (!inherits(x, "formula")) return(NULL)
+  if (length(x) > 2) x[[3]] else x[[2]]
+}
 
 all_vars <- function(formula) {
   if (is.name(formula) || is.call(formula)) {

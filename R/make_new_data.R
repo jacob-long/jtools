@@ -230,9 +230,21 @@ get_data <- function(model, formula = NULL, warn = TRUE, ...) {
     d <- model$survey.design$variables
     wname <- "(weights)"
     d[wname] <- weights(model$survey.design, type = "sampling")
+  } else if (methods::is(model, "wbm")) {
+    # Panelr models store original data separately
+    if (!is.null(model@orig_data)) {
+      return(tibble::as_tibble(model@orig_data, rownames = NA))
+    }
+    return(tibble::as_tibble(model@frame, rownames = NA))
+  } else if ("wbgee" %in% class(model)) {
+    if (!is.null(model$orig_data)) {
+      return(tibble::as_tibble(model$orig_data, rownames = NA))
+    }
+    return(tibble::as_tibble(model$frame, rownames = NA))
   } else {
     d <- model.frame(model)
   }
+
   # Grab the formula
   if (is.null(formula)) {
     formula <- get_formula(model, ...)
