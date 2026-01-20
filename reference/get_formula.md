@@ -55,5 +55,5 @@ data(mtcars)
 fit <- lm(mpg ~ cyl, data = mtcars)
 get_formula(fit)
 #> mpg ~ cyl
-#> <environment: 0x5624fd6c63b8>
+#> <environment: 0x557344fa0310>
 ```
