@@ -1,8 +1,8 @@
 pandoc: 3.1.11
-pkgdown: 2.1.0
+pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   effect_plot: effect_plot.html
   summ: summ.html
   svycor: svycor.html
-last_built: 2024-09-07T20:47Z
+last_built: 2026-01-20T19:04Z
