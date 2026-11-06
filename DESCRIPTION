@@ -44,7 +44,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    vdiffr
+    vdiffr,
+    xml2
 Enhances:
   brms,
   quantreg,
