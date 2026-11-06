@@ -39,6 +39,7 @@ With no user-specified arguments except a fitted model, the output of
 [`summ()`](../reference/summ.md) looks like this:
 
 ``` r
+
 library(jtools) # Load jtools
 data(movies) # Telling R we want to use this data
 fit <- lm(metascore ~ imdb_rating + log(us_gross) + genre5, data = movies)
@@ -102,6 +103,7 @@ console, but if you are generating your own RMarkdown documents and have
 like this:
 
 ``` r
+
 summ(fit)
 ```
 
@@ -151,6 +153,7 @@ use that if your goal is to replicate Stata analyses. To toggle the type
 of robust errors, provide the desired type as the argument to `robust`.
 
 ``` r
+
 summ(fit, robust = "HC1")
 ```
 
@@ -201,6 +204,7 @@ argument does not do anything to factor variables and doesn’t scale
 binary variables by default.
 
 ``` r
+
 summ(fit, scale = TRUE)
 ```
 
@@ -243,6 +247,7 @@ has been a proponent of dividing by 2 standard deviations; if you want
 to do things that way, give the argument `n.sd = 2`.
 
 ``` r
+
 summ(fit, scale = TRUE, n.sd = 2)
 ```
 
@@ -282,6 +287,7 @@ original scale while still mean-centering the predictors with the
 response variable unless `transform.response = TRUE`.
 
 ``` r
+
 summ(fit, center = TRUE)
 ```
 
@@ -316,6 +322,7 @@ In many cases, you’ll learn more by looking at confidence intervals than
 p-values. You can request them from `summ`.
 
 ``` r
+
 summ(fit, confint = TRUE, digits = 3)
 ```
 
@@ -346,6 +353,7 @@ You can adjust the width of the confidence intervals, which are by
 default 95% CIs.
 
 ``` r
+
 summ(fit, confint = TRUE, ci.width = .5)
 ```
 
@@ -377,6 +385,7 @@ summ(fit, confint = TRUE, ci.width = .5)
 You might also want to drop the p-values altogether.
 
 ``` r
+
 summ(fit, confint = TRUE, pvals = FALSE)
 ```
 
@@ -416,6 +425,7 @@ is bound at 0 and 100 (analogous to 0 and 1). We’ll use the
 outcome.
 
 ``` r
+
 fitg <- glm(metascore/100 ~ imdb_rating + log(us_gross) + genre5, data = movies,
             family = quasibinomial())
 
@@ -455,6 +465,7 @@ interested in getting the exponentiated coefficients rather than the
 linear estimates. `summ` can handle that!
 
 ``` r
+
 summ(fitg, exp = TRUE)
 ```
 
@@ -493,6 +504,7 @@ You can also get summaries of `merMod` objects, the mixed models from
 the `lme4` package.
 
 ``` r
+
 library(lme4)
 fm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
 
@@ -572,6 +584,7 @@ sounds like. There is a separate vignette available to explore all it
 can offer, but here’s a basic example with our `glm` model:
 
 ``` r
+
 effect_plot(fitg, pred = imdb_rating, interval = TRUE, plot.points = TRUE, 
             jitter = 0.05)
 ```
@@ -598,6 +611,7 @@ arguments to each model).
 Here’s a basic, single-model use case.
 
 ``` r
+
 plot_summs(fit)
 ```
 
@@ -612,6 +626,7 @@ We may still want to use other features of
 problem.
 
 ``` r
+
 plot_summs(fit, robust = TRUE)
 ```
 
@@ -623,6 +638,7 @@ thicker band to convey a narrow interval using the `inner_ci_level`
 argument:
 
 ``` r
+
 plot_summs(fit, inner_ci_level = .9)
 ```
 
@@ -642,6 +658,7 @@ they are visually sufficiently close that I have opted not to try to
 plot the points along a *t* distribution.
 
 ``` r
+
 plot_summs(fit, plot.distributions = TRUE, inner_ci_level = .9)
 ```
 
@@ -654,6 +671,7 @@ plotting. This is especially true when the models are nested. Let’s fit
 a second model and compare.
 
 ``` r
+
 fit2 <- lm(metascore ~ imdb_rating + log(us_gross) + log(budget) + genre5,
            data = movies)
 plot_summs(fit, fit2)
@@ -664,6 +682,7 @@ plot_summs(fit, fit2)
 Doing this with `plot.distributions = TRUE` creates a nice effect:
 
 ``` r
+
 plot_summs(fit, fit2, plot.distributions = TRUE)
 ```
 
@@ -677,6 +696,7 @@ model, etc.). For instance, we can look at how the standard errors
 differ with different `robust` arguments:
 
 ``` r
+
 plot_summs(fit, fit, fit, robust = list(FALSE, "HC0", "HC5"),
            model.names = c("OLS", "HC0", "HC5"))
 ```
@@ -714,30 +734,31 @@ request things like robust standard errors and variable scaling.
 Here’s an example of what to expect in a document like this one:
 
 ``` r
+
 export_summs(fit, fit2, scale = TRUE)
 ```
 
-|                                                                                                                                                                                 |      Model 1 |      Model 2 |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------:|-------------:|
-| (Intercept)                                                                                                                                                                     | 58.74 \*\*\* | 59.63 \*\*\* |
-|                                                                                                                                                                                 |    (0.75)    |    (0.76)    |
-| imdb_rating                                                                                                                                                                     | 11.06 \*\*\* | 10.61 \*\*\* |
-|                                                                                                                                                                                 |    (0.43)    |    (0.43)    |
-| `log(us_gross)`                                                                                                                                                                 |     0.63     |  2.17 \*\*\* |
-|                                                                                                                                                                                 |    (0.42)    |    (0.51)    |
-| genre5Comedy                                                                                                                                                                    |  6.32 \*\*\* |  4.84 \*\*\* |
-|                                                                                                                                                                                 |    (1.06)    |    (1.09)    |
-| genre5Drama                                                                                                                                                                     |  7.66 \*\*\* |  6.71 \*\*\* |
-|                                                                                                                                                                                 |    (1.08)    |    (1.08)    |
-| genre5Horror/Thriller                                                                                                                                                           |    -0.73     |    -2.81     |
-|                                                                                                                                                                                 |    (1.51)    |    (1.55)    |
-| genre5Other                                                                                                                                                                     |     5.86     |    6.30 \*   |
-|                                                                                                                                                                                 |    (3.25)    |    (3.20)    |
-| `log(budget)`                                                                                                                                                                   |              | -2.64 \*\*\* |
-|                                                                                                                                                                                 |              |    (0.53)    |
-| N                                                                                                                                                                               |   831        |   831        |
-| R2                                                                                                                                                                              |     0.55     |     0.57     |
-| All continuous predictors are mean-centered and scaled by 1 standard deviation. The outcome variable is in its original units. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05. |              |              |
+|  | Model 1 | Model 2 |
+|----|---:|---:|
+| (Intercept) | 58.74 \*\*\* | 59.63 \*\*\* |
+|  | (0.75)    | (0.76)    |
+| imdb_rating | 11.06 \*\*\* | 10.61 \*\*\* |
+|  | (0.43)    | (0.43)    |
+| `log(us_gross)` | 0.63     | 2.17 \*\*\* |
+|  | (0.42)    | (0.51)    |
+| genre5Comedy | 6.32 \*\*\* | 4.84 \*\*\* |
+|  | (1.06)    | (1.09)    |
+| genre5Drama | 7.66 \*\*\* | 6.71 \*\*\* |
+|  | (1.08)    | (1.08)    |
+| genre5Horror/Thriller | -0.73     | -2.81     |
+|  | (1.51)    | (1.55)    |
+| genre5Other | 5.86     | 6.30 \*   |
+|  | (3.25)    | (3.20)    |
+| `log(budget)` |         | -2.64 \*\*\* |
+|  |         | (0.53)    |
+| N | 831        | 831        |
+| R2 | 0.55     | 0.57     |
+| All continuous predictors are mean-centered and scaled by 1 standard deviation. The outcome variable is in its original units. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05. |  |  |
 
 When using RMarkdown, set `results = 'asis'` for the chunk with
 [`export_summs()`](../reference/export_summs.md) to get the right
@@ -762,31 +783,32 @@ if you want the standard error in parentheses, the argument would be
 Here’s an example with confidence intervals instead of standard errors:
 
 ``` r
+
 export_summs(fit, fit2, scale = TRUE,
              error_format = "[{conf.low}, {conf.high}]")
 ```
 
-|                                                                                                                                                                                 |             Model 1 |             Model 2 |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------:|--------------------:|
-| (Intercept)                                                                                                                                                                     |        58.74 \*\*\* |        59.63 \*\*\* |
-|                                                                                                                                                                                 | \[57.27, 60.21\]    | \[58.15, 61.12\]    |
-| imdb_rating                                                                                                                                                                     |        11.06 \*\*\* |        10.61 \*\*\* |
-|                                                                                                                                                                                 | \[10.22, 11.90\]    |  \[9.76, 11.45\]    |
-| `log(us_gross)`                                                                                                                                                                 |            0.63     |         2.17 \*\*\* |
-|                                                                                                                                                                                 |  \[-0.18, 1.45\]    |   \[1.16, 3.17\]    |
-| genre5Comedy                                                                                                                                                                    |         6.32 \*\*\* |         4.84 \*\*\* |
-|                                                                                                                                                                                 |   \[4.24, 8.41\]    |   \[2.70, 6.97\]    |
-| genre5Drama                                                                                                                                                                     |         7.66 \*\*\* |         6.71 \*\*\* |
-|                                                                                                                                                                                 |   \[5.55, 9.77\]    |   \[4.60, 8.83\]    |
-| genre5Horror/Thriller                                                                                                                                                           |           -0.73     |           -2.81     |
-|                                                                                                                                                                                 |  \[-3.70, 2.24\]    |  \[-5.84, 0.23\]    |
-| genre5Other                                                                                                                                                                     |            5.86     |           6.30 \*   |
-|                                                                                                                                                                                 | \[-0.52, 12.24\]    |  \[0.01, 12.59\]    |
-| `log(budget)`                                                                                                                                                                   |                     |        -2.64 \*\*\* |
-|                                                                                                                                                                                 |                     | \[-3.67, -1.60\]    |
-| N                                                                                                                                                                               |          831        |          831        |
-| R2                                                                                                                                                                              |            0.55     |            0.57     |
-| All continuous predictors are mean-centered and scaled by 1 standard deviation. The outcome variable is in its original units. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05. |                     |                     |
+|  | Model 1 | Model 2 |
+|----|---:|---:|
+| (Intercept) | 58.74 \*\*\* | 59.63 \*\*\* |
+|  | \[57.27, 60.21\]    | \[58.15, 61.12\]    |
+| imdb_rating | 11.06 \*\*\* | 10.61 \*\*\* |
+|  | \[10.22, 11.90\]    | \[9.76, 11.45\]    |
+| `log(us_gross)` | 0.63     | 2.17 \*\*\* |
+|  | \[-0.18, 1.45\]    | \[1.16, 3.17\]    |
+| genre5Comedy | 6.32 \*\*\* | 4.84 \*\*\* |
+|  | \[4.24, 8.41\]    | \[2.70, 6.97\]    |
+| genre5Drama | 7.66 \*\*\* | 6.71 \*\*\* |
+|  | \[5.55, 9.77\]    | \[4.60, 8.83\]    |
+| genre5Horror/Thriller | -0.73     | -2.81     |
+|  | \[-3.70, 2.24\]    | \[-5.84, 0.23\]    |
+| genre5Other | 5.86     | 6.30 \*   |
+|  | \[-0.52, 12.24\]    | \[0.01, 12.59\]    |
+| `log(budget)` |         | -2.64 \*\*\* |
+|  |         | \[-3.67, -1.60\]    |
+| N | 831        | 831        |
+| R2 | 0.55     | 0.57     |
+| All continuous predictors are mean-centered and scaled by 1 standard deviation. The outcome variable is in its original units. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05. |  |  |
 
 There’s a lot more customization that I’m not covering here: Renaming
 the columns, renaming/excluding coefficients, realigning the errors, and
@@ -796,6 +818,7 @@ If you want to save to a Word doc, use the `to.file` argument (requires
 the `officer` and `flextable` packages):
 
 ``` r
+
 export_summs(fit, fit2, scale = TRUE, to.file = "docx", file.name = "test.docx")
 ```
 
@@ -813,6 +836,7 @@ To remove the written output at the beginning, set `model.info = FALSE`
 and/or `model.fit = FALSE`.
 
 ``` r
+
 summ(fit, model.info = FALSE, model.fit = FALSE)
 ```
 
@@ -841,6 +865,7 @@ measures are calculated.
 The default argument is `digits = 2`.
 
 ``` r
+
 summ(fit, model.info = FALSE, digits = 5)
 ```
 
@@ -863,6 +888,7 @@ summ(fit, model.info = FALSE, digits = 5)
     ## ----------------------------------------------------------------------
 
 ``` r
+
 summ(fit, model.info = FALSE, digits = 1)
 ```
 
@@ -888,6 +914,7 @@ You can pre-set the number of digits you want printed for all `jtools`
 functions with the `jtools-digits` option.
 
 ``` r
+
 options("jtools-digits" = 2)
 summ(fit, model.info = FALSE)
 ```
@@ -914,6 +941,7 @@ Note that the `summ` object contains the non-rounded values if you want
 to use them later. The digits option just affects the printed output.
 
 ``` r
+
 j <- summ(fit, digits = 3)
 
 j$coeftable
@@ -939,6 +967,7 @@ avoid redundant typing.
 It works like this:
 
 ``` r
+
 set_summ_defaults(digits = 2, pvals = FALSE, robust = "HC3")
 ```
 
@@ -968,6 +997,7 @@ model comparison and checking for the impact of newly-added variables.
 To get VIFs reported in the output table, just set `vifs = TRUE`.
 
 ``` r
+
 summ(fit, vifs = TRUE)
 ```
 

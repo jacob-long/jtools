@@ -170,6 +170,7 @@ Other summ: [`summ.glm()`](summ.glm.md), [`summ.lm()`](summ.lm.md),
 ## Examples
 
 ``` r
+
 if (requireNamespace("quantreg")) {
  library(quantreg)
  data(engel)

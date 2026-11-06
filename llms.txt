@@ -32,6 +32,7 @@ moved to a new package, aptly named
 For the most stable version, simply install from CRAN.
 
 ``` r
+
 install.packages("jtools")
 ```
 
@@ -40,12 +41,14 @@ Github. To do that you will need to have `devtools` installed if you
 don’t already:
 
 ``` r
+
 install.packages("devtools")
 ```
 
 Then install the package from Github.
 
 ``` r
+
 devtools::install_github("jacob-long/jtools")
 ```
 
@@ -70,6 +73,7 @@ package.
 Basic use:
 
 ``` r
+
 data(movies)
 fit <- lm(metascore ~ budget + us_gross + year, data = movies)
 summ(fit)
@@ -111,6 +115,7 @@ intervals in place of standard errors and you can choose whether to show
 p values.
 
 ``` r
+
 summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = FALSE)
 ```
 
@@ -141,6 +146,7 @@ summ(fit, scale = TRUE, vifs = TRUE, part.corr = TRUE, confint = TRUE, pvals = F
 Cluster-robust standard errors:
 
 ``` r
+
 data("PetersenCL", package = "sandwich")
 fit2 <- lm(y ~ x, data = PetersenCL)
 summ(fit2, robust = "HC3", cluster = "firm")
@@ -181,6 +187,7 @@ facilities for robust standard errors and standardization. It also
 concatenates multiple models into a single table.
 
 ``` r
+
 fit <- lm(metascore ~ log(budget), data = movies)
 fit_b <- lm(metascore ~ log(budget) + log(us_gross), data = movies)
 fit_c <- lm(metascore ~ log(budget) + log(us_gross) + runtime, data = movies)
@@ -189,19 +196,19 @@ coef_names <- c("Budget" = "log(budget)", "US Gross" = "log(us_gross)",
 export_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
 
-|                                                                                                 |       Model 1 |      Model 2 |      Model 3 |
-|:------------------------------------------------------------------------------------------------|--------------:|-------------:|-------------:|
-| Budget                                                                                          |  -2.43 \*\*\* | -5.16 \*\*\* | -6.70 \*\*\* |
-|                                                                                                 |     (0.44)    |    (0.62)    |    (0.67)    |
-| US Gross                                                                                        |               |  3.96 \*\*\* |  3.85 \*\*\* |
-|                                                                                                 |               |    (0.51)    |    (0.48)    |
-| Runtime (Hours)                                                                                 |               |              | 14.29 \*\*\* |
-|                                                                                                 |               |              |    (1.63)    |
-| Constant                                                                                        | 105.29 \*\*\* | 81.84 \*\*\* | 83.35 \*\*\* |
-|                                                                                                 |     (7.65)    |    (8.66)    |    (8.82)    |
-| N                                                                                               |    831        |   831        |   831        |
-| R2                                                                                              |      0.03     |     0.09     |     0.17     |
-| Standard errors are heteroskedasticity robust. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05. |               |              |              |
+|  | Model 1 | Model 2 | Model 3 |
+|:---|---:|---:|---:|
+| Budget | -2.43 \*\*\* | -5.16 \*\*\* | -6.70 \*\*\* |
+|  | (0.44)    | (0.62)    | (0.67)    |
+| US Gross |         | 3.96 \*\*\* | 3.85 \*\*\* |
+|  |         | (0.51)    | (0.48)    |
+| Runtime (Hours) |         |         | 14.29 \*\*\* |
+|  |         |         | (1.63)    |
+| Constant | 105.29 \*\*\* | 81.84 \*\*\* | 83.35 \*\*\* |
+|  | (7.65)    | (8.66)    | (8.82)    |
+| N | 831        | 831        | 831        |
+| R2 | 0.03     | 0.09     | 0.17     |
+| Standard errors are heteroskedasticity robust. \*\*\* p \< 0.001; \*\* p \< 0.01; \* p \< 0.05. |  |  |  |
 
 In RMarkdown documents, using
 [`export_summs()`](reference/export_summs.md) and the chunk option
@@ -219,6 +226,7 @@ with [`plot_summs()`](reference/plot_summs.md) (or the closely related
 scaled models and robust standard errors.
 
 ``` r
+
 coef_names <- coef_names[1:3] # Dropping intercept for plots
 plot_summs(fit, fit_b, fit_c, robust = "HC3", coefs = coef_names)
 ```
@@ -232,6 +240,7 @@ Another way to visualize the uncertainty of your coefficients is via the
 `plot.distributions` argument.
 
 ``` r
+
 plot_summs(fit_c, robust = "HC3", coefs = coef_names, plot.distributions = TRUE)
 ```
 
@@ -254,6 +263,7 @@ predictions it generates. Rather than look at coefficients,
 across values of a predictor variable alongside the observed data.
 
 ``` r
+
 effect_plot(fit_c, pred = runtime, interval = TRUE, plot.points = TRUE)
 ```
 
@@ -273,6 +283,7 @@ instead of the raw observed data, allowing you to assess model quality
 after accounting for effects of control variables.
 
 ``` r
+
 effect_plot(fit_c, pred = runtime, interval = TRUE, partial.residuals = TRUE)
 ```
 
@@ -385,8 +396,8 @@ version.
 
 - [`gscale()`](gscale.md) : Scale and/or center data, including survey
   designs
-- [`scale_mod()`](scale_mod.md) : Scale variables in fitted regression
-  models
+- [`scale_mod()`](scale_mod.md) [`scale_lm()`](scale_mod.md) : Scale
+  variables in fitted regression models
 - [`center_mod()`](center_mod.md) : Center variables in fitted
   regression models
 - [`standardize()`](standardize.md) : Standardize vectors, data frames,

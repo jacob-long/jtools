@@ -89,6 +89,7 @@ interface, such as the `prediction` package's titular function.
 ## Examples
 
 ``` r
+
 fit <- lm(Income ~ Frost + Illiteracy + Murder, data = as.data.frame(state.x77))
 # Basic use
 new_data <- make_new_data(fit, pred = "Frost")

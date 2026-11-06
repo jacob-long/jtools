@@ -186,23 +186,24 @@ if (requireNamespace("huxtable")) {
                          "Murder Rate" = "Murder"),
                scale = TRUE, robust = TRUE)
 }
-#>  ─────────────────────────────────────────────────────────────────────────────
-#>                           Model 1            Model 2            Model 3       
-#>                     ──────────────────────────────────────────────────────────
-#>    Frost Days                  139.04            -75.52            -65.19     
-#>                                (94.89)          (138.74)          (149.01)    
-#>    % Illiterate                                 -319.31 *         -372.25 **  
-#>                                                 (124.83)          (120.00)    
-#>    Murder Rate                                                      85.18     
-#>                                                                   (136.02)    
-#>                     ──────────────────────────────────────────────────────────
-#>    N                            50                50                50        
-#>    R2                            0.05              0.20              0.21     
-#>  ─────────────────────────────────────────────────────────────────────────────
-#>    All continuous predictors are mean-centered and scaled by 1                
-#>    standard deviation. The outcome variable is in its original                
-#>    units. Standard errors are heteroskedasticity robust. *** p <              
-#>    0.001; ** p < 0.01; * p < 0.05.                                            
+#>               ───────────────────────────────────────────────────
+#>                                Model 1    Model 2     Model 3    
+#>                              ────────────────────────────────────
+#>                 Frost Days     139.04     -75.52      -65.19     
+#>                                (94.89)   (138.74)    (149.01)    
+#>                 % Illiterate             -319.31 *   -372.25 **  
+#>                                          (124.83)    (120.00)    
+#>                 Murder Rate                            85.18     
+#>                                                      (136.02)    
+#>                              ────────────────────────────────────
+#>                 N               50         50          50        
+#>                 R2               0.05       0.20        0.21     
+#>               ───────────────────────────────────────────────────
+#> All continuous predictors are mean-centered and
+#> scaled by 1 standard deviation. The outcome
+#> variable is in its original units. Standard errors
+#> are heteroskedasticity robust. *** p < 0.001; ** p
+#> < 0.01; * p < 0.05.
 #> 
 #> Column names: names, Model 1, Model 2, Model 3
 ```

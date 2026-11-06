@@ -74,6 +74,7 @@ Other survey tools: [`svycor()`](svycor.md), [`svysd()`](svysd.md),
 ## Examples
 
 ``` r
+
 # Note: This is a contrived example to show how the function works,
 # not a case with actual sammpling weights from a survey vendor
 if (requireNamespace("boot")) {

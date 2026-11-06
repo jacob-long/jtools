@@ -19,6 +19,7 @@ With that said, let’s look at an example. First, we need to get a
 `survey.design` object. This one is built into the `survey` package.
 
 ``` r
+
 library(survey)
 data(api)
 dstrat <- svydesign(id = ~1,strata = ~stype, weights = ~pw, data = apistrat, fpc=~fpc)
@@ -32,6 +33,7 @@ include. It doesn’t matter which side of the equation the variables are
 on.
 
 ``` r
+
 svycor(~api00 + api99, design = dstrat)
 ```
 
@@ -43,6 +45,7 @@ You can specify with the `digits =` argument how many digits past the
 decimal point should be printed.
 
 ``` r
+
 svycor(~api00 + api99, design = dstrat, digits = 4)
 ```
 
@@ -56,12 +59,12 @@ used as well, though in some cases it may not affect the output.
 ## Statistical significance tests
 
 One thing that `survey` won’t do for you is give you *p* values for the
-null hypothesis that $r = 0$. While at first blush finding the *p* value
-might seem like a simple procedure, complex surveys will almost always
-violate the important distributional assumptions that go along with
-simple hypothesis tests of the correlation coefficient. There is not a
-clear consensus on the appropriate way to conduct hypothesis tests in
-this context, due in part to the fact that most analyses of complex
+null hypothesis that $`r = 0`$. While at first blush finding the *p*
+value might seem like a simple procedure, complex surveys will almost
+always violate the important distributional assumptions that go along
+with simple hypothesis tests of the correlation coefficient. There is
+not a clear consensus on the appropriate way to conduct hypothesis tests
+in this context, due in part to the fact that most analyses of complex
 surveys occurs in the context of multiple regression rather than simple
 bivariate cases.
 
@@ -77,6 +80,7 @@ rows in the data frame) or the sum of the weights. Usually, the former
 is desired, so the default value of `mean1` is `TRUE`.
 
 ``` r
+
 svycor(~api00 + api99, design = dstrat, digits = 4, sig.stats = TRUE, bootn = 2000, mean1 = TRUE)
 ```
 
@@ -92,6 +96,7 @@ By saving the output of the function, you can extract non-rounded
 coefficients, *p* values, and standard errors.
 
 ``` r
+
 c <- svycor(~api00 + api99, design = dstrat, digits = 4, sig.stats = TRUE, bootn = 2000, mean1 = TRUE)
 
 c$cors
@@ -102,6 +107,7 @@ c$cors
     api99 0.9759047 1.0000000
 
 ``` r
+
 c$p.values
 ```
 
@@ -110,6 +116,7 @@ c$p.values
     api99     0     0
 
 ``` r
+
 c$std.err
 ```
 
@@ -123,6 +130,7 @@ The heavy lifting behind the scenes is done by `svyvar`, which from its
 output you may not realize also calculates covariance.
 
 ``` r
+
 svyvar(~api00 + api99, design = dstrat)
 ```
 
@@ -134,6 +142,7 @@ But if you save the `svyvar` object, you can see that there’s more than
 meets the eye.
 
 ``` r
+
 var <- svyvar(~api00 + api99, design = dstrat)
 var <- as.matrix(var)
 var
@@ -155,6 +164,7 @@ Once we know that, it’s just a matter of using R’s `cov2cor` function
 and cleaning up the output.
 
 ``` r
+
 cor <- cov2cor(var)
 cor
 ```
@@ -174,6 +184,7 @@ cor
 Now to get rid of that covariance matrix…
 
 ``` r
+
 cor <- cor[1:nrow(cor), 1:nrow(cor)]
 cor
 ```
@@ -186,6 +197,7 @@ cor
 the decimal point. You can extract the un-rounded matrix, however.
 
 ``` r
+
 out <- svycor(~api99 + api00, design = dstrat)
 out$cors
 ```

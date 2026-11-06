@@ -137,6 +137,7 @@ Other subsetters: [`%nin%()`](nin.md)
 ## Examples
 
 ``` r
+
  x <- 1:5
  y <- 3:8
  

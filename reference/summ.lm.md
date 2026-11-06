@@ -61,7 +61,7 @@ summ(
   If not `FALSE`, reports heteroskedasticity-robust standard errors
   instead of conventional SEs. These are also known as Huber-White
   standard errors. There are several options provided by
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html):
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html):
   `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"`, `"HC4"`, `"HC4m"`, `"HC5"`.
 
   Default is `FALSE`.
@@ -192,7 +192,7 @@ By default, this function will print the following items to the console:
 
 There are several options available for `robust`. The heavy lifting is
 done by
-[`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html),
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html),
 where those are better described. Put simply, you may choose from
 `"HC0"` to `"HC5"`. Based on the recommendation of the developers of
 sandwich, the default is set to `"HC3"`. Stata's default is `"HC1"`, so

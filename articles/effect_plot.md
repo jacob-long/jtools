@@ -19,6 +19,7 @@ and fuel type (`fl`).
 Here’s a model summary courtesy of `summ`:
 
 ``` r
+
 library(ggplot2)
 data(mpg)
 fit <- lm(cty ~ displ + year + cyl + class + fl, data = mpg[mpg$fl != "c",])
@@ -57,6 +58,7 @@ summ(fit)
 Let’s explore the effect of engine displacement on gas mileage:
 
 ``` r
+
 effect_plot(fit, pred = displ)
 ```
 
@@ -72,6 +74,7 @@ So this plot, in this case, is not *super* illuminating. Let’s see the
 uncertainty around this line.
 
 ``` r
+
 effect_plot(fit, pred = displ, interval = TRUE)
 ```
 
@@ -83,6 +86,7 @@ If you want to get a feel for how the data are distributed, you can add
 what is known as a rug plot.
 
 ``` r
+
 effect_plot(fit, pred = displ, interval = TRUE, rug = TRUE)
 ```
 
@@ -92,6 +96,7 @@ For a more direct look at how the model relates to the observed data,
 you can use the `plot.points = TRUE` argument.
 
 ``` r
+
 effect_plot(fit, pred = displ, interval = TRUE, plot.points = TRUE)
 ```
 
@@ -103,6 +108,7 @@ appropriate. Let’s try fitting a polynomial for the `displ` term to
 capture that curvature.
 
 ``` r
+
 fit_poly <- lm(cty ~ poly(displ, 2) + year + cyl + class + fl, data = mpg)
 effect_plot(fit_poly, pred = displ, interval = TRUE, plot.points = TRUE)
 ```
@@ -128,6 +134,7 @@ words, the value `cty` for the observed data is based only on the values
 of `displ` and the model error. Let’s take a look.
 
 ``` r
+
 effect_plot(fit_poly, pred = displ, interval = TRUE, partial.residuals = TRUE)
 ```
 
@@ -162,6 +169,7 @@ variable. Patients were checked for presence or absence of the bacteria
 (`y`) every few weeks (`week`).
 
 ``` r
+
 library(MASS)
 data(bacteria)
 l_mod <- glm(y ~ trt + week, data = bacteria, family = binomial)
@@ -194,6 +202,7 @@ summ(l_mod)
 Let’s check out the effect of time.
 
 ``` r
+
 effect_plot(l_mod, pred = week, interval = TRUE, y.label = "% testing positive")
 ```
 
@@ -211,6 +220,7 @@ of demonstration. `Claims` is a count variable, so the poisson
 distribution is an appropriate modeling approach.
 
 ``` r
+
 library(MASS)
 data(Insurance)
 Insurance$age_n <- as.numeric(Insurance$Age)
@@ -252,6 +262,7 @@ we have an offset term, so the count we’re predicting is more like a
 the amount of policyholders.
 
 ``` r
+
 effect_plot(p_mod, pred = age_n, interval = TRUE)
 ```
 
@@ -268,6 +279,7 @@ policyholders with claims goes down.
 Now let’s take a look at the observed data…
 
 ``` r
+
 effect_plot(p_mod, pred = age_n, interval = TRUE, plot.points = TRUE)
 ```
 
@@ -281,6 +293,7 @@ with the linear model previously, so let’s use the same solution:
 partial residuals.
 
 ``` r
+
 effect_plot(p_mod, pred = age_n, interval = TRUE, partial.residuals = TRUE)
 ```
 
@@ -292,6 +305,7 @@ bit of noise to each observation so we can see just how many points
 there are more clearly.
 
 ``` r
+
 effect_plot(p_mod, pred = age_n, interval = TRUE, partial.residuals = TRUE,
             jitter = c(0.1, 0))
 ```
@@ -312,6 +326,7 @@ Using our first example, predicting gas mileage, let’s focus on the
 class of car as predictor.
 
 ``` r
+
 effect_plot(fit, pred = fl, interval = TRUE)
 ```
 
@@ -323,6 +338,7 @@ by far and ethanol (“e”) the worst by a little bit.
 You can plot the observed data in these types of plots as well:
 
 ``` r
+
 effect_plot(fit, pred = fl, interval = TRUE, plot.points = TRUE,
             jitter = .2)
 ```
@@ -333,6 +349,7 @@ These seem a bit far off from the predictions. Let’s see if the partial
 residuals are a little more in line with expectations.
 
 ``` r
+
 effect_plot(fit, pred = fl, interval = TRUE, partial.residuals = TRUE,
             jitter = .2)
 ```
@@ -348,6 +365,7 @@ Let’s also look at the bacteria example, using treatment type as the
 predictor of interest.
 
 ``` r
+
 effect_plot(l_mod, pred = trt, interval = TRUE, y.label = "% testing positive")
 ```
 
@@ -364,6 +382,7 @@ You may also want to use lines to convey the ordered nature of this
 predictor.
 
 ``` r
+
 effect_plot(l_mod, pred = trt, interval = TRUE, y.label = "% testing positive",
             cat.geom = "line")
 ```

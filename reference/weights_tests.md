@@ -94,6 +94,7 @@ Other survey tools: [`pf_sv_test()`](pf_sv_test.md),
 ## Examples
 
 ``` r
+
 # Note: This is a contrived example to show how the function works,
 # not a case with actual sammpling weights from a survey vendor
 if (requireNamespace("boot")) {

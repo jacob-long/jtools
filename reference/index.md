@@ -48,8 +48,8 @@
 
 - [`gscale()`](gscale.md) : Scale and/or center data, including survey
   designs
-- [`scale_mod()`](scale_mod.md) : Scale variables in fitted regression
-  models
+- [`scale_mod()`](scale_mod.md) [`scale_lm()`](scale_mod.md) : Scale
+  variables in fitted regression models
 - [`center_mod()`](center_mod.md) : Center variables in fitted
   regression models
 - [`standardize()`](standardize.md) : Standardize vectors, data frames,

@@ -51,9 +51,10 @@ A `formula` object.
 ## Examples
 
 ``` r
+
 data(mtcars)
 fit <- lm(mpg ~ cyl, data = mtcars)
 get_formula(fit)
 #> mpg ~ cyl
-#> <environment: 0x55a6e7a2d3e8>
+#> <environment: 0x55926158cb98>
 ```

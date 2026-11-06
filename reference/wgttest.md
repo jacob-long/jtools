@@ -112,8 +112,8 @@ fit <- lm(Income ~ Frost + Illiteracy + Murder,
 wgttest(fit, weights = wts)
 #> DuMouchel-Duncan test of model change with weights
 #> 
-#> F(4,42) = 0.283
-#> p = 0.887
+#> F(4,42) = 0.908
+#> p = 0.468
 #> 
 #> Lower p values indicate greater influence of the weights.
 #> 
@@ -126,8 +126,8 @@ fit <- glm(y ~ x, family = binomial)
 wgttest(fit, wts)
 #> DuMouchel-Duncan test of model change with weights
 #> 
-#> Deviance (2) = 0.942
-#> p = 0.624
+#> Deviance (2) = 0.625
+#> p = 0.732
 #> 
 #> Lower p values indicate greater influence of the weights.
 #> 
@@ -135,8 +135,8 @@ wgttest(fit, wts)
 wgttest(fit, weights = wts, test = "Rao")
 #> DuMouchel-Duncan test of model change with weights
 #> 
-#> Rao (2,96) = 0.926
-#> p = 0.629
+#> Rao (2,96) = 0.624
+#> p = 0.732
 #> 
 #> Lower p values indicate greater influence of the weights.
 #> 
@@ -151,8 +151,8 @@ wts <- runif(18, 0, 3)
 wgttest(glm.D93, weights = wts)
 #> DuMouchel-Duncan test of model change with weights
 #> 
-#> F(5,8) = 2.139
-#> p = 0.162
+#> F(5,8) = 0.167
+#> p = 0.968
 #> 
 #> Lower p values indicate greater influence of the weights.
 #> 

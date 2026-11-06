@@ -25,10 +25,10 @@ get_robust_se(
 
   One of `"HC3"`, `"const"`, `"HC"`, `"HC0"`, `"HC1"`, `"HC2"`, `"HC4"`,
   `"HC4m"`, `"HC5"`. See
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html)
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html)
   for some more details on these choices. Note that some of these do not
   work for clustered standard errors (see
-  [`sandwich::vcovCL()`](https://sandwich.R-Forge.R-project.org/reference/vcovCL.html)).
+  [`sandwich::vcovCL()`](https://zeileis.codeberg.page/sandwich/reference/vcovCL.html)).
 
 - cluster:
 

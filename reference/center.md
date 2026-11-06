@@ -66,6 +66,7 @@ standardization, scaling, and centering tools
 ## Examples
 
 ``` r
+
 # Standardize just the "qsec" variable in mtcars
 standardize(mtcars, vars = "qsec")
 #>                      mpg cyl  disp  hp drat    wt        qsec vs am gear carb

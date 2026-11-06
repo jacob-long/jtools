@@ -61,7 +61,7 @@ set_summ_defaults(
   If not `FALSE`, reports heteroskedasticity-robust standard errors
   instead of conventional SEs. These are also known as Huber-White
   standard errors. There are several options provided by
-  [`sandwich::vcovHC()`](https://sandwich.R-Forge.R-project.org/reference/vcovHC.html):
+  [`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html):
   `"HC0"`, `"HC1"`, `"HC2"`, `"HC3"`, `"HC4"`, `"HC4m"`, `"HC5"`.
 
   Default is `FALSE`.

@@ -42,7 +42,11 @@ center_mod(
   used to re-fit the model instead of the
   [`stats::model.frame()`](https://rdrr.io/r/stats/model.frame.html) of
   the model. This is particularly useful if you have variable
-  transformations or polynomial terms specified in the formula.
+  transformations or polynomial terms specified in the formula. For
+  default-method refits, supply unchanged fitting data with its original
+  row names. Rows are aligned to the estimation sample and checked
+  against the fitted model frame; the original subset is not applied
+  again.
 
 - apply.weighted.contrasts:
 
@@ -104,6 +108,7 @@ Jacob Long <jacob.long@sc.edu>
 ## Examples
 
 ``` r
+
 fit <- lm(formula = Murder ~ Income * Illiteracy,
           data = as.data.frame(state.x77))
 fit_center <- center_mod(fit)
