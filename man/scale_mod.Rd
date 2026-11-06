@@ -2,11 +2,13 @@
 % Please edit documentation in R/scale_lm.R
 \name{scale_mod}
 \alias{scale_mod}
-\alias{scale_mod.default}
 \alias{scale_lm}
+\alias{scale_mod.default}
 \title{Scale variables in fitted regression models}
 \usage{
 scale_mod(model, ...)
+
+scale_lm(model, ...)
 
 \method{scale_mod}{default}(
   model,
@@ -55,7 +57,10 @@ the values, but not mean-center them.}
 \item{data}{If you provide the data used to fit the model here, that data
 frame is used to re-fit the model instead of the \code{\link[stats:model.frame]{stats::model.frame()}}
 of the model. This is particularly useful if you have variable
-transformations or polynomial terms specified in the formula.}
+transformations or polynomial terms specified in the formula.
+For default-method refits, supply unchanged fitting data with its original
+row names. Rows are aligned to the estimation sample and checked against
+the fitted model frame; the original subset is not applied again.}
 
 \item{vars}{A character vector of variable names that you want to be
 scaled. If NULL, the default, it is all predictors.}

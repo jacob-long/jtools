@@ -143,7 +143,7 @@ if (requireNamespace("lme4")) {
     p <- effect_plot(lmVA0, pred = Anger, partial.residuals = T, 
       data = va) +
       ggtitle("lmer test + partial residuals")
-    expect_doppelganger("lmer-partials", p)
+    expect_lmer_partial_plot(p)
     p <- effect_plot(fmVA0, pred = Anger, data = va) +
       ggtitle("glmer test")
     expect_doppelganger("glmer", p)

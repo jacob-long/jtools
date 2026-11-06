@@ -9,7 +9,8 @@ scale_mod <- function(model, ...) {
 
 
 #' @export
-#'
+#' @rdname scale_mod
+#' @usage scale_lm(model, ...)
 
 scale_lm <- scale_mod
 
@@ -49,6 +50,9 @@ scale_lm <- scale_mod
 #'   frame is used to re-fit the model instead of the [stats::model.frame()]
 #'   of the model. This is particularly useful if you have variable
 #'   transformations or polynomial terms specified in the formula.
+#'   For default-method refits, supply unchanged fitting data with its original
+#'   row names. Rows are aligned to the estimation sample and checked against
+#'   the fitted model frame; the original subset is not applied again.
 #'
 #' @param vars A character vector of variable names that you want to be
 #'   scaled. If NULL, the default, it is all predictors.
@@ -193,11 +197,20 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
 
   if (!is.null(data)) {
 
+    data <- as.data.frame(data)
+    rows <- match(rownames(mf), rownames(data))
+    if (anyNA(rows)) {
+      stop_wrap("Scaling data must include every fitted observation with its original row name.")
+    }
+    data <- data[rows, , drop = FALSE]
+    rebuilt <- model.frame(terms(model), data, na.action = stats::na.pass)
+    if (!isTRUE(all.equal(rebuilt, mf[names(rebuilt)], check.attributes = FALSE))) {
+      stop_wrap("Scaling data must reproduce the fitted model frame.",
+                  " Supply unchanged fitting data with original row names.")
+    }
     mf <- data
     # Keep only variables used
     mf <- get_all_vars(formula(model), data = mf)
-    # And only the complete cases
-    mf <- mf[complete.cases(mf),]
 
   } else {
 
@@ -241,6 +254,9 @@ scale_mod.default <- function(model, binary.inputs = "0/1", n.sd = 1,
   # in the new, modified environment
   call$formula <- form
   call$data <- NULL
+  # Scaling starts from the fitted rows, so the original subset is already applied.
+  call$subset <- NULL
+  call$na.action <- stats::na.fail
   # Conditionally add the names of the offset and weights args
   if (!is.null(the_offset)) {
     call$offset <- quote(the_offset)

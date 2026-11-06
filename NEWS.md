@@ -1,3 +1,20 @@
+# jtools 2.3.2
+
+* Internal model updates now retain weights and offsets when those arguments
+  are omitted; explicit `NULL` still removes them.
+* Formula helpers no longer fail because of a stray debugging flag.
+* Quasi-Poisson and quasi-binomial pseudo-R-squared calculations now refit the
+  saved design matrix with the original estimation-sample weights and total
+  offset. This prevents silently unweighted likelihoods and dependence on
+  altered source data or replayed subset expressions.
+* Null models and centered/scaled refits no longer apply the original subset
+  twice. Explicit scaling data are aligned to fitted observations and checked
+  against the saved model frame before refitting.
+* Mixed-model prediction uses reformulas directly for random-effect formula
+  processing, avoiding deprecated lme4 entry points.
+* Satterthwaite tests require lmerTest 3.2-1 or later for compatibility with
+  current lme4. Older installations receive an explicit upgrade message.
+
 # jtools 2.3.1
 
 Bug fixes:
