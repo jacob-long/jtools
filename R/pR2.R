@@ -72,16 +72,17 @@ pR2 <- function(object) {
   # in the new, modified environment
   call$formula <- form
   call$data <- NULL
+  # The model frame already contains exactly the estimation sample.
+  call$subset <- NULL
+  call$na.action <- stats::na.fail
   # Conditionally add the names of the offset and weights args
   if (!is.null(.offset)) {
     call$offset <- quote(.offset)
-  }
+  } else call$offset <- NULL
   if (!is.null(.weights)) {
     call$weights <- quote(.weights)
-  }
-  if ("start" %in% names(call)) {
-    call$start <- NULL
-  } 
+  } else call$weights <- NULL
+  call$start <- call$etastart <- call$mustart <- NULL
   # Can't attach the family object from glm.nb objects because of 
   # the theta parameter being estimated based on the model spec.
   if (!grepl("Negative Binomial", get_family(object)$family)) {
@@ -99,7 +100,7 @@ pR2 <- function(object) {
   }
   
   llhNull <- getLL(objectNull)
-  n <- dim(object$model)[1]
+  n <- nrow(frame)
   pR2Work(llh, llhNull, n, object, objectNull)
   
 }
@@ -114,18 +115,20 @@ getLL <- function(object) {
   quasis <- c("quasibinomial","quasipoisson","quasi")
   if (fam %nin% quasis) {
     return(logLik(object))
-  } else {
-    if (fam == "quasipoisson") {
-      poisson_family <- poisson(link = link)
-      logLik(j_update(object, family = poisson_family))
-    } else if (fam == "quasibinomial") {
-      binom_family <- binomial(link = link)
-      logLik(j_update(object, family = binom_family))
-    } else {
-      NA
-    }
   }
-  
+  if (fam == "quasi") return(NA_real_)
+
+  # Refit the saved design, not a call that can replay subsets or changed data.
+  frame <- model.frame(object)
+  likelihood_family <- if (fam == "quasipoisson") poisson(link) else binomial(link)
+  refit <- stats::glm.fit(x = stats::model.matrix(object),
+                          y = stats::model.response(frame),
+                          weights = model.weights(frame),
+                          offset = model.offset(frame),
+                          family = likelihood_family, control = object$control,
+                          intercept = attr(terms(object), "intercept") == 1L)
+  class(refit) <- c("glm", "lm")
+  logLik(refit)
 }
 
 ### Have to specify data differently than pscl to fix namespace issues

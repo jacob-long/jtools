@@ -284,7 +284,7 @@ get.random.formula <- function(model, rhs) {
   random.formula <- if (any(class(model) %in% c("lmerMod", "lmerModLmerTest",
                                                 "glmerMod", "glmmTMB"))) {
 
-        paste("(", lme4::findbars(formula(model)), ")", collapse = " + ")
+        paste("(", reformulas::findbars(formula(model)), ")", collapse = " + ")
 
   }
 
@@ -393,6 +393,8 @@ get_se_kr <- function(model) {
 }
 
 get_all_sat <- function(model) {
+  rlang::check_installed("lmerTest", version = "3.2.1",
+                        reason = "for Satterthwaite tests compatible with current lme4.")
   if ("lmerModLmerTest" %nin% class(model)) {
     new_mod <- lmerTest::as_lmerModLmerTest(model)
   } else {new_mod <- model}
